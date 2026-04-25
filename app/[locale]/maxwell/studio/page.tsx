@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { StudioShell } from "@/components/maxwell/studio-shell";
 import { buildSignInHref } from "@/lib/auth/redirect";
-import { siteRoutes } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Maxwell Studio — Noon",
@@ -23,6 +22,10 @@ export default async function MaxwellStudioPage({ params, searchParams }: Props)
   ]);
   const trimmedPrompt = prompt.trim();
   const studioPath = `/${locale}/maxwell/studio`;
+
+  if (!trimmedPrompt && !session_id) {
+    redirect(`/${locale}`);
+  }
 
   const session = await auth();
   const viewerEmail = session?.user?.email ?? null;
