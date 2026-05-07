@@ -207,9 +207,10 @@ export async function getV0PrototypeStatus(chatId: string): Promise<V0StatusResu
       demoUrl: result.latestVersion.demoUrl,
       versionId: result.latestVersion.id,
     };
-  } catch (error: any) {
-    // Manejar latencia/eventual consistency de v0 (el chat tarda unos segundos en aparecer y devuelve 404)
-    if (error?.message?.includes("404") || error?.message?.includes("chat_not_found")) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    // V0 can be eventually consistent immediately after creation.
+    if (message.includes("404") || message.includes("chat_not_found")) {
       return { status: "pending" };
     }
     throw error;
