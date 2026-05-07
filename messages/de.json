@@ -13,6 +13,8 @@
     "howItWorks": "Wissen Sie nicht, wie es funktioniert?",
     "howItWorksLink": "Hier klicken",
     "viewTemplates": "Alle Vorlagen ansehen",
+    "myConversations": "Meine Chats",
+    "myConversationsHint": "Maxwell Studio öffnen — gespeicherte Gespräche (Google-Anmeldung)",
     "importing": "Wird importiert…",
     "import": "Importieren",
     "cancel": "Abbrechen",
@@ -322,6 +324,15 @@
       "general": "Weiterleitung: Allgemeine Frage",
       "partner": "Weiterleitung: Partnerschaftsroute",
       "next": "Weiterleitung: Interesse nächstes Produkt"
+    }
+  },
+  "maxwellStudio": {
+    "quota": {
+      "userBadge": "Ihre Previews (UTC-Monat): {used}/{limit}",
+      "studioBadge": "Studio gesamt (UTC-Monat): {used}/{limit}",
+      "hint": "Erste Previews werden am 1. jedes Monats (UTC) zurückgesetzt. „Studio gesamt“ zählt erste Previews aller Noon-Nutzer; „Ihre Previews“ ist Ihr persönliches Kontingent für einen neuen Chat.",
+      "userFull": "Sie haben Ihr monatliches Preview-Kontingent verbraucht.",
+      "studioFull": "Die gemeinsame monatliche Studio-Kapazität ist erreicht."
     }
   },
   "faq": {

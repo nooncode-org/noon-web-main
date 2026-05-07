@@ -4,8 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mic, Paperclip, Sparkles, X, Upload, Github, FileText, Globe, TriangleIcon } from "lucide-react";
-import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
+import {
+  ArrowRight,
+  Mic,
+  Paperclip,
+  Sparkles,
+  X,
+  Upload,
+  Github,
+  FileText,
+  Globe,
+  TriangleIcon,
+  MessageSquare,
+} from "lucide-react";
+import { getMaxwellStudioHubHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 
@@ -36,10 +48,33 @@ export function HeroSection() {
   const [urlInputMode, setUrlInputMode] = useState<"github" | "vercel" | "image" | null>(null);
   const [urlInputValue, setUrlInputValue] = useState("");
   const [urlInputLoading, setUrlInputLoading] = useState(false);
+  const [showMyChatsLink, setShowMyChatsLink] = useState(false);
   const promptScrollerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    void (async () => {
+      try {
+        const res = await fetch("/api/maxwell/studio/sessions", {
+          cache: "no-store",
+          credentials: "same-origin",
+          signal: ac.signal,
+        });
+        if (!res.ok) {
+          setShowMyChatsLink(false);
+          return;
+        }
+        const data = (await res.json()) as { sessions?: unknown[] };
+        setShowMyChatsLink(Array.isArray(data.sessions) && data.sessions.length > 0);
+      } catch {
+        if (!ac.signal.aborted) setShowMyChatsLink(false);
+      }
+    })();
+    return () => ac.abort();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -249,7 +284,7 @@ export function HeroSection() {
                   <div className="mt-1.5 flex items-center justify-between gap-2 pt-2 px-1 pb-1">
                     {/* Left: tools */}
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 gap-y-1.5">
                       <button
                         type="button"
                         aria-label="Voice input"
@@ -333,6 +368,17 @@ export function HeroSection() {
                         <Sparkles className="h-3 w-3" />
                         <span className="hidden sm:inline">Maxwell</span>
                       </Link>
+                      {showMyChatsLink ? (
+                        <Link
+                          href={`/${locale}${getMaxwellStudioHubHref()}`}
+                          aria-label={t("myConversationsHint")}
+                          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/50 bg-secondary/55 px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:bg-secondary hover:text-foreground"
+                          title={t("myConversationsHint")}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{t("myConversations")}</span>
+                        </Link>
+                      ) : null}
                     </div>
 
                     {/* Right: send button */}

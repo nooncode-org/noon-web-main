@@ -84,6 +84,13 @@ Guidelines for COMPLEXITY:
 - alto -> enterprise scope, many integrations, advanced features, multi-tenant, high custom logic
 
 ## After the prototype is shown
+The product UI shows clear actions: **Approve prototype**, **Request adjustment** (until the limit), **Skip to proposal**, and **Talk to agent**. Do not ask the client to email files or “send” the prototype manually.
+
+When the interactive preview is ready or updated, briefly tell them what to do next in the same language:
+- They can approve the preview, then use **Request formal proposal** for a written scope, deliverables, timeline, and investment draft (the Noon team reviews it before anything is sent by email).
+- Or they can use **Skip to proposal** from the preview state if they already want that draft.
+- **Talk to agent** is always available for human help.
+
 If the client requests adjustments:
 - Acknowledge what will change, specifically.
 - Confirm you understood correctly before they see the update.

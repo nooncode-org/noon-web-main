@@ -13,6 +13,8 @@
     "howItWorks": "If you don’t know how it works,",
     "howItWorksLink": "click here",
     "viewTemplates": "View all templates",
+    "myConversations": "My chats",
+    "myConversationsHint": "Open Maxwell Studio — your saved conversations (sign in with Google)",
     "importing": "Importing…",
     "import": "Import",
     "cancel": "Cancel",
@@ -323,6 +325,15 @@
       "general": "Routing: General question",
       "partner": "Routing: Partnership route",
       "next": "Routing: Next product interest"
+    }
+  },
+  "maxwellStudio": {
+    "quota": {
+      "userBadge": "Your previews (UTC month): {used}/{limit}",
+      "studioBadge": "Studio total (UTC month): {used}/{limit}",
+      "hint": "Initial previews reset on the 1st of each month (UTC). “Studio total” counts first previews across all Noon users; “Your previews” is your personal slot for a new conversation.",
+      "userFull": "You have used your monthly preview slot.",
+      "studioFull": "Shared monthly studio capacity has been reached."
     }
   },
   "faq": {

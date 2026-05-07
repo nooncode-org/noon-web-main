@@ -13,6 +13,8 @@
     "howItWorks": "Vous ne savez pas comment ça fonctionne ?",
     "howItWorksLink": "Cliquez ici",
     "viewTemplates": "Voir tous les modèles",
+    "myConversations": "Mes conversations",
+    "myConversationsHint": "Ouvrir Maxwell Studio — vos conversations enregistrées (connexion Google)",
     "importing": "Importation…",
     "import": "Importer",
     "cancel": "Annuler",
@@ -322,6 +324,15 @@
       "general": "Routage : Question générale",
       "partner": "Routage : Route partenariat",
       "next": "Routage : Intérêt prochain produit"
+    }
+  },
+  "maxwellStudio": {
+    "quota": {
+      "userBadge": "Vos aperçus (mois UTC) : {used}/{limit}",
+      "studioBadge": "Total studio (mois UTC) : {used}/{limit}",
+      "hint": "Les premiers aperçus sont renouvelés le 1er de chaque mois (UTC). « Total studio » compte les premières previews de tous les utilisateurs Noon ; « Vos aperçus » est votre quota personnel pour une nouvelle conversation.",
+      "userFull": "Vous avez utilisé votre quota mensuel d’aperçu.",
+      "studioFull": "La capacité mensuelle partagée du studio est atteinte."
     }
   },
   "faq": {

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
+import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { getContactHref } from "@/lib/site-config";
+import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 
 // ============================================================================
 // Types
@@ -165,6 +167,7 @@ export function StudioShell({
   const [prototypeFailed, setPrototypeFailed] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [sessionSummaries, setSessionSummaries] = useState<SessionSummary[]>([]);
+  const [quotaSnapshot, setQuotaSnapshot] = useState<PrototypeQuotaSnapshot | null>(null);
 
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -194,6 +197,32 @@ export function StudioShell({
       // ignore
     }
   }
+
+  const refreshPrototypeQuota = useCallback(
+    async (sessionIdOverride?: string | null) => {
+      try {
+        const sid = sessionIdOverride !== undefined ? sessionIdOverride : sessionId;
+        const qs = sid ? `?session_id=${encodeURIComponent(sid)}` : "";
+        const res = await fetch(`/api/maxwell/studio/prototype-quota${qs}`, {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        if (!res.ok) {
+          setQuotaSnapshot(null);
+          return;
+        }
+        const data = (await res.json()) as PrototypeQuotaSnapshot;
+        setQuotaSnapshot(data);
+      } catch {
+        setQuotaSnapshot(null);
+      }
+    },
+    [sessionId],
+  );
+
+  useEffect(() => {
+    void refreshPrototypeQuota();
+  }, [refreshPrototypeQuota]);
 
   useEffect(() => {
     if (sessionId && !initialSessionId) {
@@ -288,6 +317,7 @@ export function StudioShell({
         setSelectedVersionIndex(data.versions.length - 1);
         setActiveView("preview");
       }
+      void refreshPrototypeQuota(data.session.id);
     } catch (error) {
       if (isAbortError(error)) return;
       router.replace(pathname);
@@ -621,6 +651,7 @@ export function StudioShell({
               "Version 1 is ready. Review it, request adjustments if needed, or approve it to move toward the formal proposal.",
           }),
         ]);
+        void refreshPrototypeQuota(data.session_id ?? sessionId);
       } else {
         setPhase("clarifying");
         setPrototypeFailed(true);
@@ -668,6 +699,7 @@ export function StudioShell({
             "Version 1 is ready. Review it, request adjustments if needed, or approve it to move toward the formal proposal.",
         }),
       ]);
+      void refreshPrototypeQuota();
     } else {
       // ACÁ LA CORRECCIÓN: Usamos prev para leer siempre la versión correcta
       setPrototypeVersions((prev) => {
@@ -926,6 +958,8 @@ export function StudioShell({
   async function handleRequestProposal() {
     if (!sessionId) return;
 
+    const phaseBeforeRequest = phase;
+
     setPhase("proposal_pending_review");
     setMessages((prev) => [
       ...prev,
@@ -946,33 +980,73 @@ export function StudioShell({
         proposal_request_id?: string;
         status?: string;
         message?: string;
+        code?: string;
+        noon_app_handoff_skipped?: boolean;
       };
+
+      const handoffFailedButDraftSaved =
+        !res.ok && data.code === "NOON_APP_HANDOFF_FAILED" && Boolean(data.proposal_request_id);
+
+      if (handoffFailedButDraftSaved) {
+        setPhase("proposal_pending_review");
+        setMessages((prev) => [
+          ...prev,
+          createMessage({
+            role: "assistant",
+            content:
+              typeof data.message === "string"
+                ? data.message
+                : "Your proposal draft was saved but could not be delivered to the Noon PM app automatically.",
+            type: "system_event",
+          }),
+          createMessage({
+            role: "assistant",
+            content:
+              "The team can still pick it up from the internal proposal queue. If this keeps happening, use Talk to agent with your session link.",
+            type: "system_event",
+          }),
+        ]);
+        return;
+      }
+
+      if (!res.ok) {
+        setPhase(phaseBeforeRequest);
+        const msg =
+          typeof data.message === "string"
+            ? data.message
+            : res.status === 503
+              ? "The proposal service is temporarily unavailable (for example OpenAI or handoff not configured). Please try again shortly."
+              : "Could not submit the proposal request. Please try again.";
+        setMessages((prev) => [
+          ...prev,
+          createMessage({
+            role: "assistant",
+            content: msg,
+            type: "error",
+          }),
+        ]);
+        return;
+      }
 
       if (data.proposal_request_id) {
         setMessages((prev) => [
           ...prev,
           createMessage({
             role: "assistant",
-            content:
-              "Your proposal has been drafted and is now in review with the Noon team. A Project Manager will verify it before the formal version is sent by email.",
+            content: data.noon_app_handoff_skipped
+              ? "Your formal proposal draft is saved and marked for internal Noon review. Automatic delivery to the PM app is not configured on this server; the team can still open it from the proposal queue, or you can contact an agent."
+              : "Your proposal has been drafted and is now in review with the Noon team. A Project Manager will verify it before the formal version is sent by email.",
           }),
-        ]);
-      } else {
-        const proposalMessage = data.message;
-        if (!proposalMessage) return;
-
-        setMessages((prev) => [
-          ...prev,
-          createMessage({ role: "assistant", content: proposalMessage }),
         ]);
       }
     } catch {
-      setPhase("approved_for_proposal");
+      setPhase(phaseBeforeRequest);
       setMessages((prev) => [
         ...prev,
         createMessage({
           role: "assistant",
           content: "Couldn't generate the proposal right now. Please try again.",
+          type: "error",
         }),
       ]);
     }
@@ -1062,6 +1136,8 @@ export function StudioShell({
         onNewDraftChat={handleNewChatFromList}
         onDeleteDraftSession={handleDeleteSessionList}
       />
+
+      {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div

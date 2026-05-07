@@ -13,6 +13,8 @@
     "howItWorks": "¿No sabes cómo funciona?",
     "howItWorksLink": "Haz clic aquí",
     "viewTemplates": "Ver todas las plantillas",
+    "myConversations": "Mis conversaciones",
+    "myConversationsHint": "Abrir Maxwell Studio — tus conversaciones guardadas (inicia sesión con Google)",
     "importing": "Importando…",
     "import": "Importar",
     "cancel": "Cancelar",
@@ -322,6 +324,15 @@
       "general": "Enrutando: Pregunta general",
       "partner": "Enrutando: Ruta de asociación",
       "next": "Enrutando: Interés en próximo producto"
+    }
+  },
+  "maxwellStudio": {
+    "quota": {
+      "userBadge": "Tus prototipos (mes UTC): {used}/{limit}",
+      "studioBadge": "Total estudio (mes UTC): {used}/{limit}",
+      "hint": "Los prototipos iniciales se renuevan el día 1 de cada mes (UTC). “Total estudio” cuenta las primeras previews de todos los usuarios de Noon; “Tus prototipos” es tu cupo personal para una conversación nueva.",
+      "userFull": "Ya usaste tu prototipo mensual.",
+      "studioFull": "Se alcanzó la capacidad mensual compartida del estudio."
     }
   },
   "faq": {

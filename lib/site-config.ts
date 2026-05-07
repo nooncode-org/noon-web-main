@@ -104,6 +104,11 @@ export function getStartWithMaxwellHref(prompt?: string) {
   return withSearchParams(siteRoutes.maxwellStudio, { prompt });
 }
 
+/** Maxwell Studio without a prompt — hub for saved conversations (requires sign-in). */
+export function getMaxwellStudioHubHref(): string {
+  return siteRoutes.maxwellStudio;
+}
+
 export function getContactHref(options?: ContactHrefOptions) {
   if (typeof options === "string" || typeof options === "undefined") {
     return withSearchParams(siteRoutes.contact, { inquiry: options });

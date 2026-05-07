@@ -8,6 +8,9 @@ import { ensureStudioSessionDeletedAtColumn, getDb } from "@/lib/server/db";
 
 export const GLOBAL_MONTHLY_INITIAL_PROTOTYPES = 15;
 
+/** Distinct studio sessions per account that may complete a first (v1) prototype per UTC month. */
+export const USER_MONTHLY_INITIAL_LIMIT = 1;
+
 export type PrototypeCreateBlockCode =
   | "USER_MONTHLY_PROTOTYPE_QUOTA"
   | "GLOBAL_MONTHLY_PROTOTYPE_QUOTA"
@@ -135,7 +138,7 @@ export async function evaluateInitialPrototypeCreate(
     startIso,
     endIso,
   );
-  if (userSessionsWithV1 >= 1) {
+  if (userSessionsWithV1 >= USER_MONTHLY_INITIAL_LIMIT) {
     return {
       code: "USER_MONTHLY_PROTOTYPE_QUOTA",
       message:
@@ -144,4 +147,41 @@ export async function evaluateInitialPrototypeCreate(
   }
 
   return null;
+}
+
+export type PrototypeQuotaSnapshot = {
+  /** Distinct sessions with a v1 row created this UTC month for this account. */
+  userDistinctSessionsWithV1ThisUtcMonth: number;
+  userMonthlyInitialLimit: number;
+  globalInitialPrototypesThisUtcMonth: number;
+  globalMonthlyInitialLimit: number;
+  /** Whether this session already has any `studio_version` row (only when `sessionId` was provided). */
+  currentSessionHasAnyVersion: boolean | null;
+};
+
+/**
+ * Read-only counts for Maxwell Studio UI (same rules as {@link evaluateInitialPrototypeCreate}).
+ */
+export async function getPrototypeQuotaSnapshot(
+  viewerEmail: string,
+  sessionId?: string | null,
+): Promise<PrototypeQuotaSnapshot> {
+  await ensureStudioSessionDeletedAtColumn();
+  const { startIso, endIso } = utcMonthRange();
+  const email = viewerEmail.trim().toLowerCase();
+
+  const [globalInitialPrototypesThisUtcMonth, userDistinctSessionsWithV1ThisUtcMonth, currentSessionHasAnyVersion] =
+    await Promise.all([
+      countInitialPrototypesGloballyInRange(startIso, endIso),
+      countDistinctSessionsWithV1ForUserInRange(email, startIso, endIso),
+      sessionId ? sessionHasAnyVersion(sessionId) : Promise.resolve(null),
+    ]);
+
+  return {
+    userDistinctSessionsWithV1ThisUtcMonth,
+    userMonthlyInitialLimit: USER_MONTHLY_INITIAL_LIMIT,
+    globalInitialPrototypesThisUtcMonth,
+    globalMonthlyInitialLimit: GLOBAL_MONTHLY_INITIAL_PROTOTYPES,
+    currentSessionHasAnyVersion,
+  };
 }

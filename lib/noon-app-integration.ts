@@ -17,6 +17,13 @@ export class NoonAppIntegrationError extends Error {
   }
 }
 
+/** True when outbound signed webhooks to Noon App can be sent (proposal handoff, payment, etc.). */
+export function isNoonAppProposalHandoffConfigured(): boolean {
+  return Boolean(
+    process.env.NOON_APP_WEBHOOK_SECRET?.trim() && process.env.NOON_APP_BASE_URL?.trim(),
+  );
+}
+
 function readNoonAppSecret() {
   const secret = process.env.NOON_APP_WEBHOOK_SECRET?.trim();
   if (!secret) {

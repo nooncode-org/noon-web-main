@@ -27,6 +27,7 @@ import { classifyProposalCase } from "@/lib/maxwell/proposal-lifecycle";
 import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import {
   NoonAppIntegrationError,
+  isNoonAppProposalHandoffConfigured,
   sendInboundProposalToNoonApp,
 } from "@/lib/noon-app-integration";
 
@@ -37,11 +38,30 @@ const proposalRequestSchema = z.object({
   session_id: z.string(),
 });
 
+/**
+ * Sends the draft to Noon App when env is configured; otherwise records a skip event.
+ * On transport/signature errors returns a NextResponse to forward to the client.
+ */
 async function sendProposalForNoonAppReview(input: {
   session: StudioSession;
   proposal: ProposalRequest;
   versions: StudioVersion[];
-}) {
+}): Promise<NextResponse | { skipped: boolean }> {
+  if (!isNoonAppProposalHandoffConfigured()) {
+    console.warn(
+      "[Maxwell Proposal] NOON_APP_BASE_URL / NOON_APP_WEBHOOK_SECRET not set; skipping inbound handoff. " +
+        "Draft is stored in proposal_request. Configure both to POST a signed JSON body to " +
+        "Noon App at /api/integrations/website/inbound-proposal.",
+    );
+    await appendProposalReviewEvent({
+      proposalRequestId: input.proposal.id,
+      action: "noon_app_handoff_skipped",
+      actor: "website",
+      notes: "NOON_APP_BASE_URL or NOON_APP_WEBHOOK_SECRET missing; webhook not called.",
+    });
+    return { skipped: true };
+  }
+
   try {
     await sendInboundProposalToNoonApp(input);
 
@@ -52,7 +72,7 @@ async function sendProposalForNoonAppReview(input: {
       notes: "Inbound proposal sent to Noon App PM queue.",
     });
 
-    return null;
+    return { skipped: false };
   } catch (error) {
     await appendProposalReviewEvent({
       proposalRequestId: input.proposal.id,
@@ -68,7 +88,7 @@ async function sendProposalForNoonAppReview(input: {
           proposal_request_id: input.proposal.id,
           code: "NOON_APP_HANDOFF_FAILED",
         },
-        { status: error.status },
+        { status: error.status >= 400 && error.status < 600 ? error.status : 502 },
       );
     }
 
@@ -117,12 +137,12 @@ export async function POST(request: Request) {
         );
       }
 
-      const handoffError = await sendProposalForNoonAppReview({
+      const handoffResult = await sendProposalForNoonAppReview({
         session,
         proposal: latestProposal,
         versions: dbVersions,
       });
-      if (handoffError) return handoffError;
+      if (handoffResult instanceof NextResponse) return handoffResult;
 
       return NextResponse.json({
         proposal_request_id: latestProposal.id,
@@ -131,6 +151,7 @@ export async function POST(request: Request) {
         session_status: "proposal_pending_review",
         review_flags: null,
         resent_to_noon_app: true,
+        noon_app_handoff_skipped: handoffResult.skipped,
       });
     }
 
@@ -198,12 +219,12 @@ export async function POST(request: Request) {
       messageType: "proposal_request",
     });
 
-    const handoffError = await sendProposalForNoonAppReview({
+    const handoffResult = await sendProposalForNoonAppReview({
       session,
       proposal: proposalRequest,
       versions: dbVersions,
     });
-    if (handoffError) return handoffError;
+    if (handoffResult instanceof NextResponse) return handoffResult;
 
     return NextResponse.json({
       proposal_request_id: proposalRequest.id,
@@ -211,6 +232,7 @@ export async function POST(request: Request) {
       session_id: session.id,
       session_status: "proposal_pending_review",
       review_flags: warnings.length,
+      noon_app_handoff_skipped: handoffResult.skipped,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
