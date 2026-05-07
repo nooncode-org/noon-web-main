@@ -16,7 +16,10 @@ import {
   type MessageType,
 } from "@/lib/maxwell/repositories";
 import { canReceiveMessage } from "@/lib/maxwell/state-machine";
-import { MAXWELL_CHAT_SYSTEM_PROMPT } from "@/lib/maxwell/prompts";
+import {
+  MAXWELL_CHAT_POST_PROPOSAL_APPENDIX,
+  MAXWELL_CHAT_SYSTEM_PROMPT,
+} from "@/lib/maxwell/prompts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -272,10 +275,16 @@ export async function POST(request: Request) {
         ? `Regenerate your previous response to the user's last request. Keep the same project context, improve clarity, and avoid repeating the exact same wording.\n\nPrevious response:\n"${regenerateSourceMessage.content}"\n\nUser request:\n${userText}`
         : userText;
 
+    const postProposalChat =
+      session.status === "proposal_pending_review" || session.status === "proposal_sent";
+    const systemPrompt = postProposalChat
+      ? MAXWELL_CHAT_SYSTEM_PROMPT + MAXWELL_CHAT_POST_PROPOSAL_APPENDIX
+      : MAXWELL_CHAT_SYSTEM_PROMPT;
+
     const { reply: rawReply } = await chatWithOpenAI({
       prompt: promptForOpenAI,
       history: historyForOpenAI,
-      systemPrompt: MAXWELL_CHAT_SYSTEM_PROMPT,
+      systemPrompt,
       ...(parsed.image_url ? { imageUrl: parsed.image_url } : {}),
       signal: request.signal,
     });
@@ -334,11 +343,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (readyForPrototype && session.status === "clarifying") {
-      session = await updateStudioSessionStatus(
-        session.id,
-        "generating_prototype",
-      );
+    const shouldStartPrototypeBuild = Boolean(readyForPrototype && session.status === "clarifying");
+    if (shouldStartPrototypeBuild) {
+      session = await updateStudioSessionStatus(session.id, "generating_prototype");
     }
 
     return NextResponse.json({
@@ -346,7 +353,7 @@ export async function POST(request: Request) {
       thinking: thinkingHint,
       user_message: userMessage ? toUiMessage(userMessage) : undefined,
       assistant_messages: assistantMessages.map(toUiMessage),
-      readyForPrototype,
+      readyForPrototype: shouldStartPrototypeBuild,
       session_id: session.id,
       session_status: session.status,
       project_name: session.goalSummary,

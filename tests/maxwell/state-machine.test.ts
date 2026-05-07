@@ -123,8 +123,8 @@ describe("canReceiveMessage", () => {
   it("returns false for non-message states", () => {
     expect(canReceiveMessage("generating_prototype")).toBe(false);
     expect(canReceiveMessage("revision_requested")).toBe(false);
-    expect(canReceiveMessage("proposal_pending_review")).toBe(false);
-    expect(canReceiveMessage("proposal_sent")).toBe(false);
+    expect(canReceiveMessage("proposal_pending_review")).toBe(true);
+    expect(canReceiveMessage("proposal_sent")).toBe(true);
     expect(canReceiveMessage("converted")).toBe(false);
   });
 });

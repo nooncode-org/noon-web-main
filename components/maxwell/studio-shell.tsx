@@ -464,7 +464,11 @@ export function StudioShell({
         return [...next, ...newAssistantMessages];
       });
 
-      if (data.readyForPrototype) {
+      if (
+        data.readyForPrototype &&
+        data.session_status !== "proposal_pending_review" &&
+        data.session_status !== "proposal_sent"
+      ) {
         void buildPrototype(userMessage, reply, effectiveSessionId ?? null);
       }
     } catch (error) {
@@ -1109,7 +1113,9 @@ export function StudioShell({
     phase === "clarifying" ||
     phase === "generating_prototype" ||
     phase === "prototype_ready" ||
-    phase === "approved_for_proposal";
+    phase === "approved_for_proposal" ||
+    phase === "proposal_pending_review" ||
+    phase === "proposal_sent";
 
   const shouldShowWorkspace =
     phase === "generating_prototype" ||

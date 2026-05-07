@@ -57,7 +57,9 @@ export function canReceiveMessage(status: StudioStatus): boolean {
     status === "intake" ||
     status === "clarifying" ||
     status === "prototype_ready" ||
-    status === "approved_for_proposal"
+    status === "approved_for_proposal" ||
+    status === "proposal_pending_review" ||
+    status === "proposal_sent"
   );
 }
 
