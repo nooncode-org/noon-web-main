@@ -1,10 +1,26 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { checkAuthEnv } from "@/lib/auth/env";
+
+const envCheck = checkAuthEnv();
+if (!envCheck.ok) {
+  if (envCheck.mode === "production-runtime") {
+    throw new Error(
+      `[auth] Google OAuth is required in production but the following env vars are missing or empty: ${envCheck.missing.join(", ")}. ` +
+        "Refusing to start. Configure AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET before serving traffic.",
+    );
+  }
+  // Build phase or non-production: warn loud so it is visible in logs.
+  console.warn(
+    `[auth] Google OAuth is not fully configured (missing ${envCheck.missing.join(", ")}). ` +
+      "Sign-in will not work until AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are set.",
+  );
+}
 
 function isGoogleConfigured() {
   return Boolean(
     process.env.AUTH_GOOGLE_ID?.trim() &&
-      process.env.AUTH_GOOGLE_SECRET?.trim()
+      process.env.AUTH_GOOGLE_SECRET?.trim(),
   );
 }
 
