@@ -22,6 +22,9 @@ export function UpgradeStatusPoller({ sessionId, initialSession, children }: Pro
   const [isPolling, setIsPolling] = useState(ACTIVE_STATUSES.has(initialSession.status));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  // Ref to the latest `poll` so setTimeout callbacks pick up updates after sessionId changes
+  // and we avoid referencing `poll` inside its own definition (TDZ / stale closure).
+  const pollRef = useRef<() => void>(() => undefined);
 
   const poll = useCallback(async () => {
     try {
@@ -34,28 +37,36 @@ export function UpgradeStatusPoller({ sessionId, initialSession, children }: Pro
       setSession(updated);
 
       if (ACTIVE_STATUSES.has(updated.status)) {
-        timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+        timerRef.current = setTimeout(() => pollRef.current(), POLL_INTERVAL_MS);
       } else {
         setIsPolling(false);
       }
     } catch {
       // network error — retry after interval
       if (mountedRef.current) {
-        timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+        timerRef.current = setTimeout(() => pollRef.current(), POLL_INTERVAL_MS);
       }
     }
   }, [sessionId]);
 
   useEffect(() => {
+    pollRef.current = poll;
+  }, [poll]);
+
+  useEffect(() => {
     mountedRef.current = true;
     // Sync session state immediately so the UI reflects server data right away
-    // (avoids stale UI after router.refresh())
+    // after router.refresh(). Idiomatic Next/React would instead use `key={session.id}`
+    // on the parent so this component remounts; refactor tracked as separate gap.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(initialSession);
 
     if (ACTIVE_STATUSES.has(initialSession.status)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPolling(true);
-      timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+      timerRef.current = setTimeout(() => pollRef.current(), POLL_INTERVAL_MS);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPolling(false);
     }
 
@@ -63,6 +74,8 @@ export function UpgradeStatusPoller({ sessionId, initialSession, children }: Pro
       mountedRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+    // initialSession (whole object) intentionally not in deps to avoid re-run on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSession.status, poll]);
 
   return <>{children(session, isPolling)}</>;

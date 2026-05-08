@@ -43,9 +43,5 @@ jobs:
           # Dummy AUTH_SECRET so NextAuth does not abort at module load.
           AUTH_SECRET: ci-build-only-not-used-at-runtime
 
-      # Lint is intentionally omitted in this commit: the project still has
-      # pre-existing lint errors that are cleaned in the next commit. Re-enabled
-      # there together with the cleanup so each commit stays in a green state.
-      #
-      # - name: Lint
-      #   run: npm run lint
+      - name: Lint
+        run: npm run lint

@@ -93,7 +93,7 @@ export function UpgradeAuditPanel({ audit, onCreateVersion, isGenerating }: Prop
         <div className="rounded-lg border border-border p-4 space-y-2">
           <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-            What's working
+            What&apos;s working
           </h3>
           <ul className="space-y-1">
             {auditJson.strengths.map((s, i) => (

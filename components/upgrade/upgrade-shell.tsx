@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle, RefreshCcw } from "lucide-react";
@@ -326,7 +327,7 @@ export function UpgradeShell({ initialSession }: Props) {
             <div className="rounded-lg border border-border p-6 space-y-3">
               <p className="text-sm font-medium text-foreground">Proposal submitted.</p>
               <p className="text-sm text-muted-foreground">
-                Noon's team will review it and get back to you with a formal proposal.
+                Noon&apos;s team will review it and get back to you with a formal proposal.
               </p>
             </div>
           )}
@@ -335,9 +336,9 @@ export function UpgradeShell({ initialSession }: Props) {
             <div className="rounded-lg border border-border p-6">
               <p className="text-sm text-muted-foreground">
                 This session was archived after 30 days of inactivity.{" "}
-                <a href="/upgrade" className="text-foreground underline underline-offset-4">
+                <Link href="/upgrade" className="text-foreground underline underline-offset-4">
                   Start a new analysis
-                </a>{" "}
+                </Link>{" "}
                 for this website.
               </p>
             </div>
