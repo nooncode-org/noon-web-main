@@ -151,7 +151,7 @@ async function fetchWithRetry(url: string): Promise<string | null> {
 function extractTextFromHtml(html: string): { title: string | null; text: string } {
   // Basic text extraction without a DOM parser (server-side, no browser)
   // Removes script, style, nav, footer, header tags and their content
-  let cleaned = html
+  const cleaned = html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")

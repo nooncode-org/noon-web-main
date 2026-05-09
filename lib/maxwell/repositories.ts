@@ -5,7 +5,7 @@
  * Todas las funciones son async.
  */
 
-import { ensureStudioSessionDeletedAtColumn, getDb } from "@/lib/server/db";
+import { getDb } from "@/lib/server/db";
 import { assertValidTransition } from "./state-machine";
 import { buildProposalReviewTimeline, deriveProposalExpiry } from "./proposal-lifecycle";
 import type { WorkspaceStatus } from "./workspace-status";
@@ -524,7 +524,6 @@ export async function createStudioSession(input: {
 }
 
 export async function getStudioSession(id: string): Promise<StudioSession | null> {
-  await ensureStudioSessionDeletedAtColumn();
   const sql = getDb();
   const rows = await sql<SessionRow[]>`
     SELECT * FROM studio_session
@@ -538,7 +537,6 @@ export async function listStudioSessionsForOwner(
   ownerEmail: string,
   limit = 80,
 ): Promise<StudioSessionListItem[]> {
-  await ensureStudioSessionDeletedAtColumn();
   const sql = getDb();
   const email = ownerEmail.trim().toLowerCase();
   type ListRow = {
@@ -569,7 +567,6 @@ export async function softDeleteStudioSession(
   id: string,
   ownerEmail: string,
 ): Promise<boolean> {
-  await ensureStudioSessionDeletedAtColumn();
   const sql = getDb();
   const now = new Date().toISOString();
   const email = ownerEmail.trim().toLowerCase();

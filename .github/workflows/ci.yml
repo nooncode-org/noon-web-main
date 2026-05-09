@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs when a new commit lands on the same branch/PR.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (typecheck, test, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        # --legacy-peer-deps: lockfile is generated on Windows but CI runs Linux,
+        # and @swc/core resolves a different optional peer @swc/helpers across platforms.
+        # The lockfile is otherwise canonical; this flag only relaxes peer-dep enforcement,
+        # not version resolution.
+        run: npm ci --legacy-peer-deps
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit & integration tests
+        run: npm test
+
+      # Build runs without real secrets. All API routes are `dynamic = "force-dynamic"`
+      # and read env vars lazily, so build-time env is not required for compilation.
+      - name: Build
+        run: npm run build
+        env:
+          # Dummy AUTH_SECRET so NextAuth does not abort at module load.
+          AUTH_SECRET: ci-build-only-not-used-at-runtime
+
+      - name: Lint
+        run: npm run lint

@@ -27,6 +27,11 @@ function groupProposals(proposals: ProposalWithSession[]) {
   };
 }
 
+function isExpiringSoon(iso: string): boolean {
+  // Server-rendered helper (Date.now() captured at request time, not per JSX evaluation).
+  return new Date(iso).getTime() < Date.now() + 3 * 24 * 60 * 60 * 1000;
+}
+
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -66,12 +71,11 @@ function ProposalCard({ proposal }: { proposal: ProposalWithSession }) {
         <span className="rounded bg-secondary/60 px-1.5 py-0.5 font-mono text-[10px]">
           {getStudioStatusLabel(proposal.sessionStatus)}
         </span>
-        {proposal.expiresAt &&
-          new Date(proposal.expiresAt) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && (
-            <span className="font-medium text-orange-500">
-              Expires {formatDate(proposal.expiresAt)}
-            </span>
-          )}
+        {proposal.expiresAt && isExpiringSoon(proposal.expiresAt) && (
+          <span className="font-medium text-orange-500">
+            Expires {formatDate(proposal.expiresAt)}
+          </span>
+        )}
       </div>
     </Link>
   );

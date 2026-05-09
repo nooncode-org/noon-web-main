@@ -10,9 +10,9 @@ let isReviewTeamMember: typeof import("@/lib/auth/review").isReviewTeamMember;
 const ORIGINAL_ENV = { ...process.env };
 
 beforeAll(async () => {
-  const module = await import("@/lib/auth/review");
-  isReviewAuthorizationConfigured = module.isReviewAuthorizationConfigured;
-  isReviewTeamMember = module.isReviewTeamMember;
+  const mod = await import("@/lib/auth/review");
+  isReviewAuthorizationConfigured = mod.isReviewAuthorizationConfigured;
+  isReviewTeamMember = mod.isReviewTeamMember;
 });
 
 afterEach(() => {

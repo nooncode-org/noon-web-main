@@ -4,7 +4,7 @@
  * - Global: cap on first completed prototypes across all users per UTC month.
  */
 
-import { ensureStudioSessionDeletedAtColumn, getDb } from "@/lib/server/db";
+import { getDb } from "@/lib/server/db";
 
 export const GLOBAL_MONTHLY_INITIAL_PROTOTYPES = 15;
 
@@ -104,8 +104,6 @@ export async function evaluateInitialPrototypeCreate(
   viewerEmail: string,
   sessionId: string,
 ): Promise<PrototypeCreateBlock | null> {
-  await ensureStudioSessionDeletedAtColumn();
-
   if (await sessionHasAnyVersion(sessionId)) {
     return {
       code: "SESSION_ALREADY_HAS_PROTOTYPE",
@@ -166,7 +164,6 @@ export async function getPrototypeQuotaSnapshot(
   viewerEmail: string,
   sessionId?: string | null,
 ): Promise<PrototypeQuotaSnapshot> {
-  await ensureStudioSessionDeletedAtColumn();
   const { startIso, endIso } = utcMonthRange();
   const email = viewerEmail.trim().toLowerCase();
 

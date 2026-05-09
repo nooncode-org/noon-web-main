@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getSessionWithDetails } from "@/lib/upgrade/repositories";
@@ -39,9 +40,9 @@ export default async function UpgradeSessionPage({ params }: Props) {
     <div className="mx-auto max-w-2xl px-4">
       {/* Breadcrumb */}
       <nav className="mb-8 text-xs text-muted-foreground">
-        <a href="/upgrade" className="hover:text-foreground transition-colors">
+        <Link href="/upgrade" className="hover:text-foreground transition-colors">
           Upgrade Your Website
-        </a>
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-foreground truncate max-w-xs inline-block align-bottom">
           {session.websiteUrlRaw}
