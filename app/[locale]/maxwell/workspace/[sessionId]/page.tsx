@@ -7,8 +7,10 @@ import {
   getStudioSession,
   getClientWorkspaceBySession,
   getWorkspaceUpdates,
+  getLatestProposalRequest,
+  isProposalAwaitingWorkspace,
 } from "@/lib/maxwell/repositories";
-import type { WorkspaceUpdate } from "@/lib/maxwell/repositories";
+import type { ProposalStatus, WorkspaceUpdate } from "@/lib/maxwell/repositories";
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
@@ -49,6 +51,91 @@ const UPDATE_LABEL: Record<string, string> = {
   material: "Material",
   note: "Note",
 };
+
+const PREPARING_COPY: Record<ProposalStatus, { label: string; description: string }> = {
+  pending_review: { label: "Preparing", description: "We're preparing your project." },
+  under_review: { label: "Preparing", description: "We're preparing your project." },
+  approved: { label: "Preparing", description: "We're preparing your project." },
+  sent: { label: "Preparing", description: "We're preparing your project." },
+  payment_pending: {
+    label: "Payment pending",
+    description:
+      "Once we receive your payment evidence we'll begin preparing your workspace. This usually takes a few minutes after we confirm.",
+  },
+  payment_under_verification: {
+    label: "Verifying payment",
+    description:
+      "We received your payment evidence and our team is verifying it. Your workspace will appear here as soon as verification completes.",
+  },
+  paid: {
+    label: "Preparing workspace",
+    description:
+      "Payment confirmed. We're spinning up your workspace and the first update will appear here in a few moments.",
+  },
+  expired: { label: "Preparing", description: "We're preparing your project." },
+  returned: { label: "Preparing", description: "We're preparing your project." },
+  escalated: { label: "Preparing", description: "We're preparing your project." },
+};
+
+function WorkspacePreparing({
+  projectName,
+  proposalStatus,
+  contactHref,
+}: {
+  projectName: string | null;
+  proposalStatus: ProposalStatus;
+  contactHref: string;
+}) {
+  const copy = PREPARING_COPY[proposalStatus];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-card px-6 py-5">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="mb-1 text-xs font-mono text-muted-foreground">noon / workspace</p>
+              <h1 className="text-xl font-display leading-tight">
+                {projectName ?? "Your project"}
+              </h1>
+            </div>
+            <span className="shrink-0 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-700">
+              {copy.label}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">
+            <p className="text-sm text-muted-foreground">{copy.description}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <section className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center">
+          <p className="mb-2 text-sm font-medium">Your workspace is being prepared.</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Refresh this page in a few minutes. You&apos;ll receive an email as soon as the workspace
+            is ready to use.
+          </p>
+        </section>
+
+        <section className="mt-8 rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-sm font-medium">Need to reach us?</h2>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            If something looks off or you have a question while we prepare your project, contact
+            us and we&apos;ll respond shortly.
+          </p>
+          <Link
+            href={contactHref}
+            className="site-primary-action inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
+          >
+            Contact Noon team
+          </Link>
+        </section>
+      </div>
+    </div>
+  );
+}
 
 function UpdateCard({ update }: { update: WorkspaceUpdate }) {
   return (
@@ -98,7 +185,26 @@ export default async function WorkspacePage({ params }: Props) {
   if (!viewerOwnsStudioSession({ email: viewerEmail }, session)) notFound();
 
   const workspace = await getClientWorkspaceBySession(sessionId);
-  if (!workspace) notFound();
+  if (!workspace) {
+    // The workspace may still be provisioning between client payment evidence
+    // and PM verification. Show an intermediate "preparing" view instead of a
+    // bare 404 so the client doesn't bounce. See roadmap §5 Día 2 (B12).
+    const proposal = await getLatestProposalRequest(sessionId);
+    if (proposal && isProposalAwaitingWorkspace(proposal.status)) {
+      return (
+        <WorkspacePreparing
+          projectName={session.goalSummary ?? session.initialPrompt}
+          proposalStatus={proposal.status}
+          contactHref={getContactHref({
+            inquiry: "project-update",
+            source: "workspace",
+            draft: session.goalSummary ?? undefined,
+          })}
+        />
+      );
+    }
+    notFound();
+  }
 
   const updates = await getWorkspaceUpdates(workspace.id, { clientVisibleOnly: true });
   const materials = updates.filter((update) => update.updateType === "material");
