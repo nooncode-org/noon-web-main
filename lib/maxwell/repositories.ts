@@ -166,6 +166,11 @@ export type ProposalRequest = {
   deliveryChannel: ProposalDeliveryChannel;
   deliveryStatus: ProposalDeliveryStatus;
   deliveryRecipient: string | null;
+  approvedAmountUsd: number | null;
+  approvedCurrency: string | null;
+  stripeCheckoutSessionId: string | null;
+  stripePaymentIntentId: string | null;
+  stripePaidAt: string | null;
   sentAt: string | null;
   firstOpenedAt: string | null;
   expiresAt: string | null;
@@ -223,6 +228,12 @@ export type PaymentEvent = {
   amountUsd: number | null;
   reference: string | null;
   notes: string | null;
+  provider: string | null;
+  providerEventId: string | null;
+  providerSessionId: string | null;
+  providerPaymentIntentId: string | null;
+  currency: string | null;
+  payloadJson: Record<string, unknown> | null;
   createdBy: string;
   createdAt: string;
 };
@@ -275,6 +286,11 @@ type ProposalRow = {
   delivery_channel: string;
   delivery_status: string;
   delivery_recipient: string | null;
+  approved_amount_usd: number | string | null;
+  approved_currency: string | null;
+  stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_paid_at: string | Date | null;
   sent_at: string | Date | null;
   first_opened_at: string | Date | null;
   expires_at: string | Date | null;
@@ -311,7 +327,10 @@ type UpdateRow = {
 type PaymentEventRow = {
   id: string; studio_session_id: string; event_type: string;
   amount_usd: number | string | null; reference: string | null;
-  notes: string | null; created_by: string; created_at: string | Date;
+  notes: string | null; provider: string | null;
+  provider_event_id: string | null; provider_session_id: string | null;
+  provider_payment_intent_id: string | null; currency: string | null;
+  payload_json: unknown; created_by: string; created_at: string | Date;
 };
 
 type EventRow = {
@@ -427,6 +446,11 @@ function mapProposal(r: ProposalRow): ProposalRequest {
     deliveryChannel: r.delivery_channel as ProposalDeliveryChannel,
     deliveryStatus: r.delivery_status as ProposalDeliveryStatus,
     deliveryRecipient: r.delivery_recipient,
+    approvedAmountUsd: toNumber(r.approved_amount_usd),
+    approvedCurrency: r.approved_currency,
+    stripeCheckoutSessionId: r.stripe_checkout_session_id,
+    stripePaymentIntentId: r.stripe_payment_intent_id,
+    stripePaidAt: toIsoTimestamp(r.stripe_paid_at),
     sentAt: toIsoTimestamp(r.sent_at),
     firstOpenedAt: toIsoTimestamp(r.first_opened_at),
     expiresAt: toIsoTimestamp(r.expires_at),
@@ -466,6 +490,14 @@ function mapPaymentEvent(r: PaymentEventRow): PaymentEvent {
     id: r.id, studioSessionId: r.studio_session_id,
     eventType: r.event_type as PaymentEventType, amountUsd: toNumber(r.amount_usd),
     reference: r.reference, notes: r.notes,
+    provider: r.provider,
+    providerEventId: r.provider_event_id,
+    providerSessionId: r.provider_session_id,
+    providerPaymentIntentId: r.provider_payment_intent_id,
+    currency: r.currency,
+    payloadJson: r.payload_json && typeof r.payload_json === "object" && !Array.isArray(r.payload_json)
+      ? (r.payload_json as Record<string, unknown>)
+      : null,
     createdBy: r.created_by, createdAt: toIsoTimestamp(r.created_at)!,
   };
 }
@@ -969,6 +1001,11 @@ export async function updateProposalRequest(id: string, patch: {
   draftContent?: string | null;
   deliveryStatus?: ProposalDeliveryStatus;
   deliveryRecipient?: string | null;
+  approvedAmountUsd?: number | null;
+  approvedCurrency?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  stripePaidAt?: string | null;
   sentAt?: string | null;
   firstOpenedAt?: string | null;
   expiresAt?: string | null;
@@ -1008,6 +1045,31 @@ export async function updateProposalRequest(id: string, patch: {
           WHEN ${patch.deliveryRecipient !== undefined}
             THEN ${patch.deliveryRecipient ?? null}
           ELSE delivery_recipient
+        END,
+        approved_amount_usd = CASE
+          WHEN ${patch.approvedAmountUsd !== undefined}
+            THEN ${patch.approvedAmountUsd ?? null}
+          ELSE approved_amount_usd
+        END,
+        approved_currency = CASE
+          WHEN ${patch.approvedCurrency !== undefined}
+            THEN ${patch.approvedCurrency ?? null}
+          ELSE approved_currency
+        END,
+        stripe_checkout_session_id = CASE
+          WHEN ${patch.stripeCheckoutSessionId !== undefined}
+            THEN ${patch.stripeCheckoutSessionId ?? null}
+          ELSE stripe_checkout_session_id
+        END,
+        stripe_payment_intent_id = CASE
+          WHEN ${patch.stripePaymentIntentId !== undefined}
+            THEN ${patch.stripePaymentIntentId ?? null}
+          ELSE stripe_payment_intent_id
+        END,
+        stripe_paid_at = CASE
+          WHEN ${patch.stripePaidAt !== undefined}
+            THEN ${patch.stripePaidAt ?? null}
+          ELSE stripe_paid_at
         END,
         sent_at = CASE
           WHEN ${patch.sentAt !== undefined}
@@ -1080,6 +1142,11 @@ export async function updateProposalRequestStatus(
     deliveryStatus?: ProposalDeliveryStatus;
     deliveryRecipient?: string | null;
     caseClassification?: ProposalCaseClassification;
+    approvedAmountUsd?: number | null;
+    approvedCurrency?: string | null;
+    stripeCheckoutSessionId?: string | null;
+    stripePaymentIntentId?: string | null;
+    stripePaidAt?: string | null;
   }
 ): Promise<ProposalRequest> {
   return updateProposalRequest(id, {
@@ -1089,6 +1156,11 @@ export async function updateProposalRequestStatus(
     deliveryStatus: extra?.deliveryStatus,
     deliveryRecipient: extra?.deliveryRecipient,
     caseClassification: extra?.caseClassification,
+    approvedAmountUsd: extra?.approvedAmountUsd,
+    approvedCurrency: extra?.approvedCurrency,
+    stripeCheckoutSessionId: extra?.stripeCheckoutSessionId,
+    stripePaymentIntentId: extra?.stripePaymentIntentId,
+    stripePaidAt: extra?.stripePaidAt,
   });
 }
 
@@ -1407,27 +1479,45 @@ export async function appendPaymentEvent(input: {
   amountUsd?: number;
   reference?: string;
   notes?: string;
+  provider?: string;
+  providerEventId?: string;
+  providerSessionId?: string;
+  providerPaymentIntentId?: string;
+  currency?: string;
+  payloadJson?: Record<string, unknown> | null;
   createdBy: string;
 }): Promise<PaymentEvent> {
   const sql = getDb();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  await sql`
+  const rows = await sql<PaymentEventRow[]>`
     INSERT INTO payment_event (
       id, studio_session_id, event_type, amount_usd,
-      reference, notes, created_by, created_at
+      reference, notes, provider, provider_event_id,
+      provider_session_id, provider_payment_intent_id, currency,
+      payload_json, created_by, created_at
     ) VALUES (
       ${id}, ${input.studioSessionId}, ${input.eventType}, ${input.amountUsd ?? null},
-      ${input.reference ?? null}, ${input.notes ?? null}, ${input.createdBy}, ${now}
+      ${input.reference ?? null}, ${input.notes ?? null}, ${input.provider ?? null},
+      ${input.providerEventId ?? null}, ${input.providerSessionId ?? null},
+      ${input.providerPaymentIntentId ?? null}, ${input.currency ?? null},
+      ${JSON.stringify(input.payloadJson ?? null)}::jsonb, ${input.createdBy}, ${now}
     )
+    ON CONFLICT (provider_event_id) WHERE provider_event_id IS NOT NULL DO NOTHING
+    RETURNING *
   `;
 
-  return {
-    id, studioSessionId: input.studioSessionId, eventType: input.eventType,
-    amountUsd: input.amountUsd ?? null, reference: input.reference ?? null,
-    notes: input.notes ?? null, createdBy: input.createdBy, createdAt: now,
-  };
+  if (rows[0]) {
+    return mapPaymentEvent(rows[0]);
+  }
+
+  if (input.providerEventId) {
+    const existing = await getPaymentEventByProviderEventId(input.providerEventId);
+    if (existing) return existing;
+  }
+
+  throw new Error("Payment event insert was ignored but no existing event was found.");
 }
 
 export async function getPaymentEvents(studioSessionId: string): Promise<PaymentEvent[]> {
@@ -1438,6 +1528,19 @@ export async function getPaymentEvents(studioSessionId: string): Promise<Payment
     ORDER BY created_at ASC
   `;
   return rows.map(mapPaymentEvent);
+}
+
+export async function getPaymentEventByProviderEventId(
+  providerEventId: string,
+): Promise<PaymentEvent | null> {
+  const sql = getDb();
+  const rows = await sql<PaymentEventRow[]>`
+    SELECT *
+    FROM payment_event
+    WHERE provider_event_id = ${providerEventId}
+    LIMIT 1
+  `;
+  return rows[0] ? mapPaymentEvent(rows[0]) : null;
 }
 
 // ============================================================================

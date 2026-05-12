@@ -100,6 +100,11 @@ function fakeProposal(overrides: Partial<ProposalRequest> = {}): ProposalRequest
     deliveryChannel: "email",
     deliveryStatus: "pending_review",
     deliveryRecipient: "owner@noon.dev",
+    approvedAmountUsd: null,
+    approvedCurrency: null,
+    stripeCheckoutSessionId: null,
+    stripePaymentIntentId: null,
+    stripePaidAt: null,
     sentAt: null,
     firstOpenedAt: null,
     expiresAt: null,
@@ -347,6 +352,8 @@ describe("Noon App webhook — approved decision", () => {
         reviewerId: "noon-app",
         deliveryStatus: "sent",
         deliveryRecipient: "owner@noon.dev",
+        approvedAmountUsd: 4500,
+        approvedCurrency: "USD",
       }),
     );
     expect(repos.updateStudioSessionStatus).toHaveBeenCalledWith(
@@ -391,7 +398,7 @@ describe("Noon App webhook — approved decision", () => {
 
   it("is idempotent when the proposal is already in a public status (replay)", async () => {
     vi.mocked(repos.getProposalRequest).mockResolvedValue(
-      fakeProposal({ status: "sent" }),
+      fakeProposal({ status: "sent", approvedAmountUsd: 4500, approvedCurrency: "USD" }),
     );
     vi.mocked(repos.getStudioSession).mockResolvedValue(
       fakeSession({ status: "proposal_sent" }),
@@ -405,6 +412,21 @@ describe("Noon App webhook — approved decision", () => {
     expect(body.message).toMatch(/already applied/i);
     expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
     expect(repos.updateStudioSessionStatus).not.toHaveBeenCalled();
+  });
+
+  it("rejects approved decisions without a positive USD amount", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "approved",
+      proposal: { ...basePayload.proposal, amount: 0, currency: "USD" },
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(422);
+    expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
   });
 });
 

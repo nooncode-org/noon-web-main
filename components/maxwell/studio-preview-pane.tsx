@@ -439,7 +439,7 @@ export function StudioPreviewPane({
           src={selectedVersion.demoUrl}
           className="hidden lg:block w-full h-full border-0"
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
-          sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           referrerPolicy="no-referrer"
         />
         {/* Mobile: open-in-browser card */}

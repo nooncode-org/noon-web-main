@@ -11,6 +11,9 @@
 }
 
 :root {
+  --font-instrument: 'Instrument Sans', 'Aptos', 'Segoe UI', system-ui, sans-serif;
+  --font-instrument-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-jetbrains: 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
   --background: #ffffff;
   --foreground: #000000;
   --card: oklch(1 0 0);

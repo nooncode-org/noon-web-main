@@ -9,16 +9,23 @@ import type { ContactSubmissionInput, ContactTypeOption, ContactInquiryKey } fro
 import { contactInbox, getContactInquiryDetail } from "@/lib/contact";
 import type { MaxwellSessionInput } from "@/lib/maxwell";
 
-// HTML-escape user-supplied content before interpolating into the notification
-// email body. Without this, a contact form submission with a `<script>` tag or
-// styled phishing link is delivered verbatim to noon.message@gmail.com.
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+function escapeHtml(value: string | null | undefined) {
+  return (value ?? "").replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return char;
+    }
+  });
 }
 
 async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
@@ -27,6 +34,12 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
   if (!apiKey || !from) return;
 
   const detail = getContactInquiryDetail(lead.inquiry);
+  const safeName = escapeHtml(lead.name);
+  const safeEmail = escapeHtml(lead.email);
+  const safeLabel = escapeHtml(detail.label);
+  const safeBudget = escapeHtml(lead.budget);
+  const safeTimeline = escapeHtml(lead.timeline);
+  const safeBrief = escapeHtml(lead.brief);
 
   // detail.label / lead.id / createdAt are internal (whitelist label, UUID,
   // server-generated timestamp) and don't need escaping. The five lead fields
@@ -40,12 +53,12 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
   const html = `
     <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
       <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">
-        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">New contact — ${detail.label}</p>
+        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">New contact — ${safeLabel}</p>
         <h1 style="margin:0 0 20px; font-size:22px; color:#171412;">${safeName}</h1>
         <p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Email:</strong> ${safeEmail}</p>
-        <p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Type:</strong> ${detail.label}</p>
-        ${safeBudget ? `<p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Budget:</strong> ${safeBudget}</p>` : ""}
-        ${safeTimeline ? `<p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Timeline:</strong> ${safeTimeline}</p>` : ""}
+        <p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Type:</strong> ${safeLabel}</p>
+        ${lead.budget ? `<p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Budget:</strong> ${safeBudget}</p>` : ""}
+        ${lead.timeline ? `<p style="margin:0 0 8px; font-size:14px; color:#3c342f;"><strong>Timeline:</strong> ${safeTimeline}</p>` : ""}
         <p style="margin:16px 0 8px; font-size:14px; color:#6a6057; font-style:italic; border-left:3px solid #e5ddd1; padding-left:12px;">${safeBrief}</p>
         <p style="margin:16px 0 0; font-size:11px; color:#8a7f71;">Ref: ${lead.id.slice(0, 8).toUpperCase()} · ${new Date(lead.createdAt).toUTCString()}</p>
       </div>
@@ -62,7 +75,7 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
       from,
       to: [contactInbox],
       reply_to: lead.email,
-      subject: `[Contact] ${detail.label} — ${lead.name}`,
+      subject: `[Contact] ${detail.label} — ${lead.name}`.replace(/[\r\n]+/g, " "),
       html,
       tags: [{ name: "flow", value: "contact_lead" }],
     }),

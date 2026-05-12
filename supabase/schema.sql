@@ -159,6 +159,11 @@ CREATE TABLE IF NOT EXISTS proposal_request (
   delivery_channel  TEXT NOT NULL DEFAULT 'email',
   delivery_status   TEXT NOT NULL DEFAULT 'pending_review',
   delivery_recipient TEXT,
+  approved_amount_usd NUMERIC(10,2),
+  approved_currency TEXT,
+  stripe_checkout_session_id TEXT,
+  stripe_payment_intent_id TEXT,
+  stripe_paid_at TIMESTAMPTZ,
   sent_at           TIMESTAMPTZ,
   first_opened_at   TIMESTAMPTZ,
   expires_at        TIMESTAMPTZ,
@@ -281,6 +286,12 @@ CREATE TABLE IF NOT EXISTS payment_event (
   amount_usd        NUMERIC(10,2),
   reference         TEXT,
   notes             TEXT,
+  provider          TEXT,
+  provider_event_id TEXT,
+  provider_session_id TEXT,
+  provider_payment_intent_id TEXT,
+  currency          TEXT,
+  payload_json      JSONB,
   created_by        TEXT NOT NULL,
   created_at        TIMESTAMPTZ NOT NULL,
 
@@ -290,6 +301,12 @@ CREATE TABLE IF NOT EXISTS payment_event (
 );
 
 CREATE INDEX IF NOT EXISTS idx_payment_event_session ON payment_event (studio_session_id, created_at ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_event_provider_event
+  ON payment_event (provider_event_id)
+  WHERE provider_event_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_event_provider_session_confirmed
+  ON payment_event (provider_session_id)
+  WHERE provider_session_id IS NOT NULL AND event_type = 'confirmed';
 
 -- studio_event
 CREATE TABLE IF NOT EXISTS studio_event (
