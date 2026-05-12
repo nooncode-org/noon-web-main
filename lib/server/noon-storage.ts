@@ -9,7 +9,7 @@ import type { ContactSubmissionInput, ContactTypeOption, ContactInquiryKey } fro
 import { contactInbox, getContactInquiryDetail } from "@/lib/contact";
 import type { MaxwellSessionInput } from "@/lib/maxwell";
 
-function escapeHtml(value: string | null | undefined) {
+export function escapeHtml(value: string | null | undefined) {
   return (value ?? "").replace(/[&<>"']/g, (char) => {
     switch (char) {
       case "&":
@@ -34,16 +34,11 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
   if (!apiKey || !from) return;
 
   const detail = getContactInquiryDetail(lead.inquiry);
-  const safeName = escapeHtml(lead.name);
-  const safeEmail = escapeHtml(lead.email);
-  const safeLabel = escapeHtml(detail.label);
-  const safeBudget = escapeHtml(lead.budget);
-  const safeTimeline = escapeHtml(lead.timeline);
-  const safeBrief = escapeHtml(lead.brief);
 
   // detail.label / lead.id / createdAt are internal (whitelist label, UUID,
   // server-generated timestamp) and don't need escaping. The five lead fields
   // below come from the public contact form and MUST be escaped.
+  const safeLabel = escapeHtml(detail.label);
   const safeName = escapeHtml(lead.name);
   const safeEmail = escapeHtml(lead.email);
   const safeBrief = escapeHtml(lead.brief);
