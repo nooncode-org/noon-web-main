@@ -1,7 +1,24 @@
 import React from "react"
 import type { Metadata } from 'next'
+import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import Script from "next/script"
 import './globals.css'
+
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: '--font-instrument'
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: '--font-instrument-serif'
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: '--font-jetbrains'
+});
 
 export const metadata: Metadata = {
   title: 'Noon - The code-first software company',
@@ -24,7 +41,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <body
         suppressHydrationWarning
-        className="font-sans antialiased overflow-x-hidden"
+        className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased overflow-x-hidden`}
       >
         <Script id="hydration-attribute-scrub" strategy="beforeInteractive">
           {`
