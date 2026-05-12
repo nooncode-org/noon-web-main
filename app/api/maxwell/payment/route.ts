@@ -10,27 +10,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getReviewRequestAccess } from "@/lib/auth/review";
 import {
-  appendProposalReviewEvent,
   getProposalRequest,
   getStudioSession,
-  getStudioVersions,
-  updateStudioSessionStatus,
   getClientWorkspaceBySession,
-  createClientWorkspace,
-  activateClientWorkspace,
   getLatestProposalRequest,
   updateProposalRequestStatus,
 } from "@/lib/maxwell/repositories";
-import {
-  assertSessionAwaitingPayment,
-  assertWorkspaceNotProvisioned,
-  MaxwellGuardError,
-} from "@/lib/maxwell/studio-guards";
+import { PaymentActivationError, confirmProposalPayment, confirmSessionPayment } from "@/lib/maxwell/payment-activation";
 import {
   NoonAppIntegrationError,
-  sendPaymentConfirmedToNoonApp,
 } from "@/lib/noon-app-integration";
-import type { ProposalRequest, StudioSession } from "@/lib/maxwell/repositories";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,40 +64,6 @@ const paymentSchema = z.discriminatedUnion("action", [
   expireProposalSchema,
   confirmPaymentSchema,
 ]);
-
-async function notifyNoonAppPaymentConfirmed(input: {
-  session: StudioSession;
-  proposal: ProposalRequest;
-  paymentReference?: string | null;
-  summary?: string | null;
-}) {
-  const versions = await getStudioVersions(input.session.id);
-
-  try {
-    await sendPaymentConfirmedToNoonApp({
-      session: input.session,
-      proposal: input.proposal,
-      versions,
-      paymentReference: input.paymentReference,
-      summary: input.summary,
-    });
-
-    await appendProposalReviewEvent({
-      proposalRequestId: input.proposal.id,
-      action: "noon_app_payment_sent",
-      actor: "website",
-      notes: "Payment confirmation sent to Noon App.",
-    });
-  } catch (error) {
-    await appendProposalReviewEvent({
-      proposalRequestId: input.proposal.id,
-      action: "noon_app_payment_failed",
-      actor: "website",
-      notes: error instanceof Error ? error.message : "Unknown Noon App payment handoff error.",
-    });
-    throw error;
-  }
-}
 
 export async function GET(request: Request) {
   const access = await getReviewRequestAccess(request);
@@ -187,74 +142,20 @@ export async function POST(request: Request) {
     }
 
     if (payload.action === "verify_payment") {
-      const proposal = await getProposalRequest(payload.proposal_request_id);
-      if (!proposal) {
-        return NextResponse.json({ message: "Proposal request not found." }, { status: 404 });
-      }
-
-      const session = await getStudioSession(proposal.studioSessionId);
-      if (!session) {
-        return NextResponse.json({ message: "Associated session not found." }, { status: 404 });
-      }
-
-      try {
-        assertSessionAwaitingPayment(session);
-      } catch (error) {
-        if (error instanceof MaxwellGuardError) {
-          return NextResponse.json({ message: error.message, code: error.code }, { status: 409 });
-        }
-        throw error;
-      }
-
-      const existingWorkspace = await getClientWorkspaceBySession(session.id);
-
-      try {
-        assertWorkspaceNotProvisioned(existingWorkspace);
-      } catch (error) {
-        if (error instanceof MaxwellGuardError) {
-          await notifyNoonAppPaymentConfirmed({
-            session,
-            proposal,
-            paymentReference: payload.payment_reference,
-            summary: payload.summary,
-          });
-
-          return NextResponse.json({
-            message: "Workspace already provisioned.",
-            code: error.code,
-            workspace: existingWorkspace,
-            proposal_status: "paid",
-          });
-        }
-        throw error;
-      }
-
-      await updateProposalRequestStatus(payload.proposal_request_id, "paid", {
-        reviewerId: actor,
-      });
-      await updateStudioSessionStatus(session.id, "converted");
-
-      const workspaceToActivate =
-        existingWorkspace ??
-        (await createClientWorkspace({ studioSessionId: session.id, paymentStatus: "confirmed" }));
-
-      const activeWorkspace = await activateClientWorkspace(
-        workspaceToActivate.id,
-        payload.summary ?? `Payment verified. Reference: ${payload.payment_reference ?? "N/A"}`,
-      );
-
-      await notifyNoonAppPaymentConfirmed({
-        session,
-        proposal,
+      const activation = await confirmProposalPayment({
+        proposalRequestId: payload.proposal_request_id,
+        actor,
         paymentReference: payload.payment_reference,
         summary: payload.summary,
+        provider: "website",
       });
 
       return NextResponse.json({
         message: "Payment verified. Workspace activated.",
-        workspace: activeWorkspace,
+        workspace: activation.workspace,
         session_status: "converted",
         proposal_status: "paid",
+        idempotent: activation.idempotent,
       });
     }
 
@@ -269,87 +170,39 @@ export async function POST(request: Request) {
     }
 
     if (payload.action === "confirm_payment") {
-      const session = await getStudioSession(payload.session_id);
-      if (!session) {
-        return NextResponse.json({ message: "Session not found." }, { status: 404 });
-      }
-
-      const existingWorkspace = await getClientWorkspaceBySession(session.id);
-      const proposal = await getLatestProposalRequest(session.id);
-
-      if (!proposal) {
-        return NextResponse.json(
-          { message: "A proposal is required before payment can activate a project." },
-          { status: 409 },
-        );
-      }
-
-      try {
-        assertWorkspaceNotProvisioned(existingWorkspace);
-      } catch (error) {
-        if (error instanceof MaxwellGuardError) {
-          await notifyNoonAppPaymentConfirmed({
-            session,
-            proposal,
-            paymentReference: payload.payment_reference,
-            summary: payload.summary,
-          });
-
-          return NextResponse.json({
-            message: "Workspace already provisioned.",
-            code: error.code,
-            workspace: existingWorkspace,
-            session_status: session.status,
-          });
-        }
-        throw error;
-      }
-
       if (payload.payment_status !== "confirmed") {
+        const session = await getStudioSession(payload.session_id);
         return NextResponse.json({
           message: `Payment ${payload.payment_status}. Workspace remains unavailable until confirmation.`,
-          workspace: existingWorkspace ?? null,
-          session_status: session.status,
+          workspace: session ? await getClientWorkspaceBySession(session.id) : null,
+          session_status: session?.status ?? null,
         });
       }
 
-      try {
-        assertSessionAwaitingPayment(session);
-      } catch (error) {
-        if (error instanceof MaxwellGuardError) {
-          return NextResponse.json({ message: error.message, code: error.code }, { status: 409 });
-        }
-        throw error;
-      }
-
-      await updateProposalRequestStatus(proposal.id, "paid", {
-        reviewerId: actor,
-      });
-      await updateStudioSessionStatus(session.id, "converted");
-      const workspaceToActivate =
-        existingWorkspace ??
-        (await createClientWorkspace({ studioSessionId: session.id, paymentStatus: "confirmed" }));
-      const activeWorkspace = await activateClientWorkspace(
-        workspaceToActivate.id,
-        payload.summary ?? `Project activated. Reference: ${payload.payment_reference ?? "N/A"}`,
-      );
-
-      await notifyNoonAppPaymentConfirmed({
-        session,
-        proposal,
+      const activation = await confirmSessionPayment({
+        sessionId: payload.session_id,
+        actor,
         paymentReference: payload.payment_reference,
         summary: payload.summary,
       });
 
       return NextResponse.json({
         message: "Payment confirmed. Workspace activated.",
-        workspace: activeWorkspace,
+        workspace: activation.workspace,
         session_status: "converted",
+        idempotent: activation.idempotent,
       });
     }
 
     return NextResponse.json({ message: "Unsupported action." }, { status: 400 });
   } catch (error) {
+    if (error instanceof PaymentActivationError) {
+      return NextResponse.json(
+        { message: error.message, code: error.code },
+        { status: error.status },
+      );
+    }
+
     if (error instanceof NoonAppIntegrationError) {
       return NextResponse.json(
         { message: error.message, code: "NOON_APP_PAYMENT_HANDOFF_FAILED" },

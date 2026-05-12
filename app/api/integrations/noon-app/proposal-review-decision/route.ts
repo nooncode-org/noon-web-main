@@ -67,8 +67,28 @@ export async function POST(request: Request) {
 
     if (payload.decision === "approved") {
       const publicUrl = buildPublicProposalUrl(proposal.publicToken, request);
+      const approvedAmount = payload.proposal.amount;
+      const approvedCurrency = payload.proposal.currency.toUpperCase();
+
+      if (!Number.isFinite(approvedAmount) || approvedAmount <= 0 || approvedCurrency !== "USD") {
+        return NextResponse.json(
+          { message: "Approved proposals require a positive USD amount for this launch." },
+          { status: 422 },
+        );
+      }
 
       if (publicProposalStatuses.has(proposal.status)) {
+        if (
+          proposal.approvedAmountUsd == null &&
+          proposal.status !== "paid" &&
+          proposal.status !== "expired"
+        ) {
+          await updateProposalRequestStatus(proposal.id, proposal.status, {
+            approvedAmountUsd: approvedAmount,
+            approvedCurrency,
+          });
+        }
+
         return NextResponse.json({
           message: "Proposal decision already applied.",
           decision: payload.decision,
@@ -88,6 +108,8 @@ export async function POST(request: Request) {
         deliveryStatus: "sent",
         deliveryRecipient: proposal.deliveryRecipient ?? session.ownerEmail,
         caseClassification: proposal.caseClassification,
+        approvedAmountUsd: approvedAmount,
+        approvedCurrency,
       });
 
       await updateSessionStatusIfNeeded(session.id, session.status, "proposal_sent");

@@ -170,6 +170,25 @@ function estimateProposalAmount(session: StudioSession) {
   };
 }
 
+function resolveApprovedProposalAmount(session: StudioSession, proposal: ProposalRequest) {
+  if (proposal.approvedAmountUsd != null && proposal.approvedCurrency) {
+    return {
+      amount: proposal.approvedAmountUsd,
+      currency: proposal.approvedCurrency.toUpperCase(),
+      source: "noon_app_pm_approved",
+      estimate: estimateProposalAmount(session),
+    };
+  }
+
+  const estimate = estimateProposalAmount(session);
+  return {
+    amount: estimate.amount,
+    currency: estimate.currency,
+    source: "website_pricing_profile",
+    estimate,
+  };
+}
+
 function buildMaxwellSnapshot(session: StudioSession, versions: StudioVersion[]) {
   const latestVersion = versions.length > 0 ? versions[versions.length - 1] : null;
   return {
@@ -190,7 +209,8 @@ export function buildWebsiteProposalPayload(input: {
   versions: StudioVersion[];
 }) {
   const { session, proposal, versions } = input;
-  const estimate = estimateProposalAmount(session);
+  const amount = resolveApprovedProposalAmount(session, proposal);
+  const estimate = amount.estimate;
 
   return {
     external_source: "noon_website",
@@ -204,15 +224,15 @@ export function buildWebsiteProposalPayload(input: {
     proposal: {
       title: proposalTitle(session),
       body: proposal.draftContent ?? "",
-      amount: estimate.amount,
-      currency: estimate.currency,
+      amount: amount.amount,
+      currency: amount.currency,
     },
     maxwell: buildMaxwellSnapshot(session, versions),
     metadata: {
       public_token: proposal.publicToken,
       version_number: proposal.versionNumber,
       case_classification: proposal.caseClassification,
-      estimated_amount_source: "website_pricing_profile",
+      estimated_amount_source: amount.source,
       pricing: estimate.pricing,
       pricing_category: estimate.category,
       pricing_tier: estimate.tier,
@@ -258,7 +278,9 @@ export async function sendPaymentConfirmedToNoonApp(input: {
     payment: {
       amount: basePayload.proposal.amount,
       currency: basePayload.proposal.currency,
-      provider: "website",
+      provider: input.paymentReference?.startsWith("pi_") || input.paymentReference?.startsWith("cs_")
+        ? "stripe"
+        : "website",
       paid_at: new Date().toISOString(),
     },
     metadata: {
@@ -286,7 +308,7 @@ export const noonAppProposalReviewDecisionPayloadSchema = z.object({
     title: z.string().min(1).optional(),
     body: z.string().min(1),
     amount: z.coerce.number().nonnegative(),
-    currency: z.string().min(3),
+    currency: z.string().min(3).transform((value) => value.trim().toUpperCase()),
     review_status: z.string().optional(),
   }),
   customer: z.unknown().optional(),

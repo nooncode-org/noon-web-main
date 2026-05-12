@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ProposalDocument } from "@/components/maxwell/proposal-document";
+import { PublicProposalPayment } from "@/components/maxwell/public-proposal-payment";
 import { StatusBadge } from "@/app/[locale]/maxwell/review/_components/status-badge";
 import {
   getProposalRequestByPublicToken,
@@ -35,10 +36,13 @@ function formatDate(iso: string) {
 
 type Props = {
   params: Promise<{ token: string }>;
+  searchParams?: Promise<{ checkout?: string }>;
 };
 
-export default async function PublicProposalPage({ params }: Props) {
+export default async function PublicProposalPage({ params, searchParams }: Props) {
   const { token } = await params;
+  const checkout = (await searchParams)?.checkout;
+  const checkoutState = checkout === "success" || checkout === "cancelled" ? checkout : null;
 
   let proposal = await getProposalRequestByPublicToken(token);
   if (!proposal || !PUBLIC_PROPOSAL_STATUSES.has(proposal.status)) {
@@ -79,6 +83,14 @@ export default async function PublicProposalPage({ params }: Props) {
             </div>
           )}
         </header>
+
+        <PublicProposalPayment
+          publicToken={proposal.publicToken}
+          status={proposal.status}
+          approvedAmountUsd={proposal.approvedAmountUsd}
+          approvedCurrency={proposal.approvedCurrency}
+          checkoutState={checkoutState}
+        />
 
         <section className="rounded-2xl border border-border bg-card p-6">
           <ProposalDocument content={cleanDraft} />

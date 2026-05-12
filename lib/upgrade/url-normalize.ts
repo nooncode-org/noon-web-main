@@ -35,9 +35,45 @@ const IGNORED_PARAMS = new Set([
   "mc_eid",
 ]);
 
+const PRIVATE_HOSTNAMES = new Set([
+  "localhost",
+  "localhost.localdomain",
+  "0.0.0.0",
+  "127.0.0.1",
+  "::1",
+]);
+
 export type NormalizeResult =
   | { ok: true; canonical: string; full: string }
   | { ok: false; error: string };
+
+function isPrivateIPv4(host: string) {
+  const parts = host.split(".").map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+    return false;
+  }
+
+  const [first, second] = parts;
+  return (
+    first === 10 ||
+    first === 127 ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 169 && second === 254)
+  );
+}
+
+function isBlockedHost(host: string) {
+  const normalized = host.toLowerCase().replace(/^\[(.*)\]$/, "$1");
+  return (
+    PRIVATE_HOSTNAMES.has(normalized) ||
+    normalized.endsWith(".localhost") ||
+    normalized.endsWith(".local") ||
+    normalized.endsWith(".internal") ||
+    normalized.endsWith(".lan") ||
+    isPrivateIPv4(normalized)
+  );
+}
 
 /**
  * Normalize a user-supplied URL.
@@ -72,6 +108,10 @@ export function normalizeUrl(raw: string): NormalizeResult {
   // Lowercase host, strip www.
   let host = parsed.hostname.toLowerCase();
   if (host.startsWith("www.")) host = host.slice(4);
+
+  if (isBlockedHost(host)) {
+    return { ok: false, error: "Private, local, and internal URLs are not supported." };
+  }
 
   // Normalise pathname — strip trailing slash (keep root as "/")
   let pathname = parsed.pathname;
