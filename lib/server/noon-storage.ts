@@ -41,6 +41,15 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
   const safeTimeline = escapeHtml(lead.timeline);
   const safeBrief = escapeHtml(lead.brief);
 
+  // detail.label / lead.id / createdAt are internal (whitelist label, UUID,
+  // server-generated timestamp) and don't need escaping. The five lead fields
+  // below come from the public contact form and MUST be escaped.
+  const safeName = escapeHtml(lead.name);
+  const safeEmail = escapeHtml(lead.email);
+  const safeBrief = escapeHtml(lead.brief);
+  const safeBudget = lead.budget ? escapeHtml(lead.budget) : null;
+  const safeTimeline = lead.timeline ? escapeHtml(lead.timeline) : null;
+
   const html = `
     <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
       <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">

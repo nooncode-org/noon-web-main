@@ -432,7 +432,9 @@ export function StudioPreviewPane({
             </div>
           </div>
         )}
-        {/* Desktop: iframe */}
+        {/* Desktop: iframe (sandboxed — defense in depth against XSS / storage exposure
+            if v0 ever serves under noon's origin. allow-scripts/forms/popups preserves
+            normal prototype interactions; allow-same-origin is intentionally omitted) */}
         <iframe
           src={selectedVersion.demoUrl}
           className="hidden lg:block w-full h-full border-0"

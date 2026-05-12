@@ -105,6 +105,11 @@ export function normalizeUrl(raw: string): NormalizeResult {
     return { ok: false, error: "Only http and https URLs are supported." };
   }
 
+  // SSRF defense — reject private / loopback / link-local addresses
+  if (isPrivateIp(parsed.hostname)) {
+    return { ok: false, error: "That URL points to a private network and can't be analyzed." };
+  }
+
   // Lowercase host, strip www.
   let host = parsed.hostname.toLowerCase();
   if (host.startsWith("www.")) host = host.slice(4);
