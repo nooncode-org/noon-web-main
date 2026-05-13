@@ -1,36 +1,41 @@
 # project.context.core.md - Noon Website / Maxwell Studio
 
-> Last updated: 2026-05-11
-> Active session: Website launch slice - Stripe hosted Checkout + launch hardening
-> Operating mode: Backend + Frontend + Testing + Hardening
+> Last updated: 2026-05-13
+> Active session: EN-only soft launch hardening from `NoonWeb Roadmap.md` and `NoonWeb_Roadmap_Gaps_v3.md`
+> Operating mode: Website-only implementation, with App coordination only through existing contracts
+
+## Active Roadmap Inputs
+
+- `C:\Users\white\Downloads\NoonWeb Roadmap.md` is the primary decision source for the current launch.
+- `C:\Users\white\Downloads\NoonWeb_Roadmap_Gaps_v3.md` is supporting context for gaps and future v3 work.
+- Do not use prior Stripe-first decisions as launch truth unless the roadmap changes.
+- Do not modify `App-nooncode` unless a verified cross-project contract requires it.
 
 ## Product Boundary
 
 - Noon Website and Noon App are separate products in the same ecosystem.
-- Work in this repo is Website-only unless the user explicitly expands scope.
-- `App-nooncode` must not be modified from this repo/session.
-- Website owns the public client experience: marketing pages, Maxwell, public proposal viewing, and client payment.
+- Website owns the public client experience: marketing pages, Maxwell, public proposal viewing, client payment evidence, and client workspace entry.
 - Noon App owns collaborator operations: PM review, developer board, post-payment operations, and internal execution.
-- Integration between products happens through signed webhooks, not shared UI or shared database assumptions.
+- Integration between products happens through signed webhooks and documented contracts, not shared UI or shared database assumptions.
 
 ## Current Launch Decision
 
 - Launch the current English website before the future v3 redesign.
-- Replace manual client payment with Stripe hosted Checkout.
-- First launch supports one-time activation payment in USD only.
-- Subscriptions/memberships are out of scope for this slice.
-- Old proposals without a persisted PM-approved amount are not payable until republished/reapproved.
+- Initial launch is EN-only; `/es`, `/fr`, and `/de` redirect to `/en`.
+- Fase 1 payment uses manual `submit_payment_evidence`, not Stripe Checkout.
+- Stripe Checkout code may exist in the repository, but it is not the active Fase 1 payment path unless the roadmap is explicitly changed.
+- Public launch should happen after the current scope passes local gates and production env/runtime checks.
 
 ## Payment Contract
 
 - PM review lives in Noon App.
 - Noon App sends review decisions to `POST /api/integrations/noon-app/proposal-review-decision`.
-- For approved decisions, Website persists `proposal.amount` and `proposal.currency` on `proposal_request`.
-- The canonical charge amount is `proposal_request.approved_amount_usd` + `approved_currency`, not a recalculated pricing estimate.
-- Public payment starts through `POST /api/maxwell/checkout` with `public_token`.
-- Stripe confirms payment through signed `POST /api/stripe/webhook`.
-- Website activates the workspace only after `checkout.session.completed` verifies amount/currency/session/proposal.
-- Website then calls the existing Website -> Noon App `payment-confirmed` webhook.
+- A public proposal can receive payment evidence only after it is sent or payment-pending.
+- Client evidence is submitted through `POST /api/maxwell/payment` with `action: "submit_payment_evidence"` and either `public_token` or `proposal_request_id`.
+- The proposal owner must be authenticated, or an authorized reviewer session must be present.
+- Submitted evidence moves the proposal to `payment_under_verification`.
+- A reviewer still verifies payment through the internal payment actions before workspace activation.
+- `client_workspace` must not become active before verified payment.
 
 ## Current Stack
 
@@ -39,59 +44,50 @@
 - Database: PostgreSQL/Supabase via `postgres.js`; no ORM.
 - Auth: NextAuth v5 JWT, Google OAuth with verified email.
 - AI/prototypes: OpenAI SDK and v0 SDK.
-- Payments: Stripe hosted Checkout and Stripe webhook signatures.
-- Tests: Vitest unit/integration plus Playwright visual/a11y specs.
+- Tests: Vitest unit/integration plus Playwright specs where present.
 
 ## Stable Modules
 
-- Public site: `app/[locale]/page.tsx`, `app/_components/site/`, `lib/site-config.ts`, `lib/site-tones.ts`.
+- Public site: `app/[locale]/page.tsx`, `components/landing/**`, `lib/site-config.ts`, `lib/site-tones.ts`.
 - Maxwell client flow: `app/[locale]/maxwell/**`, `components/maxwell/**`, `lib/maxwell/**`.
 - Public proposal: `app/[locale]/maxwell/proposal/[token]/page.tsx`.
 - Review/webhook bridge: `app/api/integrations/noon-app/proposal-review-decision/route.ts`.
-- Payment boundary: `app/api/maxwell/checkout/route.ts`, `app/api/stripe/webhook/route.ts`, `lib/maxwell/payment-activation.ts`.
+- Payment boundary: `app/api/maxwell/payment/route.ts`, `lib/maxwell/payment-activation.ts`.
+- Launch infra: `proxy.ts`, `next.config.mjs`, `vercel.json`, `app/sitemap.ts`, `app/robots.ts`.
 
 ## Critical Rules
 
 1. Do not expose source code, repository access, or technical deliverables before payment.
-2. Every public proposal must pass PM review before payment is available.
-3. `client_workspace` must not become active without confirmed payment.
-4. Stripe webhook processing must be idempotent.
-5. Webhook signatures must use raw body verification.
-6. Do not silently fall back from approved PM amount to pricing estimates for client payment.
-7. Preserve Website/App separation.
-8. Do not introduce new infrastructure without explicit need and validation.
+2. Every public proposal must pass PM review before payment evidence is useful.
+3. Do not activate a workspace before verified payment.
+4. Preserve Website/App separation.
+5. Return stable `data.code`/`code` values for client-handled errors.
+6. Keep public launch EN-only until the roadmap explicitly enables other locales.
+7. Do not introduce new infrastructure without a concrete launch requirement and validation path.
+8. Docs must reflect implemented reality, not intention.
 
 ## Current Verified Reality
 
 - CI exists in `.github/workflows`.
 - Noon App review decision webhook tests exist in `tests/maxwell/noon-app-webhook.test.ts`.
-- Stripe Checkout slice adds:
-  - `STRIPE_SECRET_KEY`
-  - `STRIPE_WEBHOOK_SECRET`
-  - migration `supabase/migrations/20260511_012_stripe_checkout.sql`
-  - checkout route
-  - Stripe webhook route
-  - public proposal payment CTA
-  - shared payment activation service
-- Launch hardening slice adds:
-  - private/local URL blocking in upgrade URL normalization
-  - HTML escaping for contact notification email body
-  - prototype iframe `sandbox` and `referrerPolicy`
-  - basic security headers in `next.config.mjs`
+- Private/local URL blocking exists in upgrade URL normalization.
+- Contact notification email HTML is escaped.
+- Prototype iframe is sandboxed and uses `referrerPolicy`.
+- `review-sla` accepts `REVIEW_API_SECRET` or `CRON_SECRET`.
+- The active soft-launch payment path is manual evidence submission.
 
 ## Open Risks
 
-- Stripe env vars must be configured in Vercel before preview/production payment tests.
-- A real Stripe test-mode checkout and webhook event still need manual preview validation.
-- `npm audit` reports 5 vulnerabilities, including high-severity Next/Vite advisories; upgrade should be a controlled dependency slice, not an automatic `audit fix`.
-- `auth.ts` still degrades if Google OAuth envs are missing; production fail-fast remains a separate hardening task.
-- OpenAI model selection is still hardcoded; `OPENAI_MODEL` remains a future cleanup.
-- Observability is still mostly console-based; Sentry or equivalent remains pending.
+- The live Supabase/Vercel runtime must be checked before public launch.
+- Stripe env vars may still exist from a prior slice; they are not launch-critical for Fase 1 manual evidence.
+- `npm audit` has reported high-severity dependency advisories before; upgrade must be a controlled dependency slice.
+- Observability is still basic; Sentry or equivalent remains launch hardening if enabled.
+- v3 remains deferred until after the current EN-only launch unless the roadmap is replaced.
 
 ## Next Recommended Steps
 
-1. Run `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd test`, and `npm.cmd run build`.
-2. Apply the Stripe migration in the target Supabase database before testing checkout.
-3. Configure Stripe env vars in Vercel preview.
-4. Validate: Noon App approved proposal -> public proposal -> Stripe Checkout -> webhook -> workspace activation -> Noon App payment-confirmed.
-5. Only after preview validation, promote to production.
+1. Finish the Fase 1 implementation slice.
+2. Run `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd test`, and `npm.cmd run build`.
+3. Validate the smoke path: sign in -> Maxwell chat -> prototype -> proposal -> payment evidence -> internal verification -> workspace.
+4. Confirm Vercel envs and Supabase migrations only after local gates pass.
+5. Push/merge only from the Website repo; keep App changes separate if ever needed.

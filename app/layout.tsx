@@ -1,28 +1,36 @@
 import React from "react"
-import type { Metadata } from 'next'
-import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import Script from "next/script"
 import './globals.css'
 
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: '--font-instrument'
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  variable: '--font-instrument-serif'
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: '--font-jetbrains'
-});
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://noon-main.vercel.app");
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: 'Noon - The code-first software company',
   description: 'Noon turns ideas into real, scalable software built in code and accelerated by AI. Tell us what you want to build.',
+  alternates: {
+    canonical: "/en",
+    languages: {
+      en: "/en",
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: "/en",
+    siteName: "Noon",
+    title: "Noon - The code-first software company",
+    description:
+      "Noon turns ideas into real, scalable software built in code and accelerated by AI.",
+    images: [{ url: "/logo-icon.png", width: 512, height: 512, alt: "Noon" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "Noon - The code-first software company",
+    description:
+      "Noon turns ideas into real, scalable software built in code and accelerated by AI.",
+    images: ["/logo-icon.png"],
+  },
   icons: {
     icon: '/logo-icon.png',
     apple: '/logo-icon.png',
@@ -31,6 +39,16 @@ export const metadata: Metadata = {
     'color-scheme': 'light dark',
   },
 }
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#050505" },
+  ],
+  colorScheme: "light dark",
+};
 
 export default function RootLayout({
   children,
@@ -41,7 +59,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
       <body
         suppressHydrationWarning
-        className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased overflow-x-hidden`}
+        className="font-sans antialiased overflow-x-hidden"
       >
         <Script id="hydration-attribute-scrub" strategy="beforeInteractive">
           {`

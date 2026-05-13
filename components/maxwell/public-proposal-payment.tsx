@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowRight, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
 
 type PublicProposalPaymentProps = {
@@ -9,7 +10,6 @@ type PublicProposalPaymentProps = {
   status: ProposalStatus;
   approvedAmountUsd: number | null;
   approvedCurrency: string | null;
-  checkoutState?: "success" | "cancelled" | null;
 };
 
 function formatMoney(amount: number, currency: string) {
@@ -25,9 +25,11 @@ export function PublicProposalPayment({
   status,
   approvedAmountUsd,
   approvedCurrency,
-  checkoutState,
 }: PublicProposalPaymentProps) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
   const hasApprovedAmount = approvedAmountUsd != null;
   const payable = (status === "sent" || status === "payment_pending") && hasApprovedAmount;
@@ -45,14 +47,6 @@ export function PublicProposalPayment({
             </p>
           </div>
         </div>
-      </section>
-    );
-  }
-
-  if (checkoutState === "success") {
-    return (
-      <section className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
-        Stripe received the payment redirect. Noon will activate the project once the signed webhook confirms it.
       </section>
     );
   }
@@ -84,27 +78,39 @@ export function PublicProposalPayment({
   const payableAmount = approvedAmountUsd;
   if (payableAmount == null) return null;
 
-  function startCheckout() {
+  function submitPaymentEvidence() {
     setError(null);
     startTransition(async () => {
       try {
-        const response = await fetch("/api/maxwell/checkout", {
+        const response = await fetch("/api/maxwell/payment", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ public_token: publicToken }),
+          credentials: "same-origin",
+          body: JSON.stringify({
+            action: "submit_payment_evidence",
+            public_token: publicToken,
+            notes: notes.trim() || undefined,
+          }),
         });
         const data = (await response.json().catch(() => null)) as {
-          checkout_url?: string;
+          code?: string;
           message?: string;
         } | null;
 
-        if (!response.ok || !data?.checkout_url) {
-          throw new Error(data?.message ?? "Stripe Checkout could not start.");
+        if (response.status === 401) {
+          const callbackUrl = `${window.location.pathname}${window.location.search}`;
+          window.location.href = `/en/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+          return;
         }
 
-        window.location.href = data.checkout_url;
+        if (!response.ok) {
+          throw new Error(data?.message ?? "Payment evidence could not be submitted.");
+        }
+
+        setSubmitted(true);
+        router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Stripe Checkout could not start.");
+        setError(err instanceof Error ? err.message : "Payment evidence could not be submitted.");
       }
     });
   }
@@ -119,22 +125,32 @@ export function PublicProposalPayment({
           </p>
           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Secure hosted checkout by Stripe
+            Submit evidence after paying through the Noon-approved channel.
           </p>
         </div>
+      </div>
+      <div className="mt-4 space-y-3">
+        <textarea
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          rows={3}
+          maxLength={1000}
+          placeholder="Optional: payment reference, bank confirmation, or short note."
+          className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-foreground/30"
+        />
         <button
           type="button"
-          onClick={startCheckout}
-          disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={submitPaymentEvidence}
+          disabled={isPending || submitted}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-          Pay securely with Stripe
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+          {submitted ? "Evidence submitted" : "Submit payment evidence"}
         </button>
       </div>
-      {checkoutState === "cancelled" && (
-        <p className="mt-3 text-xs text-muted-foreground">
-          Checkout was cancelled. You can restart the secure payment when ready.
+      {submitted && (
+        <p className="mt-3 text-sm text-sky-900">
+          Noon received your payment evidence. The workspace activates after verification.
         </p>
       )}
       {error && <p className="mt-3 text-sm text-destructive">{error}</p>}

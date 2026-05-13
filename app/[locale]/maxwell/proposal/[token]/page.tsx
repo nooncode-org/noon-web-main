@@ -36,13 +36,10 @@ function formatDate(iso: string) {
 
 type Props = {
   params: Promise<{ token: string }>;
-  searchParams?: Promise<{ checkout?: string }>;
 };
 
-export default async function PublicProposalPage({ params, searchParams }: Props) {
+export default async function PublicProposalPage({ params }: Props) {
   const { token } = await params;
-  const checkout = (await searchParams)?.checkout;
-  const checkoutState = checkout === "success" || checkout === "cancelled" ? checkout : null;
 
   let proposal = await getProposalRequestByPublicToken(token);
   if (!proposal || !PUBLIC_PROPOSAL_STATUSES.has(proposal.status)) {
@@ -89,7 +86,6 @@ export default async function PublicProposalPage({ params, searchParams }: Props
           status={proposal.status}
           approvedAmountUsd={proposal.approvedAmountUsd}
           approvedCurrency={proposal.approvedCurrency}
-          checkoutState={checkoutState}
         />
 
         <section className="rounded-2xl border border-border bg-card p-6">

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
-import { getStudioSession, getStudioMessagesForViewer, getStudioVersions } from "@/lib/maxwell/repositories";
+import {
+  getClientWorkspaceBySession,
+  getLatestProposalRequest,
+  getStudioSession,
+  getStudioMessagesForViewer,
+  getStudioVersions,
+} from "@/lib/maxwell/repositories";
 import type { MessageType } from "@/lib/maxwell/repositories";
 
 export const runtime = "nodejs";
@@ -41,6 +47,8 @@ export async function GET(request: Request) {
 
   const dbMessages = await getStudioMessagesForViewer(sessionId, viewer.email);
   const dbVersions = await getStudioVersions(sessionId);
+  const workspace = await getClientWorkspaceBySession(sessionId);
+  const proposal = await getLatestProposalRequest(sessionId);
 
   const messages = dbMessages
     .filter((message) => message.role !== "system")
@@ -71,5 +79,8 @@ export async function GET(request: Request) {
     },
     messages,
     versions,
+    workspace: workspace ?? null,
+    workspace_pending: session.status === "converted" && !workspace,
+    proposal_status: proposal?.status ?? null,
   });
 }
