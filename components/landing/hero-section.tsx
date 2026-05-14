@@ -58,6 +58,22 @@ export function HeroSection() {
     const ac = new AbortController();
     void (async () => {
       try {
+        const sessionRes = await fetch("/api/auth/session", {
+          cache: "no-store",
+          credentials: "same-origin",
+          signal: ac.signal,
+        });
+        if (!sessionRes.ok) {
+          setShowMyChatsLink(false);
+          return;
+        }
+
+        const session = (await sessionRes.json()) as { user?: unknown };
+        if (!session.user) {
+          setShowMyChatsLink(false);
+          return;
+        }
+
         const res = await fetch("/api/maxwell/studio/sessions", {
           cache: "no-store",
           credentials: "same-origin",
