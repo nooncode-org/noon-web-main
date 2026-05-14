@@ -10,6 +10,8 @@ const bypassPatterns = [
   /^\/api(\/.*)?$/,
   /^\/_next(\/.*)?$/,
   /^\/favicon\.ico$/,
+  /^\/robots\.txt$/,
+  /^\/sitemap\.xml$/,
   /^\/logo.*$/,
   /^\/.*\.(png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$/,
 ];
