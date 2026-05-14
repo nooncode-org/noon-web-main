@@ -97,6 +97,29 @@ function elapsedMs(startedAt: number) {
   return Math.max(0, Math.round(performance.now() - startedAt));
 }
 
+function maxwellErrorMessage(code?: string, fallback?: string) {
+  switch (code) {
+    case "AUTH_REQUIRED":
+      return "Please sign in to continue with Maxwell.";
+    case "SESSION_NOT_FOUND":
+      return "This Maxwell session could not be found. Start a new conversation to continue.";
+    case "FORBIDDEN":
+      return "You do not have access to this Maxwell session.";
+    case "SESSION_NOT_ACCEPTING_MESSAGES":
+      return "This session is not accepting new messages right now.";
+    case "DB_CONNECTIVITY_ERROR":
+      return "Maxwell is temporarily unavailable because the database connection timed out. Please retry in a moment.";
+    case "OPENAI_NOT_CONFIGURED":
+      return "Maxwell is temporarily unavailable because AI generation is not configured.";
+    case "INVALID_REQUEST":
+      return "That request could not be processed. Check the message and try again.";
+    case "MAXWELL_CHAT_FAILED":
+      return "Maxwell could not respond right now. Please try again.";
+    default:
+      return fallback ?? "Connection interrupted. Try sending the message again.";
+  }
+}
+
 function buildPrototypeBrief(messages: ChatMessage[], lastUserMsg: string, lastAssistantMsg: string) {
   const relevantHistory = messages
     .filter(
@@ -303,6 +326,9 @@ export function StudioShell({
         };
         messages: ChatMessage[];
         versions: PrototypeVersion[];
+        workspace?: unknown | null;
+        workspace_pending?: boolean;
+        proposal_status?: string | null;
       };
 
       setSessionId(data.session.id);
@@ -310,8 +336,24 @@ export function StudioShell({
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
-      setMessages(data.messages.map(normalizeMessage));
+      const restoredMessages = data.messages.map(normalizeMessage);
+      setMessages(
+        data.workspace_pending
+          ? [
+              ...restoredMessages,
+              createMessage({
+                role: "assistant",
+                type: "system_event",
+                content:
+                  "Your project is being prepared by Noon. The workspace will appear once activation finishes.",
+              }),
+            ]
+          : restoredMessages,
+      );
       setPrototypeVersions(data.versions);
+      if (data.workspace_pending) {
+        setStopNotice("Your workspace is being prepared by Noon.");
+      }
 
       if (data.versions.length > 0) {
         setSelectedVersionIndex(data.versions.length - 1);
@@ -395,6 +437,7 @@ export function StudioShell({
         reply?: string;
         thinking?: string | null;
         message?: string;
+        code?: string;
         user_message?: ChatMessage;
         assistant_messages?: ChatMessage[];
         readyForPrototype?: boolean;
@@ -406,7 +449,22 @@ export function StudioShell({
       };
 
       if (!res.ok) {
-        throw new Error(data.message ?? "Maxwell request failed.");
+        const message = maxwellErrorMessage(data.code, data.message);
+        if (res.status === 401) {
+          const callbackUrl = `${pathname}${sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : ""}`;
+          router.push(`/en/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+          setMessages((prev) => [
+            ...prev,
+            createMessage({
+              role: "assistant",
+              content: message,
+              type: "error",
+              durationMs: elapsedMs(requestStartedAt),
+            }),
+          ]);
+          return;
+        }
+        throw new Error(message);
       }
 
       const effectiveSessionId = data.session_id ?? sessionId;
@@ -478,7 +536,9 @@ export function StudioShell({
         ...prev,
         createMessage({
           role: "assistant",
-          content: "Connection interrupted. Try sending the message again.",
+          content: error instanceof Error
+            ? error.message
+            : "Connection interrupted. Try sending the message again.",
           type: "error",
           durationMs: elapsedMs(requestStartedAt),
         }),

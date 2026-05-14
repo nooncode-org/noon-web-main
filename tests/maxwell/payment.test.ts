@@ -35,9 +35,19 @@ vi.mock("@/lib/auth/review", () => ({
   getReviewRequestAccess: vi.fn(),
 }));
 
+vi.mock("@/lib/auth/session", () => ({
+  getAuthenticatedViewer: vi.fn(),
+}));
+
+vi.mock("@/lib/auth/ownership", () => ({
+  viewerOwnsStudioSession: vi.fn(),
+}));
+
 vi.mock("@/lib/maxwell/repositories", () => ({
+  appendPaymentEvent: vi.fn(async () => undefined),
   appendProposalReviewEvent: vi.fn(async () => undefined),
   getProposalRequest: vi.fn(),
+  getProposalRequestByPublicToken: vi.fn(),
   getStudioSession: vi.fn(),
   getStudioVersions: vi.fn(async () => []),
   updateStudioSessionStatus: vi.fn(async () => undefined),
@@ -59,12 +69,34 @@ vi.mock("@/lib/noon-app-integration", async () => {
     }
   }
   return {
+    buildWebsiteProposalPayload: vi.fn(() => ({
+      external_source: "noon_website",
+      external_session_id: "session-1",
+      external_proposal_id: "proposal-1",
+      customer: {
+        name: "Owner",
+        email: "owner@noon.dev",
+        company: null,
+      },
+      proposal: {
+        title: "Build a thing",
+        body: "body",
+        amount: 2500,
+        currency: "USD",
+      },
+      maxwell: {
+        prototype_url: null,
+      },
+      metadata: {},
+    })),
     NoonAppIntegrationError,
     sendPaymentConfirmedToNoonApp: vi.fn(async () => undefined),
   };
 });
 
 import * as auth from "@/lib/auth/review";
+import * as authSession from "@/lib/auth/session";
+import * as ownership from "@/lib/auth/ownership";
 import * as repos from "@/lib/maxwell/repositories";
 import * as noonApp from "@/lib/noon-app-integration";
 import { GET, POST } from "@/app/api/maxwell/payment/route";
@@ -155,6 +187,15 @@ beforeEach(() => {
     actor: "reviewer@noon.dev",
     viewer: { email: "reviewer@noon.dev", name: "Reviewer", image: null },
   });
+  vi.mocked(authSession.getAuthenticatedViewer).mockResolvedValue({
+    email: "owner@noon.dev",
+    name: "Owner",
+    image: null,
+  });
+  vi.mocked(ownership.viewerOwnsStudioSession).mockReturnValue(true);
+  vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+  vi.mocked(repos.getProposalRequestByPublicToken).mockResolvedValue(fakeProposal());
+  vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
   vi.mocked(repos.updateProposalRequestStatus).mockImplementation(async (id, status) => {
     return fakeProposal({ id, status });
   });
@@ -305,6 +346,11 @@ describe("payment — mark_payment_pending", () => {
 
 describe("payment — submit_payment_evidence", () => {
   it("happy path: pasa a payment_under_verification", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal({
+      approvedAmountUsd: 2500,
+      approvedCurrency: "USD",
+    }));
+
     const res = await POST(postReq({
       action: "submit_payment_evidence",
       proposal_request_id: "proposal-1",
@@ -317,6 +363,54 @@ describe("payment — submit_payment_evidence", () => {
       "proposal-1",
       "payment_under_verification",
     );
+    expect(repos.appendPaymentEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "received",
+        provider: "manual_evidence",
+        providerEventId: "manual-evidence:proposal-1",
+        amountUsd: 2500,
+        currency: "USD",
+      }),
+    );
+  });
+
+  it("acepta public_token del cliente dueño de la sesión", async () => {
+    vi.mocked(repos.getProposalRequestByPublicToken).mockResolvedValue(fakeProposal({
+      id: "proposal-token",
+      publicToken: "public-token",
+      status: "payment_pending",
+    }));
+
+    const res = await POST(postReq({
+      action: "submit_payment_evidence",
+      public_token: "public-token",
+      payment_reference: "WIRE-1",
+    }));
+
+    expect(res.status).toBe(200);
+    expect(repos.getProposalRequestByPublicToken).toHaveBeenCalledWith("public-token");
+    expect(repos.updateProposalRequestStatus).toHaveBeenCalledWith(
+      "proposal-token",
+      "payment_under_verification",
+    );
+  });
+
+  it("401 cuando cliente no autenticado intenta enviar evidencia", async () => {
+    vi.mocked(authSession.getAuthenticatedViewer).mockResolvedValue(null);
+    vi.mocked(auth.getReviewRequestAccess).mockResolvedValue({
+      authorized: false,
+      reason: "sign_in_required",
+      viewer: null,
+    });
+
+    const res = await POST(postReq({
+      action: "submit_payment_evidence",
+      public_token: "token-abc",
+    }));
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.code).toBe("AUTH_REQUIRED");
   });
 });
 
@@ -371,10 +465,9 @@ describe("payment — verify_payment", () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
-    expect(body.code).toBe("WORKSPACE_ALREADY_ACTIVE");
     expect(body.proposal_status).toBe("paid");
+    expect(body.idempotent).toBe(false);
     expect(repos.createClientWorkspace).not.toHaveBeenCalled();
-    expect(repos.activateClientWorkspace).not.toHaveBeenCalled();
     expect(noonApp.sendPaymentConfirmedToNoonApp).toHaveBeenCalled();
   });
 
@@ -497,7 +590,7 @@ describe("payment — confirm_payment", () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
-    expect(body.code).toBe("WORKSPACE_ALREADY_ACTIVE");
+    expect(body.idempotent).toBe(false);
     expect(repos.createClientWorkspace).not.toHaveBeenCalled();
     expect(noonApp.sendPaymentConfirmedToNoonApp).toHaveBeenCalled();
   });

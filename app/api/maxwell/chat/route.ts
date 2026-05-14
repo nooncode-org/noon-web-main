@@ -151,24 +151,22 @@ function isDatabaseConnectivityError(error: unknown) {
   return /connect_timeout|econnrefused|econnreset|enotfound|etimedout/i.test(message);
 }
 
+function errorResponse(status: number, message: string, code: string, extra?: Record<string, unknown>) {
+  return NextResponse.json({ message, code, ...extra }, { status });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsed = chatRequestSchema.parse(body);
 
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { message: "OpenAI API key is not configured." },
-        { status: 503 },
-      );
+      return errorResponse(503, "OpenAI API key is not configured.", "OPENAI_NOT_CONFIGURED");
     }
 
     const viewer = await getAuthenticatedViewer();
     if (!viewer) {
-      return NextResponse.json(
-        { message: "Authentication required." },
-        { status: 401 },
-      );
+      return errorResponse(401, "Authentication required.", "AUTH_REQUIRED");
     }
 
     const userText = (parsed.message ?? parsed.prompt)!;
@@ -177,10 +175,10 @@ export async function POST(request: Request) {
     if (parsed.session_id) {
       session = await getStudioSession(parsed.session_id);
       if (!session) {
-        return NextResponse.json({ message: "Session not found." }, { status: 404 });
+        return errorResponse(404, "Session not found.", "SESSION_NOT_FOUND");
       }
       if (!viewerOwnsStudioSession(viewer, session)) {
-        return NextResponse.json({ message: "Forbidden." }, { status: 403 });
+        return errorResponse(403, "Forbidden.", "FORBIDDEN");
       }
     } else {
       session = await createStudioSession({
@@ -198,11 +196,10 @@ export async function POST(request: Request) {
     }
 
     if (!canReceiveMessage(session.status)) {
-      return NextResponse.json(
-        {
-          message: `Session is in state "${session.status}" and cannot receive messages.`,
-        },
-        { status: 409 },
+      return errorResponse(
+        409,
+        `Session is in state "${session.status}" and cannot receive messages.`,
+        "SESSION_NOT_ACCEPTING_MESSAGES",
       );
     }
 
@@ -214,10 +211,10 @@ export async function POST(request: Request) {
     if (parsed.reply_to_message_id) {
       replyContextMessage = await getStudioMessage(parsed.reply_to_message_id);
       if (!replyContextMessage || replyContextMessage.studioSessionId !== session.id) {
-        return NextResponse.json({ message: "Reply target not found." }, { status: 404 });
+        return errorResponse(404, "Reply target not found.", "REPLY_TARGET_NOT_FOUND");
       }
       if (replyContextMessage.role !== "assistant" || replyContextMessage.messageType !== "chat") {
-        return NextResponse.json({ message: "Reply target must be a Maxwell response." }, { status: 400 });
+        return errorResponse(400, "Reply target must be a Maxwell response.", "INVALID_REPLY_TARGET");
       }
     }
 
@@ -225,10 +222,10 @@ export async function POST(request: Request) {
     if (parsed.regenerate_assistant_message_id) {
       regenerateSourceMessage = await getStudioMessage(parsed.regenerate_assistant_message_id);
       if (!regenerateSourceMessage || regenerateSourceMessage.studioSessionId !== session.id) {
-        return NextResponse.json({ message: "Regenerate target not found." }, { status: 404 });
+        return errorResponse(404, "Regenerate target not found.", "REGENERATE_TARGET_NOT_FOUND");
       }
       if (regenerateSourceMessage.role !== "assistant" || regenerateSourceMessage.messageType !== "chat") {
-        return NextResponse.json({ message: "Regenerate target must be a Maxwell response." }, { status: 400 });
+        return errorResponse(400, "Regenerate target must be a Maxwell response.", "INVALID_REGENERATE_TARGET");
       }
     }
 
@@ -251,9 +248,10 @@ export async function POST(request: Request) {
         .at(-1);
 
       if (latestAssistantMessage?.id !== regenerateSourceMessage.id) {
-        return NextResponse.json(
-          { message: "Only the latest Maxwell response can be regenerated." },
-          { status: 409 },
+        return errorResponse(
+          409,
+          "Only the latest Maxwell response can be regenerated.",
+          "LATEST_RESPONSE_REQUIRED",
         );
       }
 
@@ -362,29 +360,29 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { message: "Invalid request.", fieldErrors: error.flatten().fieldErrors },
-        { status: 400 },
+      return errorResponse(
+        400,
+        "Invalid request.",
+        "INVALID_REQUEST",
+        { fieldErrors: error.flatten().fieldErrors },
       );
     }
     if (request.signal.aborted || isAbortLikeError(error)) {
-      return NextResponse.json({ message: "Request aborted." }, { status: 499 });
+      return errorResponse(499, "Request aborted.", "REQUEST_ABORTED");
     }
     if (isDatabaseConnectivityError(error)) {
-      return NextResponse.json(
-        {
-          message:
-            "Maxwell is temporarily unavailable because the database connection timed out. Please retry in a moment.",
-          code: "DB_CONNECTIVITY_ERROR",
-        },
-        { status: 503 },
+      return errorResponse(
+        503,
+        "Maxwell is temporarily unavailable because the database connection timed out. Please retry in a moment.",
+        "DB_CONNECTIVITY_ERROR",
       );
     }
 
     console.error("Maxwell chat error:", error);
-    return NextResponse.json(
-      { message: "Maxwell could not respond right now. Please try again." },
-      { status: 500 },
+    return errorResponse(
+      500,
+      "Maxwell could not respond right now. Please try again.",
+      "MAXWELL_CHAT_FAILED",
     );
   }
 }

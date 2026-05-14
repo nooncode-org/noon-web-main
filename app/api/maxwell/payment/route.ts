@@ -2,15 +2,20 @@
  * app/api/maxwell/payment/route.ts
  *
  * Payment boundary for Maxwell Studio.
- * Browser access must come from an allowlisted internal reviewer session.
+ * Internal review actions must come from an allowlisted reviewer session.
+ * Client payment evidence is accepted from the authenticated proposal owner.
  * REVIEW_API_SECRET remains supported only for automation and server-to-server calls.
  */
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getReviewRequestAccess } from "@/lib/auth/review";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
+  appendPaymentEvent,
   getProposalRequest,
+  getProposalRequestByPublicToken,
   getStudioSession,
   getClientWorkspaceBySession,
   getLatestProposalRequest,
@@ -31,8 +36,12 @@ const markPendingSchema = z.object({
 
 const submitEvidenceSchema = z.object({
   action: z.literal("submit_payment_evidence"),
-  proposal_request_id: z.string().min(1),
+  proposal_request_id: z.string().min(1).optional(),
+  public_token: z.string().min(1).optional(),
+  payment_reference: z.string().max(200).optional(),
   notes: z.string().max(1000).optional(),
+}).refine((data) => data.proposal_request_id || data.public_token, {
+  message: "Either proposal_request_id or public_token is required.",
 });
 
 const verifyPaymentSchema = z.object({
@@ -57,13 +66,17 @@ const confirmPaymentSchema = z.object({
   payment_reference: z.string().max(200).optional(),
 });
 
-const paymentSchema = z.discriminatedUnion("action", [
+const paymentSchema = z.union([
   markPendingSchema,
   submitEvidenceSchema,
   verifyPaymentSchema,
   expireProposalSchema,
   confirmPaymentSchema,
 ]);
+
+function jsonError(status: number, message: string, code: string) {
+  return NextResponse.json({ message, code }, { status });
+}
 
 export async function GET(request: Request) {
   const access = await getReviewRequestAccess(request);
@@ -99,15 +112,97 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const access = await getReviewRequestAccess(request);
-  if (!access.authorized) {
-    const status = access.reason === "sign_in_required" ? 401 : 403;
-    return NextResponse.json({ message: "Unauthorized." }, { status });
-  }
-
   try {
     const body = await request.json();
     const payload = paymentSchema.parse(body);
+
+    if (payload.action === "submit_payment_evidence") {
+      const proposal = payload.public_token
+        ? await getProposalRequestByPublicToken(payload.public_token)
+        : await getProposalRequest(payload.proposal_request_id!);
+
+      if (!proposal) {
+        return jsonError(404, "Proposal request not found.", "PROPOSAL_NOT_FOUND");
+      }
+
+      const session = await getStudioSession(proposal.studioSessionId);
+      if (!session) {
+        return jsonError(404, "Associated session not found.", "SESSION_NOT_FOUND");
+      }
+
+      const [viewer, access] = await Promise.all([
+        getAuthenticatedViewer(),
+        getReviewRequestAccess(request),
+      ]);
+      const ownerAuthorized = viewer ? viewerOwnsStudioSession(viewer, session) : false;
+      const reviewerAuthorized = access.authorized;
+
+      if (!ownerAuthorized && !reviewerAuthorized) {
+        const status = !viewer && !access.authorized && access.reason === "sign_in_required" ? 401 : 403;
+        return jsonError(status, "Authentication required for this proposal.", "AUTH_REQUIRED");
+      }
+
+      if (proposal.status === "paid") {
+        return jsonError(409, "This proposal is already paid.", "PROPOSAL_ALREADY_PAID");
+      }
+
+      if (proposal.status === "expired") {
+        return jsonError(410, "This proposal has expired.", "PROPOSAL_EXPIRED");
+      }
+
+      if (proposal.status === "payment_under_verification") {
+        return NextResponse.json({
+          message: "Payment evidence is already under verification.",
+          proposal_status: proposal.status,
+          idempotent: true,
+        });
+      }
+
+      if (proposal.status !== "sent" && proposal.status !== "payment_pending") {
+        return jsonError(
+          409,
+          "This proposal is not ready to receive payment evidence.",
+          "PROPOSAL_NOT_PAYABLE",
+        );
+      }
+
+      const actor = ownerAuthorized ? viewer!.email : access.authorized ? access.actor : "client";
+      const providerEventId = `manual-evidence:${proposal.id}`;
+
+      await appendPaymentEvent({
+        studioSessionId: proposal.studioSessionId,
+        eventType: "received",
+        amountUsd: proposal.approvedAmountUsd ?? undefined,
+        currency: proposal.approvedCurrency ?? undefined,
+        reference: payload.payment_reference,
+        notes: payload.notes,
+        provider: "manual_evidence",
+        providerEventId,
+        payloadJson: {
+          proposalRequestId: proposal.id,
+          publicToken: proposal.publicToken,
+          submittedByOwner: ownerAuthorized,
+        },
+        createdBy: actor,
+      });
+
+      const updated = await updateProposalRequestStatus(
+        proposal.id,
+        "payment_under_verification",
+      );
+
+      return NextResponse.json({
+        message: "Payment evidence submitted. Noon will verify it before activating the workspace.",
+        proposal_status: updated.status,
+      });
+    }
+
+    const access = await getReviewRequestAccess(request);
+    if (!access.authorized) {
+      const status = access.reason === "sign_in_required" ? 401 : 403;
+      return NextResponse.json({ message: "Unauthorized." }, { status });
+    }
+
     const actor = "actor" in payload ? payload.actor ?? access.actor : access.actor;
 
     if (payload.action === "mark_payment_pending") {
@@ -127,17 +222,6 @@ export async function POST(request: Request) {
         message: "Proposal marked as payment pending.",
         proposal_status: updated.status,
         expires_at: updated.expiresAt,
-      });
-    }
-
-    if (payload.action === "submit_payment_evidence") {
-      const proposal = await updateProposalRequestStatus(
-        payload.proposal_request_id,
-        "payment_under_verification",
-      );
-      return NextResponse.json({
-        message: "Payment evidence submitted. Under verification.",
-        proposal_status: proposal.status,
       });
     }
 

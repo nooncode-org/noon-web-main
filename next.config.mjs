@@ -8,9 +8,6 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts")
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    unoptimized: true,
-  },
   turbopack: {
     root: rootDir,
   },

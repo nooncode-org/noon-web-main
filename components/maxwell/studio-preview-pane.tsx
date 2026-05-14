@@ -432,14 +432,13 @@ export function StudioPreviewPane({
             </div>
           </div>
         )}
-        {/* Desktop: iframe (sandboxed — defense in depth against XSS / storage exposure
-            if v0 ever serves under noon's origin. allow-scripts/forms/popups preserves
-            normal prototype interactions; allow-same-origin is intentionally omitted) */}
+        {/* Desktop: sandboxed preview. Keep it on a separate origin boundary and do not
+            expose referrer data from the client workspace. */}
         <iframe
           src={selectedVersion.demoUrl}
           className="hidden lg:block w-full h-full border-0"
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          sandbox="allow-scripts"
           referrerPolicy="no-referrer"
         />
         {/* Mobile: open-in-browser card */}
