@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/maxwell/review-sla",
-      "schedule": "0 9 * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }

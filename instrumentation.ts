@@ -1,38 +1,28 @@
 /**
  * instrumentation.ts
  *
- * Next.js boot hook. `register()` is invoked once per server instance, before
- * any request is handled. We use it to fail fast in production when the
- * external services we depend on (OpenAI, v0, Resend, NoonApp) are
- * misconfigured.
+ * Next.js boot hook. `register()` runs once per server process / per Vercel
+ * function instance at startup. Used here to fail-fast on missing critical
+ * runtime service credentials.
  *
- * No Sentry / Datadog / third-party error tracker is wired here — Pedro
- * chose Vercel Analytics + Vercel logs only for soft launch
- * (see roadmap §10.8.3). If error tracking is reconsidered later, this
- * file is also the canonical place to register the Sentry client.
+ * Future extension (B42): wire `@sentry/nextjs` initialization here in the
+ * same `nodejs` branch.
+ *
+ * Reference: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 
-import { checkCriticalEnv, formatCriticalEnvDiagnostic } from "@/lib/server/critical-env";
+export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { checkRuntimeEnv, formatRuntimeEnvReport, assertRuntimeEnvForProduction } =
+      await import("./lib/server/runtime-env");
 
-export function register() {
-  // Only the Node.js runtime can see process.env at boot. The Edge runtime
-  // also calls `register()` but we don't gate the boot for Edge today —
-  // there are no Edge routes that depend on these secrets.
-  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+    // Always log the report — visible in Vercel function logs at cold-start
+    // and useful for diagnosing config drift in non-production environments.
+    const report = checkRuntimeEnv();
+    console.log(formatRuntimeEnvReport(report));
 
-  const check = checkCriticalEnv();
-  if (check.ok) return;
-
-  const diagnostic = formatCriticalEnvDiagnostic(check);
-
-  if (check.mode === "production-runtime") {
-    throw new Error(
-      `[boot] Refusing to start in production: ${diagnostic} ` +
-        "Configure the missing secrets in the Vercel dashboard (or the equivalent for your deploy target) before serving traffic.",
-    );
+    // Throw in production-runtime when critical vars are missing. Vercel will
+    // mark the deployment unhealthy and surface the error in logs.
+    assertRuntimeEnvForProduction();
   }
-
-  // Build phase or non-production: warn loud so the operator sees the gap
-  // in logs without blocking the build.
-  console.warn(`[boot] ${diagnostic} The app will start but features depending on these services will fail at first use.`);
 }
