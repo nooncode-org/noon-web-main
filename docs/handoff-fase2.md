@@ -68,11 +68,20 @@ gh pr create --title "chore: FASE 2 hardening (11 commits, B17/B18/B10/B13-19-21
 
 Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
-### 4.1 Crítico — antes de cualquier deploy
+### 4.1 Antes de aplicar migraciones
 
-- [ ] **Rotar credenciales Supabase** (service role + anon). Filtradas en `App-nooncode/.mcp.json` commit `f433223` (público). Ver `~/.claude/.../memory/project_nooncode_warnings.md`.
 - [ ] **Aplicar migración B45** en Supabase prod + preview: `psql $DATABASE_URL -f supabase/migrations/20260516_013_schema_migrations.sql`. Después insertar checksum en `schema_migrations` con `applied_by='manual:<tu-nombre>'`.
 - [ ] **Aplicar las 13 migraciones legacy** si todavía no se han aplicado a prod. Lista completa en `supabase/migrations/` (las 14 primeras quedaron bootstrap-marcadas como aplicadas por la migración 013, pero el bootstrap no aplica el DDL — sólo dice que están registradas).
+
+### 4.1-bis Antes del primer deploy público a producción (NO ANTES)
+
+- [ ] **Rotar credenciales Supabase** (service role + anon). Filtradas en `App-nooncode/.mcp.json` commit `f433223` (público) desde 2026-04-23. Ver `~/.claude/.../memory/project_nooncode_warnings.md`.
+
+  > **Decisión owner 2026-05-17:** rotación pospuesta hasta justo antes del primer deploy de producción público. Mientras el sitio no esté expuesto al mundo (FASE 1 internal-only por ADR-008), el riesgo es contenido al ámbito interno y compensado por: RLS de Supabase activo en todas las tablas, el `service_role` no es trivialmente descubrible si nadie explora el repo App, y rotación tardía evita coordinar cambio de env vars entre múltiples sandboxes durante desarrollo activo.
+  >
+  > **Riesgo residual asumido:** cualquiera que clone `App-nooncode` antes de la rotación puede leer/escribir todas las tablas bypaseando RLS. Vigila Supabase audit logs (Settings → Logs → Auth) periódicamente; si aparecen IPs no-Vercel/no-locales, rota inmediatamente sin esperar al deploy.
+  >
+  > **Disparador no-negociable de rotación:** (a) primer deploy a `nooncode.com` o subdominio público, (b) cualquier indicio de uso no-autorizado en logs, (c) más de 90 días desde el leak (2026-04-23) — sea lo que llegue primero.
 
 ### 4.2 Activar features nuevas
 
@@ -164,12 +173,14 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
 ## 7 · Cuando vuelvas — orden sugerido
 
-1. **Push** (sección 3) — antes que nada, asegura el trabajo en remoto.
-2. **Aplica migración 013 y rota credenciales Supabase** (sección 4.1) — bloquea todo deploy nuevo.
-3. **Configura Sentry + Vercel envs** (sección 4.2) — activa lo que el código ya espera.
-4. **Decide Bloques 11/12/13** (sección 5) — cuando tengas energía para meter cabeza en specs.
-5. Coordina cross-repo (4.3) y Resend (4.4) en paralelo.
+1. ~~**Push**~~ ✅ — hecho 2026-05-17, branch `chore/fase2-hardening-2026-05-16` en origin.
+2. **Crea el PR en GitHub** (sección 3) — usa el link que dio el push + pega body de este doc.
+3. **Aplica migración 013 + las 13 legacy** (sección 4.1) — bloquea cualquier deploy nuevo.
+4. **Configura Sentry + Vercel envs** (sección 4.2) — activa lo que el código ya espera.
+5. **Decide Bloques 11/12/13** (sección 5) — cuando tengas energía para meter cabeza en specs.
+6. Coordina cross-repo (4.3) y Resend (4.4) en paralelo.
+7. **Rotar credenciales Supabase** (sección 4.1-bis) — pospuesto por decisión owner 2026-05-17 hasta el primer deploy público o 2026-07-22 (90 días post-leak), lo que llegue primero.
 
 ---
 
-_Generado al cierre de la sesión 2026-05-16 tras 11 commits de FASE 2 hardening._
+_Generado 2026-05-16, actualizado 2026-05-17 (push + reprioritización rotación Supabase)._
