@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
@@ -8,8 +8,6 @@ import {
   CheckCircle2,
   Copy,
   Loader2,
-  Mic,
-  Plus,
   RefreshCw,
   Reply,
   Sparkles,
@@ -256,33 +254,14 @@ function UserMessage({ content }: { content: string }) {
   );
 }
 
-function ComposerIconButton({
-  children,
-  label,
-  disabled = false,
-  onClick,
-}: {
-  children: ReactNode;
-  label: string;
-  disabled?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={disabled ? `${label} unavailable` : label}
-      disabled={disabled}
-      onClick={onClick}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-    >
-      {children}
-    </button>
-  );
-}
-
 // ============================================================================
 // StudioChatPane
+//
+// B29 — The composer used to expose three buttons (Plus "Add context", Mic
+// voice-input empty-state, and a Maxwell branding pill). FASE 1 is internal-
+// only (ADR-008), and none of those had real behavior — they suggested
+// features we have not built. Removed; ComposerIconButton helper went with
+// them. If voice / context-attach lands in v3, reintroduce the helper.
 // ============================================================================
 
 type StudioChatPaneProps = {
@@ -609,35 +588,26 @@ export function StudioChatPane({
                   className={composerTextAreaClass}
                 />
               </div>
-              <div className="mt-1 flex items-center justify-between">
-                <div className="flex shrink-0 items-center gap-1">
-                  <ComposerIconButton
-                    label="Add context"
-                    onClick={() => inputRef.current?.focus()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </ComposerIconButton>
-                  <div className="inline-flex h-8 items-center gap-2 rounded-lg px-2 text-xs text-muted-foreground">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>Maxwell</span>
-                  </div>
-                </div>
+              {/*
+                B29 — FASE 1 is internal-only (ADR-008). The Plus "Add context"
+                button had no behavior beyond focusing the input, and the Mic
+                empty-state on the send button suggested a voice-input feature
+                we have not built. Both removed; the Maxwell branding pill goes
+                with them since the row was only there to host that trio.
+
+                B30 — Always-visible send: the send button is always rendered
+                (the row no longer collapses on mobile) and shows a disabled
+                ArrowRight when the input is empty. On touch devices the
+                Enter-to-send keyboard shortcut is intentionally skipped (see
+                the textarea's onKeyDown above) so users always discover send
+                via this visible button.
+              */}
+              <div className="mt-1 flex items-center justify-end">
                 <button
                   type="button"
-                  aria-label={
-                    isThinking
-                      ? "Stop response"
-                      : hasDraft
-                      ? "Send message"
-                      : "Voice input unavailable"
-                  }
-                  title={
-                    isThinking
-                      ? "Stop response"
-                      : hasDraft
-                      ? "Send message"
-                      : "Voice input unavailable"
-                  }
+                  aria-label={isThinking ? "Stop response" : "Send message"}
+                  title={isThinking ? "Stop response" : "Send message"}
+                  disabled={!isThinking && !canSubmit}
                   onClick={() => {
                     if (isThinking) {
                       onStop();
@@ -645,14 +615,13 @@ export function StudioChatPane({
                       onSend();
                     }
                   }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-foreground transition-colors hover:bg-foreground/15"
+                  // B40 — Tap target ≥44×44 px (WCAG 2.5.5). Was h-9 w-9 (36px).
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-foreground transition-colors hover:bg-foreground/15 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-foreground/10"
                 >
                   {isThinking ? (
                     <Square className="h-3.5 w-3.5 fill-current" />
-                  ) : hasDraft ? (
-                    <ArrowRight className="w-4 h-4" />
                   ) : (
-                    <Mic className="h-4 w-4" />
+                    <ArrowRight className="w-4 h-4" />
                   )}
                 </button>
               </div>

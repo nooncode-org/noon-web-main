@@ -14,6 +14,16 @@ import {
   Trash2,
   User,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
@@ -166,11 +176,17 @@ export function StudioHeader({
   onDeleteDraftSession,
 }: StudioHeaderProps) {
   const [draftsOpen, setDraftsOpen] = useState(false);
+  // B31 — Track the row staged for deletion. Single-row state is enough: the
+  // AlertDialog is modal so only one delete prompt can be open at a time. We
+  // keep the row's title around so the dialog can name what is being deleted
+  // even after the popover closes.
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const isProcessing = phaseIsActive(phase);
   const label = phaseLabels[phase];
   const displayName = projectName || "Maxwell Studio";
 
   return (
+    <>
     <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
       <div className="flex min-w-0 items-center gap-2.5">
         <Link
@@ -261,13 +277,17 @@ export function StudioHeader({
                         </span>
                       </button>
                       {onDeleteDraftSession && (
+                        // B31 — Stage the row for a confirm-dialog instead of
+                        // firing the destructive action on the first click.
+                        // The popover closes immediately so the dialog has the
+                        // foreground and can name the row being deleted.
                         <button
                           type="button"
                           aria-label="Delete conversation"
                           onClick={(e) => {
                             e.stopPropagation();
                             setDraftsOpen(false);
-                            onDeleteDraftSession(row.id);
+                            setPendingDelete({ id: row.id, title: row.title });
                           }}
                           className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                         >
@@ -318,5 +338,43 @@ export function StudioHeader({
         </button>
       </div>
     </header>
+
+    {/*
+      B31 — Destructive-action confirmation. The popover's per-row delete
+      button now stages a row into `pendingDelete`; this dialog renders only
+      while a row is staged. `onOpenChange(false)` (close via X, ESC, or
+      backdrop) clears the staged row without firing the destructive callback.
+    */}
+    <AlertDialog
+      open={pendingDelete !== null}
+      onOpenChange={(open) => {
+        if (!open) setPendingDelete(null);
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {pendingDelete
+              ? `“${pendingDelete.title}” and its draft history will be removed. This cannot be undone.`
+              : "This cannot be undone."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              if (pendingDelete && onDeleteDraftSession) {
+                onDeleteDraftSession(pendingDelete.id);
+              }
+              setPendingDelete(null);
+            }}
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
