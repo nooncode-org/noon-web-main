@@ -1198,6 +1198,24 @@ export function StudioShell({
       {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
 
       {/*
+        B22 (Bloque 13) — Mobile fallback banner. The two-pane studio
+        workspace (chat + preview) is desktop-first: below `lg` the panes
+        collapse into a tab-switched single column, which works but is
+        cramped for serious iteration. Rather than blocking mobile users
+        outright or shipping a full responsive redesign, we surface an
+        explicit "best on desktop" notice so expectations are set.
+        Hidden on `lg+` where the desktop layout renders properly.
+      */}
+      <div
+        role="status"
+        className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 lg:hidden"
+      >
+        <span className="font-medium">Studio works best on desktop.</span>{" "}
+        Some controls collapse on small screens — open this URL on a laptop for the full layout.
+      </div>
+
+
+      {/*
         B37 — Semantic landmarks. <main> wraps the two-pane workspace so screen
         readers and keyboard nav can jump straight to the working area, skipping
         the <header> above. The chat side becomes an <aside> (complementary to
