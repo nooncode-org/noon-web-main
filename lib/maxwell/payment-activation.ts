@@ -250,13 +250,19 @@ export async function confirmProposalPayment(input: {
     summary: input.summary ?? `Payment confirmed. Reference: ${input.paymentReference ?? "N/A"}`,
   });
 
-  await notifyNoonApp({
-    session,
-    proposal,
-    paymentReference: input.paymentReference ?? input.providerPaymentIntentId ?? input.providerSessionId,
-    summary: input.summary,
-  });
-
+  // B10 atomicity contract:
+  // Persist payment_event BEFORE the outbound Noon App notification. If the HTTP call
+  // fails, the unique constraint on payment_event.provider_event_id (migration
+  // 20260511_012) lets the next retry's idempotency check (lines 190-204) detect the
+  // existing event and short-circuit cleanly — instead of redoing every DB write while
+  // never being able to mark the event as processed. The previous order had the inverse
+  // problem: notifyNoonApp failure stranded the proposal in `paid` state without any
+  // payment_event row, so the next retry re-entered the full pipeline and reissued the
+  // webhook every time.
+  //
+  // The outbound retry/backoff itself is Bloque 5 (B9) — until then, a failed notify is
+  // recorded in audit (appendProposalReviewEvent `noon_app_payment_failed`) and surfaced
+  // to ops via the structured logger.
   const paymentEvent = await appendPaymentEvent({
     studioSessionId: session.id,
     eventType: "confirmed",
@@ -270,6 +276,13 @@ export async function confirmProposalPayment(input: {
     currency: payload.proposal.currency,
     payloadJson: input.providerPayload ?? null,
     createdBy: input.actor,
+  });
+
+  await notifyNoonApp({
+    session,
+    proposal,
+    paymentReference: input.paymentReference ?? input.providerPaymentIntentId ?? input.providerSessionId,
+    summary: input.summary,
   });
 
   return { proposal, session, workspace, paymentEvent, idempotent: false };
