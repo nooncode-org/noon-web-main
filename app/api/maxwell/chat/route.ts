@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { chatWithOpenAI, type ChatMessage } from "@/lib/api-ia";
+import { log } from "@/lib/server/logger";
+import {
+  enforceRateLimit,
+  rateLimitResponseInit,
+  RateLimitExceededError,
+  resolveClientIdentity,
+} from "@/lib/server/rate-limit";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
@@ -157,6 +164,24 @@ function errorResponse(status: number, message: string, code: string, extra?: Re
 
 export async function POST(request: Request) {
   try {
+    // B13: rate-limit per client IP. 20 messages / 60s sustained (one every 3s) plus a
+    // burst tolerance of 20. Tuned for normal Maxwell chat use; abusive bursts above
+    // this are absorbed with a 429 + Retry-After.
+    try {
+      enforceRateLimit({
+        namespace: "maxwell.chat",
+        capacity: 20,
+        refillPerSec: 20 / 60,
+        identityKey: resolveClientIdentity(request),
+      });
+    } catch (rateError) {
+      if (rateError instanceof RateLimitExceededError) {
+        const init = rateLimitResponseInit(rateError);
+        return NextResponse.json(init.body, { status: init.status, headers: init.headers });
+      }
+      throw rateError;
+    }
+
     const body = await request.json();
     const parsed = chatRequestSchema.parse(body);
 
@@ -378,7 +403,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell chat error:", error);
+    log.error("maxwell.chat", error);
     return errorResponse(
       500,
       "Maxwell could not respond right now. Please try again.",
