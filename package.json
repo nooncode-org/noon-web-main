@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "npm@10.0.0",
   "scripts": {
+    "prebuild": "node scripts/check-migrations.mjs --strict",
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
@@ -13,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "test:visual:baseline": "cross-env VISUAL_DIR=baseline playwright test capture.spec.ts",
     "test:visual:after": "cross-env VISUAL_DIR=after playwright test capture.spec.ts",
-    "test:a11y": "playwright test a11y.spec.ts"
+    "test:a11y": "playwright test a11y.spec.ts",
+    "db:check-migrations": "node scripts/check-migrations.mjs --strict"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
