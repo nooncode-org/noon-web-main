@@ -1,6 +1,8 @@
 # Handoff — FASE 2 hardening (sesión 2026-05-16)
 
-Estado al cierre de sesión: **11 commits locales sobre `main`, sin push, working tree limpio, 447 tests verdes.**
+Estado al cierre de sesión 2026-05-17: **14 commits en `chore/fase2-hardening-2026-05-16` (pushed), working tree limpio, 491 tests verdes.**
+
+Actualización 2026-05-17 PM: cerrados Bloque 11 (Maxwell Quality Layer, gpt-4.1) y B22 (mobile fallback banner). Quedan pendientes Bloque 12 (GDPR — pospuesto) y B8 #2/#3 (esperando email templates).
 
 Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 
