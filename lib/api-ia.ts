@@ -60,8 +60,16 @@ export type OpenAIResult = {
 export type V0CreateParams = {
   /** Descripcion del prototipo a generar */
   prompt: string;
-  /** Prompt de sistema para V0 */
-  systemPrompt?: string;
+  /**
+   * System prompt for v0. Required (Bloque 11 follow-up): the previous
+   * `DEFAULT_V0_SYSTEM` fallback always built single-view landing pages,
+   * which conflicted with the Quality Layer prompt's project-type-aware
+   * direction. The single in-tree caller (`app/api/maxwell/prototype/route.ts`)
+   * passes `V0_PROTOTYPE_SYSTEM_PROMPT` explicitly; making this required
+   * surfaces any future caller that forgets to pass one at compile time
+   * instead of silently rendering a generic landing.
+   */
+  systemPrompt: string;
 };
 
 export type V0SendMessageParams = {
@@ -83,13 +91,13 @@ export type V0Result = {
 const DEFAULT_OPENAI_SYSTEM =
   "You are a helpful assistant.";
 
-const DEFAULT_V0_SYSTEM =
-  "You are an expert frontend developer specializing in crafting beautiful, modern, and highly detailed single-view landing pages. " +
-  "Every project you create must be a single-page landing (no multi-section or multi-page layouts). " +
-  "Always use the latest web technologies, libraries, and frameworks such as React, Next.js, Tailwind CSS, shadcn/ui, framer-motion, and Lucide or similar icon libraries. " +
-  "Ensure your designs are visually impressive, engaging, and highly interactive, incorporating smooth animations, appealing color schemes, and professional iconography. " +
-  "Write clean, well-structured, and accessible code. Focus on delivering visually striking, conversion-focused prototypes that impress clients and feel up to date with the latest design trends. " +
-  "Always provide code that is ready to use in a modern web project and easy to customize.";
+// `DEFAULT_V0_SYSTEM` was removed in the Bloque 11 follow-up. It always
+// hardcoded single-view landing pages, which contradicts the Quality Layer
+// (lib/maxwell/prototype-brief.ts) that adapts the prompt to the actual
+// projectType. `V0CreateParams.systemPrompt` is now required so any future
+// caller has to pass V0_PROTOTYPE_SYSTEM_PROMPT (or another deliberate
+// alternative) — a missing system prompt is a compile error, not a silent
+// landing-page surprise.
 
 /**
  * Llama a OpenAI GPT-4.1 con soporte de texto, imagen e historial.
@@ -142,7 +150,7 @@ export async function createV0Prototype(params: V0CreateParams): Promise<V0Resul
   const { prompt, systemPrompt } = params;
 
   const result = await v0.chats.create({
-    system: systemPrompt ?? DEFAULT_V0_SYSTEM,
+    system: systemPrompt,
     message: prompt,
     responseMode: "async",
     modelConfiguration: {
