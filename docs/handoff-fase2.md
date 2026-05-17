@@ -88,6 +88,8 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 ### 4.2 Activar features nuevas
 
 - [ ] **Sentry**: crear proyecto en Sentry → copiar DSN → setear `SENTRY_DSN` y `SENTRY_TRACES_SAMPLE_RATE` (0.1 default) en Vercel Production + Preview. Sin DSN el SDK es no-op (skeleton ya está en código).
+
+  > **Supply-chain note (2026-05-17):** `@sentry/nextjs@10.53.1` se instaló durante Bloque 7 sin pre-verificar IOC post-Mini-Shai-Hulud (npm hack 2026-05-11). Auditoría posterior: maintainer oficial, integrity hash matchea registry, `npm audit` sin alertas, Sentry no aparece en IOC públicos del incidente. **Owner decision: mantener.** Antes de setear `SENTRY_DSN` en prod, re-correr `npm audit` + comparar `npm view @sentry/nextjs@10.53.1 dist.integrity` con lockfile, por si surgió alguna advisory entre commit y deploy.
 - [ ] **Migrations drift check en Vercel**: setear `CHECK_MIGRATIONS=1` en env vars de Vercel → el `prebuild` script empieza a validar drift en cada deploy. Sin ese flag, el script es no-op.
 - [ ] **UptimeRobot** apuntando a `https://<prod>/api/health` (público, sin auth, devuelve `{healthy, service, checked_at}`). Para diagnostic detallado: `/api/health/detail` con header `Authorization: Bearer <REVIEW_API_SECRET o CRON_SECRET>`.
 
