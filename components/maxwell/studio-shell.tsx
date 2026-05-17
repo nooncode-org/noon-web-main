@@ -1205,8 +1205,17 @@ export function StudioShell({
 
       {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div
+      {/*
+        B37 — Semantic landmarks. <main> wraps the two-pane workspace so screen
+        readers and keyboard nav can jump straight to the working area, skipping
+        the <header> above. The chat side becomes an <aside> (complementary to
+        the prototype preview, which is the primary content); the preview side
+        gets <section role="region"> with an aria-label so AT users hear what
+        each pane represents.
+      */}
+      <main className="flex min-h-0 flex-1 overflow-hidden" aria-label="Studio workspace">
+        <aside
+          aria-label="Conversation with Maxwell"
           className={`
             flex min-h-0 flex-col
             ${shouldShowWorkspace ? "w-full shrink-0 border-r border-border/70 bg-background lg:w-[440px] xl:w-[500px]" : "w-full border-r-0"}
@@ -1237,10 +1246,11 @@ export function StudioShell({
             onRegenerateLatest={handleRegenerateLatest}
             stopNotice={stopNotice}
           />
-        </div>
+        </aside>
 
         {shouldShowWorkspace && (
-          <div
+          <section
+            aria-label="Prototype preview"
             className={`
               min-h-0 flex-1 flex-col
               ${activeView === "preview" ? "flex" : "hidden lg:flex"}
@@ -1266,9 +1276,9 @@ export function StudioShell({
               }}
               agentHref={agentHref}
             />
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   );
 }
