@@ -11,6 +11,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   getAuditBySessionId,
@@ -129,7 +130,7 @@ export async function POST(_req: Request, { params }: Params) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("[upgrade] POST /handoff failed:", error);
+    log.error("upgrade.handoff", error);
     return NextResponse.json({ message: "Failed to transfer to Maxwell." }, { status: 500 });
   }
 }

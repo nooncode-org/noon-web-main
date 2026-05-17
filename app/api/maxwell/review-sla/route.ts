@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { processProposalReviewSla } from "@/lib/maxwell/proposal-review-sla";
 import { resolvePublicBaseUrl } from "@/lib/maxwell/public-url";
+import { log } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ async function handle(request: Request) {
       result,
     });
   } catch (error) {
-    console.error("Maxwell review SLA error:", error);
+    log.error("maxwell.review-sla", error);
     return NextResponse.json(
       { message: "Could not process proposal review SLA right now." },
       { status: 500 }

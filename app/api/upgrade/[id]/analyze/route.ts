@@ -7,6 +7,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   getPagesBySessionId,
@@ -47,12 +48,12 @@ export async function POST(_req: Request, { params }: Params) {
 
     // Run analysis in background
     runAnalysis(id, session).catch((err) =>
-      console.error("[upgrade] analyze background error:", err)
+      log.error("upgrade.analyze.background", err)
     );
 
     return NextResponse.json({ status: "analyzing" }, { status: 202 });
   } catch (error) {
-    console.error("[upgrade] POST /analyze failed:", error);
+    log.error("upgrade.analyze", error);
     return NextResponse.json({ message: "Failed to start analysis." }, { status: 500 });
   }
 }

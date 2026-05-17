@@ -14,6 +14,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   getAuditBySessionId,
@@ -194,7 +195,7 @@ export async function POST(_req: Request, { params }: Params) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("[upgrade] POST /proposal failed:", error);
+    log.error("upgrade.proposal", error);
     return NextResponse.json({ message: "Failed to create proposal." }, { status: 500 });
   }
 }

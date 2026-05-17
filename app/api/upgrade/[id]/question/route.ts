@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   getPagesBySessionId,
@@ -54,7 +55,7 @@ export async function GET(_req: Request, { params }: Params) {
 
     return NextResponse.json({ questions: result.questions }, { status: 200 });
   } catch (error) {
-    console.error("[upgrade] GET /question failed:", error);
+    log.error("upgrade.question.get", error);
     return NextResponse.json({ message: "Failed to generate questions." }, { status: 500 });
   }
 }
@@ -110,7 +111,7 @@ export async function POST(request: Request, { params }: Params) {
         { status: 400 }
       );
     }
-    console.error("[upgrade] POST /question failed:", error);
+    log.error("upgrade.question.post", error);
     return NextResponse.json({ message: "Failed to record answer." }, { status: 500 });
   }
 }

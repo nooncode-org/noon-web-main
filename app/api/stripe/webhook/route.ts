@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { confirmProposalPayment, PaymentActivationError } from "@/lib/maxwell/payment-activation";
 import { NoonAppIntegrationError } from "@/lib/noon-app-integration";
+import { log } from "@/lib/server/logger";
 import {
   StripeConfigError,
   getStripeClient,
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Invalid Stripe signature." }, { status: 400 });
     }
 
-    console.error("Stripe webhook error:", error);
+    log.error("stripe.webhook", error);
     return NextResponse.json({ message: "Stripe webhook failed." }, { status: 500 });
   }
 }

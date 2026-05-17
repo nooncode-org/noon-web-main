@@ -3,6 +3,7 @@ import { z } from "zod";
 import { chatWithOpenAI, type ChatMessage } from "@/lib/api-ia";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
+import { log } from "@/lib/server/logger";
 import {
   getStudioSession,
   getStudioMessagesForOpenAI,
@@ -48,8 +49,9 @@ async function sendProposalForNoonAppReview(input: {
   versions: StudioVersion[];
 }): Promise<NextResponse | { skipped: boolean }> {
   if (!isNoonAppProposalHandoffConfigured()) {
-    console.warn(
-      "[Maxwell Proposal] NOON_APP_BASE_URL / NOON_APP_WEBHOOK_SECRET not set; skipping inbound handoff. " +
+    log.warn(
+      "maxwell.proposal",
+      "NOON_APP_BASE_URL / NOON_WEBSITE_WEBHOOK_SECRET not set; skipping inbound handoff. " +
         "Draft is stored in proposal_request. Configure both to POST a signed JSON body to " +
         "Noon App at /api/integrations/website/inbound-proposal.",
     );
@@ -191,9 +193,10 @@ export async function POST(request: Request) {
       requireFlexibleOption: true,
     });
     if (warnings.length > 0) {
-      console.warn(
-        `[Maxwell Proposal] Draft for session ${session.id} has ${warnings.length} review flag(s):\n${warnings.join("\n")}`,
-      );
+      log.warn("maxwell.proposal", `Draft has ${warnings.length} review flag(s)`, {
+        sessionId: session.id,
+        warnings,
+      });
     }
 
     const proposalRequest = await createProposalRequest({
@@ -239,7 +242,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Invalid request." }, { status: 400 });
     }
 
-    console.error("Maxwell proposal error:", error);
+    log.error("maxwell.proposal", error);
     return NextResponse.json(
       { message: "Could not generate proposal right now. Please try again." },
       { status: 500 },

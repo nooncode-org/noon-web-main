@@ -9,6 +9,7 @@ import {
 } from "@/lib/maxwell/repositories";
 import { buildWebsiteProposalPayload } from "@/lib/noon-app-integration";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
+import { log } from "@/lib/server/logger";
 import { StripeConfigError, getStripeClient, toStripeMinorUnit } from "@/lib/stripe/server";
 
 export const runtime = "nodejs";
@@ -183,7 +184,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell checkout error:", error);
+    log.error("maxwell.checkout", error);
     return NextResponse.json(
       { message: "Could not start Stripe Checkout. Please try again." },
       { status: 500 },

@@ -4,6 +4,7 @@ import { createV0Prototype, updateV0Prototype } from "@/lib/api-ia";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { V0_PROTOTYPE_SYSTEM_PROMPT } from "@/lib/maxwell/prompts";
+import { log } from "@/lib/server/logger";
 import {
   getStudioSession,
   createStudioVersion,
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
           systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
         });
       } catch (v0Error) {
-        console.error("v0 prototype creation failed:", v0Error);
+        log.error("maxwell.prototype", v0Error, { phase: "v0_create" });
         const stuckSession = await getStudioSession(payload.session_id);
         if (stuckSession?.status === "generating_prototype") {
           await updateStudioSessionStatus(stuckSession.id, "clarifying");
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
     try {
       result = await updateV0Prototype({ chatId: payload.chatId, prompt: payload.prompt });
     } catch (v0Error) {
-      console.error("v0 prototype update failed:", v0Error);
+      log.error("maxwell.prototype", v0Error, { phase: "v0_update" });
       await updateStudioSessionStatus(session.id, "prototype_ready");
       return NextResponse.json(
         { message: "Could not apply the adjustment right now. Please try again." },
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell prototype error:", error);
+    log.error("maxwell.prototype", error);
     return NextResponse.json(
       { message: "Could not generate the prototype right now. Please try again." },
       { status: 500 },

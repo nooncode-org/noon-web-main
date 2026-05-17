@@ -7,6 +7,7 @@
 import { getDb } from "@/lib/server/db";
 import type { ContactSubmissionInput, ContactTypeOption, ContactInquiryKey } from "@/lib/contact";
 import { contactInbox, getContactInquiryDetail } from "@/lib/contact";
+import { log } from "@/lib/server/logger";
 import type { MaxwellSessionInput } from "@/lib/maxwell";
 
 export function escapeHtml(value: string | null | undefined) {
@@ -75,7 +76,9 @@ async function sendContactNotification(lead: ContactLeadRecord): Promise<void> {
       tags: [{ name: "flow", value: "contact_lead" }],
     }),
   }).catch((err) => {
-    console.error("Contact notification email failed (non-blocking):", err);
+    log.error("noon-storage.contact-notification-email", err, {
+      blocking: false,
+    });
   });
 }
 

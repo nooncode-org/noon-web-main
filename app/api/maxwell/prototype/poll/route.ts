@@ -10,6 +10,7 @@ import {
   updateStudioSessionStatus,
   appendStudioMessage,
 } from "@/lib/maxwell/repositories";
+import { log } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,9 @@ async function isPreviewUrlReady(url: string): Promise<boolean> {
   const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
-    console.log("Checking preview URL:", url.substring(0, 50) + "...");
+    log.debug("maxwell.prototype.poll", "Checking preview URL", {
+      url_prefix: url.substring(0, 50),
+    });
     const response = await fetch(url, {
       method: "GET",
       redirect: "follow",
@@ -31,15 +34,17 @@ async function isPreviewUrlReady(url: string): Promise<boolean> {
       }
     });
 
-    console.log("Preview URL response status:", response.status);
     const contentType = response.headers.get("content-type") ?? "";
-    console.log("Preview URL content-type:", contentType);
+    log.debug("maxwell.prototype.poll", "Preview URL response", {
+      status: response.status,
+      content_type: contentType,
+    });
 
     if (!response.ok) return false;
 
     return contentType.includes("text/html");
   } catch (err) {
-    console.error("Preview URL fetch error:", err);
+    log.error("maxwell.prototype.poll", err, { phase: "preview_url_fetch" });
     return false;
   } finally {
     clearTimeout(timeout);
@@ -190,7 +195,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ status: "unknown" });
   } catch (error) {
-    console.error("Poll endpoint error:", error);
+    log.error("maxwell.prototype.poll", error);
     return NextResponse.json(
       { message: "Could not poll the prototype status right now.", status: "error" },
       { status: 500 }

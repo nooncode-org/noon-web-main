@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import { getSessionWithDetails, getUpgradeSessionById } from "@/lib/upgrade/repositories";
 
 export const runtime = "nodejs";
@@ -32,7 +33,7 @@ export async function GET(_req: Request, { params }: Params) {
     const details = await getSessionWithDetails(id);
     return NextResponse.json({ session: details }, { status: 200 });
   } catch (error) {
-    console.error("[upgrade] GET /api/upgrade/[id] failed:", error);
+    log.error("upgrade.session.detail", error);
     return NextResponse.json({ message: "Failed to fetch session." }, { status: 500 });
   }
 }

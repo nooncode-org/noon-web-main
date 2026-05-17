@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { contactInbox, contactSubmissionRequestSchema } from "@/lib/contact";
+import { log } from "@/lib/server/logger";
 import { assessContactSubmission } from "@/lib/server/contact-abuse";
 import { saveContactLead } from "@/lib/server/noon-storage";
 
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Contact form submission failed.", error);
+    log.error("contact.submit", error);
 
     return NextResponse.json(
       {

@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   getAuditBySessionId,
@@ -90,7 +91,7 @@ export async function POST(request: Request, { params }: Params) {
 
     // Run generation in same request (maxDuration=60s)
     runGeneratePipeline(id, session, audit, pages, correctionNote, isCorrection).catch(
-      (err) => console.error("[upgrade] generate pipeline error:", err)
+      (err) => log.error("upgrade.generate.background", err)
     );
 
     return NextResponse.json({ status: "generating" }, { status: 202 });
@@ -101,7 +102,7 @@ export async function POST(request: Request, { params }: Params) {
         { status: 400 }
       );
     }
-    console.error("[upgrade] POST /generate failed:", error);
+    log.error("upgrade.generate", error);
     return NextResponse.json({ message: "Failed to start generation." }, { status: 500 });
   }
 }
