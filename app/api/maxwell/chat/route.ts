@@ -27,6 +27,7 @@ import {
   MAXWELL_CHAT_POST_PROPOSAL_APPENDIX,
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
+import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -369,6 +370,20 @@ export async function POST(request: Request) {
     const shouldStartPrototypeBuild = Boolean(readyForPrototype && session.status === "clarifying");
     if (shouldStartPrototypeBuild) {
       session = await updateStudioSessionStatus(session.id, "generating_prototype");
+      // Bloque 11 — Maxwell Quality Layer.
+      // Fire-and-forget brief extraction. The prototype route later calls
+      // `getStudioBrief()`; if the extractor has not finished or failed, the
+      // brief is null and `buildPrototypeBrief()` simply omits section 4.
+      // We narrow ChatMessage.content (which can be a multi-modal parts
+      // array) down to a plain string here — getStudioMessagesForOpenAI
+      // always returns string content, but the type allows either.
+      void extractAndSaveBrief(
+        session.id,
+        historyForOpenAI.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: typeof m.content === "string" ? m.content : "",
+        })),
+      );
     }
 
     return NextResponse.json({

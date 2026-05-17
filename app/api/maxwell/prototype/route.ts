@@ -7,6 +7,8 @@ import { V0_PROTOTYPE_SYSTEM_PROMPT } from "@/lib/maxwell/prompts";
 import { log } from "@/lib/server/logger";
 import {
   getStudioSession,
+  getStudioBrief,
+  setStylePackId,
   createStudioVersion,
   incrementCorrectionsUsed,
   updateStudioSessionStatus,
@@ -14,13 +16,39 @@ import {
 } from "@/lib/maxwell/repositories";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
 import { evaluateInitialPrototypeCreate } from "@/lib/maxwell/prototype-quota";
+import { classifyStylePack } from "@/lib/maxwell/style-classifier";
+import {
+  buildCorrectionBrief,
+  buildPrototypeBrief,
+} from "@/lib/maxwell/prototype-brief";
+import { getStylePackById } from "@/lib/maxwell/style-packs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Bloque 11 — `action: create` now accepts the raw conversation snapshot
+ * (messages + last user/assistant turn) instead of a pre-built prompt string.
+ * The server then runs:
+ *   1. classifyStylePack  → picks 1 of 24 visual families
+ *   2. setStylePackId     → persists the choice on the session
+ *   3. getStudioBrief     → reads the (fire-and-forget) extracted brief if ready
+ *   4. buildPrototypeBrief → assembles the multi-section v0 prompt
+ *
+ * Keeping prompt assembly server-side lets the brief + style pack stay
+ * invisible to the client and prevents drift if the prompt template changes.
+ */
+const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+  type: z.string().optional(),
+});
+
 const studioCreateSchema = z.object({
   action: z.literal("create"),
-  prompt: z.string().trim().min(1).max(8000),
+  messages: z.array(chatMessageSchema).max(50),
+  last_user_msg: z.string().trim().min(1).max(4000),
+  last_assistant_msg: z.string().trim().min(1).max(4000),
   session_id: z.string(),
 });
 
@@ -76,10 +104,33 @@ export async function POST(request: Request) {
 
       await updateStudioSessionStatus(session.id, "generating_prototype");
 
+      // ── Quality Layer pipeline (Bloque 11) ──────────────────────────────
+      // Classify → persist style pack id → read brief (may be null) →
+      // assemble multi-section prompt. All four steps are best-effort:
+      // classifyStylePack never throws, getStudioBrief returns null gracefully,
+      // and buildPrototypeBrief tolerates a null brief.
+      const stylePack = await classifyStylePack(session, payload.last_user_msg);
+      await setStylePackId(session.id, stylePack.id);
+      const brief = await getStudioBrief(session.id);
+      const prototypeBrief = buildPrototypeBrief(
+        session,
+        brief,
+        payload.messages,
+        payload.last_user_msg,
+        payload.last_assistant_msg,
+        stylePack,
+      );
+      log.info("maxwell.prototype", "Quality Layer applied", {
+        session_id: session.id,
+        style_pack_id: stylePack.id,
+        brief_available: brief !== null,
+      });
+      // ────────────────────────────────────────────────────────────────────
+
       let result: Awaited<ReturnType<typeof createV0Prototype>>;
       try {
         result = await createV0Prototype({
-          prompt: payload.prompt,
+          prompt: prototypeBrief,
           systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
         });
       } catch (v0Error) {
@@ -122,9 +173,17 @@ export async function POST(request: Request) {
 
     await updateStudioSessionStatus(session.id, "revision_requested");
 
+    // Bloque 11 — recover the session's style pack so corrections preserve
+    // the same visual identity. Pre-Quality-Layer sessions have stylePackId
+    // null; buildCorrectionBrief passes through the raw prompt in that case.
+    const stylePack = session.stylePackId
+      ? getStylePackById(session.stylePackId)
+      : undefined;
+    const correctionPrompt = buildCorrectionBrief(payload.prompt, stylePack);
+
     let result: Awaited<ReturnType<typeof updateV0Prototype>>;
     try {
-      result = await updateV0Prototype({ chatId: payload.chatId, prompt: payload.prompt });
+      result = await updateV0Prototype({ chatId: payload.chatId, prompt: correctionPrompt });
     } catch (v0Error) {
       log.error("maxwell.prototype", v0Error, { phase: "v0_update" });
       await updateStudioSessionStatus(session.id, "prototype_ready");

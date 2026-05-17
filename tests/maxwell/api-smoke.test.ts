@@ -34,6 +34,7 @@ function sess(status: StudioSession["status"], correctionsUsed = 0): StudioSessi
     language: "en", correctionsUsed, maxCorrections: 2,
     proposalRequestedAt: null,
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    stylePackId: null,
   };
 }
 

@@ -120,32 +120,12 @@ function maxwellErrorMessage(code?: string, fallback?: string) {
   }
 }
 
-function buildPrototypeBrief(messages: ChatMessage[], lastUserMsg: string, lastAssistantMsg: string) {
-  const relevantHistory = messages
-    .filter(
-      (message) =>
-        message.type !== "thinking" &&
-        message.type !== "system_event" &&
-        message.type !== "error",
-    )
-    .concat(
-      { role: "user", content: lastUserMsg },
-      { role: "assistant", content: lastAssistantMsg },
-    )
-    .slice(-12)
-    .map((message) => {
-      const speaker = message.role === "user" ? "Client" : "Maxwell";
-      const compact = message.content.replace(/\s+/g, " ").trim().slice(0, 500);
-      return `${speaker}: ${compact}`;
-    });
-
-  return [
-    "Create a high-fidelity frontend-only prototype based on this distilled conversation context.",
-    "Use static mock data for all interactions. No backend code, no dynamic APIs.",
-    "",
-    ...relevantHistory,
-  ].join("\n");
-}
+// Bloque 11 — `buildPrototypeBrief()` used to live here as a client-side
+// helper that flattened the conversation into a single string before POSTing
+// to /api/maxwell/prototype. It moved to `lib/maxwell/prototype-brief.ts`
+// (server-side) so it can blend in the StudioBrief + StylePack, which the
+// client doesn't see. The client now posts the raw conversation snapshot
+// and the server assembles the multi-section v0 prompt.
 
 // ============================================================================
 // StudioShell
@@ -611,14 +591,26 @@ export function StudioShell({
     setPrototypeFailed(false);
 
     try {
-      const prototypeBrief = buildPrototypeBrief(messages, lastUserMsg, lastAssistantMsg);
+      // Bloque 11 — Quality Layer: send raw conversation snapshot; the server
+      // assembles the multi-section v0 prompt with brief + style pack.
+      const conversationSnapshot = messages
+        .filter(
+          (m) =>
+            m.type !== "thinking" &&
+            m.type !== "system_event" &&
+            m.type !== "error",
+        )
+        .slice(-50)
+        .map((m) => ({ role: m.role, content: m.content, type: m.type }));
 
       const res = await fetch("/api/maxwell/prototype", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create",
-          prompt: prototypeBrief,
+          messages: conversationSnapshot,
+          last_user_msg: lastUserMsg,
+          last_assistant_msg: lastAssistantMsg,
           ...(effectiveSessionId ? { session_id: effectiveSessionId } : {}),
         }),
       });
