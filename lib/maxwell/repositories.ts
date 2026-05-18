@@ -352,6 +352,19 @@ const ACTIVE_PROPOSAL_STATUSES: ProposalStatus[] = [
   "escalated",
 ];
 
+// States where the client has acted on the proposal and the workspace is
+// expected to materialise shortly. Used to differentiate "workspace not found"
+// (404) from "workspace is being prepared" (200 with pending indicator).
+export const WORKSPACE_PREPARING_PROPOSAL_STATUSES: ProposalStatus[] = [
+  "payment_pending",
+  "payment_under_verification",
+  "paid",
+];
+
+export function isProposalAwaitingWorkspace(status: ProposalStatus): boolean {
+  return WORKSPACE_PREPARING_PROPOSAL_STATUSES.includes(status);
+}
+
 function toIsoTimestamp(value: string | Date | null | undefined): string | null {
   if (value == null) return null;
   return value instanceof Date ? value.toISOString() : value;

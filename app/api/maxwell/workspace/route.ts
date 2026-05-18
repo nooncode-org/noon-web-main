@@ -11,6 +11,8 @@ import {
   updateClientWorkspaceStatus,
   appendPaymentEvent,
   getPaymentEvents,
+  getLatestProposalRequest,
+  isProposalAwaitingWorkspace,
 } from "@/lib/maxwell/repositories";
 import type { WorkspaceStatus } from "@/lib/maxwell/repositories";
 import { WORKSPACE_STATUS_VALUES } from "@/lib/maxwell/workspace-status";
@@ -85,6 +87,20 @@ export async function GET(request: Request) {
 
   const workspace = await getClientWorkspaceBySession(sessionId);
   if (!workspace) {
+    // Differentiate "preparing" (proposal in a payment-related state, workspace
+    // not yet provisioned) from "not found" (no payment activity at all).
+    // The client UI uses workspace_status: "pending" to show an intermediate
+    // view instead of a 404. See roadmap §5 Día 2 (B12).
+    const proposal = await getLatestProposalRequest(sessionId);
+    if (proposal && isProposalAwaitingWorkspace(proposal.status)) {
+      return NextResponse.json({
+        workspace: null,
+        workspace_status: "pending",
+        proposal_status: proposal.status,
+        project_name: session.goalSummary,
+        message: "Workspace is being prepared.",
+      });
+    }
     return NextResponse.json({ message: "Workspace not found." }, { status: 404 });
   }
 
@@ -95,6 +111,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     workspace,
+    workspace_status: "ready",
     project_name: session.goalSummary,
     updates,
     ...(isInternal ? { payment_events: paymentEvents } : {}),
