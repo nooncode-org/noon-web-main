@@ -2,6 +2,8 @@ import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import Script from "next/script"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css'
 
 const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://noon-main.vercel.app");
@@ -97,6 +99,12 @@ export default function RootLayout({
           `}
         </Script>
         {children}
+        {/* Vercel Analytics + Speed Insights — chosen observability path,
+            see roadmap §10.8.3. No third-party error tracker (e.g. Sentry)
+            is wired by design. Both components are no-ops in non-Vercel
+            environments and free up to a per-project quota. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
