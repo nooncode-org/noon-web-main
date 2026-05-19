@@ -168,6 +168,13 @@ export function StudioShell({
   const [maxCorrections, setMaxCorrections] = useState(DEFAULT_MAX_CORRECTIONS);
   const [activeView, setActiveView] = useState<ActiveView>("chat");
   const [prototypeFailed, setPrototypeFailed] = useState(false);
+  /**
+   * B28 — Timestamp (Date.now ms) cuando arrancó el polling v0. Lo usa
+   * `<StudioPreviewPane>` para mostrar contador de tiempo transcurrido +
+   * copy adaptativo. Se setea en `buildPrototype` (initial create) y se
+   * limpia en handlePollSuccess / handlePollError.
+   */
+  const [pollingStartedAt, setPollingStartedAt] = useState<number | null>(null);
   const [projectName, setProjectName] = useState("");
   const [sessionSummaries, setSessionSummaries] = useState<SessionSummary[]>([]);
   const [quotaSnapshot, setQuotaSnapshot] = useState<PrototypeQuotaSnapshot | null>(null);
@@ -589,6 +596,9 @@ export function StudioShell({
   ) {
     setPhase("generating_prototype");
     setPrototypeFailed(false);
+    // B28 — Marca el inicio del polling para que el preview pane muestre
+    // tiempo transcurrido. Se limpia en handlePollSuccess / handlePollError.
+    setPollingStartedAt(Date.now());
 
     try {
       // Bloque 11 — Quality Layer: send raw conversation snapshot; the server
@@ -736,6 +746,8 @@ export function StudioShell({
   }
 
   function handlePollSuccess(data: PrototypePollResult, action: string) {
+    // B28 — Limpia el counter de polling (terminó OK).
+    setPollingStartedAt(null);
     if (action === "create") {
       const newVersion: PrototypeVersion = {
         chatId: data.chatId,
@@ -799,6 +811,8 @@ export function StudioShell({
   }
 
   function handlePollError(action: string) {
+    // B28 — Limpia el counter de polling (terminó por error).
+    setPollingStartedAt(null);
     if (action === "create") {
       setPhase("clarifying");
       setPrototypeFailed(true);
@@ -1274,6 +1288,7 @@ export function StudioShell({
               prototypeFailed={prototypeFailed}
               correctionsUsed={correctionsUsed}
               maxCorrections={maxCorrections}
+              pollingStartedAt={pollingStartedAt}
               onApprove={handleApprove}
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}

@@ -1,18 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Monitor, ExternalLink, CheckCircle, RotateCcw,
   FileText, User, ArrowRight, Loader2, AlertCircle, RefreshCw, Smartphone,
 } from "lucide-react";
 import type { StudioPhase, PrototypeVersion } from "./studio-shell";
+import {
+  classifyPollingPhase,
+  formatElapsed,
+  pollingStatusText,
+} from "@/lib/maxwell/polling-progress";
+
+/**
+ * B28 — Contador de tiempo transcurrido mientras se polling v0.
+ *
+ * Re-rendea cada 1s y deriva el copy + visual treatment del helper puro
+ * en `lib/maxwell/polling-progress.ts`. La fase "extended" (≥90s) cambia
+ * el color del badge a amber para señalar que algo está fuera de rango
+ * típico sin alarmar (no es error, solo demora).
+ */
+function ElapsedPollingBadge({ startedAt }: { startedAt: number }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const seconds = Math.max(0, Math.floor((now - startedAt) / 1000));
+  const phase = classifyPollingPhase(seconds);
+  const isExtended = phase === "extended";
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={`mt-3 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[11px] leading-5 ${
+        isExtended
+          ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
+          : "border-border/70 bg-foreground/[0.04] text-muted-foreground/90"
+      }`}
+    >
+      <span className="truncate">{pollingStatusText(phase)}</span>
+      <span className="shrink-0 font-mono tabular-nums">{formatElapsed(seconds)}</span>
+    </div>
+  );
+}
 
 // ============================================================================
 // Placeholder — no prototype yet
 // ============================================================================
 
-function PreviewPlaceholder({ phase }: { phase: StudioPhase }) {
+function PreviewPlaceholder({
+  phase,
+  pollingStartedAt,
+}: {
+  phase: StudioPhase;
+  /** B28 — timestamp (ms) cuando arrancó el polling v0; null si no estamos polling. */
+  pollingStartedAt: number | null;
+}) {
   const isGenerating = phase === "generating_prototype";
 
   if (isGenerating) {
@@ -97,12 +145,21 @@ function PreviewPlaceholder({ phase }: { phase: StudioPhase }) {
                 ))}
               </div>
 
-              <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-foreground/10">
-                <div className="h-full w-2/3 rounded-full bg-foreground/45" />
-              </div>
-              <p className="mt-3 text-[11px] leading-5 text-muted-foreground/80">
-                The preview will open here automatically when the first version is ready.
-              </p>
+              {/*
+                B28 — Counter dinámico reemplaza la barra estática previa
+                (`w-2/3` hardcodeado que nunca avanzaba). Cuando el polling
+                arranca, ElapsedPollingBadge muestra tiempo transcurrido +
+                copy adaptativo. Si pollingStartedAt es null por algún
+                motivo (race condition, action fallido antes de setear el
+                state), volvemos a un mensaje neutral sin contador.
+              */}
+              {pollingStartedAt != null ? (
+                <ElapsedPollingBadge startedAt={pollingStartedAt} />
+              ) : (
+                <p className="mt-3 text-[11px] leading-5 text-muted-foreground/80">
+                  The preview will open here automatically when the first version is ready.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -324,6 +381,12 @@ type StudioPreviewPaneProps = {
   onRequestProposal: () => void;
   onRetryPrototype: () => void;
   agentHref: string;
+  /**
+   * B28 — Timestamp (Date.now ms) cuando arrancó el polling v0. Null si
+   * no estamos polling. Lo setea / limpia el shell en `buildPrototype` y
+   * `pollV0Status` completion/error handlers.
+   */
+  pollingStartedAt: number | null;
 };
 
 export function StudioPreviewPane({
@@ -339,6 +402,7 @@ export function StudioPreviewPane({
   onRequestProposal,
   onRetryPrototype,
   agentHref,
+  pollingStartedAt,
 }: StudioPreviewPaneProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
 
@@ -360,7 +424,7 @@ export function StudioPreviewPane({
         {prototypeFailed ? (
           <PreviewFailed onRetry={onRetryPrototype} agentHref={agentHref} />
         ) : (
-          <PreviewPlaceholder phase={phase} />
+          <PreviewPlaceholder phase={phase} pollingStartedAt={pollingStartedAt} />
         )}
       </div>
     );
