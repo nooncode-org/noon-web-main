@@ -17,6 +17,7 @@ import {
 } from "@/lib/maxwell/repositories";
 import type { WorkspaceStatus } from "@/lib/maxwell/repositories";
 import { WORKSPACE_STATUS_VALUES } from "@/lib/maxwell/workspace-status";
+import { assertNoInternalFields } from "@/lib/security/project-isolation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -110,13 +111,25 @@ export async function GET(request: Request) {
   });
   const paymentEvents = isInternal ? await getPaymentEvents(sessionId) : [];
 
-  return NextResponse.json({
+  const body = {
     workspace,
-    workspace_status: "ready",
+    workspace_status: "ready" as const,
     project_name: session.goalSummary,
     updates,
     ...(isInternal ? { payment_events: paymentEvents } : {}),
-  });
+  };
+
+  // v3 isolation guard (2026-05-19): assert ONLY on the client-facing
+  // path. Internal/ops viewers (`isInternal`) intentionally receive
+  // `payment_events` which contains `payloadJson`, `providerEventId`,
+  // etc. — those ARE internal fields by design for the ops dashboard.
+  // The guard catches an accidental leak only when a real client is
+  // the recipient. No-op in production either way.
+  if (!isInternal && process.env.NODE_ENV !== "production") {
+    assertNoInternalFields(body, "GET /api/maxwell/workspace (client)");
+  }
+
+  return NextResponse.json(body);
 }
 
 export async function POST(request: Request) {

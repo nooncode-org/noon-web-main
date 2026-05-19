@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { listStudioSessionsForOwner, softDeleteStudioSession } from "@/lib/maxwell/repositories";
+import { assertNoInternalFields } from "@/lib/security/project-isolation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export async function GET() {
   }
 
   const sessions = await listStudioSessionsForOwner(viewer.email);
-  return NextResponse.json({
+  const body = {
     sessions: sessions.map((s) => ({
       id: s.id,
       initial_prompt: s.initialPrompt,
@@ -20,7 +21,17 @@ export async function GET() {
       goal_summary: s.goalSummary,
       updated_at: s.updatedAt,
     })),
-  });
+  };
+
+  // v3 isolation guard (2026-05-19): dev/CI-only assert that the
+  // session list payload never carries internal fields. The body is
+  // hand-allowlisted above; this lock-in catches future regressions
+  // that swap the manual map for `sessions` raw. No-op in prod.
+  if (process.env.NODE_ENV !== "production") {
+    assertNoInternalFields(body, "GET /api/maxwell/studio/sessions");
+  }
+
+  return NextResponse.json(body);
 }
 
 export async function DELETE(request: Request) {

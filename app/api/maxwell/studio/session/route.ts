@@ -9,6 +9,7 @@ import {
   getStudioVersions,
 } from "@/lib/maxwell/repositories";
 import type { MessageType } from "@/lib/maxwell/repositories";
+import { assertNoInternalFields } from "@/lib/security/project-isolation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
     versionNumber: version.versionNumber,
   }));
 
-  return NextResponse.json({
+  const body = {
     session: {
       id: session.id,
       status: session.status,
@@ -82,5 +83,18 @@ export async function GET(request: Request) {
     workspace: workspace ?? null,
     workspace_pending: session.status === "converted" && !workspace,
     proposal_status: proposal?.status ?? null,
-  });
+  };
+
+  // v3 isolation guard (2026-05-19): assert in dev/CI that no
+  // operational field accidentally leaked into the client response.
+  // The body is hand-allowlisted above — this lock-in catches future
+  // refactors that might return a DB-shaped object wholesale (e.g.
+  // `proposal` or `session` raw). No-op in production: the check
+  // never runs against client traffic, but every test + dev request
+  // exercises it.
+  if (process.env.NODE_ENV !== "production") {
+    assertNoInternalFields(body, "GET /api/maxwell/studio/session");
+  }
+
+  return NextResponse.json(body);
 }
