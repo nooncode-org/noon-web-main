@@ -1,8 +1,10 @@
-# Handoff — FASE 2 hardening (sesión 2026-05-16)
+# Handoff — FASE 2 hardening (sesión 2026-05-16/17/18)
 
-Estado al cierre de sesión 2026-05-17: **14 commits en `chore/fase2-hardening-2026-05-16` (pushed), working tree limpio, 491 tests verdes.**
+**Estado al 2026-05-18 PM:** `main` HEAD en `b4ab857`, **513 tests verdes**, working tree limpio. PR #13 ya mergeado por nooncode-tech (cuerpo grande FASE 2). Después se mergearon 3 PRs adicionales esta sesión (PR #14 F-1 security, PR #15 B28 polling UX, PR #16 npm audit fix).
 
-Actualización 2026-05-17 PM: cerrados Bloque 11 (Maxwell Quality Layer, gpt-4.1) y B22 (mobile fallback banner). Quedan pendientes Bloque 12 (GDPR — pospuesto) y B8 #2/#3 (esperando email templates).
+Actualización 2026-05-17 PM: cerrados Bloque 11 (Maxwell Quality Layer, gpt-4.1) y B22 (mobile fallback banner).
+
+Actualización 2026-05-18 PM (esta sesión): 3 PRs directos a main + verificación productiva — ver sección "5-tris" para detalle.
 
 Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 
@@ -13,14 +15,25 @@ Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 ```bash
 cd C:\Users\melan\Proyectos\noon-web-main
 git status                               # debe decir "working tree clean"
-git log --oneline 248a323..HEAD          # debe listar los 11 commits abajo
+git log --oneline -10                    # debe mostrar b4ab857 al tope
 npx tsc --noEmit                         # gate 1
 npx eslint .                             # gate 2
-npm test                                 # gate 3 → 447 tests pass
+npm test                                 # gate 3 → 513 tests pass
 npm run build                            # gate 4 → "Compiled successfully"
 ```
 
 Si algo no cuadra, el problema está en lo que pasó entre sesiones (HMR, ediciones manuales, dep update). NO sigas adelante hasta que los 4 gates queden verdes.
+
+**Verificación en producción (10 seg):**
+```bash
+curl -s https://noon-main.vercel.app/api/health
+# → {"service":"api","healthy":true,"checked_at":"..."}
+
+curl -s -o /dev/null -w "%{http_code}\n" -X POST \
+  https://noon-main.vercel.app/api/integrations/noon-app/proposal-review-decision \
+  -H "x-noon-signature: sha256=0000" -H "content-type: application/json" -d '{}'
+# → 401 (F-1 fix activo)
+```
 
 ---
 
@@ -212,13 +225,40 @@ Cambios:
 ## 7 · Cuando vuelvas — orden sugerido
 
 1. ~~**Push**~~ ✅ — hecho 2026-05-17, branch `chore/fase2-hardening-2026-05-16` en origin.
-2. **Crea el PR en GitHub** (sección 3) — usa el link que dio el push + pega body de este doc.
-3. **Aplica migración 013 + las 13 legacy** (sección 4.1) — bloquea cualquier deploy nuevo.
-4. **Configura Sentry + Vercel envs** (sección 4.2) — activa lo que el código ya espera.
-5. **Decide Bloques 11/12/13** (sección 5) — cuando tengas energía para meter cabeza en specs.
-6. Coordina cross-repo (4.3) y Resend (4.4) en paralelo.
-7. **Rotar credenciales Supabase** (sección 4.1-bis) — pospuesto por decisión owner 2026-05-17 hasta el primer deploy público o 2026-07-22 (90 días post-leak), lo que llegue primero.
+2. ~~**Crea el PR en GitHub**~~ ✅ — PR #13 mergeado por nooncode-tech 2026-05-17.
+3. ~~**Aplica migración 013 + las 13 legacy**~~ ✅ — aplicada por el dev 2026-05-18.
+4. **Configura Sentry + UptimeRobot + Resend DNS** (sección 4.2) — pendiente.
+5. **Decide Bloques 11/12/13** (sección 5) — Bloque 11 + B22 ya cerrados; quedan B14 GDPR + B8 #2/#3.
+6. Coordina cross-repo (4.3) — rename completo de `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET` en App.
+7. **Rotar credenciales Supabase** (sección 4.1-bis) — deadline 2026-07-22 o primer deploy público.
 
 ---
 
-_Generado 2026-05-16, actualizado 2026-05-17 (push + reprioritización rotación Supabase)._
+## 8 · Sesión 2026-05-18 PM — 3 PRs adicionales mergeados a main
+
+Esta sesión cerró 3 items concretos post-merge de PR #13, todos pusheados directo a main con autorización explícita del owner:
+
+| PR | Commit merge | Items | Tests | Notas |
+|---|---|---|---|---|
+| **#14** | `5b2bb0b` | F-1 mirror (HMAC timestamp required) | 497 → 498 | Mirror exacto del App `92f1e0b`. Destraba B1.5 pilot sign-off del App. Verificado productivo 2026-05-18: `curl -X POST ... -H "x-noon-signature: sha256=..." -d '{}'` → 401 `"Missing Noon App timestamp."` ✅ |
+| **#15** | `255aa23` | B28 polling progress indicator | 498 → 513 (+15) | Counter live + copy adaptativo en 4 fases (setup/generating/almost/extended). Helper puro `lib/maxwell/polling-progress.ts`. Solo afecta `phase === "generating_prototype"`. |
+| **#16** | `b4ab857` | npm audit fix (5 CVEs cerradas) | 513 estables | Lockfile-only. Cierra `brace-expansion` (low), `icu-minify` (DoS), `next-intl` ≤4.9.1 (proto pollution), `vite` 8.0.0-8.0.4 (HIGH path traversal). Residual `postcss` <8.5.10 aceptado (fix exigiría downgrade Next 16.2.6→9.3.3). |
+
+**Verificación productiva confirmada 2026-05-18 PM:**
+- `/api/health` → 200 OK
+- `/api/health/detail` sin auth → 401
+- `/api/integrations/noon-app/proposal-review-decision` con timestamp omitido → 401 `"Missing Noon App timestamp."`
+- Security headers activos: HSTS, X-Frame-Options, X-Content-Type-Options
+
+### Audit B-series adicional (2026-05-18 PM)
+
+De 8 items B-series "verificar":
+
+- ✅ Done: **B27** (interceptor 401 → signin), **B33** (metadataBase + openGraph), **B35** (unoptimized images removed), **B36** (viewport + themeColor), **B41** (three/react-three/geist uninstalled), **B28** (polling indicator — cerrado este PR #15).
+- ❌ Reales pendientes (próxima sesión):
+  - **B11** advisory lock quota (`prototype-quota.ts:103 evaluateInitialPrototypeCreate`): race condition real. Patrón `pg_advisory_xact_lock(hashtext(...))` ya usado en `repositories.ts:897,962,1393` pero NO en este path. ETA real **5-8h** (no chico — requiere thinking sobre lock key strategy + posiblemente marker temporario para cubrir la generación v0 completa, no solo el check).
+  - **B19** audit log proposal/[token] (`page.tsx:85` solo loguea rate-limit). Falta tabla `proposal_access_audit` + integración. ETA **3-4h** (chico-medio si scope minimal).
+
+---
+
+_Generado 2026-05-16. Actualizado 2026-05-17 (push + reprioritización rotación Supabase). Actualizado 2026-05-18 PM (PR #14/15/16 + verificación productiva)._
