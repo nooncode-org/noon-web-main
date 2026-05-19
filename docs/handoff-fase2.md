@@ -1,18 +1,19 @@
 # Handoff — FASE 2 hardening (sesión 2026-05-16/17/18/19)
 
-**Estado al 2026-05-19 PM (cierre sesión 2):** `main` HEAD en `a3ca787`, **617 tests verdes**, working tree limpio. PR #13 ya mergeado por nooncode-tech (cuerpo grande FASE 2). Después se mergearon: PR #14 F-1 security, PR #15 B28 polling UX, PR #16 npm audit fix, PR #19 B14 GDPR hard-delete CLI, gpt-5.5 bump (`206f63f`), B8 #2/#3 lifecycle emails draft (`606cbfb`), y v3 contracts prep (`a3ca787`).
+**Estado al 2026-05-19 PM (cierre sesión 2):** `main` HEAD en `a532889`, **626 tests verdes**, working tree limpio. PR #13 ya mergeado por nooncode-tech (cuerpo grande FASE 2). Después se mergearon: PR #14 F-1 security, PR #15 B28 polling UX, PR #16 npm audit fix, PR #19 B14 GDPR hard-delete CLI, gpt-5.5 bump (`206f63f`), B8 #2/#3 lifecycle emails draft (`606cbfb`), v3 contracts prep (`a3ca787`), y B8 wiring en payment activation (`a532889`).
 
 Actualización 2026-05-17 PM: cerrados Bloque 11 (Maxwell Quality Layer, gpt-4.1) y B22 (mobile fallback banner).
 
 Actualización 2026-05-18 PM: 3 PRs directos a main + verificación productiva — ver sección "5-tris" para detalle.
 
-Actualización 2026-05-19 PM (esta sesión, 4 PRs autónomos):
+Actualización 2026-05-19 PM (esta sesión, 5 PRs autónomos):
 1. B14 GDPR hard-delete CLI (commit `1b28907`) + 3 bugs detectados en self-review (cascade tables, sql.json, payment_event.paid_at)
 2. gpt-5.5 model bump con rollback env var `OPENAI_DEFAULT_MODEL` (commit `206f63f`)
 3. B8 #2/#3 lifecycle emails templates DRAFT, gated por `MAXWELL_LIFECYCLE_EMAILS=1` (commit `606cbfb`)
 4. v3 contratos preparatorios: `lib/constants/project-types.ts` + `lib/security/project-isolation.ts` ADDITIVE only (commit `a3ca787`)
+5. B8 wiring en `confirmProposalPayment` (commit `a532889`) — los 2 emails se disparan fire-and-forget después de cada activación, gate keeps it dormant hasta env flip
 
-Tests subieron 513 → 617 (+104): B14 (+27), B11 quota race (+5), gpt-5.5 (+5), lifecycle emails (+14), v3 contracts (+42), +más.
+Tests subieron 513 → 626 (+113): B14 (+27), B11 quota race (+5), gpt-5.5 (+5), lifecycle templates (+14), v3 contracts (+42), B8 wiring (+9), +más.
 
 Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 
@@ -23,10 +24,10 @@ Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 ```bash
 cd C:\Users\melan\Proyectos\noon-web-main
 git status                               # debe decir "working tree clean"
-git log --oneline -10                    # debe mostrar a3ca787 al tope
+git log --oneline -10                    # debe mostrar a532889 al tope
 npx tsc --noEmit                         # gate 1
 npx eslint .                             # gate 2
-npm test                                 # gate 3 → 617 tests pass
+npm test                                 # gate 3 → 626 tests pass
 npm run build                            # gate 4 → "Compiled successfully"
 ```
 
