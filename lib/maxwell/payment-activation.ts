@@ -17,10 +17,16 @@ import {
   type StudioSession,
 } from "@/lib/maxwell/repositories";
 import {
+  sendPaymentReceivedEmail,
+  sendWorkspaceReadyEmail,
+} from "@/lib/maxwell/lifecycle-emails";
+import { buildWorkspaceUrl } from "@/lib/maxwell/public-url";
+import {
   NoonAppIntegrationError,
   buildWebsiteProposalPayload,
   sendPaymentConfirmedToNoonApp,
 } from "@/lib/noon-app-integration";
+import { log } from "@/lib/server/logger";
 import { toStripeMinorUnit } from "@/lib/stripe/server";
 
 const ACTIVATABLE_PROPOSAL_STATUSES = new Set([
@@ -131,6 +137,167 @@ async function activateWorkspaceForPayment(input: {
     workspace.id,
     input.summary ?? "Stripe payment confirmed. Project activated.",
   );
+}
+
+/**
+ * B8 #2/#3 — fire the lifecycle emails (Payment received + Workspace
+ * ready) after a fresh payment activation completes. Fire-and-forget:
+ *
+ *   - The `MAXWELL_LIFECYCLE_EMAILS` env gate (checked inside the
+ *     senders) keeps both calls dormant in prod until ops verifies
+ *     the Resend domain and flips the flag — wiring is safe to merge
+ *     without breaking real client mailboxes.
+ *   - Each send is wrapped in its own try/catch so a failure on B8 #2
+ *     does NOT block B8 #3, and vice versa.
+ *   - Errors are logged under `maxwell.lifecycle-email` and SWALLOWED.
+ *     The payment activation flow (the DB writes, the Noon App
+ *     handoff) has already succeeded by the time we get here; an
+ *     email failure must not bubble back to the route handler and
+ *     surface as a 5xx that confuses ops into thinking the payment
+ *     didn't land.
+ *   - `proposal.deliveryRecipient` is the recipient. When it's null
+ *     (legacy proposals, or proposals where the operator chose a
+ *     non-email delivery channel) we log a warn + skip — no email,
+ *     no exception.
+ *   - The workspace URL is built once; if base-URL resolution fails
+ *     (env not configured in some non-Vercel runtime), B8 #2 still
+ *     fires without the CTA and B8 #3 is skipped entirely (a
+ *     "workspace ready" email without a link is useless).
+ *
+ * NOT called when `confirmProposalPayment` short-circuits on the
+ * idempotency check (same provider_event_id processed before) — those
+ * emails already went out on the original confirmation, re-sending
+ * would be a Resend dedupe miss + a confusing inbox event.
+ */
+async function sendLifecycleEmailsForPayment(input: {
+  session: StudioSession;
+  proposal: ProposalRequest;
+  workspace: ClientWorkspace;
+  paymentEvent: PaymentEvent;
+}): Promise<void> {
+  // Defense-in-depth: wrap the ENTIRE helper in a try/catch so a
+  // crash from anything (a malformed mock in a test, a future
+  // refactor that introduces an undefined field, etc.) cannot
+  // escape into the Node unhandled-rejection handler and surface as
+  // a noisy CI failure. The contract is fire-and-forget; we log
+  // whatever went wrong and return.
+  try {
+    const recipient = input.proposal?.deliveryRecipient;
+    if (!recipient) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Skipped lifecycle emails: proposal has no delivery_recipient.",
+        {
+          proposal_id: input.proposal?.id ?? "(unknown)",
+          session_id: input.session?.id ?? "(unknown)",
+        },
+      );
+      return;
+    }
+
+    const projectTitle =
+      input.session?.goalSummary?.trim() || "Your Noon project";
+
+    // Build the workspace URL once. If base URL env is not resolvable,
+    // both emails handle the absence: B8 #2 just omits the CTA, B8 #3
+    // gets skipped entirely (the link IS the email).
+    let workspaceUrl: string | null = null;
+    try {
+      workspaceUrl = buildWorkspaceUrl(input.session.id, {
+        locale: input.session.language,
+      });
+    } catch (error) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Could not build workspace URL; B8 #2 will omit CTA, B8 #3 will be skipped.",
+        {
+          session_id: input.session?.id ?? "(unknown)",
+          reason: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
+
+    // -----------------------------------------------------------------------
+    // B8 #2 — Payment received
+    // -----------------------------------------------------------------------
+    try {
+      const result = await sendPaymentReceivedEmail({
+        paymentEventId: input.paymentEvent.id,
+        to: recipient,
+        projectTitle,
+        // amountUsd may be null for legacy events; default to 0 keeps
+        // the template valid (Intl renders "$0.00"). In practice
+        // every post-B10 payment has the amount populated.
+        amount: input.paymentEvent.amountUsd ?? 0,
+        currency: input.paymentEvent.currency ?? "USD",
+        paymentReference: input.paymentEvent.reference,
+        workspaceUrl,
+      });
+      if (result.skipped) {
+        log.info("maxwell.lifecycle-email", "B8 #2 payment-received skipped.", {
+          reason: result.reason,
+          proposal_id: input.proposal.id,
+        });
+      } else {
+        log.info("maxwell.lifecycle-email", "B8 #2 payment-received sent.", {
+          message_id: result.messageId,
+          proposal_id: input.proposal.id,
+        });
+      }
+    } catch (error) {
+      log.error("maxwell.lifecycle-email", error, {
+        stage: "payment_received",
+        proposal_id: input.proposal.id,
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // B8 #3 — Workspace ready
+    // -----------------------------------------------------------------------
+    const workspaceId = input.workspace?.id;
+    if (!workspaceUrl || !workspaceId) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Skipped B8 #3 workspace-ready: missing workspace URL or id.",
+        {
+          workspace_id: workspaceId ?? "(unknown)",
+          has_url: workspaceUrl !== null,
+        },
+      );
+      return;
+    }
+
+    try {
+      const result = await sendWorkspaceReadyEmail({
+        workspaceId,
+        to: recipient,
+        projectTitle,
+        workspaceUrl,
+      });
+      if (result.skipped) {
+        log.info("maxwell.lifecycle-email", "B8 #3 workspace-ready skipped.", {
+          reason: result.reason,
+          workspace_id: workspaceId,
+        });
+      } else {
+        log.info("maxwell.lifecycle-email", "B8 #3 workspace-ready sent.", {
+          message_id: result.messageId,
+          workspace_id: workspaceId,
+        });
+      }
+    } catch (error) {
+      log.error("maxwell.lifecycle-email", error, {
+        stage: "workspace_ready",
+        workspace_id: workspaceId,
+      });
+    }
+  } catch (error) {
+    // Outer catch — unreachable in practice, but guarantees no
+    // unhandled rejection ever escapes this helper.
+    log.error("maxwell.lifecycle-email", error, {
+      stage: "outer_guard",
+    });
+  }
 }
 
 async function notifyNoonApp(input: {
@@ -284,6 +451,15 @@ export async function confirmProposalPayment(input: {
     paymentReference: input.paymentReference ?? input.providerPaymentIntentId ?? input.providerSessionId,
     summary: input.summary,
   });
+
+  // B8 #2/#3 fire-and-forget. Gated by `MAXWELL_LIFECYCLE_EMAILS` —
+  // skipped (no Resend call) when the env var is not "1". Errors are
+  // logged + swallowed inside the helper so a Resend outage cannot
+  // bubble back and fail the activation flow. `void` is intentional:
+  // we do NOT await — the route response should return as soon as the
+  // DB writes + App handoff complete; the inbox notification is a
+  // side-effect, not part of the contract.
+  void sendLifecycleEmailsForPayment({ session, proposal, workspace, paymentEvent });
 
   return { proposal, session, workspace, paymentEvent, idempotent: false };
 }
