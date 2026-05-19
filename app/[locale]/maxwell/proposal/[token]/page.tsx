@@ -14,6 +14,7 @@ import {
   enforceRateLimit,
   RateLimitExceededError,
 } from "@/lib/server/rate-limit";
+import { recordProposalAccessSafe } from "@/lib/server/audit/proposal-access";
 
 export const metadata: Metadata = {
   title: "Proposal - Noon",
@@ -69,6 +70,15 @@ async function resolveRscClientIdentity(): Promise<string> {
 export default async function PublicProposalPage({ params }: Props) {
   const { token } = await params;
 
+  // B19 — Capture client hints once at the top so every exit path (rate-limit
+  // block, unknown token, success) can audit consistently. The headers() call
+  // is async in Next 15+/16 RSCs; raw IP / UA are passed to
+  // recordProposalAccessSafe which hashes IP and truncates UA before insert
+  // (so the audit row never carries PII).
+  const requestHeaders = await headers();
+  const clientIp = await resolveRscClientIdentity();
+  const userAgent = requestHeaders.get("user-agent");
+
   // B19: rate-limit per client IP. Public surface — protects against token-scanner abuse.
   // 30 GETs / 60s allows legitimate browser refreshes / share-link previews while
   // absorbing burst scans. On exceed we render `notFound()` instead of 429 so a scanner
@@ -78,12 +88,19 @@ export default async function PublicProposalPage({ params }: Props) {
       namespace: "proposal.public",
       capacity: 30,
       refillPerSec: 30 / 60,
-      identityKey: await resolveRscClientIdentity(),
+      identityKey: clientIp,
     });
   } catch (rateError) {
     if (rateError instanceof RateLimitExceededError) {
       log.warn("proposal.public.rate-limited", "Rate limit hit for public proposal page", {
         retry_after_seconds: rateError.retryAfterSeconds,
+      });
+      await recordProposalAccessSafe({
+        proposalToken: token,
+        action: "page_view_blocked",
+        responseStatus: 404,
+        clientIp,
+        userAgent,
       });
       notFound();
     }
@@ -92,12 +109,33 @@ export default async function PublicProposalPage({ params }: Props) {
 
   let proposal = await getProposalRequestByPublicToken(token);
   if (!proposal || !PUBLIC_PROPOSAL_STATUSES.has(proposal.status)) {
+    // B19 — Audit blocked accesses (unknown token, unpublished status, expired).
+    // Indistinguishable from rate-limited externally (both render notFound), but
+    // recorded separately so compliance queries can tell them apart.
+    await recordProposalAccessSafe({
+      proposalToken: token,
+      action: "page_view_blocked",
+      responseStatus: 404,
+      clientIp,
+      userAgent,
+    });
     notFound();
   }
 
   if (!proposal.firstOpenedAt && proposal.status !== "expired") {
     proposal = (await markProposalFirstOpened(token)) ?? proposal;
   }
+
+  // B19 — Successful render. Awaited so the audit row is committed before
+  // we hand the response back to the client; if the insert fails the helper
+  // swallows it and warns via the structured logger.
+  await recordProposalAccessSafe({
+    proposalToken: token,
+    action: "page_view",
+    responseStatus: 200,
+    clientIp,
+    userAgent,
+  });
 
   const cleanDraft = stripInternalReviewFlags(proposal.draftContent);
 
