@@ -1,18 +1,39 @@
+/**
+ * lib/maxwell/proposal-email.ts
+ *
+ * Sends the "Your proposal is ready" email to the client after the
+ * Maxwell proposal review flow completes. The original single sender;
+ * the shared Resend primitives live in `email-config.ts` since B8 #2/#3
+ * added two more transactional emails (`lifecycle-emails.ts`).
+ *
+ * The exported names `ProposalEmailConfigurationError`,
+ * `ProposalEmailSendError`, `isProposalEmailConfigured`,
+ * `sendProposalEmail`, and the type `ProposalEmailResult` are preserved
+ * for backward compatibility — existing callers and the existing
+ * `tests/maxwell/proposal-email.test.ts` continue to work unchanged.
+ */
+
+import {
+  EmailConfigurationError as ProposalEmailConfigurationError,
+  EmailSendError as ProposalEmailSendError,
+  escapeHtml,
+  getResendConfig,
+  isResendConfigured,
+  sendViaResend,
+  type EmailSendResult,
+} from "./email-config";
 import { PROPOSAL_VALIDITY_DAYS } from "./proposal-lifecycle";
 
-export class ProposalEmailConfigurationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ProposalEmailConfigurationError";
-  }
-}
-
-export class ProposalEmailSendError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ProposalEmailSendError";
-  }
-}
+// Re-export under the original names so both `instanceof
+// ProposalEmailConfigurationError` value checks and
+// `function f(err: ProposalEmailConfigurationError)` type annotations
+// keep working in existing route handlers and the proposal-email tests.
+// Using `import { X as Y }` + `export { Y }` carries both the value AND
+// the instance type — a plain `export const Y = X` would only carry the
+// value, leaving the type aliased to `typeof X` (constructor) instead
+// of the instance type.
+export { ProposalEmailConfigurationError, ProposalEmailSendError };
+export type ProposalEmailResult = EmailSendResult;
 
 export type SendProposalEmailInput = {
   proposalId: string;
@@ -22,62 +43,8 @@ export type SendProposalEmailInput = {
   projectTitle: string;
 };
 
-export type ProposalEmailResult = {
-  provider: "resend";
-  messageId: string;
-};
-
-type ResendConfig = {
-  provider: "resend";
-  apiKey: string;
-  from: string;
-  replyTo: string | null;
-};
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function getProposalEmailConfig(): ResendConfig {
-  const provider = process.env.MAIL_PROVIDER?.trim().toLowerCase() || "resend";
-  if (provider !== "resend") {
-    throw new ProposalEmailConfigurationError(
-      `Unsupported MAIL_PROVIDER "${provider}". Configure MAIL_PROVIDER=resend.`
-    );
-  }
-
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.MAIL_FROM?.trim();
-  const replyTo = process.env.MAIL_REPLY_TO?.trim() || null;
-
-  if (!apiKey) {
-    throw new ProposalEmailConfigurationError("RESEND_API_KEY is not configured.");
-  }
-
-  if (!from) {
-    throw new ProposalEmailConfigurationError("MAIL_FROM is not configured.");
-  }
-
-  return {
-    provider: "resend",
-    apiKey,
-    from,
-    replyTo,
-  };
-}
-
 export function isProposalEmailConfigured(): boolean {
-  try {
-    getProposalEmailConfig();
-    return true;
-  } catch {
-    return false;
-  }
+  return isResendConfigured();
 }
 
 function buildProposalEmailSubject(projectTitle: string, versionNumber: number): string {
@@ -131,44 +98,19 @@ function buildProposalEmailHtml(input: SendProposalEmailInput): string {
 }
 
 export async function sendProposalEmail(input: SendProposalEmailInput): Promise<ProposalEmailResult> {
-  const config = getProposalEmailConfig();
+  const config = getResendConfig();
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": `maxwell-proposal-${input.proposalId}-v${input.versionNumber}`,
-    },
-    body: JSON.stringify({
-      from: config.from,
-      to: [input.to],
-      subject: buildProposalEmailSubject(input.projectTitle, input.versionNumber),
-      html: buildProposalEmailHtml(input),
-      text: buildProposalEmailText(input),
-      replyTo: config.replyTo ?? undefined,
-      tags: [
-        { name: "flow", value: "maxwell_proposal" },
-        { name: "proposal_id", value: input.proposalId },
-        { name: "proposal_version", value: String(input.versionNumber) },
-      ],
-    }),
+  return sendViaResend({
+    config,
+    to: input.to,
+    subject: buildProposalEmailSubject(input.projectTitle, input.versionNumber),
+    html: buildProposalEmailHtml(input),
+    text: buildProposalEmailText(input),
+    idempotencyKey: `maxwell-proposal-${input.proposalId}-v${input.versionNumber}`,
+    tags: [
+      { name: "flow", value: "maxwell_proposal" },
+      { name: "proposal_id", value: input.proposalId },
+      { name: "proposal_version", value: String(input.versionNumber) },
+    ],
   });
-
-  if (!response.ok) {
-    const responseText = await response.text();
-    throw new ProposalEmailSendError(
-      `Resend email send failed with status ${response.status}: ${responseText}`
-    );
-  }
-
-  const data = (await response.json()) as { id?: string };
-  if (!data.id) {
-    throw new ProposalEmailSendError("Resend email send succeeded without a message id.");
-  }
-
-  return {
-    provider: "resend",
-    messageId: data.id,
-  };
 }
