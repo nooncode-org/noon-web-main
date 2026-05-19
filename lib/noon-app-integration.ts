@@ -70,6 +70,32 @@ function timingSafeEquals(left: string, right: string) {
   return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
+/**
+ * F-1 mirror fix (2026-05-18): rejects requests where `x-noon-timestamp` is
+ * absent. Mirror of App-nooncode commit 92f1e0b. The `: asserts timestamp is
+ * string` signature lets the caller treat `timestamp` as a non-null string
+ * in scope after this call returns, which is what allows the unconditional
+ * `${timestamp}.${bodyText}` payload in verifyNoonAppSignature below.
+ *
+ * Status 401 is passed explicitly to NoonAppIntegrationError (its default
+ * 502 applies to infra failures, not auth).
+ */
+function assertRecentTimestamp(timestamp: string | null): asserts timestamp is string {
+  if (!timestamp) {
+    throw new NoonAppIntegrationError("Missing Noon App timestamp.", 401);
+  }
+
+  const parsed = Number(timestamp);
+  if (!Number.isFinite(parsed)) {
+    throw new NoonAppIntegrationError("Invalid Noon App timestamp.", 401);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - parsed) > MAX_CLOCK_SKEW_SECONDS) {
+    throw new NoonAppIntegrationError("Noon App timestamp is outside the allowed window.", 401);
+  }
+}
+
 function verifyNoonAppSignature(headers: Headers, bodyText: string) {
   const signature = headers.get(SIGNATURE_HEADER);
   const timestamp = headers.get(TIMESTAMP_HEADER);
@@ -78,19 +104,14 @@ function verifyNoonAppSignature(headers: Headers, bodyText: string) {
     throw new NoonAppIntegrationError("Missing Noon App signature.", 401);
   }
 
-  if (timestamp) {
-    const parsed = Number(timestamp);
-    if (!Number.isFinite(parsed)) {
-      throw new NoonAppIntegrationError("Invalid Noon App timestamp.", 401);
-    }
+  assertRecentTimestamp(timestamp);
 
-    const now = Math.floor(Date.now() / 1000);
-    if (Math.abs(now - parsed) > MAX_CLOCK_SKEW_SECONDS) {
-      throw new NoonAppIntegrationError("Noon App timestamp is outside the allowed window.", 401);
-    }
-  }
-
-  const signedPayload = timestamp ? `${timestamp}.${bodyText}` : bodyText;
+  // Unconditional — the assert above guarantees timestamp is a string.
+  // Pre-F-1 this line was `timestamp ? \`${timestamp}.${bodyText}\` : bodyText`,
+  // which let attackers omit the timestamp header and replay arbitrary bodies
+  // (the body-only signature collision required the secret, but the bypass of
+  // the anti-replay ±5min window made the path unsafe by design).
+  const signedPayload = `${timestamp}.${bodyText}`;
   const expected = crypto.createHmac("sha256", readNoonAppSecret()).update(signedPayload).digest("hex");
 
   if (!timingSafeEquals(normalizeSignature(signature), expected)) {
