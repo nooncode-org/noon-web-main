@@ -58,6 +58,27 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   updateProposalRequestStatus: vi.fn(),
 }));
 
+// B8 wiring (2026-05-19): payment-activation.ts now imports the
+// lifecycle-emails module and fires the senders fire-and-forget.
+// Mock both senders to no-op so the existing route tests don't
+// accidentally call the real Resend transport. The gate
+// (MAXWELL_LIFECYCLE_EMAILS) would short-circuit them anyway in
+// CI, but mocking is more explicit + faster.
+vi.mock("@/lib/maxwell/lifecycle-emails", () => ({
+  sendPaymentReceivedEmail: vi.fn(async () => ({
+    provider: "resend",
+    messageId: null,
+    skipped: true,
+    reason: "lifecycle_emails_disabled",
+  })),
+  sendWorkspaceReadyEmail: vi.fn(async () => ({
+    provider: "resend",
+    messageId: null,
+    skipped: true,
+    reason: "lifecycle_emails_disabled",
+  })),
+}));
+
 vi.mock("@/lib/noon-app-integration", async () => {
   // NoonAppIntegrationError es un Error real usado para discriminar en el catch.
   class NoonAppIntegrationError extends Error {
