@@ -236,6 +236,22 @@ describe("Noon App webhook — signature verification", () => {
     const res = await POST(req);
     expect(res.status).toBe(401);
   });
+
+  it("F-1 regression: returns 401 when x-noon-timestamp header is missing (mirror App 92f1e0b)", async () => {
+    // Attack vector replicado de B1.3b Scenario 3d (App side):
+    // signature válida computada sobre `${timestamp}.${bodyText}` pero el
+    // header x-noon-timestamp se omite. Antes del fix F-1, el verifier caía
+    // en la rama `else` del ternario y firmaba solo `bodyText`, bypaseando
+    // el anti-replay window ±5min. Tras el fix, debe rechazarse con 401.
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { omitTimestamp: true },
+    );
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.message).toBe("Missing Noon App timestamp.");
+  });
 });
 
 // ============================================================================
