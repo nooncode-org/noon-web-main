@@ -57,17 +57,20 @@
 - `email`, `name`, `picture` propagados a token y session
 
 ### IA
-- OpenAI SDK v6.33.0, modelo `gpt-4.1` por defecto en `chatWithOpenAI`
+- OpenAI SDK v6.33.0, modelo `gpt-5.5` por defecto en `chatWithOpenAI` (bump 2026-05-19, commit `206f63f`)
+- Rollback hot-swap via `OPENAI_DEFAULT_MODEL` env var (sin redeploy): `resolveDefaultOpenAIModel()` lee env en cada call. Setear a `gpt-4.1` revierte al modelo previo en segundos.
 - v0 SDK v0.16.4 (`v0-sdk`) — `responseMode: "async"` para create/update; cliente global
-- Wrapper común: `lib/api-ia.ts` exports `chatWithOpenAI`, `createV0Prototype`, `updateV0Prototype`, `getV0PrototypeStatus`
+- Wrapper común: `lib/api-ia.ts` exports `chatWithOpenAI`, `createV0Prototype`, `updateV0Prototype`, `getV0PrototypeStatus`, `resolveDefaultOpenAIModel`
 - `OPENAI_API_KEY` validada en runtime (lazy); `V0_API_KEY` configurada globalmente por el SDK
+- Smoke harness: `scripts/smoke-gpt-5.5.mjs` + `npm run smoke:gpt-5.5` (verifica que el modelo responde a un prompt determinístico dentro del latency budget; cost ~$0.00023/run)
 
 ### Tests
 - Vitest v4 (`vitest.config.ts`): `npm test`, `npm run test:watch`, `npm run test:coverage`
 - Playwright v1.59 (`playwright.config.ts`): visual + a11y
-- Estructura:
-  - `tests/maxwell/` (13): api-smoke, auth-gating, noon-app-integration, prompts, proposal-content, proposal-email, proposal-lifecycle, proposal-rules, prototype-quota, public-url, review-auth, state-machine, studio-guards
-  - `tests/contact/contact-abuse.test.ts`
+- **Baseline al 2026-05-19:** 633 tests verdes (subida +271 desde la última snapshot de este doc, principalmente FASE 2 hardening + Bloque 11 Quality Layer + B14 GDPR + B8 emails + v3 contracts).
+- Estructura (resumen — la lista exhaustiva vive en `tests/`):
+  - `tests/maxwell/` (~30 archivos): incluye api-smoke, auth-gating, chat, payment + payment-activation-lifecycle, payment-route, proposal-email, lifecycle-emails, brief-extractor, style-classifier, prototype-poll, workspace-preparing, noon-app-integration + noon-app-webhook, v3-isolation-wiring, public-url, review-auth, state-machine, studio-guards, etc.
+  - `tests/contact/`, `tests/health/`, `tests/server/audit/`, `tests/scripts/` (gdpr-hard-delete), `tests/upgrade/`, `tests/constants/` (project-types), `tests/security/` (project-isolation), `tests/lib/` (api-ia)
   - `tests/visual/`: a11y.spec.ts (axe-core), capture.spec.ts (visual regression)
 
 ### Mail
@@ -76,8 +79,11 @@
 
 ### Infra
 - Sin AWS, sin Redis, sin S3
-- Deployment local/VPS o Vercel-compatible (a confirmar por entorno)
-- No hay `.github/workflows/` — sin CI
+- Deployment en Vercel (confirmado prod: `noon-main.vercel.app`)
+- Postgres en Supabase con SSL (DATABASE_URL + POSTGRES_URL)
+- Sentry instrumentation cableada (`instrumentation.ts` + `lib/server/logger.ts`), gated por `SENTRY_DSN` env — actualmente NO seteado (pendiente ops)
+- Upstash Redis para rate-limiting (`lib/server/rate-limit.ts`, B21)
+- No hay `.github/workflows/` — sin CI (pendiente del hardening)
 
 ---
 
@@ -398,26 +404,52 @@ NOON_APP_WEBHOOK_SECRET
 
 ## 13. Continuidad
 
-### Última iteración significativa (Fases 1–6, abril 2026):
+### Iteraciones cerradas (cronología abreviada)
+
+**Fases 1–6 (abril 2026) — FASE 1 baseline:**
 - Migración SQLite → Postgres completada
-- `proposal/route.ts` reescrito (sin contenido comercial prohibido)
-- Cola de revisión humana operativa (`/maxwell/review`) + handoff firmado a Noon App
+- `proposal/route.ts` reescrito sin contenido comercial prohibido
+- Cola de revisión humana (`/maxwell/review`) + handoff firmado a Noon App
 - Webhook entrante HMAC-SHA256 con anti-replay
 - Auth Google con allowlist + Bearer dual
-- 13 migraciones Postgres aplicadas
-- 13 tests Vitest + visual/a11y Playwright
-- Soft delete de `studio_session`
+- Soft delete `studio_session`
 
-### Próxima iteración recomendada — Hardening:
-1. CI mínimo (`.github/workflows/ci.yml`)
-2. Tests del webhook entrante (firma, timestamp, replay)
-3. Mover scripts manuales (`test-*.js`) fuera de raíz
-4. Fail-fast de auth en producción
-5. Variabilizar `OPENAI_MODEL`
-6. Observabilidad (Sentry o equivalente)
+**FASE 2 hardening (mayo 2026) — PR #13 grande mergeado por nooncode-tech:**
+- 17 commits de hardening (B-series), Bloque 11 Maxwell Quality Layer, B22 mobile fallback banner
+- Tests 362 → 491 → 513 → **633** verdes (estado actual)
 
-**Modo:** Refactor / Infra / Testing
-**Skills:** system-testing → system-infra → system-refactor
+**Sesión 2026-05-19 (8 PRs autónomos, todos en `main`):**
+1. `1b28907` — B14 GDPR Art. 17 hard-delete CLI + audit ledger (`gdpr_deletion_log`) + 2-person runbook
+2. `206f63f` — gpt-5.5 model bump con rollback env var `OPENAI_DEFAULT_MODEL`
+3. `606cbfb` — B8 #2/#3 lifecycle emails templates (Payment received + Workspace ready, gated por `MAXWELL_LIFECYCLE_EMAILS=1`)
+4. `a3ca787` — v3 contracts prep: `lib/constants/project-types.ts` + `lib/security/project-isolation.ts` (ADDITIVE)
+5. `a532889` — B8 wiring en `confirmProposalPayment` (fire-and-forget, gated)
+6. `5f69a7f` — v3 wiring guards `assertNoInternalFields` en 3 routes (`studio/session`, `studio/sessions`, `workspace` client path), no-op en prod
+7. `0b4743b` — Ops toolkit: `scripts/smoke-gpt-5.5.mjs` + 3 runbooks (smoke gpt-5.5, Supabase rotation 2026-07-22, cross-repo v3 mirror para App)
+8. `8e772f1` + handoff doc updates
+
+### Próxima iteración recomendada
+
+**Pendientes operacionales (NO requieren código — accesos externos):**
+1. **Resend domain → flip `MAXWELL_LIFECYCLE_EMAILS=1`** en Vercel para activar B8 emails (código ya wireado, dominio Resend YA verificado per FASE 1)
+2. **Smoke gpt-5.5 en prod** con `npm run smoke:gpt-5.5` (cost ~$0.00023/run)
+3. **Sentry DSN setup** — `SENTRY_DSN` env var en Vercel (instrumentation YA cableada)
+4. **UptimeRobot setup** para monitoring de health endpoints
+5. **Supabase keys rotation** deadline **2026-07-22** — runbook listo en `docs/supabase-key-rotation-runbook.md`
+
+**Pendientes de owner / cross-repo (requieren decisión o coordinación):**
+1. **v3 Phase 2-6 scope** — no hay master-spec formal todavía (confirmar con owner si existe o se difiere)
+2. **Cross-repo v3 contracts mirror en App-nooncode** — spec listo en `docs/cross-repo-v3-contracts-app-mirror.md`. **App usa canonical diferente** (`landing`/`webapp`/etc vs Web `web_landing`/`webapp_system`/etc) — divergencia documentada que necesita decisión owner para unificar o mantener separado
+3. **Rename completo `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET`** (cross-repo, eliminar legacy fallback)
+4. **LLM budget G-D2** — implementación pendiente (spec confirmado: $200/mes, warn 80%, hard-stop 100%)
+
+**Pendientes técnicos menores:**
+1. CI mínimo (`.github/workflows/ci.yml`) — único hardening item que no se cerró
+2. Tests para 4-5 routes sin cobertura explícita (orden: `maxwell/session`, `maxwell/prototype`, `maxwell/proposal`, `message-feedback`, `review-sla`)
+3. Bundle/perf review del `npm run build` output
+
+**Modo:** mostly ops follow-up + sprint planning para v3 cuando llegue
+**Skills:** system-ops → system-architecture (v3 scoping)
 
 ---
 
