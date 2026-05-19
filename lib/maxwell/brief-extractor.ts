@@ -19,9 +19,14 @@
  *     surface), but the catch handler uses the structured logger that
  *     redacts emails / tokens.
  *
- * Model choice: gpt-4.1. The spec doc suggests gpt-5.5, but the model is
- * not confirmed available in our org — we keep the same default as the
- * rest of the codebase. Change in one place when gpt-5.5 is approved.
+ * Model choice: inherits the codebase default via `chatWithOpenAI`, which
+ * resolves to `gpt-5.5` since 2026-04-23 (GA confirmed; bumped in
+ * `lib/api-ia.ts` — see `resolveDefaultOpenAIModel`). The Quality Layer
+ * spec originally called for gpt-5.5 here specifically because the
+ * extractor benefits from stronger reasoning when nuance matters
+ * (vague objectives, multi-user products, implicit constraints) — the
+ * default now matches that intent. Rollback via the `OPENAI_DEFAULT_MODEL`
+ * env var without redeploy if needed.
  */
 
 import { chatWithOpenAI } from "@/lib/api-ia";
@@ -58,7 +63,8 @@ ${conversation}`;
 
 /**
  * Strip markdown fences if the model still adds them despite the instruction.
- * GPT-4.1 occasionally wraps JSON in ```json ... ``` even when told not to.
+ * Both GPT-4.1 and GPT-5.5 occasionally wrap JSON in ```json ... ``` even
+ * when told not to.
  */
 function stripMarkdownFences(raw: string): string {
   return raw.replace(/```json\s*|```\s*$|```/g, "").trim();
@@ -88,7 +94,9 @@ export async function extractAndSaveBrief(
       .join("\n");
 
     const { reply } = await chatWithOpenAI({
-      model: "gpt-4.1",
+      // Model inherits the codebase default (resolveDefaultOpenAIModel) so
+      // the rollback env var `OPENAI_DEFAULT_MODEL` affects this extractor
+      // too — no need to hardcode + remember to revert in two places.
       systemPrompt: SYSTEM_PROMPT,
       prompt: buildExtractionPrompt(conversation),
     });

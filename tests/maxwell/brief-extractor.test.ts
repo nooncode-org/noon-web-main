@@ -7,7 +7,8 @@
  *   - On JSON parse failure: error logged, no upsert, no throw.
  *   - On OpenAI throw: error logged, no upsert, no throw.
  *   - When OPENAI_API_KEY is absent: silent skip (no LLM call, no log spam).
- *   - Markdown-fenced JSON replies are tolerated (gpt-4.1 sometimes adds ``` ).
+ *   - Markdown-fenced JSON replies are tolerated (both gpt-4.1 and gpt-5.5
+ *     occasionally add ``` even when told not to).
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -97,7 +98,7 @@ describe("extractAndSaveBrief — happy path", () => {
     expect(call.primaryUser).toBeUndefined();
   });
 
-  it("strips markdown ```json fences from the reply (gpt-4.1 quirk)", async () => {
+  it("strips markdown ```json fences from the reply (gpt-4.1/gpt-5.5 quirk)", async () => {
     vi.mocked(chatWithOpenAI).mockResolvedValueOnce({
       reply: '```json\n{"objective":"x","users":null,"primaryUser":null,"coreFlow":null,"platform":null,"integrations":null,"styleDirection":null,"constraints":null}\n```',
     });
