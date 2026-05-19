@@ -26,16 +26,31 @@ export function hashEmail(email) {
     .slice(0, 16);
 }
 
-/** Tables whose rows get hard-deleted via the studio_session CASCADE. */
+/**
+ * Tables whose rows get hard-deleted via the studio_session CASCADE chain.
+ *
+ * Direct FK → studio_session(id) ON DELETE CASCADE:
+ *   studio_message, studio_brief, studio_version, studio_event,
+ *   proposal_request, client_workspace, payment_event
+ *
+ * Transitive cascades (FK to the above tables, not to studio_session):
+ *   studio_message_feedback → studio_message (CASCADE)
+ *   proposal_review_event   → proposal_request (CASCADE)
+ *   workspace_update        → client_workspace (CASCADE)
+ *
+ * All deleted by a single DELETE FROM studio_session WHERE id IN (...).
+ */
 export const CASCADE_DELETED_TABLES = [
   "studio_session",
   "studio_message",
   "studio_brief",
   "studio_version",
   "studio_event",
-  "studio_message_feedback",
+  "studio_message_feedback",   // transitive via studio_message
   "proposal_request",
+  "proposal_review_event",     // transitive via proposal_request
   "client_workspace",
+  "workspace_update",          // transitive via client_workspace
   "payment_event",
 ];
 
@@ -70,12 +85,17 @@ export function anonymizeStripePayloads(rows) {
         ? Number.parseFloat(r.amount_usd)
         : r.amount_usd,
     currency: r.currency ?? null,
-    paid_at:
-      r.paid_at == null
+    // `event_at` corresponds to payment_event.created_at (when the event row
+    // was inserted into our DB — for Stripe webhooks this is moments after
+    // Stripe processed the payment; for manual evidence it's when ops marked
+    // the event). NOT to be confused with proposal_request.stripe_paid_at
+    // which is a different field on a different table.
+    event_at:
+      r.event_at == null
         ? null
-        : r.paid_at instanceof Date
-        ? r.paid_at.toISOString()
-        : r.paid_at,
+        : r.event_at instanceof Date
+        ? r.event_at.toISOString()
+        : r.event_at,
     event_type: r.event_type,
   }));
 }
@@ -148,7 +168,8 @@ export function formatPlanSummary(plan) {
       rec.amount_usd != null
         ? `${rec.amount_usd.toFixed(2)} ${rec.currency ?? ""}`.trim()
         : "n/a";
-    lines.push(`  - ${id}   ${amt}   (${rec.event_type})`);
+    const ts = rec.event_at ?? "(no event_at)";
+    lines.push(`  - ${id}   ${amt}   ${rec.event_type}   @ ${ts}`);
   }
   lines.push("");
   lines.push(`Snapshot path: ${plan.snapshotPath}`);

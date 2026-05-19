@@ -87,17 +87,18 @@ describe("anonymizeStripePayloads", () => {
         provider_payment_intent_id: "pi_abc",
         amount_usd: 99.5,
         currency: "USD",
-        paid_at: "2026-05-15T12:00:00Z",
+        event_at: "2026-05-15T12:00:00Z",
         // any additional column (would be dropped) — verify by shape
       } as Record<string, unknown> as Parameters<typeof anonymizeStripePayloads>[0][0],
     ]);
 
     expect(result).toHaveLength(1);
+    // Lex-sorted: amount_usd < currency < event_at < event_type < provider_payment_intent_id
     expect(Object.keys(result[0]).sort()).toEqual([
       "amount_usd",
       "currency",
+      "event_at",
       "event_type",
-      "paid_at",
       "provider_payment_intent_id",
     ]);
   });
@@ -109,7 +110,7 @@ describe("anonymizeStripePayloads", () => {
         amount_usd: "150.00" as unknown as number,
         currency: "USD",
         provider_payment_intent_id: "pi_x",
-        paid_at: "2026-05-01T00:00:00Z",
+        event_at: "2026-05-01T00:00:00Z",
       },
     ]);
 
@@ -124,17 +125,17 @@ describe("anonymizeStripePayloads", () => {
     expect(result[0].provider_payment_intent_id).toBeNull();
     expect(result[0].amount_usd).toBeNull();
     expect(result[0].currency).toBeNull();
-    expect(result[0].paid_at).toBeNull();
+    expect(result[0].event_at).toBeNull();
     expect(result[0].event_type).toBe("manual_evidence");
   });
 
-  it("serialises Date objects to ISO strings (paid_at comes as Date from some drivers)", () => {
+  it("serialises Date objects to ISO strings (event_at comes as Date from some drivers)", () => {
     const date = new Date("2026-05-15T12:34:56Z");
     const result = anonymizeStripePayloads([
-      { event_type: "x", paid_at: date },
+      { event_type: "x", event_at: date },
     ]);
 
-    expect(result[0].paid_at).toBe("2026-05-15T12:34:56.000Z");
+    expect(result[0].event_at).toBe("2026-05-15T12:34:56.000Z");
   });
 });
 
@@ -149,7 +150,7 @@ describe("buildDeletionPlan", () => {
         provider_payment_intent_id: "pi_1",
         amount_usd: 100,
         currency: "USD",
-        paid_at: "2026-05-15T12:00:00Z",
+        event_at: "2026-05-15T12:00:00Z",
       },
     ],
   };
@@ -249,7 +250,7 @@ describe("formatPlanSummary", () => {
         provider_payment_intent_id: "pi_xyz",
         amount_usd: 100,
         currency: "USD",
-        paid_at: "2026-05-15T12:00:00Z",
+        event_at: "2026-05-15T12:00:00Z",
         event_type: "checkout.completed",
       },
     ],
@@ -291,7 +292,7 @@ describe("formatPlanSummary", () => {
           provider_payment_intent_id: null,
           amount_usd: null,
           currency: null,
-          paid_at: null,
+          event_at: null,
           event_type: "manual_evidence",
         },
       ],

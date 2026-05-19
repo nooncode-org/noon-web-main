@@ -29,15 +29,20 @@ Use this runbook **only** when:
 
 Every row from these tables tied to the client's `studio_session` rows:
 
+**Direct FK → `studio_session` (CASCADE):**
 - `studio_session` (root, deleted explicitly; cascades the rest)
 - `studio_message`
 - `studio_brief`
 - `studio_version`
 - `studio_event`
-- `studio_message_feedback` (via `studio_message`)
 - `proposal_request`
 - `client_workspace`
 - `payment_event` — **identifiers preserved into `gdpr_deletion_log.preserved_payment_records` BEFORE the cascade.** Stripe Dashboard remains source of truth.
+
+**Transitive cascades (FK to one of the above, not directly to `studio_session`):**
+- `studio_message_feedback` (via `studio_message`)
+- `proposal_review_event` (via `proposal_request`)
+- `workspace_update` (via `client_workspace`)
 
 ### Delete by email
 

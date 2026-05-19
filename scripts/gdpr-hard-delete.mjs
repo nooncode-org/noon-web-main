@@ -51,7 +51,6 @@ import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 
 import {
-  CASCADE_DELETED_TABLES,
   EMAIL_DELETED_TABLES,
   buildDeletionPlan,
   formatPlanSummary,
@@ -164,33 +163,62 @@ async function countRowsByTable(sql, sessionIds, normalizedEmail) {
     return { contact_leads: Number(cl[0]?.c ?? 0) };
   }
 
-  // For each cascade table, count rows that would be deleted.
   const counts = {};
-  for (const tbl of CASCADE_DELETED_TABLES) {
-    const col =
-      tbl === "studio_session"
-        ? "id"
-        : tbl === "studio_message_feedback"
-        ? "studio_message_id"
-        : "studio_session_id";
-    if (tbl === "studio_message_feedback") {
-      // Count via join through studio_message
-      const rows = await sql`
-        SELECT COUNT(*)::int AS c
-        FROM studio_message_feedback smf
-        WHERE smf.studio_message_id IN (
-          SELECT id FROM studio_message WHERE studio_session_id IN ${sql(sessionIds)}
-        )
-      `;
-      counts[tbl] = Number(rows[0]?.c ?? 0);
-    } else {
-      const rows = await sql`
-        SELECT COUNT(*)::int AS c FROM ${sql(tbl)} WHERE ${sql(col)} IN ${sql(sessionIds)}
-      `;
-      counts[tbl] = Number(rows[0]?.c ?? 0);
-    }
+
+  // Tables with a direct FK to studio_session — straightforward IN query.
+  const directFkTables = [
+    "studio_message",
+    "studio_brief",
+    "studio_version",
+    "studio_event",
+    "proposal_request",
+    "client_workspace",
+    "payment_event",
+  ];
+  for (const tbl of directFkTables) {
+    const rows = await sql`
+      SELECT COUNT(*)::int AS c FROM ${sql(tbl)} WHERE studio_session_id IN ${sql(sessionIds)}
+    `;
+    counts[tbl] = Number(rows[0]?.c ?? 0);
   }
 
+  // studio_session itself (counted by its own id).
+  const ssRows = await sql`
+    SELECT COUNT(*)::int AS c FROM studio_session WHERE id IN ${sql(sessionIds)}
+  `;
+  counts.studio_session = Number(ssRows[0]?.c ?? 0);
+
+  // Transitive cascade #1: studio_message_feedback → studio_message → studio_session
+  const smfRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM studio_message_feedback smf
+    WHERE smf.studio_message_id IN (
+      SELECT id FROM studio_message WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  counts.studio_message_feedback = Number(smfRows[0]?.c ?? 0);
+
+  // Transitive cascade #2: proposal_review_event → proposal_request → studio_session
+  const preRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM proposal_review_event pre
+    WHERE pre.proposal_request_id IN (
+      SELECT id FROM proposal_request WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  counts.proposal_review_event = Number(preRows[0]?.c ?? 0);
+
+  // Transitive cascade #3: workspace_update → client_workspace → studio_session
+  const wuRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM workspace_update wu
+    WHERE wu.client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  counts.workspace_update = Number(wuRows[0]?.c ?? 0);
+
+  // Tables deleted by email (no FK to studio_session).
   for (const tbl of EMAIL_DELETED_TABLES) {
     const rows = await sql`
       SELECT COUNT(*)::int AS c FROM ${sql(tbl)} WHERE lower(email) = ${normalizedEmail}
@@ -203,9 +231,13 @@ async function countRowsByTable(sql, sessionIds, normalizedEmail) {
 
 async function readPaymentEvents(sql, sessionIds) {
   if (sessionIds.length === 0) return [];
+  // payment_event has no `paid_at` column (that field lives on
+  // proposal_request as stripe_paid_at, a different table). We alias
+  // payment_event.created_at to event_at so the helper's expected shape
+  // matches. See anonymizeStripePayloads doc for naming rationale.
   return await sql`
     SELECT event_type, provider_payment_intent_id, amount_usd, currency,
-           paid_at
+           created_at AS event_at
     FROM payment_event
     WHERE studio_session_id IN ${sql(sessionIds)}
   `;
@@ -221,21 +253,47 @@ async function readFullSnapshot(sql, sessionIds, normalizedEmail) {
     return dump;
   }
 
-  for (const tbl of CASCADE_DELETED_TABLES) {
-    const col = tbl === "studio_session" ? "id" : "studio_session_id";
-    if (tbl === "studio_message_feedback") {
-      dump[tbl] = await sql`
-        SELECT * FROM studio_message_feedback
-        WHERE studio_message_id IN (
-          SELECT id FROM studio_message WHERE studio_session_id IN ${sql(sessionIds)}
-        )
-      `;
-    } else {
-      dump[tbl] = await sql`
-        SELECT * FROM ${sql(tbl)} WHERE ${sql(col)} IN ${sql(sessionIds)}
-      `;
-    }
+  // Direct FK to studio_session
+  const directFkTables = [
+    "studio_message",
+    "studio_brief",
+    "studio_version",
+    "studio_event",
+    "proposal_request",
+    "client_workspace",
+    "payment_event",
+  ];
+  for (const tbl of directFkTables) {
+    dump[tbl] = await sql`
+      SELECT * FROM ${sql(tbl)} WHERE studio_session_id IN ${sql(sessionIds)}
+    `;
   }
+
+  // studio_session itself
+  dump.studio_session = await sql`
+    SELECT * FROM studio_session WHERE id IN ${sql(sessionIds)}
+  `;
+
+  // Transitive cascades (same join shape as countRowsByTable above).
+  dump.studio_message_feedback = await sql`
+    SELECT * FROM studio_message_feedback
+    WHERE studio_message_id IN (
+      SELECT id FROM studio_message WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  dump.proposal_review_event = await sql`
+    SELECT * FROM proposal_review_event
+    WHERE proposal_request_id IN (
+      SELECT id FROM proposal_request WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  dump.workspace_update = await sql`
+    SELECT * FROM workspace_update
+    WHERE client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+
   for (const tbl of EMAIL_DELETED_TABLES) {
     dump[tbl] = await sql`
       SELECT * FROM ${sql(tbl)} WHERE lower(email) = ${normalizedEmail}
@@ -245,6 +303,10 @@ async function readFullSnapshot(sql, sessionIds, normalizedEmail) {
 }
 
 async function logAttempt(sql, payload) {
+  // JSONB columns inserted as `JSON.stringify(...)::jsonb` per the repo
+  // convention in lib/maxwell/repositories.ts (see studio_brief and
+  // studio_event INSERTs). postgres.js does not have a generic
+  // sql.json() helper; the explicit cast is the canonical pattern.
   const rows = await sql`
     INSERT INTO gdpr_deletion_log (
       email_hash, dry_run, status, operator_name, second_approver_name,
@@ -253,8 +315,9 @@ async function logAttempt(sql, payload) {
     ) VALUES (
       ${payload.emailHash}, ${payload.dryRun}, ${payload.status},
       ${payload.operator}, ${payload.secondApprover ?? null},
-      ${payload.studioSessionIds}, ${sql.json(payload.rowsByTable)},
-      ${sql.json(payload.preservedPaymentRecords)},
+      ${payload.studioSessionIds},
+      ${JSON.stringify(payload.rowsByTable)}::jsonb,
+      ${JSON.stringify(payload.preservedPaymentRecords)}::jsonb,
       ${payload.snapshotPath ?? null}
     )
     RETURNING id
@@ -266,7 +329,7 @@ async function markLogComplete(sql, logId, rowsByTable, errorMessage) {
   await sql`
     UPDATE gdpr_deletion_log
     SET status = ${errorMessage ? "failed" : "executed"},
-        rows_affected_by_table = ${sql.json(rowsByTable)},
+        rows_affected_by_table = ${JSON.stringify(rowsByTable)}::jsonb,
         completed_at = now(),
         error_message = ${errorMessage ?? null}
     WHERE id = ${logId}
