@@ -1,10 +1,24 @@
 /**
  * lib/api-ia.ts
- * Integraciones reutilizables de IA: OpenAI (gpt-4.1) y V0 (v0-sdk v0.16)
+ * Integraciones reutilizables de IA: OpenAI + V0 (v0-sdk v0.16).
  *
- * Variables de entorno requeridas:
- *   OPENAI_API_KEY   – clave de OpenAI
- *   V0_API_KEY       – clave de V0 (se configura globalmente en v0-sdk)
+ * Modelo default:
+ *   gpt-5.5 (GA en OpenAI desde 2026-04-23). El default se resuelve via
+ *   `process.env.OPENAI_DEFAULT_MODEL ?? "gpt-5.5"` para permitir rollback
+ *   sin redeploy si surge un problema (rate limit, cost spike, etc.) —
+ *   setear `OPENAI_DEFAULT_MODEL=gpt-4.1` en Vercel y reload, vuelve al
+ *   modelo previo en segundos.
+ *
+ *   Cost note: gpt-5.5 cuesta ~5x input + 3x output vs gpt-4.1
+ *   ($5/M in + $30/M out vs ~$2.50/$10). Aceptable para FASE 1
+ *   internal-only; re-evaluar si exposure crece.
+ *
+ * Variables de entorno:
+ *   OPENAI_API_KEY        – clave OpenAI (requerida).
+ *   V0_API_KEY            – clave V0 (requerida; configurada globalmente por v0-sdk).
+ *   OPENAI_DEFAULT_MODEL  – opcional; override del modelo default por env.
+ *                           Usar "gpt-4.1" para rollback al modelo previo,
+ *                           o un snapshot fijo como "gpt-5.5-2026-04-23".
  */
 
 import OpenAI from "openai";
@@ -47,7 +61,7 @@ export type OpenAIParams = {
   history?: ChatMessage[];
   /** Prompt de sistema */
   systemPrompt?: string;
-  /** Modelo a usar (default: gpt-4.1) */
+  /** Modelo a usar. Default = resolveDefaultOpenAIModel() ("gpt-5.5" or env override). */
   model?: string;
   /** Optional abort signal for user-initiated cancellation. */
   signal?: AbortSignal;
@@ -91,6 +105,19 @@ export type V0Result = {
 const DEFAULT_OPENAI_SYSTEM =
   "You are a helpful assistant.";
 
+/**
+ * Resolves the default OpenAI chat model. Returns `process.env.OPENAI_DEFAULT_MODEL`
+ * if set and non-empty after trim, else falls back to `"gpt-5.5"`.
+ *
+ * Exposed (not inlined) so callers that need to log which model was selected
+ * — or tests that mock env — can call it directly. Re-evaluates on every
+ * call so env changes via `vi.stubEnv` are picked up without module reload.
+ */
+export function resolveDefaultOpenAIModel(): string {
+  const fromEnv = process.env.OPENAI_DEFAULT_MODEL?.trim();
+  return fromEnv && fromEnv.length > 0 ? fromEnv : "gpt-5.5";
+}
+
 // `DEFAULT_V0_SYSTEM` was removed in the Bloque 11 follow-up. It always
 // hardcoded single-view landing pages, which contradicts the Quality Layer
 // (lib/maxwell/prototype-brief.ts) that adapts the prompt to the actual
@@ -100,10 +127,18 @@ const DEFAULT_OPENAI_SYSTEM =
 // landing-page surprise.
 
 /**
- * Llama a OpenAI GPT-4.1 con soporte de texto, imagen e historial.
+ * Llama a OpenAI con soporte de texto, imagen e historial. Modelo default
+ * resuelto via {@link resolveDefaultOpenAIModel} ("gpt-5.5" o env override).
  */
 export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult> {
-  const { prompt, imageUrl, history = [], systemPrompt, model = "gpt-4.1", signal } = params;
+  const {
+    prompt,
+    imageUrl,
+    history = [],
+    systemPrompt,
+    model = resolveDefaultOpenAIModel(),
+    signal,
+  } = params;
 
   if (!prompt && !imageUrl) {
     throw new Error("Se requiere al menos un prompt o imageUrl.");
