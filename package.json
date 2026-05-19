@@ -15,7 +15,8 @@
     "test:visual:baseline": "cross-env VISUAL_DIR=baseline playwright test capture.spec.ts",
     "test:visual:after": "cross-env VISUAL_DIR=after playwright test capture.spec.ts",
     "test:a11y": "playwright test a11y.spec.ts",
-    "db:check-migrations": "node scripts/check-migrations.mjs --strict"
+    "db:check-migrations": "node scripts/check-migrations.mjs --strict",
+    "gdpr:hard-delete": "node scripts/gdpr-hard-delete.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
