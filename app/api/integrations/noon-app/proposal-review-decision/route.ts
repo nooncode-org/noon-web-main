@@ -7,7 +7,13 @@ import {
   updateProposalRequestStatus,
   updateStudioSessionStatus,
 } from "@/lib/maxwell/repositories";
+import {
+  ProposalEmailConfigurationError,
+  ProposalEmailSendError,
+  sendProposalEmail,
+} from "@/lib/maxwell/proposal-email";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
+import { log } from "@/lib/server/logger";
 import {
   NoonAppIntegrationError,
   noonAppProposalReviewDecisionPayloadSchema,
@@ -121,6 +127,57 @@ export async function POST(request: Request) {
         notes: `Approved in Noon App. Public URL enabled: ${publicUrl}`,
       });
 
+      // Send the proposal email to the client. Pattern mirrors
+      // lib/maxwell/proposal-review-sla.ts:124-153 — log delivery success/failure
+      // via appendProposalReviewEvent and never let an email error bubble up
+      // and roll back the approval (the proposal is already approved at this
+      // point; failed email is a notification debt, not an approval failure).
+      const recipient = updated.deliveryRecipient ?? session.ownerEmail;
+      if (recipient) {
+        try {
+          const emailResult = await sendProposalEmail({
+            proposalId: proposal.id,
+            versionNumber: updated.versionNumber,
+            to: recipient,
+            publicUrl,
+            projectTitle:
+              session.goalSummary ??
+              session.initialPrompt ??
+              `Proposal ${proposal.id}`,
+          });
+
+          await appendProposalReviewEvent({
+            proposalRequestId: proposal.id,
+            action: "sent",
+            actor: "noon-app",
+            notes: `Email delivered to ${recipient} via ${emailResult.provider} (${emailResult.messageId}).`,
+          });
+        } catch (error) {
+          await appendProposalReviewEvent({
+            proposalRequestId: proposal.id,
+            action: "delivery_failed",
+            actor: "noon-app",
+            notes:
+              error instanceof ProposalEmailConfigurationError ||
+              error instanceof ProposalEmailSendError
+                ? error.message
+                : "Proposal email send failed after Noon App approval.",
+          });
+          log.error("integrations.noon-app.proposal-review-decision", error, {
+            phase: "proposal_email_send",
+            proposalId: proposal.id,
+          });
+        }
+      } else {
+        await appendProposalReviewEvent({
+          proposalRequestId: proposal.id,
+          action: "delivery_failed",
+          actor: "noon-app",
+          notes:
+            "Proposal email skipped: no delivery recipient resolved (deliveryRecipient and ownerEmail both empty).",
+        });
+      }
+
       return NextResponse.json({
         message: "Proposal approved by Noon App and published on website.",
         decision: payload.decision,
@@ -194,7 +251,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: error.message }, { status: error.status });
     }
 
-    console.error("Noon App proposal review decision webhook error:", error);
+    log.error("integrations.noon-app.proposal-review-decision", error);
     return NextResponse.json(
       { message: "Noon App review decision webhook failed." },
       { status: 500 },

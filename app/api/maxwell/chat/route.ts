@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { chatWithOpenAI, type ChatMessage } from "@/lib/api-ia";
+import { log } from "@/lib/server/logger";
+import {
+  enforceRateLimit,
+  rateLimitResponseInit,
+  RateLimitExceededError,
+  resolveClientIdentity,
+} from "@/lib/server/rate-limit";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
@@ -20,6 +27,7 @@ import {
   MAXWELL_CHAT_POST_PROPOSAL_APPENDIX,
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
+import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -157,6 +165,24 @@ function errorResponse(status: number, message: string, code: string, extra?: Re
 
 export async function POST(request: Request) {
   try {
+    // B13: rate-limit per client IP. 20 messages / 60s sustained (one every 3s) plus a
+    // burst tolerance of 20. Tuned for normal Maxwell chat use; abusive bursts above
+    // this are absorbed with a 429 + Retry-After.
+    try {
+      enforceRateLimit({
+        namespace: "maxwell.chat",
+        capacity: 20,
+        refillPerSec: 20 / 60,
+        identityKey: resolveClientIdentity(request),
+      });
+    } catch (rateError) {
+      if (rateError instanceof RateLimitExceededError) {
+        const init = rateLimitResponseInit(rateError);
+        return NextResponse.json(init.body, { status: init.status, headers: init.headers });
+      }
+      throw rateError;
+    }
+
     const body = await request.json();
     const parsed = chatRequestSchema.parse(body);
 
@@ -344,6 +370,20 @@ export async function POST(request: Request) {
     const shouldStartPrototypeBuild = Boolean(readyForPrototype && session.status === "clarifying");
     if (shouldStartPrototypeBuild) {
       session = await updateStudioSessionStatus(session.id, "generating_prototype");
+      // Bloque 11 — Maxwell Quality Layer.
+      // Fire-and-forget brief extraction. The prototype route later calls
+      // `getStudioBrief()`; if the extractor has not finished or failed, the
+      // brief is null and `buildPrototypeBrief()` simply omits section 4.
+      // We narrow ChatMessage.content (which can be a multi-modal parts
+      // array) down to a plain string here — getStudioMessagesForOpenAI
+      // always returns string content, but the type allows either.
+      void extractAndSaveBrief(
+        session.id,
+        historyForOpenAI.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: typeof m.content === "string" ? m.content : "",
+        })),
+      );
     }
 
     return NextResponse.json({
@@ -378,7 +418,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell chat error:", error);
+    log.error("maxwell.chat", error);
     return errorResponse(
       500,
       "Maxwell could not respond right now. Please try again.",

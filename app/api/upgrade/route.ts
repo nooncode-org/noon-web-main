@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import { normalizeUrl } from "@/lib/upgrade/url-normalize";
 import { checkSessionLimit } from "@/lib/upgrade/session-limits";
 import {
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    console.error("[upgrade] POST /api/upgrade failed:", error);
+    log.error("upgrade.session.create", error);
     return NextResponse.json({ message: "Failed to create session." }, { status: 500 });
   }
 }
@@ -118,7 +119,7 @@ export async function GET() {
     const sessions = await listUserSessions(viewer.email);
     return NextResponse.json({ sessions }, { status: 200 });
   } catch (error) {
-    console.error("[upgrade] GET /api/upgrade failed:", error);
+    log.error("upgrade.session.list", error);
     return NextResponse.json({ message: "Failed to fetch sessions." }, { status: 500 });
   }
 }

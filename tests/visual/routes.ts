@@ -19,6 +19,40 @@ export const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
 ] as const;
 
+/**
+ * B38 — Matrix viewport set for the parametrized a11y scan in
+ * `a11y-matrix.spec.ts`. Wider than `VIEWPORTS` (which still drives the visual
+ * regression `capture.spec.ts`) so we cover mobile-small, tablet, desktop, and
+ * wide-desktop in the same run. Numbers chosen to match common breakpoint
+ * boundaries (Tailwind's sm/md/lg/2xl) so tokens that only break at certain
+ * widths get caught.
+ */
+export const A11Y_MATRIX_VIEWPORTS = [
+  { name: "mobile-sm", width: 375, height: 812 },
+  { name: "tablet", width: 768, height: 1024 },
+  { name: "desktop", width: 1280, height: 800 },
+  { name: "wide", width: 1920, height: 1080 },
+] as const;
+
+/**
+ * Subset of ROUTES included in the a11y matrix. Picked for traffic + risk:
+ * - `home` is the highest-traffic surface; any contrast token break is
+ *   public-facing.
+ * - `signin` is the conversion path; a mismatch in dark mode here loses users.
+ * - `contact` includes form inputs (a frequent source of a11y violations).
+ * - `upgrade` includes interactive product UI (cards, badges).
+ *
+ * /maxwell and /maxwell/proposal/[token] are intentionally excluded — both
+ * require authentication / a seeded proposal token that the headless suite
+ * cannot provision yet.
+ */
+export const A11Y_MATRIX_ROUTES = [
+  { path: "", name: "home" },
+  { path: "/signin", name: "signin" },
+  { path: "/contact", name: "contact" },
+  { path: "/upgrade", name: "upgrade" },
+] as const;
+
 export async function settlePage(page: Page) {
   await page.evaluate(() => {
     document.documentElement.style.scrollBehavior = "auto";

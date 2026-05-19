@@ -7,6 +7,7 @@ import {
   getStudioSession,
   setStudioMessageFeedback,
 } from "@/lib/maxwell/repositories";
+import { log } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell message feedback error:", error);
+    log.error("maxwell.message-feedback", error);
     return NextResponse.json(
       { message: "Could not update message feedback right now." },
       { status: 500 },

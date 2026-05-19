@@ -154,6 +154,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     proposalRequestedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    stylePackId: null,
     ...overrides,
   };
 }
@@ -690,5 +691,37 @@ describe("payment — Noon App handoff failure", () => {
     expect(repos.appendProposalReviewEvent).toHaveBeenCalledWith(
       expect.objectContaining({ action: "noon_app_payment_failed" }),
     );
+  });
+
+  // B10 atomicity contract: appendPaymentEvent runs BEFORE notifyNoonApp so that a
+  // failed outbound HTTP does not leave the proposal in `paid` state without a payment
+  // event row. The next retry's idempotency check (lookup by provider_event_id) needs
+  // the row to exist to short-circuit cleanly.
+  it("verify_payment B10 reorder: appendPaymentEvent se ejecuta ANTES de sendPaymentConfirmedToNoonApp", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
+    vi.mocked(repos.createClientWorkspace).mockResolvedValue(fakeWorkspace());
+    vi.mocked(repos.activateClientWorkspace).mockResolvedValue(fakeWorkspace());
+
+    const NoonAppErr = (noonApp as { NoonAppIntegrationError: new (m: string, s?: number) => Error & { status: number } }).NoonAppIntegrationError;
+    vi.mocked(noonApp.sendPaymentConfirmedToNoonApp).mockRejectedValueOnce(
+      new NoonAppErr("Noon App down", 502),
+    );
+
+    await POST(postReq({
+      action: "verify_payment",
+      proposal_request_id: "proposal-1",
+    }));
+
+    // Both must have been called.
+    expect(repos.appendPaymentEvent).toHaveBeenCalledTimes(1);
+    expect(noonApp.sendPaymentConfirmedToNoonApp).toHaveBeenCalledTimes(1);
+
+    // And appendPaymentEvent must come first in invocation order so a failed Noon App
+    // notification still leaves a durable payment_event row for retry idempotency.
+    const appendOrder = vi.mocked(repos.appendPaymentEvent).mock.invocationCallOrder[0]!;
+    const notifyOrder = vi.mocked(noonApp.sendPaymentConfirmedToNoonApp).mock.invocationCallOrder[0]!;
+    expect(appendOrder).toBeLessThan(notifyOrder);
   });
 });

@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { maxwellSessionCookieName, maxwellSessionSchema } from "@/lib/maxwell";
+import { log } from "@/lib/server/logger";
+import {
+  enforceRateLimit,
+  rateLimitResponseInit,
+  RateLimitExceededError,
+  resolveClientIdentity,
+} from "@/lib/server/rate-limit";
 import { getMaxwellSession, upsertMaxwellSession } from "@/lib/server/noon-storage";
 
 export const runtime = "nodejs";
@@ -30,6 +37,23 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // B21: rate-limit per client IP. 10 POSTs / 60s — session capture is bursty during
+    // a single Maxwell flow but should never sustain above ~one every 6s legitimately.
+    try {
+      enforceRateLimit({
+        namespace: "maxwell.session",
+        capacity: 10,
+        refillPerSec: 10 / 60,
+        identityKey: resolveClientIdentity(request),
+      });
+    } catch (rateError) {
+      if (rateError instanceof RateLimitExceededError) {
+        const init = rateLimitResponseInit(rateError);
+        return NextResponse.json(init.body, { status: init.status, headers: init.headers });
+      }
+      throw rateError;
+    }
+
     const cookieSessionId = request.headers
       .get("cookie")
       ?.split(";")
@@ -81,7 +105,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Maxwell session capture failed.", error);
+    log.error("maxwell.session", error);
 
     return NextResponse.json(
       {

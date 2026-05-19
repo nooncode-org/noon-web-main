@@ -1,38 +1,36 @@
 /**
  * instrumentation.ts
  *
- * Next.js boot hook. `register()` is invoked once per server instance, before
- * any request is handled. We use it to fail fast in production when the
- * external services we depend on (OpenAI, v0, Resend, NoonApp) are
- * misconfigured.
+ * Next.js boot hook. `register()` runs once per server process / per Vercel
+ * function instance at startup. Used here to:
+ *   1. Fail-fast on missing critical runtime service credentials (B43).
+ *   2. Initialise Sentry when SENTRY_DSN is configured (B42).
  *
- * No Sentry / Datadog / third-party error tracker is wired here — Pedro
- * chose Vercel Analytics + Vercel logs only for soft launch
- * (see roadmap §10.8.3). If error tracking is reconsidered later, this
- * file is also the canonical place to register the Sentry client.
+ * Reference: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 
-import { checkCriticalEnv, formatCriticalEnvDiagnostic } from "@/lib/server/critical-env";
+export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { checkRuntimeEnv, formatRuntimeEnvReport, assertRuntimeEnvForProduction } =
+      await import("./lib/server/runtime-env");
 
-export function register() {
-  // Only the Node.js runtime can see process.env at boot. The Edge runtime
-  // also calls `register()` but we don't gate the boot for Edge today —
-  // there are no Edge routes that depend on these secrets.
-  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+    // Always log the report — visible in Vercel function logs at cold-start
+    // and useful for diagnosing config drift in non-production environments.
+    const report = checkRuntimeEnv();
+    console.log(formatRuntimeEnvReport(report));
 
-  const check = checkCriticalEnv();
-  if (check.ok) return;
+    // Throw in production-runtime when critical vars are missing. Vercel will
+    // mark the deployment unhealthy and surface the error in logs.
+    assertRuntimeEnvForProduction();
 
-  const diagnostic = formatCriticalEnvDiagnostic(check);
-
-  if (check.mode === "production-runtime") {
-    throw new Error(
-      `[boot] Refusing to start in production: ${diagnostic} ` +
-        "Configure the missing secrets in the Vercel dashboard (or the equivalent for your deploy target) before serving traffic.",
-    );
+    // B42 — Sentry. No-op when SENTRY_DSN is unset (the common state today).
+    // When ops sets the DSN, this initialises @sentry/nextjs and registers a
+    // log hook so log.error / log.warn from lib/server/logger.ts get
+    // forwarded to Sentry. We dynamically import the Sentry module inside
+    // initSentryIfConfigured so the SDK weight is paid only when active.
+    const { initSentryIfConfigured } = await import("./lib/server/sentry");
+    const sentryStatus = await initSentryIfConfigured();
+    // One-line breadcrumb so cold-start logs make the runtime state obvious.
+    console.log(`[instrumentation] sentry=${sentryStatus}`);
   }
-
-  // Build phase or non-production: warn loud so the operator sees the gap
-  // in logs without blocking the build.
-  console.warn(`[boot] ${diagnostic} The app will start but features depending on these services will fail at first use.`);
 }

@@ -25,6 +25,7 @@ import { PaymentActivationError, confirmProposalPayment, confirmSessionPayment }
 import {
   NoonAppIntegrationError,
 } from "@/lib/noon-app-integration";
+import { log } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -82,22 +83,23 @@ export async function GET(request: Request) {
   const access = await getReviewRequestAccess(request);
   if (!access.authorized) {
     const status = access.reason === "sign_in_required" ? 401 : 403;
-    return NextResponse.json({ message: "Unauthorized." }, { status });
+    return jsonError(status, "Unauthorized.", "AUTH_REQUIRED");
   }
 
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get("session_id");
 
   if (!sessionId) {
-    return NextResponse.json(
-      { message: "Missing required query parameter: session_id" },
-      { status: 400 },
+    return jsonError(
+      400,
+      "Missing required query parameter: session_id",
+      "INVALID_REQUEST",
     );
   }
 
   const session = await getStudioSession(sessionId);
   if (!session) {
-    return NextResponse.json({ message: "Session not found." }, { status: 404 });
+    return jsonError(404, "Session not found.", "SESSION_NOT_FOUND");
   }
 
   const workspace = await getClientWorkspaceBySession(sessionId);
@@ -200,7 +202,7 @@ export async function POST(request: Request) {
     const access = await getReviewRequestAccess(request);
     if (!access.authorized) {
       const status = access.reason === "sign_in_required" ? 401 : 403;
-      return NextResponse.json({ message: "Unauthorized." }, { status });
+      return jsonError(status, "Unauthorized.", "AUTH_REQUIRED");
     }
 
     const actor = "actor" in payload ? payload.actor ?? access.actor : access.actor;
@@ -208,12 +210,13 @@ export async function POST(request: Request) {
     if (payload.action === "mark_payment_pending") {
       const proposal = await getProposalRequest(payload.proposal_request_id);
       if (!proposal) {
-        return NextResponse.json({ message: "Proposal request not found." }, { status: 404 });
+        return jsonError(404, "Proposal request not found.", "PROPOSAL_NOT_FOUND");
       }
       if (proposal.status !== "sent") {
-        return NextResponse.json(
-          { message: "Only a sent proposal can move into payment pending." },
-          { status: 409 },
+        return jsonError(
+          409,
+          "Only a sent proposal can move into payment pending.",
+          "PROPOSAL_NOT_PAYABLE",
         );
       }
 
@@ -278,7 +281,7 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({ message: "Unsupported action." }, { status: 400 });
+    return jsonError(400, "Unsupported action.", "INVALID_REQUEST");
   } catch (error) {
     if (error instanceof PaymentActivationError) {
       return NextResponse.json(
@@ -296,15 +299,20 @@ export async function POST(request: Request) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: "Invalid request.", fieldErrors: error.flatten().fieldErrors },
+        {
+          message: "Invalid request.",
+          code: "INVALID_REQUEST",
+          fieldErrors: error.flatten().fieldErrors,
+        },
         { status: 400 },
       );
     }
 
-    console.error("Maxwell payment error:", error);
-    return NextResponse.json(
-      { message: "Payment action failed. Please try again." },
-      { status: 500 },
+    log.error("maxwell.payment", error);
+    return jsonError(
+      500,
+      "Payment action failed. Please try again.",
+      "PAYMENT_ACTION_FAILED",
     );
   }
 }

@@ -24,6 +24,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { __resetRateLimitForTests } from "@/lib/server/rate-limit";
 import type { StudioMessage, StudioSession } from "@/lib/maxwell/repositories";
 
 vi.mock("@/lib/api-ia", () => ({
@@ -79,6 +80,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     proposalRequestedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    stylePackId: null,
     ...overrides,
   };
 }
@@ -107,6 +109,10 @@ function postReq(body: unknown) {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("OPENAI_API_KEY", "sk-test");
+  // Reset the in-process rate-limit buckets so chat tests do not share state with the
+  // global limiter (each chat test issues its own POST and the "anonymous" identity is
+  // shared across the whole file). See lib/server/rate-limit.ts for the helper.
+  __resetRateLimitForTests();
 
   vi.mocked(authSession.getAuthenticatedViewer).mockResolvedValue({
     email: "owner@noon.dev",

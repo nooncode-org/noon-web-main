@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { log } from "@/lib/server/logger";
 import {
   getUpgradeSessionById,
   updateSessionStatus,
@@ -57,12 +58,12 @@ export async function POST(_req: Request, { params }: Params) {
 
     // Run crawl + analyze in the same request (maxDuration=120s)
     runAuditPipeline(id, normalized.full, session).catch((err) => {
-      console.error("[upgrade] audit pipeline background error:", err);
+      log.error("upgrade.audit.background", err);
     });
 
     return NextResponse.json({ status: "crawling" }, { status: 202 });
   } catch (error) {
-    console.error("[upgrade] POST /audit failed:", error);
+    log.error("upgrade.audit", error);
     return NextResponse.json({ message: "Failed to start audit." }, { status: 500 });
   }
 }

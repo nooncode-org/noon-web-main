@@ -82,6 +82,13 @@ export type StudioSession = {
   proposalRequestedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Bloque 11 — id of the classified visual style family (see
+   * `lib/maxwell/style-packs.ts`). Null until the first prototype is
+   * generated; persists across corrections so the visual identity stays
+   * consistent.
+   */
+  stylePackId: string | null;
 };
 
 /** Lightweight row for studio history picker (non-deleted sessions only). */
@@ -250,6 +257,8 @@ type SessionRow = {
   corrections_used: number; max_corrections: number;
   proposal_requested_at: string | Date | null; created_at: string | Date; updated_at: string | Date;
   deleted_at?: string | Date | null;
+  /** Bloque 11 — see StudioSession.stylePackId comment. */
+  style_pack_id?: string | null;
 };
 
 type MessageRow = {
@@ -397,6 +406,7 @@ function mapSession(r: SessionRow): StudioSession {
     proposalRequestedAt: toIsoTimestamp(r.proposal_requested_at),
     createdAt: toIsoTimestamp(r.created_at)!,
     updatedAt: toIsoTimestamp(r.updated_at)!,
+    stylePackId: r.style_pack_id ?? null,
   };
 }
 
@@ -666,6 +676,31 @@ export async function incrementCorrectionsUsed(id: string): Promise<StudioSessio
     WHERE id = ${id}
   `;
   return (await getStudioSession(id))!;
+}
+
+/**
+ * Bloque 11 — record the classified style pack id for this session.
+ *
+ * Called once per session, the first time a prototype is generated. Subsequent
+ * prototype corrections read it back via `getStudioSession()` so the visual
+ * identity stays consistent across iterations.
+ *
+ * No validation on the id format here — the catalogue lives in TypeScript
+ * (`lib/maxwell/style-packs.ts`), not the DB, so the constraint is enforced
+ * at the call site (typed `StylePack["id"]`).
+ */
+export async function setStylePackId(
+  sessionId: string,
+  stylePackId: string,
+): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE studio_session
+    SET style_pack_id = ${stylePackId},
+        updated_at    = ${now}
+    WHERE id = ${sessionId}
+  `;
 }
 
 // ============================================================================

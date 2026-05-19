@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getReviewRequestAccess } from "@/lib/auth/review";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
+import { log } from "@/lib/server/logger";
 import {
   getStudioSession,
   getClientWorkspaceBySession,
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Workspace error:", error);
+    log.error("maxwell.workspace", error);
     return NextResponse.json(
       { message: "Action failed. Please try again." },
       { status: 500 },

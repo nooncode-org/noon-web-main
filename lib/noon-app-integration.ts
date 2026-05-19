@@ -17,17 +17,36 @@ export class NoonAppIntegrationError extends Error {
   }
 }
 
-/** True when outbound signed webhooks to Noon App can be sent (proposal handoff, payment, etc.). */
-export function isNoonAppProposalHandoffConfigured(): boolean {
-  return Boolean(
-    process.env.NOON_APP_WEBHOOK_SECRET?.trim() && process.env.NOON_APP_BASE_URL?.trim(),
+/**
+ * Reads the shared HMAC secret used for cross-repo webhooks.
+ *
+ * Per the cross-repo contract v1 (`App-nooncode/docs/integrations/cross-repo-webhook-v1.md`)
+ * the canonical name on BOTH sides is `NOON_WEBSITE_WEBHOOK_SECRET`. Historically the
+ * Web side stored it as `NOON_APP_WEBHOOK_SECRET`; we now prefer the canonical name
+ * and fall through to the legacy name during the migration window. Once ops has renamed
+ * the env var in Vercel (Production + Preview), the legacy fallback can be dropped in
+ * a follow-up cleanup.
+ */
+function readSharedWebhookSecret(): string | null {
+  return (
+    process.env.NOON_WEBSITE_WEBHOOK_SECRET?.trim() ||
+    process.env.NOON_APP_WEBHOOK_SECRET?.trim() ||
+    null
   );
 }
 
+/** True when outbound signed webhooks to Noon App can be sent (proposal handoff, payment, etc.). */
+export function isNoonAppProposalHandoffConfigured(): boolean {
+  return Boolean(readSharedWebhookSecret() && process.env.NOON_APP_BASE_URL?.trim());
+}
+
 function readNoonAppSecret() {
-  const secret = process.env.NOON_APP_WEBHOOK_SECRET?.trim();
+  const secret = readSharedWebhookSecret();
   if (!secret) {
-    throw new NoonAppIntegrationError("NOON_APP_WEBHOOK_SECRET is not configured.", 503);
+    throw new NoonAppIntegrationError(
+      "NOON_WEBSITE_WEBHOOK_SECRET is not configured (legacy NOON_APP_WEBHOOK_SECRET also absent).",
+      503,
+    );
   }
   return secret;
 }
@@ -113,8 +132,46 @@ function signPayload(bodyText: string) {
   };
 }
 
-async function postNoonAppWebhook(path: string, payload: unknown) {
-  const bodyText = JSON.stringify(payload);
+/**
+ * Retry policy for Noon App outbound webhooks (B9).
+ *
+ * - Max 3 attempts total (initial + 2 retries).
+ * - Exponential backoff with ±20% jitter: 1s, 2s (after first failure / second failure).
+ * - Retry on: 5xx responses, network errors (fetch throws without an HTTP response).
+ * - Do NOT retry on: 4xx responses (auth / validation are deterministic failures).
+ * - Idempotency: handled by App side via `external_*_id` keys, so the same payload sent
+ *   twice produces one row on App. Web does not need a nonce ledger.
+ *
+ * Dead-letter behaviour is intentionally out of scope here — the caller already records
+ * `noon_app_*_failed` audit events. Persistent queue + alerting is a future iteration.
+ */
+const NOON_APP_RETRY_ATTEMPTS = 3;
+const NOON_APP_RETRY_BACKOFF_MS = [1_000, 2_000] as const; // delays before attempts 2 and 3
+const NOON_APP_RETRY_JITTER_RATIO = 0.2;
+
+function shouldRetryNoonAppFailure(error: unknown): boolean {
+  if (error instanceof NoonAppIntegrationError) {
+    // 5xx is server-side transient. 4xx is deterministic — do not retry.
+    return error.status >= 500 && error.status < 600;
+  }
+  // Network / DNS / abort / etc. fetch() throws TypeError or DOMException without a
+  // response. Treat as transient.
+  return true;
+}
+
+function nextNoonAppBackoffMs(attempt: number): number {
+  const base = NOON_APP_RETRY_BACKOFF_MS[attempt - 1];
+  if (!base) return 0;
+  const jitter = base * NOON_APP_RETRY_JITTER_RATIO;
+  // Math.random() in [0,1). Map to [-jitter, +jitter].
+  return Math.round(base + (Math.random() * 2 - 1) * jitter);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function postNoonAppWebhookOnce(path: string, bodyText: string) {
   const response = await fetch(`${readNoonAppBaseUrl()}${path}`, {
     method: "POST",
     headers: signPayload(bodyText),
@@ -130,14 +187,40 @@ async function postNoonAppWebhook(path: string, payload: unknown) {
     );
   }
 
-  if (!responseText) return null;
-
-  try {
-    return JSON.parse(responseText) as unknown;
-  } catch {
-    return responseText;
-  }
+  return { response, responseText };
 }
+
+async function postNoonAppWebhook(path: string, payload: unknown) {
+  const bodyText = JSON.stringify(payload);
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= NOON_APP_RETRY_ATTEMPTS; attempt++) {
+    try {
+      const { responseText } = await postNoonAppWebhookOnce(path, bodyText);
+
+      if (!responseText) return null;
+
+      try {
+        return JSON.parse(responseText) as unknown;
+      } catch {
+        return responseText;
+      }
+    } catch (error) {
+      lastError = error;
+      const isLastAttempt = attempt === NOON_APP_RETRY_ATTEMPTS;
+      if (isLastAttempt || !shouldRetryNoonAppFailure(error)) {
+        throw error;
+      }
+      // Wait before the next attempt (backoff index = attempt - 1 → first wait is 1s).
+      const delayMs = nextNoonAppBackoffMs(attempt);
+      if (delayMs > 0) await sleep(delayMs);
+    }
+  }
+
+  // Defensive: the loop above always either returns or throws, but keep TS happy.
+  throw lastError ?? new NoonAppIntegrationError("Noon App webhook failed without a captured error.", 502);
+}
+
 
 function requireCustomerEmail(session: StudioSession, proposal: ProposalRequest) {
   const email = session.ownerEmail ?? proposal.deliveryRecipient;

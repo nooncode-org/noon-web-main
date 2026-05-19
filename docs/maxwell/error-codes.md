@@ -30,7 +30,9 @@ This document defines the public `data.code` values used by Maxwell-facing APIs.
 | `SESSION_NOT_FOUND` | 404 | The proposal's studio session is missing. |
 | `PROPOSAL_ALREADY_PAID` | 409 | The proposal is already paid. |
 | `PROPOSAL_EXPIRED` | 410 | The proposal has expired. |
-| `PROPOSAL_NOT_PAYABLE` | 409 | The proposal is not in a payable state. |
+| `PROPOSAL_NOT_PAYABLE` | 409 | The proposal is not in a payable state for the requested action. |
+| `INVALID_REQUEST` | 400 | The request body failed validation, a required query parameter is missing, or the action is unsupported. |
+| `PAYMENT_ACTION_FAILED` | 500 | An unexpected failure occurred while processing the payment action. |
 
 ## Client Rules
 

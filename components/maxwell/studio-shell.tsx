@@ -120,32 +120,12 @@ function maxwellErrorMessage(code?: string, fallback?: string) {
   }
 }
 
-function buildPrototypeBrief(messages: ChatMessage[], lastUserMsg: string, lastAssistantMsg: string) {
-  const relevantHistory = messages
-    .filter(
-      (message) =>
-        message.type !== "thinking" &&
-        message.type !== "system_event" &&
-        message.type !== "error",
-    )
-    .concat(
-      { role: "user", content: lastUserMsg },
-      { role: "assistant", content: lastAssistantMsg },
-    )
-    .slice(-12)
-    .map((message) => {
-      const speaker = message.role === "user" ? "Client" : "Maxwell";
-      const compact = message.content.replace(/\s+/g, " ").trim().slice(0, 500);
-      return `${speaker}: ${compact}`;
-    });
-
-  return [
-    "Create a high-fidelity frontend-only prototype based on this distilled conversation context.",
-    "Use static mock data for all interactions. No backend code, no dynamic APIs.",
-    "",
-    ...relevantHistory,
-  ].join("\n");
-}
+// Bloque 11 — `buildPrototypeBrief()` used to live here as a client-side
+// helper that flattened the conversation into a single string before POSTing
+// to /api/maxwell/prototype. It moved to `lib/maxwell/prototype-brief.ts`
+// (server-side) so it can blend in the StudioBrief + StylePack, which the
+// client doesn't see. The client now posts the raw conversation snapshot
+// and the server assembles the multi-section v0 prompt.
 
 // ============================================================================
 // StudioShell
@@ -611,14 +591,26 @@ export function StudioShell({
     setPrototypeFailed(false);
 
     try {
-      const prototypeBrief = buildPrototypeBrief(messages, lastUserMsg, lastAssistantMsg);
+      // Bloque 11 — Quality Layer: send raw conversation snapshot; the server
+      // assembles the multi-section v0 prompt with brief + style pack.
+      const conversationSnapshot = messages
+        .filter(
+          (m) =>
+            m.type !== "thinking" &&
+            m.type !== "system_event" &&
+            m.type !== "error",
+        )
+        .slice(-50)
+        .map((m) => ({ role: m.role, content: m.content, type: m.type }));
 
       const res = await fetch("/api/maxwell/prototype", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create",
-          prompt: prototypeBrief,
+          messages: conversationSnapshot,
+          last_user_msg: lastUserMsg,
+          last_assistant_msg: lastAssistantMsg,
           ...(effectiveSessionId ? { session_id: effectiveSessionId } : {}),
         }),
       });
@@ -1205,8 +1197,35 @@ export function StudioShell({
 
       {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div
+      {/*
+        B22 (Bloque 13) — Mobile fallback banner. The two-pane studio
+        workspace (chat + preview) is desktop-first: below `lg` the panes
+        collapse into a tab-switched single column, which works but is
+        cramped for serious iteration. Rather than blocking mobile users
+        outright or shipping a full responsive redesign, we surface an
+        explicit "best on desktop" notice so expectations are set.
+        Hidden on `lg+` where the desktop layout renders properly.
+      */}
+      <div
+        role="status"
+        className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 lg:hidden"
+      >
+        <span className="font-medium">Studio works best on desktop.</span>{" "}
+        Some controls collapse on small screens — open this URL on a laptop for the full layout.
+      </div>
+
+
+      {/*
+        B37 — Semantic landmarks. <main> wraps the two-pane workspace so screen
+        readers and keyboard nav can jump straight to the working area, skipping
+        the <header> above. The chat side becomes an <aside> (complementary to
+        the prototype preview, which is the primary content); the preview side
+        gets <section role="region"> with an aria-label so AT users hear what
+        each pane represents.
+      */}
+      <main className="flex min-h-0 flex-1 overflow-hidden" aria-label="Studio workspace">
+        <aside
+          aria-label="Conversation with Maxwell"
           className={`
             flex min-h-0 flex-col
             ${shouldShowWorkspace ? "w-full shrink-0 border-r border-border/70 bg-background lg:w-[440px] xl:w-[500px]" : "w-full border-r-0"}
@@ -1237,10 +1256,11 @@ export function StudioShell({
             onRegenerateLatest={handleRegenerateLatest}
             stopNotice={stopNotice}
           />
-        </div>
+        </aside>
 
         {shouldShowWorkspace && (
-          <div
+          <section
+            aria-label="Prototype preview"
             className={`
               min-h-0 flex-1 flex-col
               ${activeView === "preview" ? "flex" : "hidden lg:flex"}
@@ -1266,9 +1286,9 @@ export function StudioShell({
               }}
               agentHref={agentHref}
             />
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   );
 }

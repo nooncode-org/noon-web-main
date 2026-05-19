@@ -27,6 +27,7 @@ function makeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     proposalRequestedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    stylePackId: null,
     ...overrides,
   };
 }
