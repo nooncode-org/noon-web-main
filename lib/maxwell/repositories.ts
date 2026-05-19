@@ -1631,3 +1631,51 @@ export async function getStudioEvents(studioSessionId: string): Promise<StudioEv
   `;
   return rows.map(mapEvent);
 }
+
+// ============================================================================
+// proposal_access_audit (B19)
+//
+// Append-only audit table for public access to /maxwell/proposal/[token].
+// Schema in supabase/migrations/20260518_015_proposal_access_audit.sql.
+// ============================================================================
+
+/** Constrained set of audit actions — keep in sync with the CHECK constraint. */
+export type ProposalAccessAction =
+  | "page_view"
+  | "page_view_blocked"
+  | "payment_evidence"
+  | "status_change";
+
+/**
+ * Insert one row into proposal_access_audit. Append-only, never updates.
+ *
+ * Designed to be called from a RSC or route handler AFTER any rate-limit
+ * check has settled (so we capture blocked accesses too). Caller is
+ * responsible for computing the SHA-256 hash of the client IP via
+ * `hashClientIp()` from `lib/server/audit/client-ip.ts` — the table
+ * never sees the raw IP.
+ *
+ * Never throws on insert failure — audit MUST NOT break the user flow.
+ * Failures are swallowed and logged at the call site (see helper
+ * `recordProposalAccessSafe()` in the same audit module).
+ */
+export async function insertProposalAccessAudit(input: {
+  proposalToken: string;
+  action: ProposalAccessAction;
+  responseStatus: number;
+  clientIpHash?: string | null;
+  userAgentTruncated?: string | null;
+}): Promise<void> {
+  const sql = getDb();
+  await sql`
+    INSERT INTO proposal_access_audit (
+      proposal_token, action, response_status, client_ip_hash, user_agent_truncated
+    ) VALUES (
+      ${input.proposalToken},
+      ${input.action},
+      ${input.responseStatus},
+      ${input.clientIpHash ?? null},
+      ${input.userAgentTruncated ?? null}
+    )
+  `;
+}
