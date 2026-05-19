@@ -141,6 +141,40 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
 ---
 
+## 5-bis · Auditoría B-series dudosos (2026-05-18 PM)
+
+Tras el merge de PR #13 quedaron 8 items B-series clasificados como "verificar". Audit ejecutado 2026-05-18 PM contra `main` actual:
+
+| Item | Estado real | Ubicación / ETA si falta |
+|---|---|---|
+| B27 interceptor 401 → signin | ✅ Done | `components/maxwell/studio-shell.tsx:435` + `components/maxwell/public-proposal-payment.tsx:100`. Usan `router.push('/en/signin?callbackUrl=...')`. |
+| B33 metadataBase + openGraph | ✅ Done | `app/layout.tsx:27-37`. |
+| B35 quitar `images: { unoptimized: true }` | ✅ Done | Ya removido de `next.config.mjs` (no aparece la key). |
+| B36 viewport + themeColor | ✅ Done | `app/layout.tsx:62-65`. |
+| B41 uninstall three / react-three / geist | ✅ Done | No aparecen en `package.json`. |
+| **B28** indicador progreso polling v0 | ⚠️ Parcial | `pollV0Status` en `studio-shell.tsx:826` hace polling cada 5s pero NO surface UI counter ni barra. UX gap: usuario ve "generating_prototype" sin feedback de tiempo transcurrido. **ETA fix: ~2h** (counter elapsed time en `studio-preview-pane.tsx`). |
+| **B11** advisory lock quota prototipo | ❌ Pendiente real | `evaluateInitialPrototypeCreate` (`lib/maxwell/prototype-quota.ts:103`) hace 4 checks secuenciales SIN lock. Race condition entre requests concurrentes del mismo usuario. Patrón ya implementado en `repositories.ts:897,962,1393` (`pg_advisory_xact_lock(hashtext(...))`) pero NO aplicado a este path. **ETA fix: ~3-5h** (envolver checks en transacción con advisory lock + tests). |
+| **B19** audit log proposal/[token] | ⚠️ Parcial | `app/[locale]/maxwell/proposal/[token]/page.tsx:85` solo loguea rate-limit hits. Falta tabla `proposal_access_audit` para tracking compliance. **ETA fix: ~4h** (migration nueva + integración + tests). |
+
+**Conclusión:** de los 8 dudosos, **5 ya estaban hechos**, **3 son pendientes reales** (B11 + B19 + B28). Los 3 requieren cuidado: B11 y B19 tocan DB con migration nueva, B28 cambia UX visible del Studio. Quedan diferidos hasta próxima sesión cuando haya tiempo y validación.
+
+---
+
+## 5-tris · F-1 mirror fix (2026-05-18 PM)
+
+Tras el smoke E2E cross-repo B1.3b en App (2026-05-18), Piedra3021 detectó la vulnerabilidad **F-1** (Medium-High): verifier HMAC inbound acepta requests sin `x-noon-timestamp`, bypaseando ventana anti-replay ±5min. Piedra parchó App en commit `92f1e0b`.
+
+**Mirror Web hecho 2026-05-18 PM:** branch `chore/fase-1-f1-mirror-fix-2026-05-18`, commit `7fba986`, **pushed pero PR pendiente de crear** (link: https://github.com/nooncode-org/noon-web-main/pull/new/chore/fase-1-f1-mirror-fix-2026-05-18).
+
+Cambios:
+- `lib/noon-app-integration.ts`: nueva función `assertRecentTimestamp(): asserts timestamp is string` + colapso del ternario línea 93 a unconditional `${timestamp}.${bodyText}`
+- `tests/maxwell/noon-app-webhook.test.ts`: 1 regression test "F-1 regression: returns 401 when x-noon-timestamp header is missing" usando `buildSignedRequest({ omitTimestamp: true })`
+- Tests: 497 → 498 verdes. 4 gates verdes.
+
+**Bloqueo desbloqueado:** B1.5 pilot sign-off App (estaba bloqueado en este mirror per finding F-1).
+
+---
+
 ## 6 · Archivos clave creados / modificados (referencia rápida)
 
 ### Nuevos archivos
