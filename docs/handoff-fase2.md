@@ -1,10 +1,12 @@
-# Handoff — FASE 2 hardening (sesión 2026-05-16/17/18)
+# Handoff — FASE 2 hardening (sesión 2026-05-16/17/18/19)
 
-**Estado al 2026-05-18 PM:** `main` HEAD en `b4ab857`, **513 tests verdes**, working tree limpio. PR #13 ya mergeado por nooncode-tech (cuerpo grande FASE 2). Después se mergearon 3 PRs adicionales esta sesión (PR #14 F-1 security, PR #15 B28 polling UX, PR #16 npm audit fix).
+**Estado al 2026-05-19 PM:** `main` HEAD en `206f63f`, **561 tests verdes**, working tree limpio. PR #13 ya mergeado por nooncode-tech (cuerpo grande FASE 2). Después se mergearon: PR #14 F-1 security, PR #15 B28 polling UX, PR #16 npm audit fix, PR #19 B14 GDPR hard-delete CLI, y el bump gpt-5.5 (merge `206f63f`).
 
 Actualización 2026-05-17 PM: cerrados Bloque 11 (Maxwell Quality Layer, gpt-4.1) y B22 (mobile fallback banner).
 
-Actualización 2026-05-18 PM (esta sesión): 3 PRs directos a main + verificación productiva — ver sección "5-tris" para detalle.
+Actualización 2026-05-18 PM: 3 PRs directos a main + verificación productiva — ver sección "5-tris" para detalle.
+
+Actualización 2026-05-19 PM: B14 GDPR hard-delete CLI (commit `1b28907`) + gpt-5.5 model bump con rollback env var (commit `206f63f`). Tests subieron 513 → 561 (B14: +27, B11 quota race: +5, gpt-5.5: +5, B19 audit: varios).
 
 Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 
@@ -15,10 +17,10 @@ Si vuelves a este repo en frío, este doc te ahorra reconstruir contexto.
 ```bash
 cd C:\Users\melan\Proyectos\noon-web-main
 git status                               # debe decir "working tree clean"
-git log --oneline -10                    # debe mostrar b4ab857 al tope
+git log --oneline -10                    # debe mostrar 206f63f al tope
 npx tsc --noEmit                         # gate 1
 npx eslint .                             # gate 2
-npm test                                 # gate 3 → 513 tests pass
+npm test                                 # gate 3 → 561 tests pass
 npm run build                            # gate 4 → "Compiled successfully"
 ```
 
@@ -124,13 +126,13 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
 **Bloqueo:** el spec en `maxwell-quality-layer.md` (descargado a `~/Downloads` originalmente, no en el repo) define 24 familias visuales × 72 referencias para mejorar la calidad de los prototypes v0. Sin tener ese doc en el repo y validado, implementar las 24 familias sería adivinar.
 
-**Adicional:** el spec sugiere bumpear el modelo a `gpt-5.5`. El default actual es `gpt-4.1` (`lib/api-ia.ts:98`). No sé si `gpt-5.5` existe / está GA en OpenAI.
+**Adicional:** ~~el spec sugiere bumpear el modelo a `gpt-5.5`~~ **RESUELTO 2026-05-19 (merge `206f63f`)**: `gpt-5.5` GA desde 2026-04-23 (verificado WebSearch). Default bumpeado en `lib/api-ia.ts` vía `resolveDefaultOpenAIModel()`. Rollback con `OPENAI_DEFAULT_MODEL=gpt-4.1` sin redeploy.
 
 **Lo que necesitas decidir:**
 - Copiar `maxwell-quality-layer.md` a `docs/maxwell/quality-layer.md` y firmarlo como spec oficial.
-- Confirmar si `gpt-5.5` está disponible o si seguimos con `gpt-4.1`.
+- ~~Confirmar si `gpt-5.5` está disponible o si seguimos con `gpt-4.1`~~ **HECHO**.
 
-**Default si quieres avanzar sin más spec:** `gpt-4.1` actual, implementar style packs como bloque cohesivo con feature flag `MAXWELL_QUALITY_LAYER=true` para rollback fácil. ETA real: 10–14 h.
+**Default si quieres avanzar sin más spec:** implementar style packs como bloque cohesivo con feature flag `MAXWELL_QUALITY_LAYER=true` para rollback fácil. ETA real: 10–14 h. Modelo ya es `gpt-5.5` por default.
 
 ### 5.2 · Bloque 12 — B14 GDPR hard-delete
 
