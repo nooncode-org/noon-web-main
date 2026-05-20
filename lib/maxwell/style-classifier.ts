@@ -118,6 +118,11 @@ export async function classifyStylePack(
       systemPrompt:
         "You are a precise classifier. Reply with exactly one id from the catalogue. No prose, no quotes.",
       prompt: buildClassifierPrompt(session, contextHint),
+      // G-D2: tag for monthly LLM-budget attribution. gpt-4.1-mini is
+      // ~25x cheaper than gpt-5.5, so this category should stay tiny
+      // even with high prototype throughput.
+      category: "style_classifier",
+      requestId: session.id,
     });
 
     const candidateId = reply.trim().replace(/^["']|["']$/g, "").toLowerCase();

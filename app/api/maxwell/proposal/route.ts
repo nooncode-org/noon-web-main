@@ -31,6 +31,7 @@ import {
   isNoonAppProposalHandoffConfigured,
   sendInboundProposalToNoonApp,
 } from "@/lib/noon-app-integration";
+import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -186,6 +187,9 @@ export async function POST(request: Request) {
       prompt: richContext,
       history: [] as ChatMessage[],
       systemPrompt: MAXWELL_PROPOSAL_SYSTEM_PROMPT,
+      // G-D2: tag for monthly LLM-budget attribution.
+      category: "proposal_generator",
+      requestId: session.id,
     });
 
     const warnings = validateProposalDraft(draftContent, {
@@ -240,6 +244,16 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: "Invalid request." }, { status: 400 });
+    }
+    // G-D2: budget hard-stop → 503 with clear code (LLM_BUDGET_EXCEEDED).
+    if (error instanceof LLMBudgetExceededError) {
+      return NextResponse.json(
+        {
+          message: "Proposal generation temporarily unavailable. Monthly LLM budget reached.",
+          code: "LLM_BUDGET_EXCEEDED",
+        },
+        { status: 503 },
+      );
     }
 
     log.error("maxwell.proposal", error);

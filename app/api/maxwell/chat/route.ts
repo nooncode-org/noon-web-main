@@ -28,6 +28,7 @@ import {
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
 import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
+import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -311,6 +312,10 @@ export async function POST(request: Request) {
       systemPrompt,
       ...(parsed.image_url ? { imageUrl: parsed.image_url } : {}),
       signal: request.signal,
+      // G-D2: tag for monthly LLM-budget attribution. The chat surface
+      // is the largest spend category — most turns per session live here.
+      category: "chat",
+      requestId: session.id,
     });
 
     const {
@@ -415,6 +420,18 @@ export async function POST(request: Request) {
         503,
         "Maxwell is temporarily unavailable because the database connection timed out. Please retry in a moment.",
         "DB_CONNECTIVITY_ERROR",
+      );
+    }
+    // G-D2: budget hard-stop translates to a friendly 503 so the
+    // client sees "service unavailable" instead of a generic 500.
+    // This path should never fire on legitimate traffic (the
+    // prototype-quota in B11 already caps usage well below the cost
+    // threshold) — if it does, ops should investigate via the log.
+    if (error instanceof LLMBudgetExceededError) {
+      return errorResponse(
+        503,
+        "Maxwell is temporarily unavailable. The monthly LLM budget has been reached; please try again next month or contact the Noon team.",
+        "LLM_BUDGET_EXCEEDED",
       );
     }
 

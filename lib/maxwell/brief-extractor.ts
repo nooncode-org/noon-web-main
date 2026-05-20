@@ -99,6 +99,9 @@ export async function extractAndSaveBrief(
       // too — no need to hardcode + remember to revert in two places.
       systemPrompt: SYSTEM_PROMPT,
       prompt: buildExtractionPrompt(conversation),
+      // G-D2: tag for monthly LLM-budget attribution.
+      category: "brief_extractor",
+      requestId: sessionId,
     });
 
     const clean = stripMarkdownFences(reply);

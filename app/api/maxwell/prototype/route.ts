@@ -22,6 +22,7 @@ import {
   buildPrototypeBrief,
 } from "@/lib/maxwell/prototype-brief";
 import { getStylePackById } from "@/lib/maxwell/style-packs";
+import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -139,6 +140,16 @@ export async function POST(request: Request) {
         if (stuckSession?.status === "generating_prototype") {
           await updateStudioSessionStatus(stuckSession.id, "clarifying");
         }
+        // G-D2: budget hard-stop → 503 with clear code.
+        if (v0Error instanceof LLMBudgetExceededError) {
+          return NextResponse.json(
+            {
+              message: "Prototype generation temporarily unavailable. Monthly LLM budget reached.",
+              code: "LLM_BUDGET_EXCEEDED",
+            },
+            { status: 503 },
+          );
+        }
         return NextResponse.json(
           { message: "Could not generate the prototype right now. Please try again." },
           { status: 500 },
@@ -187,6 +198,16 @@ export async function POST(request: Request) {
     } catch (v0Error) {
       log.error("maxwell.prototype", v0Error, { phase: "v0_update" });
       await updateStudioSessionStatus(session.id, "prototype_ready");
+      // G-D2: budget hard-stop → 503 with clear code.
+      if (v0Error instanceof LLMBudgetExceededError) {
+        return NextResponse.json(
+          {
+            message: "Prototype updates temporarily unavailable. Monthly LLM budget reached.",
+            code: "LLM_BUDGET_EXCEEDED",
+          },
+          { status: 503 },
+        );
+      }
       return NextResponse.json(
         { message: "Could not apply the adjustment right now. Please try again." },
         { status: 500 },

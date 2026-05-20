@@ -147,6 +147,10 @@ export async function POST(_req: Request, { params }: Params) {
     const { reply: draftContent } = await chatWithOpenAI({
       prompt: richContext,
       systemPrompt: MAXWELL_PROPOSAL_SYSTEM_PROMPT,
+      // G-D2: tag for monthly LLM-budget attribution. Upgrade flow is
+      // a distinct surface from the main Maxwell proposal generator.
+      category: "upgrade_generator",
+      requestId: studioSessionId ?? null,
     });
 
     const warnings = validateProposalDraft(draftContent, {
