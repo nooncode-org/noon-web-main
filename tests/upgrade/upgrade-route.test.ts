@@ -91,10 +91,6 @@ function postReq(body: unknown) {
   });
 }
 
-function getReq() {
-  return new Request(ROUTE_LIST, { method: "GET" });
-}
-
 function detailReq() {
   return new Request("http://localhost/api/upgrade/session-1", { method: "GET" });
 }
