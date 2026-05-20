@@ -21,6 +21,10 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ### Added
 
+- **`.github/PULL_REQUEST_TEMPLATE.md`** — codifies the Why / What
+  changes / Tests / Gates / Out-of-scope / Operational notes / Risks
+  pattern that delivered 17 zero-confusion PRs this session. Future
+  contributors get the structure for free.
 - **B14 GDPR Art.17 hard-delete CLI** (`scripts/gdpr-hard-delete.mjs` +
   `scripts/gdpr-hard-delete.lib.mjs`). Append-only audit ledger
   `gdpr_deletion_log` (migration `20260519_016`). 2-person approval
@@ -96,6 +100,12 @@ see `docs/handoff-fase2.md`. For the architectural state, see
   pendientes). (`2188948`)
 - **`docs/handoff-fase2.md` updated** with all session merges + baseline
   refreshed for fresh-session continuity.
+- **Doc accuracy fix:** `project.context.full.md` previously claimed "no
+  hay CI" — `.github/workflows/ci.yml` has actually been in place
+  (Node 22, tsc + tests + build + lint, triggers on every push +
+  PR to main). Docs (`§2.7 Infra`, the debt table in §11, and the
+  §13 pendientes técnicos block) all updated to reflect the real
+  state.
 
 ### Fixed
 
