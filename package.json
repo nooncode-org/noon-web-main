@@ -17,7 +17,8 @@
     "test:a11y": "playwright test a11y.spec.ts",
     "db:check-migrations": "node scripts/check-migrations.mjs --strict",
     "gdpr:hard-delete": "node scripts/gdpr-hard-delete.mjs",
-    "smoke:gpt-5.5": "node scripts/smoke-gpt-5.5.mjs"
+    "smoke:gpt-5.5": "node scripts/smoke-gpt-5.5.mjs",
+    "analyze": "next build --experimental-analyze && node scripts/bundle-stats-summary.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
