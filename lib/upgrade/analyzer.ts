@@ -117,6 +117,8 @@ export async function analyzeWebsite(params: {
       prompt,
       systemPrompt: AUDIT_SYSTEM_PROMPT,
       model: "gpt-4.1",
+      // G-D2: tag for monthly LLM-budget attribution.
+      category: "upgrade_analyzer",
     });
     raw = result.reply;
   } catch (err) {

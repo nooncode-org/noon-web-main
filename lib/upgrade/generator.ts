@@ -133,6 +133,8 @@ export async function generateUpgradedVersion(params: {
       prompt,
       systemPrompt: GENERATOR_SYSTEM_PROMPT,
       model: "gpt-4.1",
+      // G-D2: tag for monthly LLM-budget attribution.
+      category: "upgrade_generator",
     });
     raw = result.reply;
   } catch (err) {
@@ -199,6 +201,9 @@ export async function generateClarifyingQuestions(params: {
       prompt,
       systemPrompt: QUESTIONS_SYSTEM_PROMPT,
       model: "gpt-4.1",
+      // G-D2: tag for monthly LLM-budget attribution. "questions"
+      // sub-flow within upgrade — same category as the main generator.
+      category: "upgrade_generator",
     });
     raw = result.reply;
   } catch (err) {

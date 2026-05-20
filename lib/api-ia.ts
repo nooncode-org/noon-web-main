@@ -24,6 +24,12 @@
 import OpenAI from "openai";
 import { v0 } from "v0-sdk";
 
+import {
+  assertBudgetAvailable,
+  recordLLMCall,
+  type LLMCategory,
+} from "@/lib/server/llm-budget";
+
 // ---------------------------------------------------------------------------
 // Clientes
 // ---------------------------------------------------------------------------
@@ -65,6 +71,19 @@ export type OpenAIParams = {
   model?: string;
   /** Optional abort signal for user-initiated cancellation. */
   signal?: AbortSignal;
+  /**
+   * G-D2 LLM budget category tag — used by the budget ledger to break
+   * down monthly spend per Maxwell surface. Defaults to "unlabeled"
+   * for backward compat; new callers should always pass a specific
+   * category. Grep `recordLLMCall(` to see the live categories.
+   */
+  category?: LLMCategory;
+  /**
+   * Optional stable id used for traceability in the budget ledger
+   * (e.g. `${studioSessionId}:${turnIndex}`). Best-effort; recorded
+   * only when present.
+   */
+  requestId?: string | null;
 };
 
 export type OpenAIResult = {
@@ -138,11 +157,20 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
     systemPrompt,
     model = resolveDefaultOpenAIModel(),
     signal,
+    category = "unlabeled",
+    requestId,
   } = params;
 
   if (!prompt && !imageUrl) {
     throw new Error("Se requiere al menos un prompt o imageUrl.");
   }
+
+  // G-D2: hard-stop check BEFORE the LLM call. Throws
+  // `LLMBudgetExceededError` (caught by callers and translated to a
+  // 503 with a friendly message). Designed as anomaly detection — with
+  // the existing prototype-quota caps, this should never fire on
+  // legitimate traffic. Race-safe via advisory lock.
+  await assertBudgetAvailable();
 
   let userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] | string;
 
@@ -171,6 +199,24 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
   const reply =
     completion.choices[0]?.message?.content ?? "No se pudo generar una respuesta.";
 
+  // G-D2: record actual token usage post-response. Fire-and-forget at
+  // the call-site level — `recordLLMCall` never throws to the caller.
+  // We await it here only because `chatWithOpenAI` is awaited anyway;
+  // the cost of the extra DB insert is ~5-10ms.
+  await recordLLMCall({
+    category,
+    provider: "openai",
+    // Echo the API-reported model (may differ from `model` arg when an
+    // alias like "gpt-5.5" resolves to a dated snapshot like "gpt-5.5-2026-04-23").
+    model: completion.model ?? model,
+    inputTokens: completion.usage?.prompt_tokens ?? null,
+    outputTokens: completion.usage?.completion_tokens ?? null,
+    requestId,
+    metadata: {
+      finish_reason: completion.choices[0]?.finish_reason ?? null,
+    },
+  });
+
   return { reply };
 }
 
@@ -180,9 +226,15 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
 
 /**
  * Crea un nuevo chat en V0 y devuelve el chatId y la URL del prototipo.
+ *
+ * G-D2: assert budget BEFORE the v0 call, record cost AFTER. v0 does
+ * not surface token counts, so we use the per-call flat estimate from
+ * `lib/server/llm-pricing.ts` ("v0:default").
  */
 export async function createV0Prototype(params: V0CreateParams): Promise<V0Result> {
   const { prompt, systemPrompt } = params;
+
+  await assertBudgetAvailable();
 
   const result = await v0.chats.create({
     system: systemPrompt,
@@ -193,6 +245,16 @@ export async function createV0Prototype(params: V0CreateParams): Promise<V0Resul
       thinking: false,
     },
   }) as { id: string; latestVersion?: { demoUrl?: string } };
+
+  await recordLLMCall({
+    category: "v0_prototype_create",
+    provider: "v0",
+    model: "default",
+    requestId: result.id ?? null,
+    metadata: {
+      response_mode: "async",
+    },
+  });
 
   return {
     chatId: result.id,
@@ -206,15 +268,30 @@ export async function createV0Prototype(params: V0CreateParams): Promise<V0Resul
 
 /**
  * Envia un mensaje a un chat de V0 ya existente para modificar el prototipo.
+ *
+ * G-D2: assert budget BEFORE the v0 call, record cost AFTER. Same
+ * flat-per-call pricing as createV0Prototype.
  */
 export async function updateV0Prototype(params: V0SendMessageParams): Promise<V0Result> {
   const { chatId, prompt } = params;
+
+  await assertBudgetAvailable();
 
   const reply = await v0.chats.sendMessage({
     chatId,
     message: prompt,
     responseMode: "async",
   } as Parameters<typeof v0.chats.sendMessage>[0]) as { latestVersion?: { demoUrl?: string } };
+
+  await recordLLMCall({
+    category: "v0_prototype_update",
+    provider: "v0",
+    model: "default",
+    requestId: chatId,
+    metadata: {
+      response_mode: "async",
+    },
+  });
 
   return {
     chatId,
