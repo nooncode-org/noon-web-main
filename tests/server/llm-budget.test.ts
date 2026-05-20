@@ -258,6 +258,50 @@ describe("assertBudgetAvailable", () => {
     await assertBudgetAvailable();
     expect(logger.log.warn).toHaveBeenCalled();
   });
+
+  it("FAILS OPEN when the DB query errors (e.g. table missing)", async () => {
+    // Simulate a SQL error — the table doesn't exist, transient DB
+    // hiccup, or migration 017 hasn't been applied yet. Worst-case
+    // realistic scenario: G-D2 deployed but the migration is still in
+    // the ops queue.
+    const failingSql = vi.fn(async () => {
+      throw new Error(
+        'relation "llm_budget_usage" does not exist',
+      );
+    }) as unknown as ((...args: unknown[]) => Promise<unknown[]>) & {
+      begin: (cb: (tx: unknown) => Promise<unknown>) => Promise<unknown>;
+    };
+    failingSql.begin = async (cb) => cb(failingSql);
+    vi.mocked(db.getDb).mockReturnValue(failingSql as never);
+
+    // MUST NOT throw. The LLM call must proceed (the B11 prototype-quota
+    // is the real safety net; this check is anomaly detection).
+    await expect(assertBudgetAvailable()).resolves.toBeUndefined();
+
+    // BUT it should log loud at error level so ops sees the issue
+    // immediately in Sentry / Vercel logs.
+    expect(logger.log.error).toHaveBeenCalledWith(
+      "llm-budget",
+      expect.any(Error),
+      expect.objectContaining({
+        phase: "assert_budget_available",
+        decision: "fail_open",
+      }),
+    );
+  });
+
+  it("STILL throws LLMBudgetExceededError when over cap (vs swallowing it)", async () => {
+    // Regression guard: the fail-open behaviour above must NOT swallow
+    // the legitimate budget-exceeded signal. Only DB errors fail open.
+    queuedResults = [
+      [{ pg_advisory_xact_lock: "" }],
+      [{ total: "250" }], // 125% of $200
+    ];
+
+    await expect(assertBudgetAvailable()).rejects.toBeInstanceOf(
+      LLMBudgetExceededError,
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
