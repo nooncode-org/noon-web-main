@@ -468,7 +468,6 @@ NOON_APP_WEBHOOK_SECRET
 - Constraints comerciales: `docs/maxwell/maxwell-commercial-constraints.md`
 - Runtime de contact + Maxwell: `docs/contact-and-maxwell-runtime.md`
 - Roadmaps históricos: `docs/roadmaps/` (referencia, no fuente de verdad actual)
-- Items pendientes históricos: `docs/website-missing-items.txt`
 - Legal source: `docs/legal-source/`
 - IA wrapper: `lib/api-ia.ts`
 - Persistencia: `lib/server/db.ts`, `lib/maxwell/repositories.ts`
