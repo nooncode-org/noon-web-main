@@ -8,7 +8,7 @@
  * Tests map directly to the QA matrix in the Maxwell Studio spec.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // ============================================================================
 // QA Matrix — guard logic (pure, no HTTP)

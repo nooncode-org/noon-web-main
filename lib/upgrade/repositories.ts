@@ -17,7 +17,6 @@ import type {
   AuditJson,
   UpgradeVersion,
   VersionJson,
-  UpgradeEvent,
   UpgradeEventType,
   SessionWithDetails,
 } from "./types";

@@ -40,8 +40,6 @@ export function HeroSection() {
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [currentSuggestion, setCurrentSuggestion] = useState(0);
-  const [canScrollPromptsLeft, setCanScrollPromptsLeft] = useState(false);
-  const [canScrollPromptsRight, setCanScrollPromptsRight] = useState(false);
   const [showAllPrompts, setShowAllPrompts] = useState(false);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [attachMenuOpen, setAttachMenuOpen] = useState(false);
@@ -49,7 +47,6 @@ export function HeroSection() {
   const [urlInputValue, setUrlInputValue] = useState("");
   const [urlInputLoading, setUrlInputLoading] = useState(false);
   const [showMyChatsLink, setShowMyChatsLink] = useState(false);
-  const promptScrollerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
@@ -186,27 +183,6 @@ export function HeroSection() {
     setInputValue(prompt);
   };
 
-  useEffect(() => {
-    const updatePromptScrollState = () => {
-      const node = promptScrollerRef.current;
-      if (!node) return;
-      setCanScrollPromptsLeft(node.scrollLeft > 8);
-      const remainingScroll = node.scrollWidth - node.clientWidth - node.scrollLeft;
-      setCanScrollPromptsRight(remainingScroll > 8);
-    };
-
-    updatePromptScrollState();
-    window.addEventListener("resize", updatePromptScrollState);
-    return () => window.removeEventListener("resize", updatePromptScrollState);
-  }, []);
-
-  const handlePromptCarouselAdvance = () => {
-    promptScrollerRef.current?.scrollBy({ left: 220, behavior: "smooth" });
-  };
-
-  const handlePromptCarouselBack = () => {
-    promptScrollerRef.current?.scrollBy({ left: -220, behavior: "smooth" });
-  };
 
   const urlInputLabel =
     urlInputMode === "github"
