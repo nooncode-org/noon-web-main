@@ -13,7 +13,7 @@
 - **Usuarios del Studio:** Prospectos (pre-pago) y PM de Noon (revisión de propuesta vía Noon App, no website).
 - **Usuarios post-pago:** Clientes activos (workspace formal en `app/[locale]/maxwell/workspace/[sessionId]`).
 - **Owner:** Juan (operador de Noon).
-- **Estado del repo:** Producción interna — Studio funcional, propuestas firmadas hacia Noon App, hardening (CI, tests de webhooks, observabilidad) pendiente.
+- **Estado del repo:** Producción interna — Studio funcional, propuestas firmadas hacia Noon App, hardening completado (CI activo, tests de webhooks, instrumentation cabletada para observabilidad pendiente de Sentry DSN).
 
 ---
 
@@ -83,7 +83,7 @@
 - Postgres en Supabase con SSL (DATABASE_URL + POSTGRES_URL)
 - Sentry instrumentation cableada (`instrumentation.ts` + `lib/server/logger.ts`), gated por `SENTRY_DSN` env — actualmente NO seteado (pendiente ops)
 - Upstash Redis para rate-limiting (`lib/server/rate-limit.ts`, B21)
-- No hay `.github/workflows/` — sin CI (pendiente del hardening)
+- **CI activo:** `.github/workflows/ci.yml` (Node 22 + cache npm; corre `tsc --noEmit`, `npm test`, `npm run build` con `AUTH_SECRET` dummy, `npm run lint`). Triggers: every `push` + every `pull_request` a `main`. Concurrency: cancel-in-progress por branch/PR. Timeout: 15min.
 
 ---
 
@@ -358,8 +358,8 @@ NOON_APP_WEBHOOK_SECRET
 
 | Deuda | Severidad | Plan |
 |-------|-----------|------|
-| Sin CI/CD | ALTA | Añadir `ci.yml` (lint + tsc + vitest + build) |
-| Webhook entrante sin tests | ALTA | `tests/maxwell/noon-app-webhook.test.ts` |
+| ~~Sin CI/CD~~ | ✅ RESUELTO | `.github/workflows/ci.yml` activo (tsc + npm test + build + lint, Node 22) |
+| ~~Webhook entrante sin tests~~ | ✅ RESUELTO | `tests/maxwell/noon-app-webhook.test.ts` + F-1 regression case añadido 2026-05-18 |
 | `auth.ts` degrada silenciosamente | MEDIA | Fail-fast en producción |
 | Tabla `maxwell_sessions` + `/api/maxwell/session` legacy conviven con `studio_session` + `/api/maxwell/studio/session` | MEDIA | Confirmar que solo se usa para captura inicial de prompt; consolidar o documentar la división |
 | Cookie parsing manual en `app/api/maxwell/session/route.ts:10-15, 33-38` | BAJA | Sustituir por `request.cookies` de Next |
@@ -441,12 +441,14 @@ NOON_APP_WEBHOOK_SECRET
 1. **v3 Phase 2-6 scope** — no hay master-spec formal todavía (confirmar con owner si existe o se difiere)
 2. **Cross-repo v3 contracts mirror en App-nooncode** — spec listo en `docs/cross-repo-v3-contracts-app-mirror.md`. **App usa canonical diferente** (`landing`/`webapp`/etc vs Web `web_landing`/`webapp_system`/etc) — divergencia documentada que necesita decisión owner para unificar o mantener separado
 3. **Rename completo `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET`** (cross-repo, eliminar legacy fallback)
-4. **LLM budget G-D2** — implementación pendiente (spec confirmado: $200/mes, warn 80%, hard-stop 100%)
+4. ~~**LLM budget G-D2**~~ → ✅ RESUELTO (`a196a12` + hotfix `c9ddf45` fail-open + admin endpoint en `7e9447e`)
 
 **Pendientes técnicos menores:**
-1. CI mínimo (`.github/workflows/ci.yml`) — único hardening item que no se cerró
-2. Tests para 4-5 routes sin cobertura explícita (orden: `maxwell/session`, `maxwell/prototype`, `maxwell/proposal`, `message-feedback`, `review-sla`)
-3. Bundle/perf review del `npm run build` output
+
+Todos resueltos en la sesión 2026-05-19. Lo que estaba listado acá:
+1. ~~CI mínimo~~ → ✅ Ya existía `.github/workflows/ci.yml` (descubierto + docs actualizados en este turno)
+2. ~~Tests para 4-5 routes sin cobertura~~ → ✅ +148 tests añadidos cubriendo Maxwell + contact + health/db + upgrade entry + upgrade sub-actions
+3. ~~Bundle/perf review~~ → ✅ `docs/bundle-and-cve-audit-2026-05-19.md` (bundle saludable, CVE postcss no exploitable)
 
 **Modo:** mostly ops follow-up + sprint planning para v3 cuando llegue
 **Skills:** system-ops → system-architecture (v3 scoping)
