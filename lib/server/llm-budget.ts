@@ -152,27 +152,62 @@ function currentPeriodMonth(now: Date = new Date()): string {
  * Uses an advisory lock so concurrent requests serialise around the
  * read + decision. Caller is expected to invoke this BEFORE the LLM
  * call and to surface a 503 to the client when it throws.
+ *
+ * Fail-open on DB errors (table missing, transient connectivity, etc.):
+ *   This check is ANOMALY DETECTION, not a throttle. The real
+ *   per-user / per-month cap lives in lib/maxwell/prototype-quota.ts
+ *   (B11) and is enforced regardless of this function. If THIS check
+ *   itself errors out (e.g. migration 017 hasn't been applied yet, or
+ *   DB has a hiccup), we have two options:
+ *
+ *     (a) Throw → every Maxwell call fails with 500. Worst-case loss:
+ *         business operations completely blocked until ops intervenes.
+ *
+ *     (b) Log critical + return (fail open) → the LLM call proceeds.
+ *         Worst-case loss: a few extra dollars in spend while ops
+ *         applies the migration / fixes the connectivity issue. The
+ *         B11 prototype-quota still caps actual usage hard.
+ *
+ *   We pick (b). The cost asymmetry strongly favours fail-open.
+ *
+ *   The ONLY error we DO re-throw is the budget-exceeded one — that's
+ *   a meaningful signal worth surfacing as a 503 to the client.
  */
 export async function assertBudgetAvailable(): Promise<void> {
   const cap = resolveMonthlyBudgetUsd();
   const period = currentPeriodMonth();
-  const sql = getDb();
 
-  const result = await sql.begin(async (tx) => {
-    // Advisory lock keyed on the period month string. hashtext() turns
-    // it into an int4 the advisory lock API expects. Same pattern as
-    // B11 quota concurrency.
-    await tx`SELECT pg_advisory_xact_lock(hashtext(${`llm-budget:${period}`}))`;
+  let result: { total: number };
+  try {
+    const sql = getDb();
+    result = await sql.begin(async (tx) => {
+      // Advisory lock keyed on the period month string. hashtext() turns
+      // it into an int4 the advisory lock API expects. Same pattern as
+      // B11 quota concurrency.
+      await tx`SELECT pg_advisory_xact_lock(hashtext(${`llm-budget:${period}`}))`;
 
-    const rows = await tx<{ total: string | null }[]>`
-      SELECT SUM(cost_usd) AS total
-      FROM llm_budget_usage
-      WHERE period_month = ${period}
-    `;
+      const rows = await tx<{ total: string | null }[]>`
+        SELECT SUM(cost_usd) AS total
+        FROM llm_budget_usage
+        WHERE period_month = ${period}
+      `;
 
-    const total = Number(rows[0]?.total ?? 0);
-    return { total };
-  });
+      const total = Number(rows[0]?.total ?? 0);
+      return { total };
+    });
+  } catch (error) {
+    // Fail open — see the docblock for the rationale. Log at error
+    // level so Sentry / Vercel logs surface this immediately. Common
+    // causes: migration 017 not applied yet, transient DB hiccup,
+    // schema drift. Ops should resolve and the next call will succeed.
+    log.error("llm-budget", error, {
+      phase: "assert_budget_available",
+      period_month: period,
+      decision: "fail_open",
+      note: "Budget check could not run; allowing the LLM call. The B11 prototype-quota still enforces per-user caps.",
+    });
+    return;
+  }
 
   const ratio = result.total / cap;
 
