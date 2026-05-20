@@ -9,10 +9,8 @@ import {
   getStudioSession,
   getStudioBrief,
   setStylePackId,
-  createStudioVersion,
   incrementCorrectionsUsed,
   updateStudioSessionStatus,
-  appendStudioMessage,
 } from "@/lib/maxwell/repositories";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
 import { evaluateInitialPrototypeCreate } from "@/lib/maxwell/prototype-quota";
@@ -214,9 +212,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const updatedSession = await incrementCorrectionsUsed(session.id);
-    // Nota: Como la llamada ahora es asíncrona, no guardaremos la versión aún.
-    // Retornamos de inmediato a pending=true para que el cliente comience a hacer polling.
+    // Side-effect-only call — increments the row, return value not used here.
+    // The version commit (createStudioVersion) happens in the poll endpoint
+    // when v0 reports the async update is complete.
+    await incrementCorrectionsUsed(session.id);
 
     return NextResponse.json({
       pending: true,
