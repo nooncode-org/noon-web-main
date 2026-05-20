@@ -12,7 +12,7 @@
 - **Problema que resuelve:** Empresas necesitan software custom pero el proceso de intake, definición y propuesta es lento, opaco y costoso.
 - **Usuarios del Studio:** Prospectos (pre-pago) y PM de Noon (revisión de propuesta vía Noon App, no website).
 - **Usuarios post-pago:** Clientes activos (workspace formal en `app/[locale]/maxwell/workspace/[sessionId]`).
-- **Owner:** Juan (operador de Noon).
+- **Owner:** Mel (operador de Noon, autoridad final sobre roadmap, scope, comercial, ops decisions).
 - **Estado del repo:** Producción interna — Studio funcional, propuestas firmadas hacia Noon App, hardening completado (CI activo, tests de webhooks, instrumentation cabletada para observabilidad pendiente de Sentry DSN).
 
 ---

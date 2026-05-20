@@ -38,7 +38,7 @@ La spec asume **mantener ambos vocabularios + mapas bidireccionales** (no forzar
 - (a) Mantener separados y traducir en el borde cross-repo (lo que propongo)
 - (b) Unificar a uno de los dos sets (decisión owner-level, requiere migración de datos en uno de los repos)
 
-Mi voto es (a) por bajo riesgo. **Hablalo con Juan antes de implementar la spec.**
+Mi voto es (a) por bajo riesgo. **Hablalo con Mel (owner) antes de implementar la spec.**
 
 ---
 
@@ -46,7 +46,7 @@ Mi voto es (a) por bajo riesgo. **Hablalo con Juan antes de implementar la spec.
 
 `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET` (el nombre canónico per cross-repo-webhook-v1).
 
-Web ya acepta ambos nombres (backward compat). Cuando coordines con Juan rotar:
+Web ya acepta ambos nombres (backward compat). Cuando coordines con Mel para rotar:
 
 1. Vos seteás `NOON_WEBSITE_WEBHOOK_SECRET` en App con el mismo valor que ya tiene `NOON_APP_WEBHOOK_SECRET`
 2. Web flipea Vercel env para que solo lea el nuevo nombre
@@ -114,7 +114,7 @@ Sesión de 17 PRs en `noon-web-main`. Te resumo solo lo que **te afecta cross-re
 
 ## 🔧 Acciones operacionales web pendientes (no afectan App, pero info)
 
-Si Juan no las hizo cuando vos veas esto, son las 2 cosas que falta hacer en Web:
+Si Mel no las hizo cuando vos veas esto, son las 2 cosas que falta hacer en Web:
 
 1. **Aplicar `supabase/migrations/20260520_017_llm_budget_usage.sql` a prod** — sin esto, el ledger del LLM budget está vacío (Maxwell sigue funcionando gracias al hotfix fail-open)
 2. **Setear `MAXWELL_LIFECYCLE_EMAILS=1` en Vercel** — activa los 2 emails B8 wireados
@@ -136,7 +136,7 @@ Si las necesitás ejecutar vos, los detalles están en `noon-web-main/docs/hando
 
 ## TL;DR
 
-**1 cosa que tenés que hacer:** mirror v3 contracts en App (~2h), pero **hablalo primero con Juan** por el tema del canonical drift.
+**1 cosa que tenés que hacer:** mirror v3 contracts en App (~2h), pero **hablalo primero con Mel (owner)** por el tema del canonical drift.
 
 **0 cosas urgentes.** No hay nada bloqueado esperando tu input. La spec está lista; vos definís cuándo arrancás.
 
