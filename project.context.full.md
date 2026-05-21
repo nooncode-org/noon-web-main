@@ -439,7 +439,7 @@ NOON_APP_WEBHOOK_SECRET
 
 **Pendientes de owner / cross-repo (requieren decisión o coordinación):**
 1. **v3 Phase 2-6 scope** — no hay master-spec formal todavía (confirmar con owner si existe o se difiere)
-2. **Cross-repo v3 contracts mirror en App-nooncode** — spec listo en `docs/cross-repo-v3-contracts-app-mirror.md`. **App usa canonical diferente** (`landing`/`webapp`/etc vs Web `web_landing`/`webapp_system`/etc) — divergencia documentada que necesita decisión owner para unificar o mantener separado
+2. **Cross-repo v3 contracts mirror en App-nooncode** — spec listo en `docs/cross-repo-v3-contracts-app-mirror.md`. **Canonical project-types unificado 2026-05-21** al spelling de App (`landing | ecommerce | webapp | mobile | saas_ai`). Web ya migró código + datos vía `supabase/migrations/20260521_018_project_types_unify.sql`. Piedra implementa mirror en App reutilizando sus nombres existentes (sin capa de traducción)
 3. **Rename completo `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET`** (cross-repo, eliminar legacy fallback)
 4. ~~**LLM budget G-D2**~~ → ✅ RESUELTO (`a196a12` + hotfix `c9ddf45` fail-open + admin endpoint en `7e9447e`)
 

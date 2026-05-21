@@ -13,6 +13,13 @@ a Web-only artifact.
 **Status when this doc was written (2026-05-19):** Web is the
 authoritative source. App has not yet implemented either module.
 
+**Update 2026-05-21:** Mel decidió **unificar** el vocabulario de
+project-types al spelling de App. Web migró su lado (código rebautizado
++ migration `20260521_018_project_types_unify.sql`). Esta spec ya
+refleja el set unificado abajo — App puede reutilizar sus nombres
+existentes (`landing | ecommerce | webapp | mobile | saas_ai`) tal
+cual, **sin capa de traducción** entre lados.
+
 ---
 
 ## Why this exists separately from "just copy the file"
@@ -50,14 +57,14 @@ detail.
 
 ### Project type vocabulary
 
-Both repos use the same 5 canonical strings:
+Both repos use the same 5 canonical strings (unificado 2026-05-21):
 
 ```
-web_landing
+landing
 ecommerce
-webapp_system
+webapp
 mobile
-saas_ai_automation
+saas_ai
 ```
 
 Both repos provide a `normalizeProjectType(input: string | null | undefined): CanonicalProjectType | null`
@@ -65,17 +72,17 @@ helper that:
 - Returns the input if it's already canonical (case-sensitive match)
 - Maps legacy `platform` values (`web`/`mobile`/`both`/`unknown`)
   case-INsensitively → canonical:
-  - `web` → `web_landing`
+  - `web` → `landing`
   - `mobile` → `mobile`
-  - `both` → `webapp_system`
+  - `both` → `webapp`
   - `unknown` → `null`
 - Returns `null` for ANY other input (does NOT silently default)
 - Trims whitespace before matching
 
 Both repos provide `canonicalToLegacyPlatform(canonical): "web" | "mobile" | "both"`
 with the same lossy mapping for backwards-compat scenarios:
-- `web_landing`, `ecommerce`, `saas_ai_automation` → `web`
-- `webapp_system` → `both`
+- `landing`, `ecommerce`, `saas_ai` → `web`
+- `webapp` → `both`
 - `mobile` → `mobile`
 
 **Why both directions:** Web→App messages should serialise canonical;
@@ -153,9 +160,9 @@ export const CANONICAL_PROJECT_TYPES = Object.keys(
 export const LEGACY_PLATFORM_TO_PROJECT_TYPE: Readonly<
   Record<string, CanonicalProjectType | null>
 > = {
-  web: "web_landing",
+  web: "landing",
   mobile: "mobile",
-  both: "webapp_system",
+  both: "webapp",
   unknown: null,
 };
 
@@ -186,11 +193,11 @@ export function canonicalToLegacyPlatform(
   switch (canonical) {
     case "mobile":
       return "mobile";
-    case "webapp_system":
+    case "webapp":
       return "both";
-    case "web_landing":
+    case "landing":
     case "ecommerce":
-    case "saas_ai_automation":
+    case "saas_ai":
       return "web";
   }
 }
@@ -211,11 +218,11 @@ Replace the `import { PROJECT_CATEGORIES, ... }` block with:
 // lib/maxwell/proposal-rules.ts (pricing rows must cover every
 // canonical type).
 const PROJECT_CATEGORIES = {
-  web_landing: "Web básica / Landing / Corporate",
+  landing: "Web básica / Landing / Corporate",
   ecommerce: "E-commerce",
-  webapp_system: "Web App / Sistema",
+  webapp: "Web App / Sistema",
   mobile: "Mobile",
-  saas_ai_automation: "SaaS / AI / Automation",
+  saas_ai: "SaaS / AI / Automation",
 } as const;
 
 export type CanonicalProjectType = keyof typeof PROJECT_CATEGORIES;
@@ -248,13 +255,13 @@ pattern).
 **Minimum test surface (do not ship without these):**
 
 For `project-types.test.ts`:
-- `normalizeProjectType("web")` → `"web_landing"`
+- `normalizeProjectType("web")` → `"landing"`
 - `normalizeProjectType("mobile")` → `"mobile"`
-- `normalizeProjectType("both")` → `"webapp_system"`
+- `normalizeProjectType("both")` → `"webapp"`
 - `normalizeProjectType("unknown")` → `null`
 - `normalizeProjectType("random nonsense")` → `null` (NOT a default)
-- `normalizeProjectType("WEB")` → `"web_landing"` (case-insensitive legacy)
-- `normalizeProjectType("  web_landing  ")` → `"web_landing"` (trim)
+- `normalizeProjectType("WEB")` → `"landing"` (case-insensitive legacy)
+- `normalizeProjectType("  landing  ")` → `"landing"` (trim)
 - `canonicalToLegacyPlatform` returns valid bucket for every canonical type
 
 For `project-isolation.test.ts`:

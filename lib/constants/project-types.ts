@@ -16,12 +16,18 @@
  *
  * v3 needs a SINGLE canonical vocabulary that both repos agree on so
  * payloads serialised on one side decode cleanly on the other (Web
- * sends `{ projectType: "web_landing" }`, App reads
- * `projectType === "web_landing"` — no string-compare drift). The 5
+ * sends `{ projectType: "landing" }`, App reads
+ * `projectType === "landing"` — no string-compare drift). The 5
  * existing `PROJECT_CATEGORIES` ARE the canonical set; this file
  * re-exports them under a stable name + adds normalisation helpers so
  * the legacy `platform` strings still resolve to something useful
  * during the migration window.
+ *
+ * UNIFIED 2026-05-21: the vocabulary was renamed to match the App-side
+ * spelling so the two repos share an identical canonical set. Old
+ * names (`web_landing` / `webapp_system` / `saas_ai_automation`) are
+ * NOT accepted anymore — DB rows were migrated via the rename script
+ * in `supabase/migrations/20260521_018_project_types_unify.sql`.
  *
  * Why this file lives in `lib/constants/` (not `lib/maxwell/`):
  *   The cross-repo contract treats project types as a top-level
@@ -78,15 +84,15 @@ export const CANONICAL_PROJECT_TYPES = Object.keys(
  * extractor produces "web" | "mobile" | "both" | "unknown" via the
  * `platform` field in the structured brief. Mapping rules:
  *
- *   - "web"     → "web_landing"      (most-common, conservative default)
- *   - "mobile"  → "mobile"           (exact match)
- *   - "both"    → "webapp_system"    (cross-platform usually means an app)
- *   - "unknown" → null               (caller decides default; do not silently
- *                                    pick a category — the proposal rules
- *                                    fall back to `webapp_system` on null
- *                                    if pricing is needed)
+ *   - "web"     → "landing"      (most-common, conservative default)
+ *   - "mobile"  → "mobile"       (exact match)
+ *   - "both"    → "webapp"       (cross-platform usually means an app)
+ *   - "unknown" → null           (caller decides default; do not silently
+ *                                pick a category — the proposal rules
+ *                                fall back to `webapp` on null
+ *                                if pricing is needed)
  *
- * Why "web" → "web_landing" and not "webapp_system": pre-Maxwell
+ * Why "web" → "landing" and not "webapp": pre-Maxwell
  * traffic that just says "we need a website" is overwhelmingly
  * landing/corporate ("show what we do") rather than a custom app
  * ("operate the business"). Picking landing keeps the default cheap +
@@ -96,9 +102,9 @@ export const CANONICAL_PROJECT_TYPES = Object.keys(
 export const LEGACY_PLATFORM_TO_PROJECT_TYPE: Readonly<
   Record<string, CanonicalProjectType | null>
 > = {
-  web: "web_landing",
+  web: "landing",
   mobile: "mobile",
-  both: "webapp_system",
+  both: "webapp",
   unknown: null,
 };
 
@@ -167,11 +173,11 @@ export function normalizeProjectType(
  * field; new code on the Web side should always serialise the canonical
  * value and let the consumer downgrade if needed.
  *
- *   "web_landing"        → "web"
- *   "ecommerce"          → "web"     (ecommerce sites are web)
- *   "webapp_system"      → "both"    (web-first but mobile-friendly)
- *   "mobile"             → "mobile"
- *   "saas_ai_automation" → "web"     (SaaS dashboards are web)
+ *   "landing"   → "web"
+ *   "ecommerce" → "web"     (ecommerce sites are web)
+ *   "webapp"    → "both"    (web-first but mobile-friendly)
+ *   "mobile"    → "mobile"
+ *   "saas_ai"   → "web"     (SaaS dashboards are web)
  *
  * The lossy direction is intentional — the canonical set is richer
  * than the legacy. Use only where backward-compat requires it.
@@ -182,11 +188,11 @@ export function canonicalToLegacyPlatform(
   switch (canonical) {
     case "mobile":
       return "mobile";
-    case "webapp_system":
+    case "webapp":
       return "both";
-    case "web_landing":
+    case "landing":
     case "ecommerce":
-    case "saas_ai_automation":
+    case "saas_ai":
       return "web";
   }
 }

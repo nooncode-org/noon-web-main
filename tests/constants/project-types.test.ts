@@ -42,10 +42,10 @@ describe("CANONICAL_PROJECT_TYPES", () => {
   it("contains the 5 known canonical types in some order", () => {
     expect([...CANONICAL_PROJECT_TYPES].sort()).toEqual([
       "ecommerce",
+      "landing",
       "mobile",
-      "saas_ai_automation",
-      "web_landing",
-      "webapp_system",
+      "saas_ai",
+      "webapp",
     ]);
   });
 });
@@ -77,16 +77,16 @@ describe("isCanonicalProjectType", () => {
 });
 
 describe("LEGACY_PLATFORM_TO_PROJECT_TYPE", () => {
-  it("maps web → web_landing (conservative default)", () => {
-    expect(LEGACY_PLATFORM_TO_PROJECT_TYPE.web).toBe("web_landing");
+  it("maps web → landing (conservative default)", () => {
+    expect(LEGACY_PLATFORM_TO_PROJECT_TYPE.web).toBe("landing");
   });
 
   it("maps mobile → mobile (exact)", () => {
     expect(LEGACY_PLATFORM_TO_PROJECT_TYPE.mobile).toBe("mobile");
   });
 
-  it("maps both → webapp_system (cross-platform implies an app)", () => {
-    expect(LEGACY_PLATFORM_TO_PROJECT_TYPE.both).toBe("webapp_system");
+  it("maps both → webapp (cross-platform implies an app)", () => {
+    expect(LEGACY_PLATFORM_TO_PROJECT_TYPE.both).toBe("webapp");
   });
 
   it("maps unknown → null (don't silently default)", () => {
@@ -102,9 +102,9 @@ describe("normalizeProjectType", () => {
   });
 
   it("translates legacy platform values to canonical", () => {
-    expect(normalizeProjectType("web")).toBe("web_landing");
+    expect(normalizeProjectType("web")).toBe("landing");
     expect(normalizeProjectType("mobile")).toBe("mobile");
-    expect(normalizeProjectType("both")).toBe("webapp_system");
+    expect(normalizeProjectType("both")).toBe("webapp");
   });
 
   it("returns null for the legacy 'unknown' sentinel", () => {
@@ -112,14 +112,14 @@ describe("normalizeProjectType", () => {
   });
 
   it("is case-insensitive on legacy platform values", () => {
-    expect(normalizeProjectType("WEB")).toBe("web_landing");
+    expect(normalizeProjectType("WEB")).toBe("landing");
     expect(normalizeProjectType("Mobile")).toBe("mobile");
-    expect(normalizeProjectType("Both")).toBe("webapp_system");
+    expect(normalizeProjectType("Both")).toBe("webapp");
   });
 
   it("trims whitespace before matching", () => {
-    expect(normalizeProjectType("  web_landing  ")).toBe("web_landing");
-    expect(normalizeProjectType("\tweb\n")).toBe("web_landing");
+    expect(normalizeProjectType("  landing  ")).toBe("landing");
+    expect(normalizeProjectType("\tweb\n")).toBe("landing");
   });
 
   it("returns null for null / undefined / empty string", () => {
@@ -132,7 +132,7 @@ describe("normalizeProjectType", () => {
   it("returns null for unknown free text (does NOT silently default)", () => {
     // Critical: unknown free text returning a canonical value would
     // hide upstream bugs. Caller must decide whether to use a default
-    // (e.g. `webapp_system`) or surface the error.
+    // (e.g. `webapp`) or surface the error.
     expect(normalizeProjectType("e-commerce")).toBeNull(); // hyphen typo
     expect(normalizeProjectType("WebApp")).toBeNull();     // camelCase
     expect(normalizeProjectType("ai-saas")).toBeNull();    // reordered
@@ -142,11 +142,11 @@ describe("normalizeProjectType", () => {
 
 describe("canonicalToLegacyPlatform", () => {
   it("maps the entire canonical set to a legacy bucket", () => {
-    expect(canonicalToLegacyPlatform("web_landing")).toBe("web");
+    expect(canonicalToLegacyPlatform("landing")).toBe("web");
     expect(canonicalToLegacyPlatform("ecommerce")).toBe("web");
-    expect(canonicalToLegacyPlatform("webapp_system")).toBe("both");
+    expect(canonicalToLegacyPlatform("webapp")).toBe("both");
     expect(canonicalToLegacyPlatform("mobile")).toBe("mobile");
-    expect(canonicalToLegacyPlatform("saas_ai_automation")).toBe("web");
+    expect(canonicalToLegacyPlatform("saas_ai")).toBe("web");
   });
 
   it("round-trips for values that have an unambiguous reverse", () => {

@@ -46,8 +46,8 @@ function makeVersion(n: number, source: "initial" | "correction" = "initial"): S
 }
 
 describe("resolveProjectCategory", () => {
-  it("returns webapp_system for null (default)", () => {
-    expect(resolveProjectCategory(null)).toBe("webapp_system");
+  it("returns webapp for null (default)", () => {
+    expect(resolveProjectCategory(null)).toBe("webapp");
   });
 
   it("resolves mobile hints first", () => {
@@ -58,10 +58,10 @@ describe("resolveProjectCategory", () => {
   });
 
   it("resolves saas/ai/automation hints", () => {
-    expect(resolveProjectCategory("AI assistant")).toBe("saas_ai_automation");
-    expect(resolveProjectCategory("chatbot automation")).toBe("saas_ai_automation");
-    expect(resolveProjectCategory("LLM integration")).toBe("saas_ai_automation");
-    expect(resolveProjectCategory("SaaS platform")).toBe("saas_ai_automation");
+    expect(resolveProjectCategory("AI assistant")).toBe("saas_ai");
+    expect(resolveProjectCategory("chatbot automation")).toBe("saas_ai");
+    expect(resolveProjectCategory("LLM integration")).toBe("saas_ai");
+    expect(resolveProjectCategory("SaaS platform")).toBe("saas_ai");
   });
 
   it("resolves ecommerce hints", () => {
@@ -71,15 +71,15 @@ describe("resolveProjectCategory", () => {
   });
 
   it("resolves simple web/landing hints", () => {
-    expect(resolveProjectCategory("landing page")).toBe("web_landing");
-    expect(resolveProjectCategory("corporate website")).toBe("web_landing");
-    expect(resolveProjectCategory("portfolio site")).toBe("web_landing");
+    expect(resolveProjectCategory("landing page")).toBe("landing");
+    expect(resolveProjectCategory("corporate website")).toBe("landing");
+    expect(resolveProjectCategory("portfolio site")).toBe("landing");
   });
 
-  it("falls back to webapp_system for dashboards and systems", () => {
-    expect(resolveProjectCategory("ERP system")).toBe("webapp_system");
-    expect(resolveProjectCategory("operations dashboard")).toBe("webapp_system");
-    expect(resolveProjectCategory("internal tool")).toBe("webapp_system");
+  it("falls back to webapp for dashboards and systems", () => {
+    expect(resolveProjectCategory("ERP system")).toBe("webapp");
+    expect(resolveProjectCategory("operations dashboard")).toBe("webapp");
+    expect(resolveProjectCategory("internal tool")).toBe("webapp");
   });
 });
 
@@ -110,18 +110,18 @@ describe("resolveComplexityTier", () => {
 
 describe("formatPricing", () => {
   it("returns exact USD-formatted strings (no ranges)", () => {
-    const result = formatPricing("webapp_system", "medio");
+    const result = formatPricing("webapp", "medio");
     expect(result.activation).toMatch(/^\$\d+ USD$/);
     expect(result.monthly).toMatch(/^\$\d+ USD\/mes$/);
   });
 
   it("bajo tier is cheaper than alto in every category", () => {
     const categories = [
-      "web_landing",
+      "landing",
       "ecommerce",
-      "webapp_system",
+      "webapp",
       "mobile",
-      "saas_ai_automation",
+      "saas_ai",
     ] as const;
 
     for (const category of categories) {
@@ -134,11 +134,11 @@ describe("formatPricing", () => {
 
   it("all cells have activation fee and monthly fee", () => {
     const categories = [
-      "web_landing",
+      "landing",
       "ecommerce",
-      "webapp_system",
+      "webapp",
       "mobile",
-      "saas_ai_automation",
+      "saas_ai",
     ] as const;
     const tiers = ["bajo", "medio", "alto"] as const;
 

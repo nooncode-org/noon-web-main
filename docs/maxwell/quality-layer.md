@@ -43,11 +43,11 @@ Clasifica la sesión en una familia visual usando `gpt-4.1-mini`.
 
 **Fallback determinista por `projectType`:**
 ```
-web_landing        → clean-professional
-ecommerce          → commerce-retail
-webapp_system      → tech-digital
-mobile             → tech-digital
-saas_ai_automation → tech-digital
+landing    → clean-professional
+ecommerce  → commerce-retail
+webapp     → tech-digital
+mobile     → tech-digital
+saas_ai    → tech-digital
 ```
 
 Si todo falla → `clean-professional`.
@@ -104,7 +104,7 @@ export function buildPrototypeBrief(
 ): string {
   const context = distillContext(messages, lastUserMsg, lastAssistantMsg);
   const references = buildReferencesBlock(stylePack);
-  const isLanding = session.projectType === "web_landing";
+  const isLanding = session.projectType === "landing";
 
   const parts: string[] = [];
 
@@ -543,11 +543,11 @@ En la práctica el extractor termina antes de que el usuario interactúe con el 
 
 ---
 
-## web_landing override
+## landing override
 
 `V0_PROTOTYPE_SYSTEM_PROMPT` contiene: *"Do NOT build a landing page unless specifically requested."*
 
-`buildPrototypeBrief()` añade en sección 1 cuando `projectType === "web_landing"`:
+`buildPrototypeBrief()` añade en sección 1 cuando `projectType === "landing"`:
 ```
 EXCEPTION: This project IS a landing page — build it as requested.
 ```

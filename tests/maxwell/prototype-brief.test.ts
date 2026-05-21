@@ -9,7 +9,7 @@
  *     graceful-degradation path matters because the fire-and-forget extractor
  *     may not have finished yet.
  *   - References block formats with v0Hint when present and without when not.
- *   - The web_landing exception line shows up ONLY for that project type.
+ *   - The landing exception line shows up ONLY for that project type.
  *   - buildCorrectionBrief passes through unchanged when no style pack.
  */
 
@@ -30,7 +30,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     ownerEmail: "owner@example.com",
     ownerName: "Owner",
     ownerImage: null,
-    projectType: "webapp_system",
+    projectType: "webapp",
     goalSummary: "Onboarding flow for crypto users",
     complexityHint: "medium",
     language: "en",
@@ -126,9 +126,9 @@ describe("buildPrototypeBrief", () => {
     expect(out).toContain("5. CONVERSATION CONTEXT");
   });
 
-  it("adds the web_landing exception line ONLY for that project type", () => {
+  it("adds the landing exception line ONLY for that project type", () => {
     const landing = buildPrototypeBrief(
-      fakeSession({ projectType: "web_landing" }),
+      fakeSession({ projectType: "landing" }),
       null,
       baseHistory,
       "Lead",
@@ -138,7 +138,7 @@ describe("buildPrototypeBrief", () => {
     expect(landing).toContain("EXCEPTION: This project IS a landing page");
 
     const nonLanding = buildPrototypeBrief(
-      fakeSession({ projectType: "webapp_system" }),
+      fakeSession({ projectType: "webapp" }),
       null,
       baseHistory,
       "Lead",

@@ -38,11 +38,11 @@ export type PaymentModality = (typeof PAYMENT_MODALITIES)[keyof typeof PAYMENT_M
 // ============================================================================
 
 export const PROJECT_CATEGORIES = {
-  web_landing: "Web básica / Landing / Corporate",
+  landing: "Web básica / Landing / Corporate",
   ecommerce: "E-commerce",
-  webapp_system: "Web App / Sistema",
+  webapp: "Web App / Sistema",
   mobile: "Mobile",
-  saas_ai_automation: "SaaS / AI / Automation",
+  saas_ai: "SaaS / AI / Automation",
 } as const;
 
 export type ProjectCategory = keyof typeof PROJECT_CATEGORIES;
@@ -71,7 +71,7 @@ export const PRICING_TABLE: Record<
   ProjectCategory,
   Record<ComplexityTier, { activation: number; monthly: number }>
 > = {
-  web_landing: {
+  landing: {
     bajo: { activation: 49, monthly: 25 },
     medio: { activation: 79, monthly: 32 },
     alto: { activation: 129, monthly: 49 },
@@ -81,7 +81,7 @@ export const PRICING_TABLE: Record<
     medio: { activation: 129, monthly: 55 },
     alto: { activation: 199, monthly: 79 },
   },
-  webapp_system: {
+  webapp: {
     bajo: { activation: 99, monthly: 49 },
     medio: { activation: 179, monthly: 69 },
     alto: { activation: 279, monthly: 109 },
@@ -91,7 +91,7 @@ export const PRICING_TABLE: Record<
     medio: { activation: 199, monthly: 69 },
     alto: { activation: 299, monthly: 109 },
   },
-  saas_ai_automation: {
+  saas_ai: {
     bajo: { activation: 129, monthly: 69 },
     medio: { activation: 229, monthly: 99 },
     alto: { activation: 349, monthly: 149 },
@@ -141,7 +141,7 @@ export function isMembershipContraindicated(text: string | null): boolean {
 // ============================================================================
 
 export function resolveProjectCategory(hint: string | null): ProjectCategory {
-  if (!hint) return "webapp_system";
+  if (!hint) return "webapp";
   const h = hint.toLowerCase();
 
   if (
@@ -162,7 +162,7 @@ export function resolveProjectCategory(hint: string | null): ProjectCategory {
     h.includes("automat") ||
     h.includes("machine learn")
   ) {
-    return "saas_ai_automation";
+    return "saas_ai";
   }
 
   if (
@@ -193,10 +193,10 @@ export function resolveProjectCategory(hint: string | null): ProjectCategory {
     !h.includes("sistema") &&
     !h.includes("plataforma")
   ) {
-    return "web_landing";
+    return "landing";
   }
 
-  return "webapp_system";
+  return "webapp";
 }
 
 export function resolveComplexityTier(hint: string | null): ComplexityTier {

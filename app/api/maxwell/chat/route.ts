@@ -36,15 +36,15 @@ export const dynamic = "force-dynamic";
 const READY_TOKEN = "[READY_FOR_PROTOTYPE]";
 const PROJECT_NAME_REGEX = /\[PROJECT_NAME:\s*([^\]]+)\]/;
 const PROJECT_TYPE_REGEX =
-  /\[PROJECT_TYPE:\s*(web_landing|ecommerce|webapp_system|mobile|saas_ai_automation)\s*\]/i;
+  /\[PROJECT_TYPE:\s*(landing|ecommerce|webapp|mobile|saas_ai)\s*\]/i;
 const COMPLEXITY_REGEX = /\[COMPLEXITY:\s*(bajo|medio|alto)\s*\]/i;
 
 type ValidProjectType =
-  | "web_landing"
+  | "landing"
   | "ecommerce"
-  | "webapp_system"
+  | "webapp"
   | "mobile"
-  | "saas_ai_automation";
+  | "saas_ai";
 type ValidComplexity = "bajo" | "medio" | "alto";
 
 function extractSignals(raw: string): {

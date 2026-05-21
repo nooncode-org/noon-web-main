@@ -36,11 +36,11 @@ const DEFAULT_PACK_ID = "clean-professional";
  * worst case is "boring but coherent", never "wrong family".
  */
 const PROJECT_TYPE_FALLBACK: Record<string, string> = {
-  web_landing: "clean-professional",
+  landing: "clean-professional",
   ecommerce: "commerce-retail",
-  webapp_system: "tech-digital",
+  webapp: "tech-digital",
   mobile: "tech-digital",
-  saas_ai_automation: "tech-digital",
+  saas_ai: "tech-digital",
 };
 
 function fallbackByProjectType(projectType: string | null): StylePack {

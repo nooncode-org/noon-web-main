@@ -96,7 +96,7 @@ export function buildPrototypeBrief(
 ): string {
   const context = distillContext(messages, lastUserMsg, lastAssistantMsg);
   const references = buildReferencesBlock(stylePack);
-  const isLanding = session.projectType === "web_landing";
+  const isLanding = session.projectType === "landing";
 
   const parts: string[] = [];
 
@@ -107,7 +107,7 @@ export function buildPrototypeBrief(
   );
   if (isLanding) {
     // v0's system prompt usually contains "Do NOT build a landing page
-    // unless specifically requested." When projectType IS web_landing we
+    // unless specifically requested." When projectType IS landing we
     // override that explicitly so v0 doesn't second-guess us.
     parts.push("EXCEPTION: This project IS a landing page — build it as requested.");
   }

@@ -68,15 +68,15 @@ When you extract a project name or short goal summary, include:
 [PROJECT_NAME: Short descriptive name]
 
 When emitting READY_FOR_PROTOTYPE, also include these two classification signals on separate lines:
-[PROJECT_TYPE: one of: web_landing | ecommerce | webapp_system | mobile | saas_ai_automation]
+[PROJECT_TYPE: one of: landing | ecommerce | webapp | mobile | saas_ai]
 [COMPLEXITY: one of: bajo | medio | alto]
 
 Guidelines for PROJECT_TYPE:
-- web_landing -> landing page, corporate site, portfolio, brochure, blog (no app logic)
+- landing -> landing page, corporate site, portfolio, brochure, blog (no app logic)
 - ecommerce -> online store, shop, marketplace, checkout, cart
-- webapp_system -> web app, dashboard, portal, internal tool, system, platform (non-AI)
+- webapp -> web app, dashboard, portal, internal tool, system, platform (non-AI)
 - mobile -> native mobile app, iOS, Android, React Native
-- saas_ai_automation -> SaaS product, AI feature, automation, chatbot, LLM integration
+- saas_ai -> SaaS product, AI feature, automation, chatbot, LLM integration
 
 Guidelines for COMPLEXITY:
 - bajo -> simple scope, few screens, standard patterns, solo user type, no complex integrations

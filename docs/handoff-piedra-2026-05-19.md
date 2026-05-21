@@ -20,25 +20,23 @@ Crear 2 módulos nuevos en `App-nooncode` espejando lo que ya está en Web. **Sp
 
 ---
 
-### ⚠️ Decisión importante antes de mergear el mirror
+### ✅ Decisión de canonical project-types (resuelta 2026-05-21)
 
-**App y Web usan canonical de project-type DIFERENTE:**
+**Mel decidió unificar al vocabulario de App.** Web migró su lado el 2026-05-21:
+- Código rebautizado (`web_landing → landing`, `webapp_system → webapp`, `saas_ai_automation → saas_ai`)
+- Datos en producción migrados vía `supabase/migrations/20260521_018_project_types_unify.sql`
 
-| Web canonical | App canonical |
-|---|---|
-| `web_landing` | `landing` |
-| `ecommerce` | `ecommerce` |
-| `webapp_system` | `webapp` |
-| `mobile` | `mobile` |
-| `saas_ai_automation` | `saas_ai` |
+**Set canonical único (web + app):**
 
-La spec asume **mantener ambos vocabularios + mapas bidireccionales** (no forzar unificación, para no romper código existente en ningún lado).
+| Vocabulario unificado |
+|---|
+| `landing` |
+| `ecommerce` |
+| `webapp` |
+| `mobile` |
+| `saas_ai` |
 
-**Pero alguien tiene que decidir si:**
-- (a) Mantener separados y traducir en el borde cross-repo (lo que propongo)
-- (b) Unificar a uno de los dos sets (decisión owner-level, requiere migración de datos en uno de los repos)
-
-Mi voto es (a) por bajo riesgo. **Hablalo con Mel (owner) antes de implementar la spec.**
+**Consecuencia para vos en App:** **NO necesitás capa de traducción** en el mirror. Cuando armes `lib/constants/project-types.ts` en App, simplemente reutilizá tus nombres existentes (`landing | ecommerce | webapp | mobile | saas_ai`) tal cual. El spec en `cross-repo-v3-contracts-app-mirror.md` está actualizado para reflejar esto.
 
 ---
 

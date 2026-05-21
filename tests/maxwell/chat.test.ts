@@ -404,7 +404,7 @@ describe("chat — extracción de signals", () => {
     vi.mocked(apiIa.chatWithOpenAI).mockResolvedValue({
       reply:
         "Listo. [READY_FOR_PROTOTYPE] [PROJECT_NAME: Noon Landing] " +
-        "[PROJECT_TYPE: web_landing] [COMPLEXITY: medio] Vamos.",
+        "[PROJECT_TYPE: landing] [COMPLEXITY: medio] Vamos.",
     });
 
     const res = await POST(postReq({ message: "go", session_id: "session-1" }));
@@ -423,7 +423,7 @@ describe("chat — extracción de signals", () => {
     expect(sessionUpdateCall).toBeDefined();
     expect(sessionUpdateCall![2]).toMatchObject({
       goalSummary: "Noon Landing",
-      projectType: "web_landing",
+      projectType: "landing",
       complexityHint: "medio",
     });
 

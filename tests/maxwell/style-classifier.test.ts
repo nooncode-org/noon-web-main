@@ -97,17 +97,17 @@ describe("classifyStylePack — tier 2 (projectType fallback)", () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("network down"));
 
     const pack = await classifyStylePack(
-      fakeSession({ projectType: "webapp_system" }),
+      fakeSession({ projectType: "webapp" }),
       "",
     );
     expect(pack.id).toBe("tech-digital");
   });
 
-  it("maps web_landing → clean-professional (per fallback table)", async () => {
+  it("maps landing → clean-professional (per fallback table)", async () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("down"));
 
     const pack = await classifyStylePack(
-      fakeSession({ projectType: "web_landing" }),
+      fakeSession({ projectType: "landing" }),
       "",
     );
     expect(pack.id).toBe("clean-professional");

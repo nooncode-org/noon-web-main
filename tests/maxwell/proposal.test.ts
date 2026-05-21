@@ -133,7 +133,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     ownerEmail: "owner@noon.dev",
     ownerName: "Owner",
     ownerImage: null,
-    projectType: "web_landing",
+    projectType: "landing",
     goalSummary: "Acme",
     complexityHint: "medio",
     language: "en",

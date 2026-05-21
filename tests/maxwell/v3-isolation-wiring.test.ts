@@ -93,7 +93,7 @@ function fullSession(): StudioSession {
     ownerEmail: "owner@noon.dev",
     ownerName: "Owner",
     ownerImage: null,
-    projectType: "web_landing",
+    projectType: "landing",
     goalSummary: "Acme launchpad",
     complexityHint: "medio",
     language: "en",
