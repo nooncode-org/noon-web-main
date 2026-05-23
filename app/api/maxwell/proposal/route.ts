@@ -60,7 +60,7 @@ async function sendProposalForNoonAppReview(input: {
       proposalRequestId: input.proposal.id,
       action: "noon_app_handoff_skipped",
       actor: "website",
-      notes: "NOON_APP_BASE_URL or NOON_APP_WEBHOOK_SECRET missing; webhook not called.",
+      notes: "NOON_APP_BASE_URL or NOON_WEBSITE_WEBHOOK_SECRET missing; webhook not called.",
     });
     return { skipped: true };
   }

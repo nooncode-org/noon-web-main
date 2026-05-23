@@ -67,10 +67,48 @@ describe("checkRuntimeEnv", () => {
     expect(r.ok).toBe(true); // critical paths still ok
     expect(r.criticalMissing).toEqual([]);
     expect(r.optionalMissing.map((c) => c.service)).toEqual(["NoonApp"]);
+    // Missing message reports the canonical name (not the legacy) so logs
+    // guide operators toward the new name during the rename window.
     expect(r.optionalMissing[0]?.missing).toEqual([
       "NOON_APP_BASE_URL",
-      "NOON_APP_WEBHOOK_SECRET",
+      "NOON_WEBSITE_WEBHOOK_SECRET",
     ]);
+  });
+
+  it("accepts the canonical NOON_WEBSITE_WEBHOOK_SECRET (cross-repo v1)", () => {
+    const env = {
+      ...allValidEnv,
+      NOON_APP_WEBHOOK_SECRET: "", // legacy NOT set
+      NOON_WEBSITE_WEBHOOK_SECRET: "shared-secret-canonical",
+    };
+    const r = checkRuntimeEnv(env);
+    expect(r.ok).toBe(true);
+    expect(r.optionalMissing).toEqual([]);
+    const noonApp = r.checks.find((c) => c.service === "NoonApp");
+    expect(noonApp?.ok).toBe(true);
+    expect(noonApp?.missing).toEqual([]);
+  });
+
+  it("accepts the legacy NOON_APP_WEBHOOK_SECRET during the rename window", () => {
+    const env = {
+      ...allValidEnv,
+      // NOON_APP_WEBHOOK_SECRET is set via allValidEnv
+      NOON_WEBSITE_WEBHOOK_SECRET: "", // canonical NOT set
+    };
+    const r = checkRuntimeEnv(env);
+    expect(r.ok).toBe(true);
+    expect(r.optionalMissing).toEqual([]);
+  });
+
+  it("treats whitespace-only canonical secret as not set (falls back to legacy)", () => {
+    const env = {
+      ...allValidEnv,
+      // legacy from allValidEnv covers the secret
+      NOON_WEBSITE_WEBHOOK_SECRET: "   ",
+    };
+    const r = checkRuntimeEnv(env);
+    expect(r.ok).toBe(true);
+    expect(r.optionalMissing).toEqual([]);
   });
 
   it("treats whitespace-only values as missing", () => {
@@ -151,5 +189,8 @@ describe("formatRuntimeEnvReport", () => {
     expect(txt).toMatch(/\[FAIL\] OpenAI \(critical\) — missing OPENAI_API_KEY/);
     expect(txt).toMatch(/\[ok\] V0 \(critical\) — configured/);
     expect(txt).toMatch(/\[warn\] NoonApp \(optional\) — missing/);
+    // The warning mentions the canonical name (not the legacy) so logs
+    // point operators at the cross-repo v1 contract name.
+    expect(txt).toMatch(/NOON_WEBSITE_WEBHOOK_SECRET/);
   });
 });
