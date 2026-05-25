@@ -211,7 +211,7 @@ async function postNoonAppWebhookOnce(path: string, bodyText: string) {
   return { response, responseText };
 }
 
-async function postNoonAppWebhook(path: string, payload: unknown) {
+export async function postNoonAppWebhook(path: string, payload: unknown) {
   const bodyText = JSON.stringify(payload);
 
   let lastError: unknown;
