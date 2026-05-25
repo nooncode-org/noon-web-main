@@ -26,109 +26,15 @@
  */
 
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Route } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  getRenderFixture,
+  isRenderFixtureKey,
+  type RenderFixtureKey,
+} from "@/lib/maxwell/__dev__/prototipo-render-fixtures";
 import { settlePage } from "./routes";
 
 const LOCALE = "en";
-
-type FixtureKey =
-  | "test-pending"
-  | "test-accepted"
-  | "test-rejected"
-  | "test-superseded"
-  | "test-notfound";
-
-const baseData = {
-  workspace: {
-    id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    version: 1,
-    generatedAt: "2026-05-25T14:32:18.000Z",
-  },
-  leadContext: {
-    businessName: "Acme Co",
-    projectTypeLabel: "Landing Page",
-  },
-  prototype: {
-    deployedUrl: "about:blank",
-    generatedHtml: null,
-  },
-  decision: {
-    status: "pending" as "pending" | "accepted" | "rejected",
-    notes: null as string | null,
-    decidedAt: null as string | null,
-  },
-  lifecycle: { tokenSuperseded: false, iterationNumber: 1 },
-  serverTime: "2026-05-25T16:45:02.123Z",
-};
-
-async function fulfillFixture(route: Route, key: FixtureKey) {
-  if (key === "test-pending") {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ data: baseData, requestId: "req-pending" }),
-    });
-    return;
-  }
-  if (key === "test-accepted") {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        data: {
-          ...baseData,
-          decision: {
-            status: "accepted",
-            notes: null,
-            decidedAt: "2026-05-25T10:00:00.000Z",
-          },
-        },
-        requestId: "req-accepted",
-      }),
-    });
-    return;
-  }
-  if (key === "test-rejected") {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        data: {
-          ...baseData,
-          decision: {
-            status: "rejected",
-            notes: "Necesito que el header sea más grande.",
-            decidedAt: "2026-05-25T10:00:00.000Z",
-          },
-        },
-        requestId: "req-rejected",
-      }),
-    });
-    return;
-  }
-  if (key === "test-superseded") {
-    await route.fulfill({
-      status: 410,
-      contentType: "application/json",
-      body: JSON.stringify({
-        error: "Superseded",
-        code: "PROTOTYPE_READ_TOKEN_SUPERSEDED",
-        requestId: "req-superseded",
-      }),
-    });
-    return;
-  }
-  // test-notfound
-  await route.fulfill({
-    status: 404,
-    contentType: "application/json",
-    body: JSON.stringify({
-      error: "Not found",
-      code: "PROTOTYPE_READ_TOKEN_NOT_FOUND",
-      requestId: "req-notfound",
-    }),
-  });
-}
 
 test.beforeEach(async ({ page }) => {
   await page.route(
@@ -136,15 +42,13 @@ test.beforeEach(async ({ page }) => {
     async (route) => {
       const match = route.request().url().match(/prototype-signed-read\/([^/?]+)/);
       const token = match ? decodeURIComponent(match[1]) : "";
-      const known: FixtureKey[] = [
-        "test-pending",
-        "test-accepted",
-        "test-rejected",
-        "test-superseded",
-        "test-notfound",
-      ];
-      if (known.includes(token as FixtureKey)) {
-        await fulfillFixture(route, token as FixtureKey);
+      if (isRenderFixtureKey(token)) {
+        const fixture = getRenderFixture(token);
+        await route.fulfill({
+          status: fixture.status,
+          contentType: "application/json",
+          body: JSON.stringify(fixture.body),
+        });
       } else {
         await route.fulfill({ status: 404, body: "unknown fixture token" });
       }
@@ -152,7 +56,7 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-const STATES: Array<{ key: FixtureKey; name: string }> = [
+const STATES: Array<{ key: RenderFixtureKey; name: string }> = [
   { key: "test-pending", name: "ready.pending" },
   { key: "test-accepted", name: "ready.accepted" },
   { key: "test-rejected", name: "ready.rejected" },
