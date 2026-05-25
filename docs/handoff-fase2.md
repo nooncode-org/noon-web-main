@@ -123,7 +123,7 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
 ### 4.3 Cross-repo
 
-- [ ] **Coordinar con equipo App**: confirmar que App está enviando el header con `NOON_WEBSITE_WEBHOOK_SECRET` (nombre canónico). Web acepta los 2 nombres durante la migración. Cuando ambos repos hayan migrado, eliminar `NOON_APP_WEBHOOK_SECRET` de los envs.
+- [x] **Coordinar con equipo App**: confirmado 2026-05-25 — App firma con `NOON_WEBSITE_WEBHOOK_SECRET` canónico en su prod. Vercel legacy env eliminado; runtime + integration code limpiados de fallback (PR `chore/cleanup-legacy-webhook-secret`).
 
 ### 4.4 Email (cuando se vaya a usar)
 

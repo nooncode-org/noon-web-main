@@ -21,18 +21,21 @@ export class NoonAppIntegrationError extends Error {
  * Reads the shared HMAC secret used for cross-repo webhooks.
  *
  * Per the cross-repo contract v1 (`App-nooncode/docs/integrations/cross-repo-webhook-v1.md`)
- * the canonical name on BOTH sides is `NOON_WEBSITE_WEBHOOK_SECRET`. Historically the
- * Web side stored it as `NOON_APP_WEBHOOK_SECRET`; we now prefer the canonical name
- * and fall through to the legacy name during the migration window. Once ops has renamed
- * the env var in Vercel (Production + Preview), the legacy fallback can be dropped in
- * a follow-up cleanup.
+ * the canonical name on BOTH sides is `NOON_WEBSITE_WEBHOOK_SECRET`. The legacy
+ * `NOON_APP_WEBHOOK_SECRET` fallback was removed on 2026-05-25 after both repos
+ * completed the rename and ops deleted the legacy env from Vercel.
+ *
+ * Safety-net preserved as a commented block below in case a future cross-repo rename
+ * needs the same fallback pattern.
  */
 function readSharedWebhookSecret(): string | null {
-  return (
-    process.env.NOON_WEBSITE_WEBHOOK_SECRET?.trim() ||
-    process.env.NOON_APP_WEBHOOK_SECRET?.trim() ||
-    null
-  );
+  return process.env.NOON_WEBSITE_WEBHOOK_SECRET?.trim() || null;
+  // Legacy fallback (removed 2026-05-25):
+  //   return (
+  //     process.env.NOON_WEBSITE_WEBHOOK_SECRET?.trim() ||
+  //     process.env.NOON_APP_WEBHOOK_SECRET?.trim() ||
+  //     null
+  //   );
 }
 
 /** True when outbound signed webhooks to Noon App can be sent (proposal handoff, payment, etc.). */
@@ -44,7 +47,7 @@ function readNoonAppSecret() {
   const secret = readSharedWebhookSecret();
   if (!secret) {
     throw new NoonAppIntegrationError(
-      "NOON_WEBSITE_WEBHOOK_SECRET is not configured (legacy NOON_APP_WEBHOOK_SECRET also absent).",
+      "NOON_WEBSITE_WEBHOOK_SECRET is not configured.",
       503,
     );
   }

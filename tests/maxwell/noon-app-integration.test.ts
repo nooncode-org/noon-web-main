@@ -48,10 +48,10 @@ describe("Noon App review decision payload", () => {
  * Cross-repo secret migration (NOON_APP_WEBHOOK_SECRET → NOON_WEBSITE_WEBHOOK_SECRET).
  *
  * Per `App-nooncode/docs/integrations/cross-repo-webhook-v1.md`, the canonical name on
- * both sides is `NOON_WEBSITE_WEBHOOK_SECRET`. Web historically used `NOON_APP_WEBHOOK_SECRET`.
- * The runtime accepts either during the migration window, preferring the canonical name.
+ * both sides is `NOON_WEBSITE_WEBHOOK_SECRET`. Web historically used `NOON_APP_WEBHOOK_SECRET`;
+ * that legacy fallback was removed on 2026-05-25 after both repos finished the rename.
  */
-describe("isNoonAppProposalHandoffConfigured — secret name backward compat", () => {
+describe("isNoonAppProposalHandoffConfigured — secret name", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -84,10 +84,10 @@ describe("isNoonAppProposalHandoffConfigured — secret name backward compat", (
     expect(isNoonAppProposalHandoffConfigured()).toBe(true);
   });
 
-  it("returns true when only the legacy NOON_APP_WEBHOOK_SECRET + base URL are set", () => {
+  it("returns false when only the legacy NOON_APP_WEBHOOK_SECRET + base URL are set (legacy no longer accepted post 2026-05-25)", () => {
     process.env.NOON_APP_WEBHOOK_SECRET = "legacy-shared-secret";
     process.env.NOON_APP_BASE_URL = "https://noon-app.example.com";
-    expect(isNoonAppProposalHandoffConfigured()).toBe(true);
+    expect(isNoonAppProposalHandoffConfigured()).toBe(false);
   });
 
   it("treats whitespace-only values as missing", () => {
