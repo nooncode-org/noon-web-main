@@ -78,8 +78,8 @@ const nextConfig = {
     // - style-src 'unsafe-inline' → required by (a) Radix UI / shadcn components that set
     //   element-level style="" attributes for animations/positioning, and (b) the inline
     //   <style> block in app/global-error.tsx that cannot depend on globals.css loading.
-    // - frame-src https://*.vercel.app → v0-generated prototype previews are hosted on
-    //   *.vercel.app and embedded via iframe in components/maxwell/studio-preview-pane.tsx.
+    // - frame-src https://*.vercel.app https://*.vusercontent.net → v0 preview iframes.
+    //   v0 may serve demos on either host; embedded in studio-preview-pane.tsx.
     // - form-action https://checkout.stripe.com → Stripe Checkout redirect target when the
     //   payment path eventually moves from submit_payment_evidence to Stripe Checkout.
     // - connect-src 'self' → all third-party calls (OpenAI, V0, Resend, Stripe, Postgres)
@@ -94,7 +94,7 @@ const nextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self'",
-      "frame-src https://*.vercel.app",
+      "frame-src https://*.vercel.app https://*.vusercontent.net",
       "form-action 'self' https://checkout.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
