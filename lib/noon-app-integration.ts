@@ -142,17 +142,49 @@ export async function readSignedNoonAppJson<TSchema extends ZodTypeAny>(
   }
 }
 
-function signPayload(bodyText: string) {
+/**
+ * Compute the HMAC envelope (timestamp + signature) for an arbitrary body text.
+ *
+ * Shared by:
+ *   - POST handoff via `signPayload` (body = serialized JSON).
+ *   - GET `prototype-signed-read` via `lib/maxwell/prototipo-render-fetch.ts`
+ *     (body = empty string, signing input becomes `${timestamp}.` per ADR-024 D1).
+ *
+ * Returns the unprefixed timestamp + the `sha256=<hex>` header value so callers
+ * can compose headers per their request method (POST adds content-type, GET does not).
+ */
+export function signNoonAppEnvelope(bodyText: string): {
+  timestamp: string;
+  signature: string;
+  headers: Record<string, string>;
+} {
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const signature = crypto
+  const signatureHex = crypto
     .createHmac("sha256", readNoonAppSecret())
     .update(`${timestamp}.${bodyText}`)
     .digest("hex");
+  const signatureHeader = `sha256=${signatureHex}`;
 
   return {
+    timestamp,
+    signature: signatureHeader,
+    headers: {
+      [TIMESTAMP_HEADER]: timestamp,
+      [SIGNATURE_HEADER]: signatureHeader,
+    },
+  };
+}
+
+/** Public accessor for the Noon App base URL — throws via NoonAppIntegrationError if unset. */
+export function getNoonAppBaseUrl(): string {
+  return readNoonAppBaseUrl();
+}
+
+function signPayload(bodyText: string) {
+  const { headers } = signNoonAppEnvelope(bodyText);
+  return {
     "content-type": "application/json",
-    [TIMESTAMP_HEADER]: timestamp,
-    [SIGNATURE_HEADER]: `sha256=${signature}`,
+    ...headers,
   };
 }
 

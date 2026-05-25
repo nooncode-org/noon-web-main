@@ -21,6 +21,7 @@ If your Node is older, export vars manually (`export DATABASE_URL=...`) or use `
 | `test-v0-async.js` | Verify v0 SDK async create + poll round-trip. | `V0_API_KEY` |
 | `test-v0-create.js` | Verify v0 SDK chat create (no polling). | `V0_API_KEY` |
 | `test-v0-poll.js` | Verify v0 SDK eventual consistency on `getById` immediately after create. | `V0_API_KEY` |
+| `prototipo-decision-smoke.js` | D-slice ADR-023 bilateral smoke — signs + fires GET signed-read and (optionally) POST decision against App. Pass `--token <share_token>` and optionally `--decision accepted\|rejected`, `--workspace <uuid>`, `--notes "..."`. | `NOON_APP_BASE_URL`, `NOON_WEBSITE_WEBHOOK_SECRET` |
 
 ## Conventions
 
