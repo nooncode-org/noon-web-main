@@ -496,13 +496,14 @@ export function StudioPreviewPane({
             </div>
           </div>
         )}
-        {/* Desktop: sandboxed preview. Keep it on a separate origin boundary and do not
-            expose referrer data from the client workspace. */}
+        {/* Desktop: sandboxed preview on a separate origin (vusercontent.net).
+            allow-same-origin is required so v0's app can use sessionStorage and
+            service workers on its own origin — it does not grant access to Noon. */}
         <iframe
           src={selectedVersion.demoUrl}
           className="hidden lg:block w-full h-full border-0"
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           referrerPolicy="no-referrer"
         />
         {/* Mobile: open-in-browser card */}
