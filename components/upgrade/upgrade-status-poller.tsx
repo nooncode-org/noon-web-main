@@ -58,15 +58,12 @@ export function UpgradeStatusPoller({ sessionId, initialSession, children }: Pro
     // Sync session state immediately so the UI reflects server data right away
     // after router.refresh(). Idiomatic Next/React would instead use `key={session.id}`
     // on the parent so this component remounts; refactor tracked as separate gap.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(initialSession);
 
     if (ACTIVE_STATUSES.has(initialSession.status)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPolling(true);
       timerRef.current = setTimeout(() => pollRef.current(), POLL_INTERVAL_MS);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPolling(false);
     }
 
