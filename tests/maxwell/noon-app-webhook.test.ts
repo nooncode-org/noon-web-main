@@ -143,7 +143,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
 }
 
 beforeEach(() => {
-  vi.stubEnv("NOON_APP_WEBHOOK_SECRET", TEST_SECRET);
+  vi.stubEnv("NOON_WEBSITE_WEBHOOK_SECRET", TEST_SECRET);
   vi.clearAllMocks();
 });
 

@@ -13,6 +13,40 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-05-25] — Cleanup: legacy webhook secret removed
+
+> **Summary:** Closed Lista-Web.md #1 — both repos finished the
+> `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET` rename in prod.
+> Vercel legacy env eliminated by ops; runtime + integration code simplified
+> to canonical-only. Safety-net helper preserved as a commented block per
+> `feedback_comment_dont_delete`. PR `chore/cleanup-legacy-webhook-secret`.
+
+### Removed
+
+- **Legacy fallback for `NOON_APP_WEBHOOK_SECRET`** in `lib/server/runtime-env.ts`
+  and `lib/noon-app-integration.ts`. Reads canonical only. The
+  `buildCheckWithSecretAlternatives` helper is preserved as a commented block
+  for future cross-repo rename patterns.
+- **Legacy env row** from `.env.example`.
+
+### Changed
+
+- `tests/maxwell/runtime-env.test.ts` — fixture uses canonical name; "accepts
+  the legacy" test removed; whitespace-only canonical test inverted to expect
+  optional-missing report.
+- `tests/maxwell/noon-app-integration.test.ts` — "returns true when only the
+  legacy" test inverted to assert legacy is no longer accepted.
+- `tests/maxwell/noon-app-webhook.test.ts` — `vi.stubEnv` switched to canonical.
+- `project.context.full.md` + `docs/handoff-fase2.md` — cleanup marked complete.
+
+### Operational notes
+
+- Ops deleted `NOON_APP_WEBHOOK_SECRET` from Vercel Production before this PR
+  was merged. No downtime expected: canonical was already being read first by
+  both runtime-env validation and the integration helper.
+
+---
+
 ## [2026-05-19] — Hardening + Quality Layer closure + observability
 
 > **Summary:** Tests grew 513 → 817 (+304). 17 PRs merged across one session.

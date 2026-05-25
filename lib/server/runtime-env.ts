@@ -12,9 +12,12 @@
  * - NoonApp: optional. Per .env.example lines 40-42, when either var is empty the
  *            outbound webhook is skipped and the proposal draft is still stored
  *            locally — degraded but not broken. Surfaced as warning, not failure.
- *            The webhook secret accepts either NOON_WEBSITE_WEBHOOK_SECRET
- *            (canonical, cross-repo contract v1) or NOON_APP_WEBHOOK_SECRET
- *            (legacy, kept during the rename window). Either one is enough.
+ *            The webhook secret is the canonical NOON_WEBSITE_WEBHOOK_SECRET
+ *            (cross-repo contract v1). The legacy NOON_APP_WEBHOOK_SECRET
+ *            fallback was removed on 2026-05-25 after both repos finished the
+ *            rename window. The legacy-accepting helper below is preserved as
+ *            a commented block in case a future cross-repo rename needs the
+ *            same pattern.
  */
 
 export type ServiceLevel = "critical" | "optional";
@@ -51,30 +54,34 @@ function buildCheck(
   return { service, level, required, missing, ok: missing.length === 0 };
 }
 
-/**
- * Same shape as `buildCheck` but the secret slot accepts any of several
- * alternative env var names — at least one must be set.
- *
- * Used during the cross-repo secret rename window where Web accepts both the
- * canonical name and the legacy name (see `lib/noon-app-integration.ts`).
- * The FIRST alternative is treated as canonical for messaging: when none are
- * set, the `missing` array reports the canonical name (so logs guide
- * operators toward the new name, not the legacy one).
- */
-function buildCheckWithSecretAlternatives(
-  service: string,
-  level: ServiceLevel,
-  baseRequired: string[],
-  secretAlternatives: [string, ...string[]],
-  env: NodeJS.ProcessEnv,
-): ServiceCheck {
-  const baseMissing = checkVars(env, baseRequired);
-  const anySecretSet = secretAlternatives.some((name) => env[name]?.trim());
-  const canonical = secretAlternatives[0];
-  const required = [...baseRequired, canonical];
-  const missing = anySecretSet ? baseMissing : [...baseMissing, canonical];
-  return { service, level, required, missing, ok: missing.length === 0 };
-}
+// SAFETY-NET PRESERVED — removed 2026-05-25 after both repos completed the
+// `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET` rename. The helper
+// below is kept as a commented block: a future cross-repo env rename can copy
+// it back verbatim and reuse the multi-alternative shape.
+//
+// /**
+//  * Same shape as `buildCheck` but the secret slot accepts any of several
+//  * alternative env var names — at least one must be set.
+//  *
+//  * Used during a cross-repo secret rename window where Web accepts both the
+//  * canonical name and the legacy name. The FIRST alternative is treated as
+//  * canonical for messaging: when none are set, the `missing` array reports
+//  * the canonical name (so logs guide operators toward the new name).
+//  */
+// function buildCheckWithSecretAlternatives(
+//   service: string,
+//   level: ServiceLevel,
+//   baseRequired: string[],
+//   secretAlternatives: [string, ...string[]],
+//   env: NodeJS.ProcessEnv,
+// ): ServiceCheck {
+//   const baseMissing = checkVars(env, baseRequired);
+//   const anySecretSet = secretAlternatives.some((name) => env[name]?.trim());
+//   const canonical = secretAlternatives[0];
+//   const required = [...baseRequired, canonical];
+//   const missing = anySecretSet ? baseMissing : [...baseMissing, canonical];
+//   return { service, level, required, missing, ok: missing.length === 0 };
+// }
 
 export function checkRuntimeEnv(
   env: NodeJS.ProcessEnv = process.env,
@@ -99,11 +106,10 @@ export function checkRuntimeEnv(
       ["RESEND_API_KEY", "MAIL_FROM", "MAIL_PROVIDER"],
       env,
     ),
-    buildCheckWithSecretAlternatives(
+    buildCheck(
       "NoonApp",
       "optional",
-      ["NOON_APP_BASE_URL"],
-      ["NOON_WEBSITE_WEBHOOK_SECRET", "NOON_APP_WEBHOOK_SECRET"],
+      ["NOON_APP_BASE_URL", "NOON_WEBSITE_WEBHOOK_SECRET"],
       env,
     ),
   ];

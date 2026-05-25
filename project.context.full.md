@@ -250,7 +250,7 @@ app/[locale]/maxwell/workspace/[sessionId]/   ← Portal cliente post-pago
 - **Saliente:** `POST {NOON_APP_BASE_URL}/api/integrations/website/inbound-proposal` (proposal handoff) y `/payment-confirmed`
 - **Entrante:** `POST /api/integrations/noon-app/proposal-review-decision`
 - Headers: `x-noon-signature: sha256=<hex>`, `x-noon-timestamp: <epoch_seconds>`
-- Body firmado: `${timestamp}.${bodyText}` con HMAC-SHA256(`NOON_WEBSITE_WEBHOOK_SECRET`) — canonical per cross-repo contract v1. Web también acepta el legacy `NOON_APP_WEBHOOK_SECRET` durante la ventana de rename.
+- Body firmado: `${timestamp}.${bodyText}` con HMAC-SHA256(`NOON_WEBSITE_WEBHOOK_SECRET`) — canonical per cross-repo contract v1. El legacy `NOON_APP_WEBHOOK_SECRET` fue eliminado 2026-05-25.
 
 ### Variables de entorno requeridas
 ```
@@ -283,8 +283,7 @@ RESEND_API_KEY
 
 # Noon App bridge
 NOON_APP_BASE_URL
-NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1
-# NOON_APP_WEBHOOK_SECRET     # legacy, aún aceptado, eliminar tras coordinar rename con App
+NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1 (legacy NOON_APP_WEBHOOK_SECRET removed 2026-05-25)
 ```
 
 ---
@@ -441,7 +440,7 @@ NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1
 **Pendientes de owner / cross-repo (requieren decisión o coordinación):**
 1. **v3 Phase 2-6 scope** — no hay master-spec formal todavía (confirmar con owner si existe o se difiere)
 2. **Cross-repo v3 contracts mirror en App-nooncode** — spec listo en `docs/cross-repo-v3-contracts-app-mirror.md`. **Canonical project-types unificado 2026-05-21** al spelling de App (`landing | ecommerce | webapp | mobile | saas_ai`). Web ya migró código + datos vía `supabase/migrations/20260521_018_project_types_unify.sql`. Piedra implementa mirror en App reutilizando sus nombres existentes (sin capa de traducción)
-3. **Rename completo `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET`** — App ya adoptó el canonical (`ffcaa43` y otros, 2026-05-20). Web acepta ambos en runtime + runtime-env check ya valida cualquiera (post `chore/webhook-secret-canonical-cleanup-2026-05-23`). Falta solo el cleanup en Vercel UI: agregar `NOON_WEBSITE_WEBHOOK_SECRET` con mismo valor y borrar el legacy. Sin coordinación necesaria con Piedra (su lado ya está cerrado).
+3. ~~**Rename completo `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET`**~~ → ✅ RESUELTO 2026-05-25. Vercel legacy env eliminado por ops; runtime + integration code limpiados de fallback (PR `chore/cleanup-legacy-webhook-secret`).
 4. ~~**LLM budget G-D2**~~ → ✅ RESUELTO (`a196a12` + hotfix `c9ddf45` fail-open + admin endpoint en `7e9447e`)
 
 **Pendientes técnicos menores:**
