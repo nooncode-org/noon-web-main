@@ -4,8 +4,16 @@ interface NoonLogoProps {
   height?: number;
 }
 
+// The logo is above-the-fold on every public surface (header, signin, landing).
+// next/image's default lazy-load + intersection observer wrapper would hurt
+// LCP for an asset that is always visible immediately. Static PNG with
+// explicit width/height + zero JS overhead is the intentional choice.
+// The picture+source variant for the wordmark also needs raw <img> to drive
+// the dark-mode srcSet swap without a custom Image loader.
+
 function LogoIcon({ height, className }: { height: number; className?: string }) {
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src="/logo-icon.png" alt="" height={height} width={height} className={className} />
   );
 }

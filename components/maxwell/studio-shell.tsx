@@ -279,6 +279,12 @@ export function StudioShell({
     setStopNotice(null);
     setIsRehydrating(false);
     void refreshSessionSummaries();
+    // Deps scoped to the parent-provided props on purpose: this effect resets
+    // the studio when the navigation source (initialPrompt / initialSessionId)
+    // changes. Including `rehydrateSession` / `sendToMaxwell` / `refreshSession-
+    // Summaries` would re-trigger the reset on every render (their identity is
+    // not stable), breaking the intended once-per-prop-change semantics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPrompt, initialSessionId]);
 
   useEffect(() => {
