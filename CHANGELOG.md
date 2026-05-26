@@ -13,6 +13,84 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-05-25] — D-slice ADR-023 UI: prototipo decision route built behind flag
+
+> **Summary:** Built the full client-facing surface for the D-slice cross-repo
+> flow — route `/maxwell/prototipo/[token]`, Server Component shell, decision
+> Client Component, Server Action wiring, GET signed-read helper (Pull B.2),
+> a11y scan, and an operator smoke script. Lives behind
+> `MAXWELL_PROTOTIPO_DECISION_ROUTE=1` (default OFF) so it can land before
+> App-side handlers ship to prod and ops flips the flag after bilateral smoke.
+> Backend layer landed earlier the same day (PR `feat/d-slice-prototipo-decision`).
+> PR `feat/d-slice-ui-prototipo-decision`.
+
+### Added
+
+- **`lib/maxwell/prototipo-render-fetch.ts`** — `fetchPrototipoRender(token)`
+  GET helper. Empty-body HMAC signing (`${timestamp}.` per ADR-024 D1), 2-attempt
+  retry loop for 5xx + network errors (per handoff §2.10/§2.11), no retry on 429
+  or `AUTH_FAILED`. Returns a discriminated union the route pattern-matches on.
+- **`lib/maxwell/prototipo-render-types.ts`** — wire types for App's 200 payload
+  per handoff §2.5, 7 error codes (`PROTOTYPE_READ_*` + shared `AUTH_FAILED` +
+  `RATE_LIMITED` + `UNKNOWN`), and `mapRenderResultToUxState` (pure mapper to
+  11 UX buckets the route renders).
+- **`lib/maxwell/prototipo-route-flag.ts`** — `isPrototipoDecisionRouteEnabled()`
+  reads `MAXWELL_PROTOTIPO_DECISION_ROUTE === "1"`. Mirrors the
+  `isLifecycleEmailsEnabled` pattern.
+- **`app/[locale]/maxwell/prototipo/[token]/page.tsx`** — Server Component:
+  feature-flag gate → rate-limit (`prototipo.public`, 30 GET/60s/IP, mirrors
+  `proposal/[token]`) → fetch via GET helper → map to UX state → render the
+  matching shell.
+- **`_components/prototipo-frame.tsx`** — sandboxed iframe over `deployedUrl`
+  with `srcdoc` fallback over `generatedHtml`. CSP-block fallback link
+  always rendered ("Abrir en nueva pestaña" per D-slice plan §10 risk 3).
+- **`_components/prior-decision-summary.tsx`** — read-only "ya aceptaste/rechazaste"
+  banner with `decision.decidedAt` and optional `notes` echoed on rejected.
+- **`_components/error-states.tsx`** — per-bucket copy for the 7 non-ok UX
+  variants (terminal/expired/transient/fatal) with tone-keyed surfaces.
+- **`_components/decision-panel.tsx`** — Client Component with idle →
+  choosing → submitting → success/error state machine. Optional notes
+  textarea (UI max 2000 chars, App sanitises). Disabled-during-pending,
+  router.refresh() on success so the next render swaps to PriorDecisionSummary.
+- **`_actions/submit-decision.ts`** — Server Action wrapping
+  `submitPrototipoDecision` (backend helper from prior PR). Reads UA from RSC
+  headers (never trusts client), calls `revalidatePath` on ok.
+- **`tests/maxwell/prototipo-render-fetch.test.ts`** — 35 tests: happy paths,
+  empty-body HMAC signing reproducibility, URL encoding, 6 error codes
+  parametrised, status fallbacks, retry behavior (5xx retries, 429/401 do not),
+  recovery on 500→200, misconfigured-env returns AUTH_FAILED.
+- **`tests/maxwell/prototipo-route-flag.test.ts`** — 4 tests covering the
+  feature flag's exact-`"1"` semantics.
+- **`tests/visual/prototipo-decision.spec.ts`** — Playwright a11y scan via
+  `page.route()` fixture interception. 5 UX states (pending/accepted/rejected/
+  superseded/notfound), axe scan with iframes excluded.
+- **`scripts/manual/prototipo-decision-smoke.js`** — operator script that
+  signs + fires GET (and optionally POST decision) against App. Useful for
+  bilateral smoke when App handler ships.
+- **`MAXWELL_PROTOTIPO_DECISION_ROUTE`** in `.env.example` (default empty).
+
+### Changed
+
+- **`lib/noon-app-integration.ts`** — extracted `signNoonAppEnvelope(bodyText)`
+  and exported `getNoonAppBaseUrl()`. POST helper unchanged in behavior; GET
+  helper reuses the same envelope with empty-body input.
+- **`playwright.config.ts`** — `webServer.env` now seeds
+  `MAXWELL_PROTOTIPO_DECISION_ROUTE=1` + mock `NOON_APP_BASE_URL` and
+  `NOON_WEBSITE_WEBHOOK_SECRET` so the prototipo a11y spec can reach the
+  route. Other specs unaffected (they hit different paths).
+- **`scripts/manual/README.md`** — new row for the smoke script.
+
+### Notes
+
+- Bilateral smoke against App-side backend remains pending (App handler
+  iteration is independent — Architecture done 2026-05-25, Backend pending).
+  Both contracts (GET ADR-024 + POST ADR-023) are frozen, so NoonWeb side is
+  unblocked per the cross-repo handoff.
+- The PR stays open for partner review per `feedback_feature_branches_always`;
+  do not merge to main without sign-off.
+
+---
+
 ## [2026-05-25] — Cleanup: legacy webhook secret removed
 
 > **Summary:** Closed Lista-Web.md #1 — both repos finished the
