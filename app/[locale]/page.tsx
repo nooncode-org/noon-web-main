@@ -1,8 +1,11 @@
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FloatingTechElements } from "@/components/landing/floating-tech-elements";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 
-export default function Home() {
+export default async function Home() {
+  const viewer = await getAuthenticatedViewer();
+
   return (
     <main className="page-grid-background relative h-dvh overflow-hidden noise-overlay">
       <div
@@ -15,7 +18,7 @@ export default function Home() {
         />
       </div>
       <FloatingTechElements />
-      <Navigation />
+      <Navigation viewer={viewer} />
       <HeroSection />
     </main>
   );
