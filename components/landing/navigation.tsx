@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PanelRight, X } from "lucide-react";
+import { LogOut, PanelRight, X } from "lucide-react";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { NoonLogo } from "@/components/ui/noon-logo";
+import { UserMenu, type UserMenuViewer } from "@/components/ui/user-menu";
+import { signOutAction } from "@/lib/auth/signout-action";
 
 const NAV_LABELS: Record<string, { services: string; about: string; contact: string; startWithMaxwell: string }> = {
   en: { services: "Services", about: "About", contact: "Contact", startWithMaxwell: "Start with Maxwell" },
@@ -19,7 +21,18 @@ const NAV_LABELS: Record<string, { services: string; about: string; contact: str
 const LOCALES = ["en", "es", "fr", "de"];
 const navigationTone = siteTones.brand;
 
-export function Navigation() {
+export type NavigationProps = {
+  /**
+   * Server-fetched viewer (from `getAuthenticatedViewer` in the parent RSC).
+   * When non-null, the "Sign up" CTA is replaced by a `UserMenu` (avatar +
+   * email + Maxwell Studio link + Sign out). When null/undefined, the legacy
+   * "Sign up" button renders. This lets the same component serve both
+   * marketing pages (anonymous traffic) and authenticated post-signin pages.
+   */
+  viewer?: UserMenuViewer | null;
+};
+
+export function Navigation({ viewer = null }: NavigationProps = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -141,16 +154,20 @@ export function Navigation() {
             </div>
 
             <div className="hidden md:flex items-center gap-3">
-              <Button
-                asChild
-                size="sm"
-                className={`transition-[background-color,box-shadow,height,padding,font-size] duration-300 ${
-                  isScrolled ? "px-4 h-8 text-xs" : "px-6"
-                }`}
-                style={{ borderRadius: "10px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
-              >
-                <Link href={localHref("/signin")}>Sign up</Link>
-              </Button>
+              {viewer ? (
+                <UserMenu viewer={viewer} locale={currentLocale} />
+              ) : (
+                <Button
+                  asChild
+                  size="sm"
+                  className={`transition-[background-color,box-shadow,height,padding,font-size] duration-300 ${
+                    isScrolled ? "px-4 h-8 text-xs" : "px-6"
+                  }`}
+                  style={{ borderRadius: "10px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
+                >
+                  <Link href={localHref("/signin")}>Sign up</Link>
+                </Button>
+              )}
             </div>
 
             <button
@@ -219,6 +236,43 @@ export function Navigation() {
                 {navLabels.startWithMaxwell}
               </Link>
             </Button>
+            {viewer ? (
+              <>
+                <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
+                  <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+                    Signed in as
+                  </p>
+                  <p
+                    className="mt-0.5 truncate text-xs font-mono text-foreground"
+                    title={viewer.email}
+                  >
+                    {viewer.email}
+                  </p>
+                </div>
+                <form
+                  action={signOutAction}
+                  onSubmit={() => setIsMobileMenuOpen(false)}
+                >
+                  <button
+                    type="submit"
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 w-full rounded-[8px] text-sm font-medium"
+              >
+                <Link href={localHref("/signin")} onClick={() => setIsMobileMenuOpen(false)}>
+                  Sign up
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

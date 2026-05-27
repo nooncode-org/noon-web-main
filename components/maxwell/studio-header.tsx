@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   ChevronDown,
@@ -25,9 +26,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { UserMenu } from "@/components/ui/user-menu";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
 import type { StudioPhase, ActiveView } from "./studio-shell";
+
+const STUDIO_DEFAULT_LOCALE = "en";
+const STUDIO_LOCALES = ["en", "es", "fr", "de"];
 
 // ============================================================================
 // Phase label map
@@ -175,6 +180,10 @@ export function StudioHeader({
   onNewDraftChat,
   onDeleteDraftSession,
 }: StudioHeaderProps) {
+  const params = useParams();
+  const rawLocale = typeof params?.locale === "string" ? params.locale : null;
+  const currentLocale =
+    rawLocale && STUDIO_LOCALES.includes(rawLocale) ? rawLocale : STUDIO_DEFAULT_LOCALE;
   const [draftsOpen, setDraftsOpen] = useState(false);
   // B31 — Track the row staged for deletion. Single-row state is enough: the
   // AlertDialog is modal so only one delete prompt can be open at a time. We
@@ -336,6 +345,12 @@ export function StudioHeader({
           <Share2 className="h-3 w-3" />
           Share
         </button>
+        <UserMenu
+          viewer={{ email: viewerEmail, name: null, image: null }}
+          locale={currentLocale}
+          showStudioLink={false}
+          triggerClassName="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background/60 text-xs font-medium text-foreground/85 transition-colors hover:bg-background hover:text-foreground"
+        />
       </div>
     </header>
 

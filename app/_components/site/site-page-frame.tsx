@@ -3,12 +3,18 @@ import { FloatingTechElements } from "@/components/landing/floating-tech-element
 import { FooterSection } from "@/components/landing/footer-section";
 import { Navigation } from "@/components/landing/navigation";
 import { SiteScrollIndicator } from "@/app/_components/site/site-scroll-indicator";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 
 type SitePageFrameProps = {
   children: ReactNode;
 };
 
-export function SitePageFrame({ children }: SitePageFrameProps) {
+export async function SitePageFrame({ children }: SitePageFrameProps) {
+  // Server-fetched viewer so `Navigation` can render the auth-aware user menu
+  // (sign out + Maxwell Studio link) instead of the anonymous "Sign up" CTA.
+  // Falls back to `null` for anonymous traffic.
+  const viewer = await getAuthenticatedViewer();
+
   return (
     <main
       id="site-page-frame"
@@ -26,7 +32,7 @@ export function SitePageFrame({ children }: SitePageFrameProps) {
       </div>
       <SiteScrollIndicator />
       <FloatingTechElements />
-      <Navigation />
+      <Navigation viewer={viewer} />
       <div className="relative z-10 flex-1 pt-28 lg:pt-32">{children}</div>
       <FooterSection />
     </main>
