@@ -7,7 +7,7 @@ export const STUDIO_STATUS_META: Record<StudioStatus, { label: string }> = {
   prototype_ready: { label: "Prototype ready" },
   revision_requested: { label: "Applying adjustment" },
   revision_applied: { label: "Adjustment applied" },
-  prototype_shared: { label: "Shared with client" },
+  prototype_shared: { label: "Link shared" },
   approved_for_proposal: { label: "Approved for proposal" },
   proposal_pending_review: { label: "Proposal in review" },
   proposal_sent: { label: "Proposal sent" },

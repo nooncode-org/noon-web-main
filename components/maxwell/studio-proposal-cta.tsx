@@ -23,7 +23,7 @@ type StudioProposalCtaProps = {
   agentHref: string;
   /**
    * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
-   * "Compartir prototipo con el cliente" CTA does not render and the
+   * "Get shareable link" CTA does not render and the
    * `prototype_shared` branch falls back to the legacy `prototype_ready`
    * surface (which can never be entered while the flag is off anyway,
    * because the Server Action short-circuits — defence in depth).
@@ -33,7 +33,7 @@ type StudioProposalCtaProps = {
   shareUrl?: string | null;
   /** ADR-028 D8 — current UX bucket for share action lifecycle. */
   shareUxState?: PrototipoShareUxState;
-  /** Fired when the seller clicks "Compartir prototipo con el cliente". */
+  /** Fired when the seller clicks "Get shareable link". */
   onShare?: () => void;
 };
 
@@ -106,13 +106,13 @@ function pickShareErrorCopy(state: PrototipoShareUxState | undefined): string | 
   if (!state) return null;
   switch (state.kind) {
     case "terminal.workspace-locked":
-      return "Este prototipo ya fue aceptado o archivado. Generá una nueva versión para compartir.";
+      return "This prototype has already been finalized. Generate a new version to share again.";
     case "transient.persist-failed":
-      return "No pudimos compartir el prototipo. Probá nuevamente en unos segundos.";
+      return "Couldn't share the prototype. Try again in a moment.";
     case "transient.rate-limited":
-      return "Demasiados intentos. Esperá un minuto e intentá de nuevo.";
+      return "Too many attempts. Wait a minute and try again.";
     case "fatal.unknown":
-      return "Ocurrió un error inesperado al compartir el prototipo. Si persiste, contactá a soporte.";
+      return "Unexpected error while sharing. Contact support if it persists.";
     case "idle":
     case "sharing":
     case "success":
@@ -253,22 +253,22 @@ export function StudioProposalCta({
             <Share2 className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium mb-0.5">Compartido con el cliente</p>
+            <p className="text-sm font-medium mb-0.5">Shareable link ready</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Esperando la decisión del cliente sobre este prototipo.
+              Forward this link to anyone who needs to review the prototype.
             </p>
           </div>
         </div>
 
         {shareUrl ? (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Link compartible</p>
+            <p className="text-xs text-muted-foreground">Shareable link</p>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={shareUrl}
                 readOnly
-                aria-label="Link compartible del prototipo"
+                aria-label="Shareable prototype link"
                 className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono text-foreground/85 outline-none focus:border-foreground/20"
                 onFocus={(e) => e.currentTarget.select()}
               />
@@ -276,17 +276,17 @@ export function StudioProposalCta({
                 type="button"
                 onClick={() => void handleCopyShareUrl(shareUrl)}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-[#131313] px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
-                aria-label={linkCopied ? "Link copiado" : "Copiar link"}
+                aria-label={linkCopied ? "Link copied" : "Copy link"}
               >
                 {linkCopied ? (
                   <>
                     <Check className="w-3.5 h-3.5" />
-                    <span>Copiado</span>
+                    <span>Copied</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copiar</span>
+                    <span>Copy</span>
                   </>
                 )}
               </button>
@@ -302,7 +302,7 @@ export function StudioProposalCta({
               className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
-              Pedir cambios
+              Request changes
             </button>
           )}
           <button
@@ -311,7 +311,7 @@ export function StudioProposalCta({
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <FileText className="w-3 h-3" />
-            Enviar propuesta detallada
+            Request formal proposal
           </button>
           <Link
             href={agentHref}
@@ -369,7 +369,7 @@ export function StudioProposalCta({
             ) : (
               <Share2 className="w-3.5 h-3.5" />
             )}
-            {isSharing ? "Compartiendo..." : "Compartir prototipo con el cliente"}
+            {isSharing ? "Generating link..." : "Get shareable link"}
           </button>
         ) : null}
 
