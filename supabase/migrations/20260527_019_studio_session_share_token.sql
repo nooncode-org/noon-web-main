@@ -50,6 +50,29 @@ CREATE INDEX IF NOT EXISTS idx_studio_session_prototype_workspace
   ON public.studio_session(prototype_workspace_id)
   WHERE prototype_workspace_id IS NOT NULL;
 
+-- Extend the studio_session.status CHECK constraint to allow the new
+-- `prototype_shared` phase introduced by ADR-028 D7. The state machine in
+-- `lib/maxwell/state-machine.ts` already enumerates this status; without
+-- the DB-side CHECK extension, `updateStudioSessionStatus(_, 'prototype_shared')`
+-- fails with a constraint violation at commit time. Idempotent via
+-- `DROP CONSTRAINT IF EXISTS` so re-running on a DB where the constraint
+-- already has `prototype_shared` is a no-op.
+ALTER TABLE public.studio_session DROP CONSTRAINT IF EXISTS studio_session_status_check;
+ALTER TABLE public.studio_session ADD CONSTRAINT studio_session_status_check
+  CHECK (status = ANY (ARRAY[
+    'intake'::text,
+    'clarifying'::text,
+    'generating_prototype'::text,
+    'prototype_ready'::text,
+    'revision_requested'::text,
+    'revision_applied'::text,
+    'prototype_shared'::text,
+    'approved_for_proposal'::text,
+    'proposal_pending_review'::text,
+    'proposal_sent'::text,
+    'converted'::text
+  ]));
+
 INSERT INTO public.schema_migrations (filename, applied_at, checksum, applied_by) VALUES
   ('20260527_019_studio_session_share_token.sql', now(), NULL, 'migration:self-register')
 ON CONFLICT (filename) DO NOTHING;
