@@ -1,8 +1,8 @@
 # project.context.full.md — Noon / Maxwell Studio
 
-> **Última actualización:** 2026-05-08
+> **Última actualización:** 2026-05-26
 > **Usar cuando:** Recovery, Architecture, Validator, Refactor mayor
-> **Estado del repo:** Studio operativo (Fases 1–6 completadas). Hardening pendiente.
+> **Estado del repo:** Studio operativo (Fases 1–6 completadas). FASE 2 hardening + Bloque 11 Quality Layer + B8 emails + v3 contracts + D-slice ADR-023/024 (cross-repo prototype decision) mergeados en `main`. Sentry + UptimeRobot activos en Production desde 2026-05-18.
 
 ---
 
@@ -13,7 +13,7 @@
 - **Usuarios del Studio:** Prospectos (pre-pago) y PM de Noon (revisión de propuesta vía Noon App, no website).
 - **Usuarios post-pago:** Clientes activos (workspace formal en `app/[locale]/maxwell/workspace/[sessionId]`).
 - **Owner:** Mel (operador de Noon, autoridad final sobre roadmap, scope, comercial, ops decisions).
-- **Estado del repo:** Producción interna — Studio funcional, propuestas firmadas hacia Noon App, hardening completado (CI activo, tests de webhooks, instrumentation cabletada para observabilidad pendiente de Sentry DSN).
+- **Estado del repo:** Producción interna — Studio funcional, propuestas firmadas hacia Noon App, hardening completado (CI activo, tests de webhooks, Sentry + UptimeRobot activos en Production desde 2026-05-18). D-slice ADR-023/024 (prototype decision cross-repo) mergeado en `main` y gated por `MAXWELL_PROTOTIPO_DECISION_ROUTE` hasta smoke bilateral.
 
 ---
 
@@ -67,11 +67,11 @@
 ### Tests
 - Vitest v4 (`vitest.config.ts`): `npm test`, `npm run test:watch`, `npm run test:coverage`
 - Playwright v1.59 (`playwright.config.ts`): visual + a11y
-- **Baseline al 2026-05-19:** 633 tests verdes (subida +271 desde la última snapshot de este doc, principalmente FASE 2 hardening + Bloque 11 Quality Layer + B14 GDPR + B8 emails + v3 contracts).
+- **Baseline al 2026-05-25:** 819 tests verdes; +35 unit (prototipo-render-fetch) + nuevos casos prototipo-route-flag + Playwright visual `prototipo-decision.spec.ts` añadidos vía PRs #17 + #18 (D-slice ADR-023/024). Conteo exacto post-merge se rerruns en CI.
 - Estructura (resumen — la lista exhaustiva vive en `tests/`):
-  - `tests/maxwell/` (~30 archivos): incluye api-smoke, auth-gating, chat, payment + payment-activation-lifecycle, payment-route, proposal-email, lifecycle-emails, brief-extractor, style-classifier, prototype-poll, workspace-preparing, noon-app-integration + noon-app-webhook, v3-isolation-wiring, public-url, review-auth, state-machine, studio-guards, etc.
+  - `tests/maxwell/` (~30 archivos): incluye api-smoke, auth-gating, chat, payment + payment-activation-lifecycle, payment-route, proposal-email, lifecycle-emails, brief-extractor, style-classifier, prototype-poll, workspace-preparing, noon-app-integration + noon-app-webhook, v3-isolation-wiring, public-url, review-auth, state-machine, studio-guards, runtime-env, prototipo-decision, prototipo-render-fetch, prototipo-route-flag, etc.
   - `tests/contact/`, `tests/health/`, `tests/server/audit/`, `tests/scripts/` (gdpr-hard-delete), `tests/upgrade/`, `tests/constants/` (project-types), `tests/security/` (project-isolation), `tests/lib/` (api-ia)
-  - `tests/visual/`: a11y.spec.ts (axe-core), capture.spec.ts (visual regression)
+  - `tests/visual/`: a11y.spec.ts (axe-core), capture.spec.ts (visual regression), prototipo-decision.spec.ts (D-slice route renders per UX bucket)
 
 ### Mail
 - Resend (`MAIL_PROVIDER=resend`, `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`)
@@ -81,8 +81,9 @@
 - Sin AWS, sin Redis, sin S3
 - Deployment en Vercel (confirmado prod: `noon-main.vercel.app`)
 - Postgres en Supabase con SSL (DATABASE_URL + POSTGRES_URL)
-- Sentry instrumentation cableada (`instrumentation.ts` + `lib/server/logger.ts`), gated por `SENTRY_DSN` env — actualmente NO seteado (pendiente ops)
+- Sentry instrumentation cableada (`instrumentation.ts` + `lib/server/logger.ts`), gated por `SENTRY_DSN` env — **activo en Production desde 2026-05-18** con `SENTRY_TRACES_SAMPLE_RATE=0.1`. Coexiste con Vercel Analytics.
 - Upstash Redis para rate-limiting (`lib/server/rate-limit.ts`, B21)
+- UptimeRobot monitorea `/api/health` cada 5min desde 2026-05-18
 - **CI activo:** `.github/workflows/ci.yml` (Node 22 + cache npm; corre `tsc --noEmit`, `npm test`, `npm run build` con `AUTH_SECRET` dummy, `npm run lint`). Triggers: every `push` + every `pull_request` a `main`. Concurrency: cancel-in-progress por branch/PR. Timeout: 15min.
 
 ---
@@ -115,6 +116,12 @@ app/[locale]/maxwell/
   review/_components/{review-login, status-badge}.tsx
   workspace/[sessionId]/page.tsx                 ← Workspace post-pago del cliente
   proposal/[token]/page.tsx                      ← Viewer público de propuesta
+  prototipo/[token]/page.tsx                     ← D-slice ADR-023/024 — render prototipo + capturar decisión accept/reject (gated por MAXWELL_PROTOTIPO_DECISION_ROUTE)
+  prototipo/[token]/_components/                 ← decision-panel, error-states, prior-decision-summary, prototipo-frame
+  prototipo/[token]/_actions/submit-decision.ts  ← Server Action que wrappea submitPrototipoDecision
+
+app/api/integrations/website/
+  prototype-signed-read/[token]/route.ts         ← DEV-ONLY loopback (404 en production); sirve fixtures locales del signed-read para smoke sin App corriendo
 
 app/api/maxwell/
   chat/route.ts                  ← OpenAI gpt-4.1; persiste mensajes; extrae señales
@@ -146,7 +153,7 @@ components/maxwell/                       (10 componentes, completos)
   prototype-quota-strip.tsx
   proposal-document.tsx           ← Render de propuesta para el viewer público
 
-lib/maxwell/                              (13 módulos, completos)
+lib/maxwell/                              (módulos canónicos)
   repositories.ts                 ← Persistencia Postgres: studio_session, message, brief, version, proposal_request, etc.
   state-machine.ts                ← Transiciones válidas: intake → clarifying → generating_prototype → prototype_ready → … → converted
   studio-guards.ts                ← assertCanRequestProposal, assertCanRequestCorrection, MaxwellGuardError
@@ -160,6 +167,12 @@ lib/maxwell/                              (13 módulos, completos)
   prototype-quota.ts              ← Lógica de cuota de prototipos iniciales
   public-url.ts                   ← URLs públicas (demos, propuestas)
   workspace-status.ts             ← Tipos y helpers de WorkspaceStatus
+  prototipo-decision.ts           ← submitPrototipoDecision: POST Web → App `/api/integrations/website/prototype-decision` (ADR-023)
+  prototipo-decision-types.ts     ← Wire types + 7 códigos de error POST + UX state mapper (ADR-023 §D5)
+  prototipo-render-fetch.ts       ← fetchPrototipoRender: GET Web → App signed-read (ADR-024), HMAC zero-body, 2-attempt retry
+  prototipo-render-types.ts       ← Wire types + 7 códigos de error GET + UX state mapper (ADR-024 handoff §2.5)
+  prototipo-route-flag.ts         ← isPrototipoDecisionRouteEnabled (gate por MAXWELL_PROTOTIPO_DECISION_ROUTE)
+  __dev__/prototipo-render-fixtures.ts ← Fixtures compartidas para Playwright + dev loopback (no shippea a prod)
 
 lib/server/
   db.ts                           ← postgres.js singleton (getDb)
@@ -248,6 +261,8 @@ app/[locale]/maxwell/workspace/[sessionId]/   ← Portal cliente post-pago
 
 ### Webhooks Noon App (bidireccional, firmados)
 - **Saliente:** `POST {NOON_APP_BASE_URL}/api/integrations/website/inbound-proposal` (proposal handoff) y `/payment-confirmed`
+- **Saliente D-slice (ADR-023):** `POST {NOON_APP_BASE_URL}/api/integrations/website/prototype-decision` — captura accept/reject del cliente; App persiste en `prototype_decisions` + dispara Maxwell draft fire-and-forget post-accept
+- **Saliente D-slice (ADR-024):** `GET {NOON_APP_BASE_URL}/api/integrations/website/prototype-signed-read/[token]` — App devuelve workspace + leadContext + prototype + decision + lifecycle. HMAC zero-body (`${timestamp}.` con cuerpo vacío)
 - **Entrante:** `POST /api/integrations/noon-app/proposal-review-decision`
 - Headers: `x-noon-signature: sha256=<hex>`, `x-noon-timestamp: <epoch_seconds>`
 - Body firmado: `${timestamp}.${bodyText}` con HMAC-SHA256(`NOON_WEBSITE_WEBHOOK_SECRET`) — canonical per cross-repo contract v1. El legacy `NOON_APP_WEBHOOK_SECRET` fue eliminado 2026-05-25.
@@ -284,6 +299,14 @@ RESEND_API_KEY
 # Noon App bridge
 NOON_APP_BASE_URL
 NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1 (legacy NOON_APP_WEBHOOK_SECRET removed 2026-05-25)
+
+# Feature flags
+MAXWELL_LIFECYCLE_EMAILS       # "1" enables Resend payment/workspace lifecycle emails; OFF by default
+MAXWELL_PROTOTIPO_DECISION_ROUTE  # "1" enables the public /maxwell/prototipo/[token] route (D-slice ADR-023/024); OFF by default — route renders notFound() when unset
+
+# Observability
+SENTRY_DSN                     # active in Production since 2026-05-18
+SENTRY_TRACES_SAMPLE_RATE      # 0.1 in Production
 ```
 
 ---
@@ -322,6 +345,16 @@ NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1 (legacy NOO
 ### ADR-007: Auth dual para `/api/maxwell/review`
 **Decisión:** Aceptar Google session (con allowlist `REVIEW_ALLOWED_EMAILS`) o `Bearer ${REVIEW_API_SECRET}` header.
 **Razón:** Permite humanos (PM) y automation (Noon App, scripts) con un solo endpoint.
+
+### ADR-023: Prototype decision cross-repo contract
+**Decisión:** El accept/reject del prototipo se captura en Web (`POST /maxwell/prototipo/[token]` → server action → `POST {APP}/api/integrations/website/prototype-decision`) y se persiste autoritativamente en App (`prototype_decisions`). Sin idempotencia a nivel de payload — la transport ledger (`(endpoint, signature_hash)`) es la única capa de dedup. App dispara el draft Maxwell post-accept como fire-and-forget. Decisión firmada 2026-05-23, slices A/B/C en App + D en Web.
+**Razón:** Mantiene Web como surface de captura puro; centraliza state of record + business rules (Cap-FIRST / Credits dual-gate, ADR-025 D2) en App.
+**Implementación Web:** `lib/maxwell/prototipo-decision.ts` + `prototipo-decision-types.ts` (7 códigos de error) + `app/[locale]/maxwell/prototipo/[token]/_actions/submit-decision.ts`. PR #17 + PR #18 mergeados 2026-05-26.
+
+### ADR-024: Prototype signed-read cross-repo contract
+**Decisión:** Web hace `GET {APP}/api/integrations/website/prototype-signed-read/[token]` al renderizar `/maxwell/prototipo/[token]` para obtener workspace + leadContext + prototype + decision + lifecycle. HMAC zero-body signing (`${timestamp}.` con cuerpo vacío). 60 req/min combined-key rate-limit en App. Decisión firmada 2026-05-25 morning; ADR-024 §Amendments A1 corrigió el column mapping de lead-context.
+**Razón:** Pull pattern B.2 — Web nunca duplica el state of record. Cada render fetcha fresh.
+**Implementación Web:** `lib/maxwell/prototipo-render-fetch.ts` (2-attempt retry, 5xx + network retry, no retry en 429/AUTH_FAILED) + `prototipo-render-types.ts`. Para desarrollo local sin App corriendo: handler dev-only en `app/api/integrations/website/prototype-signed-read/[token]/route.ts` que sirve fixtures (404 en production).
 
 ---
 
@@ -428,14 +461,28 @@ NOON_WEBSITE_WEBHOOK_SECRET   # canonical per cross-repo contract v1 (legacy NOO
 7. `0b4743b` — Ops toolkit: `scripts/smoke-gpt-5.5.mjs` + 3 runbooks (smoke gpt-5.5, Supabase rotation 2026-07-22, cross-repo v3 mirror para App)
 8. `8e772f1` + handoff doc updates
 
+**Sesión 2026-05-25/26 (D-slice ADR-023/024, todos en `main`):**
+1. `6f155bd` — refactor cross-repo: unify project-type vocabulary to App spelling
+2. `24be6ce` + `9366b2e` — runtime-env accept either canonical/legacy → eliminar fallback legacy (PR #15)
+3. `5d71d5d` — eslint warnings cleanup (PR #16)
+4. `c7852fe` — D-slice unblocking layer: `lib/maxwell/prototipo-decision.ts` + `prototipo-decision-types.ts` + tests (PR #17)
+5. `b8abbbf` + `a809315` — Fix Vercel iframe (next.config.mjs + studio-preview-pane)
+6. `585f827` + `156151d` — D-slice UI: route `/maxwell/prototipo/[token]` + 4 componentes + Server Action + GET helper + dev-only loopback handler + Playwright visual (PR #18, mergeado en `712959e`)
+7. `20902c8` — eslint final warnings silence (PR #19, mergeado en `1884796`)
+
+App lado: PRs #110 (B/C slices), #112 (signed-read GET handler), #113 (v3 mirror + secrets runbook), #114 (auth helpers consolidation) en `develop @ d9245c6`. Implementación end-to-end del contrato cross-repo COMPLETE; queda solo smoke bilateral antes de flipping `MAXWELL_PROTOTIPO_DECISION_ROUTE=1` en Production.
+
 ### Próxima iteración recomendada
 
 **Pendientes operacionales (NO requieren código — accesos externos):**
-1. **Resend domain → flip `MAXWELL_LIFECYCLE_EMAILS=1`** en Vercel para activar B8 emails (código ya wireado, dominio Resend YA verificado per FASE 1)
+1. ~~Flip `MAXWELL_LIFECYCLE_EMAILS=1`~~ → ✅ RESUELTO 2026-05-25 (operator)
 2. **Smoke gpt-5.5 en prod** con `npm run smoke:gpt-5.5` (cost ~$0.00023/run)
-3. **Sentry DSN setup** — `SENTRY_DSN` env var en Vercel (instrumentation YA cableada)
-4. **UptimeRobot setup** para monitoring de health endpoints
+3. ~~`SENTRY_DSN` setup~~ → ✅ RESUELTO 2026-05-18 (operator); convive con Vercel Analytics
+4. ~~UptimeRobot setup~~ → ✅ RESUELTO 2026-05-18 (operator); monitorea `/api/health` cada 5min
 5. **Supabase keys rotation** deadline **2026-07-22** — runbook listo en `docs/supabase-key-rotation-runbook.md`
+6. **Borrar `NOON_APP_WEBHOOK_SECRET` legacy del dashboard Vercel** (canonical ya gana en código; cleanup pendiente)
+7. **Smoke bilateral D-slice Web↔App** y después flip `MAXWELL_PROTOTIPO_DECISION_ROUTE=1` (Preview primero, después Production)
+8. **Rotar `VERCEL_TOKEN`** que se expuso en chat (postergado a 2026-06-19 per operator)
 
 **Pendientes de owner / cross-repo (requieren decisión o coordinación):**
 1. **v3 Phase 2-6 scope** — no hay master-spec formal todavía (confirmar con owner si existe o se difiere)
