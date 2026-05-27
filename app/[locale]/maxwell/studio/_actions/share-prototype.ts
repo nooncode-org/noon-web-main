@@ -54,6 +54,7 @@ import {
 import { isPrototipoDecisionRouteEnabled } from "@/lib/maxwell/prototipo-route-flag";
 import { resolvePublicBaseUrl } from "@/lib/maxwell/public-url";
 import { PROJECT_CATEGORIES } from "@/lib/maxwell/proposal-rules";
+import { buildShareLeadMetadata } from "@/lib/maxwell/share-lead-metadata";
 
 export type SharePrototypeActionInput = {
   sessionId: string;
@@ -180,6 +181,13 @@ export async function sharePrototypeAction(
       deployedUrl: latest.previewUrl,
       generatedAt: latest.createdAt,
     },
+    // Lead enrichment metadata for parity with the legacy `inbound-proposal`
+    // flow. App's `insertFreshLeadForShare` reads `metadata.score` (via
+    // `readInboundScore`, default 80) and `metadata.amount` to populate
+    // `leads.score` / `leads.value`. Without this, fresh prospect leads
+    // from share land in App with score=0 / value=0 — asymmetric vs the
+    // legacy proposal-send flow. See ADR-028 follow-up handoff doc.
+    metadata: buildShareLeadMetadata(session),
   });
 
   if (result.status !== "ok") {
