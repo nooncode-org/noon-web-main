@@ -22,6 +22,7 @@ export type StudioStatus =
   | "prototype_ready"
   | "revision_requested"
   | "revision_applied"
+  | "prototype_shared"
   | "approved_for_proposal"
   | "proposal_pending_review"
   | "proposal_sent"
@@ -89,6 +90,17 @@ export type StudioSession = {
    * consistent.
    */
   stylePackId: string | null;
+  /**
+   * ADR-028 D6 — D-upstream wire share state. Populated when the seller
+   * shares the current prototipo with the client and App emits a token.
+   * Overwritten on regenerate (App supersedes V1, Web's row points at V2).
+   * Null until the first share; reverts to null only if a future iteration
+   * explicitly unshares.
+   */
+  prototypeWorkspaceId: string | null;
+  shareToken: string | null;
+  shareTokenUrl: string | null;
+  prototypeSharedAt: string | null;
 };
 
 /** Lightweight row for studio history picker (non-deleted sessions only). */
@@ -259,6 +271,11 @@ type SessionRow = {
   deleted_at?: string | Date | null;
   /** Bloque 11 — see StudioSession.stylePackId comment. */
   style_pack_id?: string | null;
+  /** ADR-028 D6 — D-upstream wire share state. */
+  prototype_workspace_id?: string | null;
+  share_token?: string | null;
+  share_token_url?: string | null;
+  prototype_shared_at?: string | Date | null;
 };
 
 type MessageRow = {
@@ -407,6 +424,10 @@ function mapSession(r: SessionRow): StudioSession {
     createdAt: toIsoTimestamp(r.created_at)!,
     updatedAt: toIsoTimestamp(r.updated_at)!,
     stylePackId: r.style_pack_id ?? null,
+    prototypeWorkspaceId: r.prototype_workspace_id ?? null,
+    shareToken: r.share_token ?? null,
+    shareTokenUrl: r.share_token_url ?? null,
+    prototypeSharedAt: toIsoTimestamp(r.prototype_shared_at),
   };
 }
 
@@ -701,6 +722,44 @@ export async function setStylePackId(
         updated_at    = ${now}
     WHERE id = ${sessionId}
   `;
+}
+
+/**
+ * ADR-028 D9 — persist the share state returned by App's `prototype-share`
+ * endpoint on the studio session row.
+ *
+ * All four columns are written together (atomically) per D6: there is never a
+ * moment where a session holds a `share_token` without the matching workspace
+ * id / URL / timestamp. On regenerate the same call OVERWRITES with the V2
+ * values, soft-superseding the V1 share locally.
+ *
+ * Does NOT transition state — the caller (Server Action per D9) wraps this in
+ * a `prototype_ready → prototype_shared` `assertValidTransition` +
+ * `updateStudioSessionStatus` call. Splitting persistence from transition
+ * keeps the repository pure and lets the Server Action handle the "if App
+ * already had a row" idempotent-replay path without re-firing transitions.
+ */
+export async function updateStudioSessionShareToken(
+  sessionId: string,
+  input: {
+    prototypeWorkspaceId: string;
+    shareToken: string;
+    shareTokenUrl: string;
+    prototypeSharedAt: string;
+  },
+): Promise<StudioSession> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE studio_session
+    SET prototype_workspace_id = ${input.prototypeWorkspaceId},
+        share_token            = ${input.shareToken},
+        share_token_url        = ${input.shareTokenUrl},
+        prototype_shared_at    = ${input.prototypeSharedAt},
+        updated_at             = ${now}
+    WHERE id = ${sessionId}
+  `;
+  return (await getStudioSession(sessionId))!;
 }
 
 // ============================================================================

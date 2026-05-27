@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle, RotateCcw, FileText, User,
-  ArrowRight, Clock, Loader2,
+  ArrowRight, Clock, Loader2, Share2, Copy, Check,
 } from "lucide-react";
 import type { StudioPhase } from "./studio-shell";
+import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================
 // Types
@@ -20,6 +21,20 @@ type StudioProposalCtaProps = {
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
   agentHref: string;
+  /**
+   * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
+   * "Get shareable link" CTA does not render and the
+   * `prototype_shared` branch falls back to the legacy `prototype_ready`
+   * surface (which can never be entered while the flag is off anyway,
+   * because the Server Action short-circuits — defence in depth).
+   */
+  shareEnabled?: boolean;
+  /** ADR-028 D10 — the Web-composed share URL when phase === "prototype_shared". */
+  shareUrl?: string | null;
+  /** ADR-028 D8 — current UX bucket for share action lifecycle. */
+  shareUxState?: PrototipoShareUxState;
+  /** Fired when the seller clicks "Get shareable link". */
+  onShare?: () => void;
 };
 
 // ============================================================================
@@ -84,6 +99,29 @@ function InlineCorrectionInput({
 }
 
 // ============================================================================
+// Share error → copy (ADR-028 D10)
+// ============================================================================
+
+function pickShareErrorCopy(state: PrototipoShareUxState | undefined): string | null {
+  if (!state) return null;
+  switch (state.kind) {
+    case "terminal.workspace-locked":
+      return "This prototype has already been finalized. Generate a new version to share again.";
+    case "transient.persist-failed":
+      return "Couldn't share the prototype. Try again in a moment.";
+    case "transient.rate-limited":
+      return "Too many attempts. Wait a minute and try again.";
+    case "fatal.unknown":
+      return "Unexpected error while sharing. Contact support if it persists.";
+    case "idle":
+    case "sharing":
+    case "success":
+    default:
+      return null;
+  }
+}
+
+// ============================================================================
 // StudioProposalCta
 // ============================================================================
 
@@ -95,12 +133,41 @@ export function StudioProposalCta({
   onRequestCorrection,
   onRequestProposal,
   agentHref,
+  shareEnabled = false,
+  shareUrl = null,
+  shareUxState,
+  onShare,
 }: StudioProposalCtaProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const canCorrect = phase === "prototype_ready" && correctionsUsed < maxCorrections;
   const allUsed = correctionsUsed >= maxCorrections;
   const remaining = maxCorrections - correctionsUsed;
+  const isSharing = shareUxState?.kind === "sharing";
+  const shareErrorCopy = pickShareErrorCopy(shareUxState);
+
+  async function handleCopyShareUrl(url: string) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setLinkCopied(true);
+      window.setTimeout(() => setLinkCopied(false), 1800);
+    } catch {
+      // Clipboard blocked — silently fail; the URL is visible on screen
+      // and the seller can copy manually. No noisy error UX for this.
+    }
+  }
 
   // ── Generating state ──────────────────────────────────────────────────────
 
@@ -176,6 +243,88 @@ export function StudioProposalCta({
     );
   }
 
+  // ── Prototype shared (ADR-028 D10) ────────────────────────────────────────
+
+  if (phase === "prototype_shared") {
+    return (
+      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-muted-foreground">
+            <Share2 className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium mb-0.5">Shareable link ready</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Forward this link to anyone who needs to review the prototype.
+            </p>
+          </div>
+        </div>
+
+        {shareUrl ? (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Shareable link</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={shareUrl}
+                readOnly
+                aria-label="Shareable prototype link"
+                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono text-foreground/85 outline-none focus:border-foreground/20"
+                onFocus={(e) => e.currentTarget.select()}
+              />
+              <button
+                type="button"
+                onClick={() => void handleCopyShareUrl(shareUrl)}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-[#131313] px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
+                aria-label={linkCopied ? "Link copied" : "Copy link"}
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-border/50">
+          {canCorrect && (
+            <button
+              type="button"
+              onClick={() => setShowCorrectionInput(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Request changes
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onRequestProposal}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <FileText className="w-3 h-3" />
+            Request formal proposal
+          </button>
+          <Link
+            href={agentHref}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <User className="w-3 h-3" />
+            Talk to agent
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // ── Prototype ready ───────────────────────────────────────────────────────
 
   if (phase !== "prototype_ready") return null;
@@ -207,6 +356,23 @@ export function StudioProposalCta({
 
       {/* Primary actions */}
       <div className="flex flex-wrap gap-2">
+        {shareEnabled && onShare ? (
+          <button
+            type="button"
+            onClick={onShare}
+            disabled={isSharing}
+            className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 disabled:opacity-50"
+            aria-busy={isSharing}
+          >
+            {isSharing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Share2 className="w-3.5 h-3.5" />
+            )}
+            {isSharing ? "Generating link..." : "Get shareable link"}
+          </button>
+        ) : null}
+
         <button
           type="button"
           onClick={onApprove}
@@ -232,6 +398,16 @@ export function StudioProposalCta({
           </button>
         )}
       </div>
+
+      {/* Share error surface (ADR-028 D10 copy) */}
+      {shareErrorCopy ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-200"
+        >
+          {shareErrorCopy}
+        </div>
+      ) : null}
 
       {/* Secondary actions */}
       <div className="flex flex-wrap items-center gap-3 pt-0.5 border-t border-border/50">

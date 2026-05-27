@@ -32,6 +32,10 @@ function makeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     stylePackId: null,
+    prototypeWorkspaceId: null,
+    shareToken: null,
+    shareTokenUrl: null,
+    prototypeSharedAt: null,
     ...overrides,
   };
 }

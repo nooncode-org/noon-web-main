@@ -170,7 +170,11 @@ export async function POST(request: Request) {
       throw error;
     }
 
-    if (session.status === "prototype_ready") {
+    if (session.status === "prototype_ready" || session.status === "prototype_shared") {
+      // ADR-028 D7 — both `prototype_ready` and `prototype_shared` bridge to
+      // `approved_for_proposal` before requesting the formal proposal. From
+      // `prototype_shared` this is the legacy detailed-proposal fallthrough
+      // (D12 ADDITIVE coexistence).
       await updateStudioSessionStatus(session.id, "approved_for_proposal");
     }
 

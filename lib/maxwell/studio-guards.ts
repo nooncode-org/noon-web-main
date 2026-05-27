@@ -54,9 +54,19 @@ export function assertCanRequestCorrection(session: StudioSession): void {
  * Allowed sources:
  * - "approved_for_proposal"  → normal path (client approved explicitly)
  * - "prototype_ready"        → skip-to-proposal shortcut (auto-approves)
+ * - "prototype_shared"       → seller shared prototipo with the client and now
+ *                              wants to fall through to the legacy detailed-
+ *                              proposal path (ADR-028 D7 / D12 ADDITIVE
+ *                              coexistence). The proposal route auto-bridges
+ *                              `prototype_shared → approved_for_proposal`
+ *                              before transitioning to `proposal_pending_review`.
  */
 export function assertCanRequestProposal(session: StudioSession): void {
-  const allowed: StudioStatus[] = ["approved_for_proposal", "prototype_ready"];
+  const allowed: StudioStatus[] = [
+    "approved_for_proposal",
+    "prototype_ready",
+    "prototype_shared",
+  ];
   if (!allowed.includes(session.status)) {
     throw new MaxwellGuardError(
       "PROPOSAL_NOT_ALLOWED",

@@ -42,6 +42,10 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     createdAt: "2026-05-17T00:00:00Z",
     updatedAt: "2026-05-17T00:00:00Z",
     stylePackId: null,
+    prototypeWorkspaceId: null,
+    shareToken: null,
+    shareTokenUrl: null,
+    prototypeSharedAt: null,
     ...overrides,
   };
 }
