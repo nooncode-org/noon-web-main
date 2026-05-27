@@ -77,6 +77,11 @@ export async function GET(request: Request) {
       goalSummary: session.goalSummary,
       correctionsUsed: session.correctionsUsed,
       maxCorrections: session.maxCorrections,
+      // ADR-028 D6 — surface the share URL so the client can re-render the
+      // "Compartido" CTA after a reload. `shareToken` itself is not exposed
+      // here (the URL already embeds it and is what the seller needs to copy).
+      shareTokenUrl: session.shareTokenUrl,
+      prototypeSharedAt: session.prototypeSharedAt,
     },
     messages,
     versions,

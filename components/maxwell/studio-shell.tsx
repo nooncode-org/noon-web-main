@@ -8,6 +8,8 @@ import { StudioPreviewPane } from "./studio-preview-pane";
 import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
+import { sharePrototypeAction } from "@/app/[locale]/maxwell/studio/_actions/share-prototype";
+import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================
 // Types
@@ -37,6 +39,7 @@ export type StudioPhase =
   | "prototype_ready"
   | "revision_requested"
   | "revision_applied"
+  | "prototype_shared"
   | "approved_for_proposal"
   | "proposal_pending_review"
   | "proposal_sent"
@@ -143,12 +146,26 @@ type StudioShellProps = {
   initialPrompt: string;
   initialSessionId?: string;
   viewerEmail: string;
+  /**
+   * Current locale segment of the studio path (e.g. `"en"`, `"es"`). Used to
+   * compose share URLs via the Server Action. Required for ADR-028 D9.
+   */
+  locale: string;
+  /**
+   * ADR-028 D11 — D-upstream wire feature gate, read server-side from
+   * `MAXWELL_PROTOTIPO_DECISION_ROUTE === "1"` and forwarded here so the UI
+   * can render the share CTA only when ops has flipped the switch. Independent
+   * of the downstream public route flag; both share the same env var.
+   */
+  shareEnabled: boolean;
 };
 
 export function StudioShell({
   initialPrompt,
   initialSessionId,
   viewerEmail,
+  locale,
+  shareEnabled,
 }: StudioShellProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -178,6 +195,11 @@ export function StudioShell({
   const [projectName, setProjectName] = useState("");
   const [sessionSummaries, setSessionSummaries] = useState<SessionSummary[]>([]);
   const [quotaSnapshot, setQuotaSnapshot] = useState<PrototypeQuotaSnapshot | null>(null);
+  // ADR-028 D8 — share UX state. `shareUrl` is kept as a separate latched
+  // value so it survives rehydration AND a transient error after a successful
+  // share (the URL is persisted server-side regardless of the next action).
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareUxState, setShareUxState] = useState<PrototipoShareUxState>({ kind: "idle" });
 
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -316,6 +338,7 @@ export function StudioShell({
           goalSummary: string | null;
           correctionsUsed: number;
           maxCorrections: number;
+          shareTokenUrl?: string | null;
         };
         messages: ChatMessage[];
         versions: PrototypeVersion[];
@@ -329,6 +352,12 @@ export function StudioShell({
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
+      // ADR-028 D6 — rehydrate share URL when the session is already in the
+      // shared state. Empty string from the server (env-misconfig recovery
+      // path) is treated as "no URL" so the CTA falls back to "share again".
+      if (data.session.shareTokenUrl) {
+        setShareUrl(data.session.shareTokenUrl);
+      }
       const restoredMessages = data.messages.map(normalizeMessage);
       setMessages(
         data.workspace_pending
@@ -1019,6 +1048,35 @@ export function StudioShell({
     }
   }
 
+  // ── Share prototipo (ADR-028 D-upstream wire) ─────────────────────────────
+
+  async function handleShare() {
+    if (!sessionId || !shareEnabled) return;
+    if (shareUxState.kind === "sharing") return;
+
+    setShareUxState({ kind: "sharing" });
+    try {
+      const { uxState } = await sharePrototypeAction({ sessionId, locale });
+      setShareUxState(uxState);
+      if (uxState.kind === "success") {
+        setShareUrl(uxState.shareUrl);
+        // Local optimistic transition. The Server Action already wrote the
+        // status in the DB and revalidated, but the client state machine
+        // mirrors what the user sees right now.
+        if (phase === "prototype_ready") {
+          setPhase("prototype_shared");
+        }
+      }
+    } catch (error) {
+      // A truly unexpected throw (rare — the Server Action returns mapped
+      // states, not throws — but defence in depth). Surface a generic fatal.
+      setShareUxState({ kind: "fatal.unknown", httpStatus: 0 });
+      if (process.env.NODE_ENV !== "production") {
+        console.error("sharePrototypeAction unexpected throw:", error);
+      }
+    }
+  }
+
   function handleApprove() {
     setPhase("approved_for_proposal");
     setMessages((prev) => [
@@ -1275,6 +1333,10 @@ export function StudioShell({
             onClearReply={() => setReplyTarget(null)}
             onRegenerateLatest={handleRegenerateLatest}
             stopNotice={stopNotice}
+            shareEnabled={shareEnabled}
+            shareUrl={shareUrl}
+            shareUxState={shareUxState}
+            onShare={() => void handleShare()}
           />
         </aside>
 

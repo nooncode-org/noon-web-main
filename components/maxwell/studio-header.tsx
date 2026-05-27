@@ -45,6 +45,7 @@ const phaseLabels: Record<StudioPhase, string> = {
   prototype_ready: STUDIO_STATUS_META.prototype_ready.label,
   revision_requested: `${STUDIO_STATUS_META.revision_requested.label}...`,
   revision_applied: STUDIO_STATUS_META.revision_applied.label,
+  prototype_shared: STUDIO_STATUS_META.prototype_shared.label,
   approved_for_proposal: STUDIO_STATUS_META.approved_for_proposal.label,
   proposal_pending_review: STUDIO_STATUS_META.proposal_pending_review.label,
   proposal_sent: STUDIO_STATUS_META.proposal_sent.label,

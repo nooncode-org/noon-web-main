@@ -20,6 +20,7 @@ import { StudioThinkingBlock } from "./studio-thinking-block";
 import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
 import type { ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
+import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================
 // Message sub-components
@@ -288,6 +289,11 @@ type StudioChatPaneProps = {
   onRequestProposal: () => void;
   agentHref: string;
   isWorkspaceVisible: boolean;
+  // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
+  shareEnabled?: boolean;
+  shareUrl?: string | null;
+  shareUxState?: PrototipoShareUxState;
+  onShare?: () => void;
 };
 
 function StudioActivityBlock({ content, phase }: { content: string; phase: StudioPhase }) {
@@ -352,6 +358,10 @@ export function StudioChatPane({
   onRequestProposal,
   agentHref,
   isWorkspaceVisible,
+  shareEnabled,
+  shareUrl,
+  shareUxState,
+  onShare,
 }: StudioChatPaneProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -545,6 +555,10 @@ export function StudioChatPane({
             onRequestCorrection={onRequestCorrection}
             onRequestProposal={onRequestProposal}
             agentHref={agentHref}
+            shareEnabled={shareEnabled}
+            shareUrl={shareUrl}
+            shareUxState={shareUxState}
+            onShare={onShare}
           />
         </div>
       )}

@@ -38,6 +38,29 @@ describe("isValidTransition", () => {
     expect(isValidTransition("prototype_ready", "approved_for_proposal")).toBe(true);
   });
 
+  // ADR-028 D7 — D-upstream wire prototype_shared transitions.
+  it("allows prototype_ready → prototype_shared (D-upstream wire)", () => {
+    expect(isValidTransition("prototype_ready", "prototype_shared")).toBe(true);
+  });
+
+  it("allows prototype_shared → revision_requested", () => {
+    expect(isValidTransition("prototype_shared", "revision_requested")).toBe(true);
+  });
+
+  it("allows prototype_shared → approved_for_proposal (legacy fallthrough)", () => {
+    expect(isValidTransition("prototype_shared", "approved_for_proposal")).toBe(true);
+  });
+
+  it("blocks prototype_shared → prototype_ready (no auto-revert)", () => {
+    // Explicit revision must go through revision_requested; the seller cannot
+    // silently undo a share by going backwards.
+    expect(isValidTransition("prototype_shared", "prototype_ready")).toBe(false);
+  });
+
+  it("blocks prototype_shared → proposal_sent (skip approved)", () => {
+    expect(isValidTransition("prototype_shared", "proposal_sent")).toBe(false);
+  });
+
   it("allows revision_requested → prototype_ready (correction failure fallback)", () => {
     expect(isValidTransition("revision_requested", "prototype_ready")).toBe(true);
   });
@@ -73,8 +96,9 @@ describe("isValidTransition", () => {
   it("blocks converted → anything (terminal)", () => {
     const allStatuses: StudioStatus[] = [
       "intake", "clarifying", "generating_prototype", "prototype_ready",
-      "revision_requested", "revision_applied", "approved_for_proposal",
-      "proposal_pending_review", "proposal_sent", "converted",
+      "revision_requested", "revision_applied", "prototype_shared",
+      "approved_for_proposal", "proposal_pending_review", "proposal_sent",
+      "converted",
     ];
     for (const s of allStatuses) {
       expect(isValidTransition("converted", s)).toBe(false);
@@ -117,6 +141,7 @@ describe("canReceiveMessage", () => {
     expect(canReceiveMessage("intake")).toBe(true);
     expect(canReceiveMessage("clarifying")).toBe(true);
     expect(canReceiveMessage("prototype_ready")).toBe(true);
+    expect(canReceiveMessage("prototype_shared")).toBe(true);
     expect(canReceiveMessage("approved_for_proposal")).toBe(true);
   });
 

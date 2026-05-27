@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { StudioShell } from "@/components/maxwell/studio-shell";
 import { buildSignInHref } from "@/lib/auth/redirect";
+import { isPrototipoDecisionRouteEnabled } from "@/lib/maxwell/prototipo-route-flag";
 
 export const metadata: Metadata = {
   title: "Maxwell Studio — Noon",
@@ -44,6 +45,8 @@ export default async function MaxwellStudioPage({ params, searchParams }: Props)
       initialPrompt={trimmedPrompt}
       initialSessionId={session_id}
       viewerEmail={viewerEmail}
+      locale={locale}
+      shareEnabled={isPrototipoDecisionRouteEnabled()}
     />
   );
 }
