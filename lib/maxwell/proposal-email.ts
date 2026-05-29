@@ -114,3 +114,81 @@ export async function sendProposalEmail(input: SendProposalEmailInput): Promise<
     ],
   });
 }
+
+/**
+ * The decline email sent when a PM/admin rejects OR cancels a proposal in
+ * the Noon App (the two share one email — handoff 2026-05-29 Decision B).
+ * Deliberately minimal: a respectful "we won't move forward" with the
+ * reply-to address as the only path back. There is NO public URL / CTA —
+ * the proposal is `expired` and its public page is closed. Mirrors the
+ * structure of `sendProposalEmail` and uses the same shared Resend
+ * primitives. Ungated, consistent with the live approval email (§6).
+ *
+ * Note: `changes_requested` deliberately does NOT send any email — it is an
+ * internal back-to-the-seller state the client never sees (Decision A).
+ */
+export type SendProposalRejectedEmailInput = {
+  proposalId: string;
+  versionNumber: number;
+  to: string;
+  projectTitle: string;
+};
+
+function buildProposalRejectedEmailSubject(projectTitle: string): string {
+  return `Update on your Noon proposal${projectTitle ? ` — ${projectTitle}` : ""}`;
+}
+
+function buildProposalRejectedEmailText(input: SendProposalRejectedEmailInput): string {
+  return [
+    "Thank you for your interest in working with Noon.",
+    "",
+    `After review, we won't be moving forward with this proposal${
+      input.projectTitle ? ` for ${input.projectTitle}` : ""
+    } at this time.`,
+    "",
+    "If you'd like to discuss alternatives or revisit this in the future, just reply to this email — the Noon team is happy to help.",
+  ].join("\n");
+}
+
+function buildProposalRejectedEmailHtml(input: SendProposalRejectedEmailInput): string {
+  const projectTitle = escapeHtml(input.projectTitle);
+  const forProject = input.projectTitle ? ` for <strong>${projectTitle}</strong>` : "";
+
+  return `
+    <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
+      <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">
+        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">Noon proposal</p>
+        <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Update on your proposal</h1>
+        <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
+          Thank you for your interest in working with Noon.
+        </p>
+        <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
+          After review, we won't be moving forward with this proposal${forProject} at this time.
+        </p>
+        <p style="margin:0; font-size:14px; line-height:1.6; color:#6a6057;">
+          If you'd like to discuss alternatives or revisit this in the future, just reply to this email — the Noon team is happy to help.
+        </p>
+      </div>
+    </div>
+  `.trim();
+}
+
+export async function sendProposalRejectedEmail(
+  input: SendProposalRejectedEmailInput,
+): Promise<ProposalEmailResult> {
+  const config = getResendConfig();
+
+  return sendViaResend({
+    config,
+    to: input.to,
+    subject: buildProposalRejectedEmailSubject(input.projectTitle),
+    html: buildProposalRejectedEmailHtml(input),
+    text: buildProposalRejectedEmailText(input),
+    idempotencyKey: `maxwell-proposal-rejected-${input.proposalId}`,
+    tags: [
+      { name: "flow", value: "maxwell_proposal_rejected" },
+      { name: "proposal_id", value: input.proposalId },
+      { name: "proposal_version", value: String(input.versionNumber) },
+    ],
+  });
+}

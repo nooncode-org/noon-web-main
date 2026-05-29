@@ -11,6 +11,7 @@ import {
   ProposalEmailConfigurationError,
   ProposalEmailSendError,
   sendProposalEmail,
+  sendProposalRejectedEmail,
 } from "@/lib/maxwell/proposal-email";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
 import { log } from "@/lib/server/logger";
@@ -239,6 +240,59 @@ export async function POST(request: Request) {
       actor: "noon-app",
       notes: "Noon App PM closed this proposal before website publication.",
     });
+
+    // Send the client decline email. Both `rejected` and `cancelled` reach
+    // this branch (approved / changes_requested return earlier), and per the
+    // 2026-05-29 handoff Decision B they share one decline email. Mirrors the
+    // approved branch's contract: wrap in try/catch, audit success/failure,
+    // and NEVER let an email error roll back the decision (the proposal is
+    // already `expired`; a failed email is notification debt, not a decision
+    // failure). The early-return above on already-`expired` proposals plus the
+    // Resend idempotency key keep this from re-firing on webhook retry.
+    const recipient = proposal.deliveryRecipient ?? session.ownerEmail;
+    if (recipient) {
+      try {
+        const emailResult = await sendProposalRejectedEmail({
+          proposalId: proposal.id,
+          versionNumber: updated.versionNumber ?? proposal.versionNumber,
+          to: recipient,
+          projectTitle:
+            session.goalSummary ??
+            session.initialPrompt ??
+            `Proposal ${proposal.id}`,
+        });
+
+        await appendProposalReviewEvent({
+          proposalRequestId: proposal.id,
+          action: "sent",
+          actor: "noon-app",
+          notes: `Decline email delivered to ${recipient} via ${emailResult.provider} (${emailResult.messageId}).`,
+        });
+      } catch (error) {
+        await appendProposalReviewEvent({
+          proposalRequestId: proposal.id,
+          action: "delivery_failed",
+          actor: "noon-app",
+          notes:
+            error instanceof ProposalEmailConfigurationError ||
+            error instanceof ProposalEmailSendError
+              ? error.message
+              : "Proposal decline email send failed after Noon App rejection/cancellation.",
+        });
+        log.error("integrations.noon-app.proposal-review-decision", error, {
+          phase: "proposal_decline_email_send",
+          proposalId: proposal.id,
+        });
+      }
+    } else {
+      await appendProposalReviewEvent({
+        proposalRequestId: proposal.id,
+        action: "delivery_failed",
+        actor: "noon-app",
+        notes:
+          "Proposal decline email skipped: no delivery recipient resolved (deliveryRecipient and ownerEmail both empty).",
+      });
+    }
 
     return NextResponse.json({
       message: "Proposal closed by Noon App before website publication.",

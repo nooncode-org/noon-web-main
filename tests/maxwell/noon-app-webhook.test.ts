@@ -37,7 +37,31 @@ vi.mock("@/lib/maxwell/public-url", () => ({
   ),
 }));
 
+// Mock the email senders so the receiver tests can assert which one fired
+// without hitting Resend. The error classes are re-created locally because
+// the route pattern-matches on them (`error instanceof ...`).
+vi.mock("@/lib/maxwell/proposal-email", () => {
+  class ProposalEmailConfigurationError extends Error {}
+  class ProposalEmailSendError extends Error {}
+  return {
+    ProposalEmailConfigurationError,
+    ProposalEmailSendError,
+    sendProposalEmail: vi.fn(async () => ({
+      provider: "resend",
+      messageId: "email_approved",
+    })),
+    sendProposalRejectedEmail: vi.fn(async () => ({
+      provider: "resend",
+      messageId: "email_decline",
+    })),
+  };
+});
+
 import * as repos from "@/lib/maxwell/repositories";
+import {
+  sendProposalEmail,
+  sendProposalRejectedEmail,
+} from "@/lib/maxwell/proposal-email";
 import type { ProposalRequest, StudioSession } from "@/lib/maxwell/repositories";
 import { POST } from "@/app/api/integrations/noon-app/proposal-review-decision/route";
 
@@ -544,5 +568,115 @@ describe("Noon App webhook — rejected / cancelled decisions", () => {
 
     expect(res.status).toBe(200);
     expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// Decline emails on rejected / cancelled (handoff 2026-05-29, Decision A/B)
+// ============================================================================
+
+describe("Noon App webhook — decline emails", () => {
+  it("sends ONE decline email on 'rejected' and audits it as delivered", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({ ...basePayload, decision: "rejected" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalRejectedEmail).toHaveBeenCalledTimes(1);
+    expect(sendProposalRejectedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        proposalId: "proposal-1",
+        to: "owner@noon.dev",
+        // session.goalSummary is null, so it falls back to initialPrompt.
+        projectTitle: "Build a thing",
+      }),
+    );
+    // changes_requested / approved sender must NOT fire on a rejection.
+    expect(sendProposalEmail).not.toHaveBeenCalled();
+    expect(repos.appendProposalReviewEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "sent", actor: "noon-app" }),
+    );
+  });
+
+  it("sends the SAME decline email on 'cancelled' (Decision B)", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({ ...basePayload, decision: "cancelled" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalRejectedEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT send any email on 'changes_requested' (Decision A)", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "changes_requested",
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
+    expect(sendProposalEmail).not.toHaveBeenCalled();
+  });
+
+  it("does NOT block the 200 / status transition when the email fails", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(sendProposalRejectedEmail).mockRejectedValueOnce(
+      new Error("resend exploded"),
+    );
+
+    const req = buildSignedRequest({ ...basePayload, decision: "rejected" });
+    const res = await POST(req);
+
+    // The decision still applied and the response is still 200.
+    expect(res.status).toBe(200);
+    expect(repos.updateProposalRequestStatus).toHaveBeenCalledWith(
+      "proposal-1",
+      "expired",
+      expect.objectContaining({ reviewerId: "noon-app" }),
+    );
+    // The failure is recorded as a delivery_failed audit event, not swallowed.
+    expect(repos.appendProposalReviewEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "delivery_failed", actor: "noon-app" }),
+    );
+  });
+
+  it("skips the email and audits delivery_failed when no recipient resolves", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(
+      fakeProposal({ deliveryRecipient: null }),
+    );
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ ownerEmail: "" }),
+    );
+
+    const req = buildSignedRequest({ ...basePayload, decision: "rejected" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
+    expect(repos.appendProposalReviewEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "delivery_failed", actor: "noon-app" }),
+    );
+  });
+
+  it("does NOT re-send on replay of an already-'expired' proposal", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(
+      fakeProposal({ status: "expired" }),
+    );
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({ ...basePayload, decision: "rejected" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
   });
 });
