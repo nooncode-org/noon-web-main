@@ -25,6 +25,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   EmailConfigurationError,
+  EmailSendError,
   isLifecycleEmailsReady,
   sendPaymentReceivedEmail,
   sendWorkspaceReadyEmail,
@@ -88,7 +89,14 @@ describe("lifecycle email gating (MAXWELL_LIFECYCLE_EMAILS)", () => {
     vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
     expect(isLifecycleEmailsReady()).toBe(true);
 
+    // Resend transport missing → not ready, even with the gate open.
     vi.stubEnv("RESEND_API_KEY", "");
+    expect(isLifecycleEmailsReady()).toBe(false);
+
+    // Resend configured but the lifecycle gate is off → still not ready.
+    // (The other branch of the AND: gate decides independently of transport.)
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "");
     expect(isLifecycleEmailsReady()).toBe(false);
   });
 
@@ -104,6 +112,24 @@ describe("lifecycle email gating (MAXWELL_LIFECYCLE_EMAILS)", () => {
         projectTitle: "Acme",
         amount: 250,
         currency: "USD",
+      }),
+    ).rejects.toBeInstanceOf(EmailConfigurationError);
+  });
+
+  it("throws EmailConfigurationError on workspace-ready when gate is open but Resend creds missing", async () => {
+    // Symmetry with the payment-received case above: the workspace
+    // sender must also fail LOUD (not silently skip) when the gate is
+    // flipped on without the Resend transport configured.
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "1");
+    vi.stubEnv("RESEND_API_KEY", "");
+    vi.stubEnv("MAIL_FROM", "");
+
+    await expect(
+      sendWorkspaceReadyEmail({
+        workspaceId: "ws-1",
+        to: "client@example.com",
+        projectTitle: "Acme",
+        workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
       }),
     ).rejects.toBeInstanceOf(EmailConfigurationError);
   });
@@ -236,6 +262,56 @@ describe("sendPaymentReceivedEmail", () => {
     // The contract: it must NOT throw, and the amount must be present.
     expect(payload.text).toMatch(/XYZ.*10\.00|10\.00.*XYZ/);
   });
+
+  it("includes the workspace CTA but omits the reference row when only the URL is present", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_pay_mix1" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendPaymentReceivedEmail({
+      paymentEventId: "evt-mix1",
+      to: "client@example.com",
+      projectTitle: "Acme",
+      amount: 100,
+      currency: "USD",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
+      // paymentReference intentionally absent
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+    expect(payload.html).toContain("Open your workspace");
+    expect(payload.html).not.toContain("Reference:");
+    expect(payload.text).toContain("Open your workspace");
+    expect(payload.text).not.toContain("Reference:");
+  });
+
+  it("includes the reference row but omits the workspace CTA when only the reference is present", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_pay_mix2" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendPaymentReceivedEmail({
+      paymentEventId: "evt-mix2",
+      to: "client@example.com",
+      projectTitle: "Acme",
+      amount: 100,
+      currency: "USD",
+      paymentReference: "pi_ref_only",
+      // workspaceUrl intentionally absent
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+    expect(payload.html).toContain("pi_ref_only");
+    expect(payload.html).not.toContain("Open your workspace");
+    expect(payload.text).toContain("Reference: pi_ref_only");
+    expect(payload.text).not.toContain("Open your workspace");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -303,5 +379,78 @@ describe("sendWorkspaceReadyEmail", () => {
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const payload = JSON.parse(String(init.body)) as { html: string };
     expect(payload.html).toContain("Bobby &quot;&gt; Tables");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Resend transport failures — both senders surface EmailSendError
+// ---------------------------------------------------------------------------
+//
+// The gate is open and Resend is configured, so the senders reach the
+// shared `sendViaResend` transport. A non-2xx response or a 2xx without
+// a message id must throw `EmailSendError` so the caller's try/catch can
+// log + (in the wiring) swallow it without confusing it for a config
+// problem.
+
+describe("lifecycle senders surface EmailSendError on transport failure", () => {
+  beforeEach(() => {
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "1");
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+  });
+
+  it("payment-received throws EmailSendError when Resend responds non-2xx", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      text: async () => "service unavailable",
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      sendPaymentReceivedEmail({
+        paymentEventId: "evt-fail",
+        to: "client@example.com",
+        projectTitle: "Acme",
+        amount: 1,
+        currency: "USD",
+      }),
+    ).rejects.toBeInstanceOf(EmailSendError);
+  });
+
+  it("payment-received throws EmailSendError when Resend returns 2xx without an id", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({}), // no `id`
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      sendPaymentReceivedEmail({
+        paymentEventId: "evt-noid",
+        to: "client@example.com",
+        projectTitle: "Acme",
+        amount: 1,
+        currency: "USD",
+      }),
+    ).rejects.toBeInstanceOf(EmailSendError);
+  });
+
+  it("workspace-ready throws EmailSendError when Resend responds non-2xx", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: async () => "boom",
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      sendWorkspaceReadyEmail({
+        workspaceId: "ws-fail",
+        to: "client@example.com",
+        projectTitle: "Acme",
+        workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
+      }),
+    ).rejects.toBeInstanceOf(EmailSendError);
   });
 });
