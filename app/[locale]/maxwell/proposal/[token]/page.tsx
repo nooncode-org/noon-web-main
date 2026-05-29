@@ -43,6 +43,7 @@ function formatDate(iso: string) {
 
 type Props = {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 };
 
 /**
@@ -67,8 +68,11 @@ async function resolveRscClientIdentity(): Promise<string> {
   return "anonymous";
 }
 
-export default async function PublicProposalPage({ params }: Props) {
+export default async function PublicProposalPage({ params, searchParams }: Props) {
   const { token } = await params;
+  const { checkout } = await searchParams;
+  const checkoutResult =
+    checkout === "success" ? "success" : checkout === "cancelled" ? "cancelled" : null;
 
   // B19 — Capture client hints once at the top so every exit path (rate-limit
   // block, unknown token, success) can audit consistently. The headers() call
@@ -173,6 +177,7 @@ export default async function PublicProposalPage({ params }: Props) {
           status={proposal.status}
           approvedAmountUsd={proposal.approvedAmountUsd}
           approvedCurrency={proposal.approvedCurrency}
+          checkoutResult={checkoutResult}
         />
 
         <section className="rounded-2xl border border-border bg-card p-6">
