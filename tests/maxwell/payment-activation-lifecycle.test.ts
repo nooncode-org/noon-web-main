@@ -109,7 +109,7 @@ vi.mock("@/lib/server/logger", () => ({
 
 import * as repos from "@/lib/maxwell/repositories";
 import * as emails from "@/lib/maxwell/lifecycle-emails";
-import { confirmProposalPayment } from "@/lib/maxwell/payment-activation";
+import { confirmProposalPayment, confirmSessionPayment } from "@/lib/maxwell/payment-activation";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -491,5 +491,65 @@ describe("confirmProposalPayment — gate-skipped senders are tolerated", () => 
     // dormant from logs.
     expect(emails.sendPaymentReceivedEmail).toHaveBeenCalledTimes(1);
     expect(emails.sendWorkspaceReadyEmail).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Amount / currency defaults (legacy payment_event rows)
+// ---------------------------------------------------------------------------
+//
+// `sendLifecycleEmailsForPayment` reads `paymentEvent.amountUsd ?? 0` and
+// `paymentEvent.currency ?? "USD"`. Legacy events (pre-B10) may carry
+// null in those columns; the wiring must still produce a valid B8 #2
+// payload rather than passing null/undefined into the template.
+
+describe("confirmProposalPayment — B8 #2 amount/currency defaults", () => {
+  it("defaults amount to 0 and currency to USD when the payment_event has nulls", async () => {
+    vi.mocked(repos.appendPaymentEvent).mockResolvedValue(
+      fakePaymentEvent({ amountUsd: null, currency: null }),
+    );
+
+    await confirmProposalPayment({
+      proposalRequestId: "proposal-1",
+      actor: "stripe-webhook",
+      provider: "stripe",
+      providerEventId: "stripe_evt_null_amount",
+      paidAmountMinor: 125000,
+      paidCurrency: "USD",
+    });
+    await flushFireAndForget();
+
+    expect(emails.sendPaymentReceivedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: 0, currency: "USD" }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// confirmSessionPayment delegates through confirmProposalPayment
+// ---------------------------------------------------------------------------
+//
+// The route's `confirm_payment` action calls `confirmSessionPayment`,
+// which resolves the latest proposal and forwards to
+// `confirmProposalPayment`. The lifecycle emails must fire on this path
+// too — not only on the direct/Stripe path.
+
+describe("confirmSessionPayment — B8 #2/#3 wiring", () => {
+  it("fires both lifecycle emails via the delegated activation", async () => {
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValue(fakeProposal());
+
+    const result = await confirmSessionPayment({
+      sessionId: "session-1",
+      actor: "ops@noon.dev",
+      paymentReference: "manual-confirm-1",
+    });
+    await flushFireAndForget();
+
+    expect(result.idempotent).toBe(false);
+    expect(emails.sendPaymentReceivedEmail).toHaveBeenCalledTimes(1);
+    expect(emails.sendWorkspaceReadyEmail).toHaveBeenCalledTimes(1);
+    expect(emails.sendPaymentReceivedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: "client@noon.dev" }),
+    );
   });
 });
