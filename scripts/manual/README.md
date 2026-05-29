@@ -2,6 +2,11 @@
 
 Operator scripts for ad-hoc smoke testing of external dependencies. **Not part of the test suite** (`npm test` does not run these). They live here, separate from `tests/`, to avoid being mistaken for unit/integration tests.
 
+> For ESM (`.mjs`) operator/CI scripts at the repo's `scripts/` root (including
+> the `send-test-*.mjs` email-preview tools), see [`../README.md`](../README.md).
+> Those are linted as part of `eslint .`; the CommonJS scripts in **this** folder
+> are excluded from ESLint.
+
 ## How to run
 
 All scripts read credentials from environment variables. The simplest way is to use Node.js's `--env-file` flag (requires Node 20.6+):
