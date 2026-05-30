@@ -8,6 +8,7 @@ import { StudioPreviewPane } from "./studio-preview-pane";
 import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
+import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/studio/_actions/share-prototype";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
@@ -354,7 +355,18 @@ export function StudioShell({
       };
 
       setSessionId(data.session.id);
-      setPhase(data.session.status);
+      // Map orphaned in-flight sessions (the user navigated away mid-generation,
+      // so this client is no longer polling) to a terminal view instead of an
+      // infinite "Building prototype..." spinner. See resolveRehydratedStudioView.
+      const rehydratedView = resolveRehydratedStudioView(
+        data.session.status,
+        data.versions.length,
+      );
+      setPhase(rehydratedView.phase);
+      // Set explicitly (not carried over) so switching away from a failed/
+      // generating session into a healthy one clears the stale state too.
+      setPrototypeFailed(rehydratedView.prototypeFailed);
+      setPollingStartedAt(null);
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
