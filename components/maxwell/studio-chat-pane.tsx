@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   AlertCircle,
   ArrowRight,
@@ -14,6 +15,7 @@ import {
   Square,
   ThumbsDown,
   ThumbsUp,
+  User,
   X,
 } from "lucide-react";
 import { StudioThinkingBlock } from "./studio-thinking-block";
@@ -241,6 +243,28 @@ function ErrorNotice({ content }: { content: string }) {
     <div className="flex max-w-[70ch] items-center gap-2 text-xs text-muted-foreground">
       <AlertCircle className="h-3.5 w-3.5 shrink-0" />
       <span>{content}</span>
+    </div>
+  );
+}
+
+/**
+ * "Contact an agent" notice — used when the prototype quota is exhausted (403
+ * with contact_agent). Renders the server copy plus a real link button instead
+ * of dumping the contact URL as raw text, and without the build-steps checklist
+ * that `StudioActivityBlock` would draw. Mirrors the "Talk to agent" button in
+ * <StudioProposalCta>.
+ */
+function AgentCtaNotice({ content, href }: { content: string; href: string }) {
+  return (
+    <div className="max-w-[70ch] space-y-2.5">
+      <p className="whitespace-pre-wrap text-[13px] leading-6 text-foreground/90">{content}</p>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      >
+        <User className="h-3.5 w-3.5" />
+        Talk to agent
+      </Link>
     </div>
   );
 }
@@ -487,6 +511,15 @@ export function StudioChatPane({
             if (msg.role === "user") return <UserMessage key={messageId} content={msg.content} />;
             if (msg.type === "thinking") return <StudioThinkingBlock key={messageId} content={msg.content} />;
             if (msg.type === "error") return <ErrorNotice key={messageId} content={msg.content} />;
+            if (msg.type === "agent_cta") {
+              return (
+                <AgentCtaNotice
+                  key={messageId}
+                  content={msg.content}
+                  href={msg.agentHref ?? agentHref}
+                />
+              );
+            }
             if (msg.type === "system_event") {
               return <StudioActivityBlock key={messageId} content={msg.content} phase={phase} />;
             }

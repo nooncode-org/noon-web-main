@@ -19,10 +19,16 @@ export type ChatMessage = {
   id?: string;
   role: "user" | "assistant";
   content: string;
-  type?: "chat" | "thinking" | "system_event" | "error";
+  type?: "chat" | "thinking" | "system_event" | "error" | "agent_cta";
   createdAt?: string;
   durationMs?: number;
   feedback?: MessageFeedback | null;
+  /**
+   * Contact-an-agent link for `type: "agent_cta"` notices (e.g. the prototype
+   * quota-exhausted 403). Rendered as a button by `<StudioChatPane>`, never as
+   * raw URL text. Client-ephemeral — these notices are not persisted.
+   */
+  agentHref?: string;
 };
 
 export type MessageFeedback = "up" | "down";
@@ -643,7 +649,8 @@ export function StudioShell({
           (m) =>
             m.type !== "thinking" &&
             m.type !== "system_event" &&
-            m.type !== "error",
+            m.type !== "error" &&
+            m.type !== "agent_cta",
         )
         .slice(-50)
         .map((m) => ({ role: m.role, content: m.content, type: m.type }));
@@ -684,20 +691,18 @@ export function StudioShell({
         const showAgent = Boolean(data.contact_agent);
         setMessages((prev) => [
           ...prev,
+          // When quota is exhausted (contact_agent) we render a single
+          // `agent_cta` notice: the server copy + a real "Talk to agent"
+          // button. Previously this used `system_event`, which both showed the
+          // contact URL as raw text and drew the misleading build-steps
+          // checklist (Structuring/Preparing/Generating). Plain failures
+          // without an agent path stay as a muted `error` notice.
           createMessage({
             role: "assistant",
             content: msg,
-            type: showAgent ? "system_event" : "error",
+            type: showAgent ? "agent_cta" : "error",
+            ...(showAgent ? { agentHref: quotaAgentHref } : {}),
           }),
-          ...(showAgent
-            ? [
-                createMessage({
-                  role: "assistant",
-                  content: `Talk with a Noon agent: ${quotaAgentHref}`,
-                  type: "system_event",
-                }),
-              ]
-            : []),
         ]);
         return;
       }
