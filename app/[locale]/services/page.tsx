@@ -4,15 +4,14 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRight, MessageSquare, FileSearch, Rocket, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PageSection } from "@/app/_components/site/page-section";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { IndustriesSection } from "@/components/sections/industries-section";
-import { ProcessTimeline } from "@/components/sections/process-timeline";
+import { PipelineShowcase } from "@/components/sections/pipeline";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -343,46 +342,8 @@ export default function ServicesPage() {
         </div>
       </PageSection>
 
-      {/* Enhanced: Industries We Serve section */}
-      <IndustriesSection
-        title="Industries We Serve"
-        subtitle="Delivering tailored solutions across sectors"
-        className="bg-background"
-        columns={5}
-      />
-
-      {/* Enhanced: How We Deliver process timeline */}
-      <ProcessTimeline
-        title="How We Deliver"
-        subtitle="Our streamlined process"
-        className="bg-secondary/20"
-        steps={[
-          {
-            number: "01",
-            title: "Discovery",
-            description: "We start by understanding your business context, constraints, and objectives through collaborative sessions.",
-            icon: MessageSquare,
-          },
-          {
-            number: "02",
-            title: "Scope & Plan",
-            description: "Define clear deliverables, milestones, and technical architecture tailored to your specific needs.",
-            icon: FileSearch,
-          },
-          {
-            number: "03",
-            title: "Build & Iterate",
-            description: "Development in focused sprints with continuous feedback loops and transparent progress updates.",
-            icon: Rocket,
-          },
-          {
-            number: "04",
-            title: "Deliver & Support",
-            description: "Production deployment with documentation, training, and ongoing support options.",
-            icon: CheckCircle2,
-          },
-        ]}
-      />
+      {/* Premium: The Noon Pipeline - Interactive visualization */}
+      <PipelineShowcase />
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
