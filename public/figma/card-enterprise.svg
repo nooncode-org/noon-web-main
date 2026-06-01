@@ -1,0 +1,23 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.4">
+<path d="M45.6 26C45.6 27.3246 46.6754 28.4 48 28.4C49.3246 28.4 50.4 27.3246 50.4 26C50.4 24.6754 49.3246 23.6 48 23.6C46.6754 23.6 45.6 24.6754 45.6 26Z" fill="#1200C5"/>
+<path d="M48 48L76 62L48 76L20 62L48 48Z" fill="#050505"/>
+<path d="M48 48L76 62L48 76L20 62L48 48" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M20 62V70L48 84V76L20 62Z" fill="#020202"/>
+<path d="M20 62V70L48 84V76L20 62" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M76 62V70L48 84V76L76 62Z" fill="#020202"/>
+<path d="M76 62V70L48 84V76L76 62" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M48 30L76 44L48 58L20 44L48 30Z" fill="#050505"/>
+<path d="M48 30L76 44L48 58L20 44L48 30" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M20 44V52L48 66V58L20 44Z" fill="#020202"/>
+<path d="M20 44V52L48 66V58L20 44" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M76 44V52L48 66V58L76 44Z" fill="#020202"/>
+<path d="M76 44V52L48 66V58L76 44" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M48 12L76 26L48 40L20 26L48 12Z" fill="#050505"/>
+<path d="M48 12L76 26L48 40L20 26L48 12" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M20 26V34L48 48V40L20 26Z" fill="#020202"/>
+<path d="M20 26V34L48 48V40L20 26" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M76 26V34L48 48V40L76 26Z" fill="#020202"/>
+<path d="M76 26V34L48 48V40L76 26" stroke="#E8EDF7" stroke-width="0.8" stroke-linejoin="round"/>
+</g>
+</svg>

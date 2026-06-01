@@ -50,7 +50,7 @@ function FAQItem({
   return (
     <div
       ref={itemRef}
-      className={`rounded-xl border transition-all duration-700 ${
+      className={`border transition-all duration-700 ${
         isOpen
           ? "border-foreground/12 bg-background/70 shadow-sm"
           : "border-foreground/6 bg-background/30 hover:border-foreground/10 hover:bg-background/50"
@@ -85,55 +85,60 @@ export function FaqSection() {
   return (
     <section id="faq" ref={sectionRef} className="relative py-20 lg:py-28">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-          {/* Left */}
-          <div>
-            <span className="mb-4 liquid-glass-pill inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: siteTones.brand.accent }} />
-              FAQ
-            </span>
-            <h2
-              className={`site-section-title mb-4 transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              Common questions
-            </h2>
-            <p
-              className={`site-section-copy mb-8 text-muted-foreground transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-              style={{ transitionDelay: "100ms" }}
-            >
-              Everything you need to know about working with Noon.
-              Can&apos;t find what you&apos;re looking for? Start a conversation with Maxwell.
-            </p>
-            <Link
-              href={siteRoutes.maxwellStudio}
-              className={`inline-flex items-center gap-2.5 rounded-full border border-foreground/10 bg-secondary/50 px-4 py-2 text-sm font-medium transition-all duration-300 hover:border-foreground/20 hover:bg-secondary ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-              style={{ transitionDelay: "200ms" }}
-            >
-              Ask Maxwell
-              <span
-                className="h-1.5 w-1.5 rounded-full animate-pulse"
-                style={{ backgroundColor: siteTones.gateway.accent }}
-              />
-            </Link>
-          </div>
+        {/* Figma /about + /contact FAQ — one large bordered card with a
+           vertical divider between the left aside (Pill + heading + Ask Maxwell
+           CTA) and the right list of expandable questions. */}
+        <div className="relative overflow-hidden border border-foreground/10 bg-card/40">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,_22rem)_1fr] lg:divide-x lg:divide-foreground/10">
+            {/* Left aside */}
+            <div className="p-6 lg:p-8">
+              <span className="mb-4 liquid-glass-pill inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: siteTones.brand.accent }} />
+                FAQ
+              </span>
+              <h2
+                className={`site-section-title mb-4 transition-all duration-700 ${
+                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+              >
+                Common questions
+              </h2>
+              <p
+                className={`site-section-copy mb-8 text-muted-foreground transition-all duration-700 ${
+                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+                style={{ transitionDelay: "100ms" }}
+              >
+                Everything you need to know about working with Noon.
+                Can&apos;t find what you&apos;re looking for? Start a conversation with Maxwell.
+              </p>
+              <Link
+                href={siteRoutes.maxwellStudio}
+                className={`inline-flex items-center gap-2.5 rounded-full border border-foreground/10 bg-secondary/50 px-4 py-2 text-sm font-medium transition-all duration-300 hover:border-foreground/20 hover:bg-secondary ${
+                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+                style={{ transitionDelay: "200ms" }}
+              >
+                Ask Maxwell
+                <span
+                  className="h-1.5 w-1.5 rounded-full animate-pulse"
+                  style={{ backgroundColor: siteTones.gateway.accent }}
+                />
+              </Link>
+            </div>
 
-          {/* Right: FAQ cards */}
-          <div className="flex flex-col gap-2">
-            {faqs.map((faq, index) => (
-              <FAQItem
-                key={faq.question}
-                faq={faq}
-                index={index}
-                isOpen={openIndex === index}
-                onToggle={() => setOpenIndex(openIndex === index ? null : index)}
-              />
-            ))}
+            {/* Right list */}
+            <div className="flex flex-col gap-2 p-6 lg:p-8">
+              {faqs.map((faq, index) => (
+                <FAQItem
+                  key={faq.question}
+                  faq={faq}
+                  index={index}
+                  isOpen={openIndex === index}
+                  onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

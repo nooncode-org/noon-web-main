@@ -248,7 +248,19 @@
   .font-display {
     font-family: var(--font-display);
   }
-  
+
+  /* Figma-port pages: headings use Instrument Sans (the exact typeface the
+     Figma design uses) instead of the site's default Instrument Serif display
+     face. Scoped to .figma-canon so the rest of the site keeps its serif
+     headings. Higher specificity than .site-*-title so it wins. */
+  .figma-canon :is(h1, h2, h3, h4, h5, h6),
+  .figma-canon .site-hero-title,
+  .figma-canon .site-section-title,
+  .figma-canon .site-card-title,
+  .figma-canon .font-display {
+    font-family: var(--font-instrument) !important;
+  }
+
   .text-stroke {
     -webkit-text-stroke: 1.5px currentColor;
     -webkit-text-fill-color: transparent;

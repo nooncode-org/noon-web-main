@@ -87,9 +87,18 @@ const nextConfig = {
     //   client-side telemetry (Sentry, etc.) is added later.
     // - img-src 'self' data: blob: https: → pragmatic for now (any HTTPS image source).
     //   Tighten to explicit hosts once external image references are catalogued.
+    // Dev only: Turbopack/React Fast Refresh require eval() in development.
+    // Production stays strict (no 'unsafe-eval'). Without this, the dev CSP
+    // blocks eval() → client JS fails → useRevealOnView leaves sections at
+    // opacity-0 (page appears blank).
+    const isDev = process.env.NODE_ENV !== "production";
+    const scriptSrc = isDev
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : "script-src 'self' 'unsafe-inline'";
+
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",

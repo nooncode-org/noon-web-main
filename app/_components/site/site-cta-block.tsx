@@ -30,7 +30,7 @@ export function SiteCtaBlock({
   const content = (
     <div
       className={cn(
-        "site-primary-action relative flex min-h-[168px] items-center justify-center overflow-hidden rounded-[9px] px-6 py-10 text-center sm:min-h-[176px] lg:px-12 lg:py-12",
+        "site-primary-action relative flex min-h-[168px] items-center justify-center overflow-hidden px-6 py-10 text-center sm:min-h-[176px] lg:px-12 lg:py-12",
       )}
     >
       <div
@@ -91,7 +91,7 @@ export function SiteCtaBlock({
         {blockHref ? (
           <Link
             href={blockHref}
-            className="group block rounded-[9px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {content}
           </Link>
