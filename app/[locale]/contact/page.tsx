@@ -16,6 +16,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
+import { ResponseTimeline } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -247,6 +248,34 @@ function ContactPageContent() {
           </div>
         </div>
       </section>
+
+      {/* Premium: Response Commitment timeline */}
+      <ResponseTimeline
+        title="Our Response Commitment"
+        subtitle="Transparent communication at every step"
+        steps={[
+          {
+            time: "< 2h",
+            title: "Acknowledgment",
+            description: "We confirm receipt of your inquiry within 2 business hours during working days. You'll know we received your message.",
+          },
+          {
+            time: "24h",
+            title: "Initial Review",
+            description: "Our team reviews your request and routes it to the appropriate specialist. Complex requests may require additional context.",
+          },
+          {
+            time: "48h",
+            title: "Detailed Response",
+            description: "You receive a substantive reply with next steps, clarifying questions, or a preliminary assessment of your project.",
+          },
+          {
+            time: "1 week",
+            title: "Discovery Call",
+            description: "For qualified projects, we schedule a discovery call to discuss requirements, constraints, and delivery expectations in depth.",
+          },
+        ]}
+      />
 
       <FaqSection />
 

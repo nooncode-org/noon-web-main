@@ -11,6 +11,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
+import { ComparisonShowcase } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -196,6 +197,34 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Premium: The Noon Difference - Comparison showcase */}
+      <ComparisonShowcase
+        title="Why Traditional Development Falls Short"
+        subtitle="See how Noon transforms the way software gets built"
+        items={[
+          {
+            label: "Requirements gathering",
+            traditional: "→ Weeks of meetings and documentation\n→ Scope creep and miscommunication\n→ Delayed project kickoff",
+            noon: "→ Maxwell analyzes your needs in real-time\n→ Generates technical spec automatically\n→ Start building within hours",
+          },
+          {
+            label: "Prototyping",
+            traditional: "→ Static mockups and wireframes\n→ Multiple revision cycles\n→ No working code until later phases",
+            noon: "→ Functional prototype in 24-48 hours\n→ Real code you can test and validate\n→ Iterate with actual software",
+          },
+          {
+            label: "Development",
+            traditional: "→ Manual coding from scratch\n→ Inconsistent quality across team\n→ Slow feedback loops",
+            noon: "→ AI-accelerated development pipeline\n→ Senior engineers validate every line\n→ Continuous delivery to production",
+          },
+          {
+            label: "Delivery",
+            traditional: "→ Big bang launches with high risk\n→ Last-minute bug fixes\n→ Handoff documentation gaps",
+            noon: "→ Incremental delivery you can track\n→ Production-ready from day one\n→ Full ownership of your code",
+          },
+        ]}
+      />
 
       {/* ===================================================================
           2.5 CONTACT NOON CTA — banner block con bg #131313 (custom, NO

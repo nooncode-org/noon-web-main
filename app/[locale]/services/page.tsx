@@ -11,6 +11,7 @@ import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
+import { PipelineShowcase } from "@/components/sections/pipeline";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -340,6 +341,9 @@ export default function ServicesPage() {
           ))}
         </div>
       </PageSection>
+
+      {/* Premium: The Noon Pipeline - Interactive visualization */}
+      <PipelineShowcase />
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
