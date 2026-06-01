@@ -181,16 +181,16 @@ export function ContactIntakeForm({
     >
       <form
         onSubmit={handleSubmit}
-        className="liquid-glass-card min-w-0 w-full rounded-[10px] p-5"
+        className="liquid-glass-card min-w-0 w-full rounded-none p-5"
       >
-        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-secondary/50 px-3 py-1 text-xs font-mono text-muted-foreground">
+        <span className="mb-5 inline-flex items-center gap-2 rounded-[8px] border border-foreground/10 bg-secondary/50 px-3 py-1 text-xs font-mono text-muted-foreground">
           <Sparkles className="h-3 w-3" style={{ color: siteTones.brand.accent }} />
           Structured inquiry
         </span>
 
         {submissionState === "success" && statusMessage ? (
           <div
-            className="mb-6 rounded-[10px] p-4"
+            className="mb-6 rounded-[8px] p-4"
             style={{
               border: `1px solid ${siteStatusTones.success.border}`,
               backgroundColor: siteStatusTones.success.surface,
@@ -208,7 +208,7 @@ export function ContactIntakeForm({
         ) : null}
 
         {submissionState === "error" && statusMessage ? (
-          <div className="mb-6 rounded-[10px] border border-destructive/20 bg-destructive/5 p-4" aria-live="polite">
+          <div className="mb-6 rounded-[8px] border border-destructive/20 bg-destructive/5 p-4" aria-live="polite">
             <p className="text-sm font-medium text-foreground">Something went wrong</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{statusMessage}</p>
           </div>
@@ -240,10 +240,13 @@ export function ContactIntakeForm({
         <div className="space-y-4">
           <section className="space-y-3">
             <div>
-              <p className="text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                1. Route
-              </p>
-              <p className="site-hero-copy mt-1 text-muted-foreground">
+              {/* Figma /contact form step indicator (01 Route / 02 Contact /
+                 03 Context) rendered as an outlined pill, replacing the plain
+                 mono text. */}
+              <span className="inline-flex items-center gap-2 rounded-[8px] border border-foreground/15 bg-secondary/40 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="font-medium text-foreground">01</span> Route
+              </span>
+              <p className="site-hero-copy mt-3 text-muted-foreground">
                 Choose the closest path. Noon can adjust it after review.
               </p>
             </div>
@@ -253,7 +256,7 @@ export function ContactIntakeForm({
                 <Select value={contactType} onValueChange={(value) => updateContactType(value as ContactTypeOption)}>
                   <SelectTrigger
                     id="contact-type"
-                    className="w-full rounded-[10px]"
+                    className="w-full rounded-[8px]"
                     aria-invalid={Boolean(fieldErrors.contactType?.length)}
                   >
                     <SelectValue />
@@ -276,7 +279,7 @@ export function ContactIntakeForm({
                 <Select value={inquiry} onValueChange={(value) => updateInquiry(value as ContactInquiryKey)}>
                   <SelectTrigger
                     id="contact-specific-inquiry"
-                    className="w-full rounded-[10px]"
+                    className="w-full rounded-[8px]"
                     aria-invalid={Boolean(fieldErrors.inquiry?.length)}
                   >
                     <SelectValue />
@@ -297,9 +300,9 @@ export function ContactIntakeForm({
           </section>
 
           <section className="space-y-3">
-            <p className="text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground">
-              2. Contact
-            </p>
+            <span className="inline-flex items-center gap-2 rounded-[8px] border border-foreground/15 bg-secondary/40 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="font-medium text-foreground">02</span> Contact
+            </span>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Full name</Label>
@@ -314,7 +317,7 @@ export function ContactIntakeForm({
                     clearSubmissionStatus();
                   }}
                   placeholder="Your full name"
-                  className="h-11 rounded-[10px]"
+                  className="h-11 rounded-[8px]"
                   aria-invalid={Boolean(fieldErrors.name?.length)}
                 />
                 {fieldErrors.name?.[0] ? (
@@ -336,7 +339,7 @@ export function ContactIntakeForm({
                     clearSubmissionStatus();
                   }}
                   placeholder="you@company.com"
-                  className="h-11 rounded-[10px]"
+                  className="h-11 rounded-[8px]"
                   aria-invalid={Boolean(fieldErrors.email?.length)}
                 />
                 {fieldErrors.email?.[0] ? (
@@ -348,10 +351,10 @@ export function ContactIntakeForm({
 
           <section className="space-y-3">
             <div>
-              <p className="text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                3. Request
-              </p>
-              <p className="site-hero-copy mt-1 text-muted-foreground">
+              <span className="inline-flex items-center gap-2 rounded-[8px] border border-foreground/15 bg-secondary/40 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="font-medium text-foreground">03</span> Context
+              </span>
+              <p className="site-hero-copy mt-3 text-muted-foreground">
                 Focus on the problem, outcome, and any deadline or constraint.
               </p>
             </div>
@@ -368,7 +371,7 @@ export function ContactIntakeForm({
                   clearSubmissionStatus();
                 }}
                 placeholder="Describe the business problem, the desired outcome, and the kind of software or support you need."
-                className="min-h-[118px] rounded-[10px] px-4 py-3 leading-relaxed lg:min-h-[126px]"
+                className="min-h-[118px] rounded-[8px] px-4 py-3 leading-relaxed lg:min-h-[126px]"
                 aria-invalid={Boolean(fieldErrors.brief?.length)}
               />
               {fieldErrors.brief?.[0] ? (
@@ -393,7 +396,7 @@ export function ContactIntakeForm({
         {showAdvancedOptions ? (
           <div
             id={advancedOptionsId}
-            className="mt-4 grid gap-4 rounded-[10px] border border-border bg-background/55 p-4 md:grid-cols-2"
+            className="mt-4 grid gap-4 rounded-[8px] border border-border bg-background/55 p-4 md:grid-cols-2"
           >
             <div className="space-y-2">
               <Label htmlFor="contact-budget">Budget range</Label>
@@ -408,7 +411,7 @@ export function ContactIntakeForm({
                   clearSubmissionStatus();
                 }}
                 placeholder="e.g. 15k-30k USD"
-                className="h-11 rounded-[10px]"
+                className="h-11 rounded-[8px]"
                 aria-invalid={Boolean(fieldErrors.budget?.length)}
               />
               {fieldErrors.budget?.[0] ? (
@@ -429,7 +432,7 @@ export function ContactIntakeForm({
                   clearSubmissionStatus();
                 }}
                 placeholder="e.g. This quarter"
-                className="h-11 rounded-[10px]"
+                className="h-11 rounded-[8px]"
                 aria-invalid={Boolean(fieldErrors.timeline?.length)}
               />
               {fieldErrors.timeline?.[0] ? (
@@ -448,18 +451,18 @@ export function ContactIntakeForm({
           >
             {submissionState === "loading" ? (
               <>
-                Sending inquiry
                 <LoaderCircle className="h-4 w-4 animate-spin" />
+                Sending inquiry
               </>
             ) : (
               <>
-                Send inquiry
                 <Mail className="h-4 w-4" />
+                Send inquiry
               </>
             )}
           </Button>
           {trimmedProjectBrief ? (
-            <Button asChild size="lg" variant="outline" className="h-11 rounded-full px-6 text-sm">
+            <Button asChild size="lg" variant="outline" className="h-11 rounded-[8px] px-6 text-sm">
               <Link href={maxwellHref}>
                 Continue with Maxwell
                 <ArrowRight className="h-4 w-4" />

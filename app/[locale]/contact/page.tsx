@@ -19,6 +19,12 @@ import { siteTones } from "@/lib/site-tones";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
+const OTHER_CHANNELS = [
+  { label: "LinkedIn", href: "https://www.linkedin.com" },
+  { label: "GitHub", href: "https://github.com" },
+  { label: "TikTok", href: "https://www.tiktok.com" },
+];
+
 function ContactProcessPanel({ responseTime }: { responseTime: string }) {
   const steps = [
     {
@@ -36,29 +42,52 @@ function ContactProcessPanel({ responseTime }: { responseTime: string }) {
   ];
 
   return (
-    <div className="liquid-glass-card rounded-[10px] p-5 lg:p-6">
-      <p className="mb-5 text-xs font-mono uppercase tracking-[0.14em] text-muted-foreground">
-        How it moves
-      </p>
-      <div className="space-y-4">
-        {steps.map((step, index) => (
-          <div key={step.label} className="grid grid-cols-[2rem_1fr] gap-3">
+    <div>
+      {/* Figma: "HOW IT MOVES" stepper card — all 3 steps share the same
+         outlined neutral chip (sandbox ContactAside.tsx has no brand fill on
+         step 1). Steps are separated by top borders only. */}
+      <div className="border border-foreground/10 bg-card/40 p-5 lg:p-6">
+        <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+          How it moves
+        </p>
+        <div className="mt-5">
+          {steps.map((step, index) => (
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-[8px] border text-xs font-mono"
-              style={{
-                borderColor: siteTones.brand.border,
-                backgroundColor: index === 0 ? siteTones.brand.accent : siteTones.brand.surface,
-                color: index === 0 ? siteTones.brand.contrast : siteTones.brand.accent,
-              }}
+              key={step.label}
+              className={`grid grid-cols-[1.75rem_1fr] gap-3 ${
+                index > 0 ? "mt-4 border-t border-foreground/10 pt-4" : ""
+              }`}
             >
-              {index + 1}
+              <div className="flex h-7 w-7 items-center justify-center border border-foreground/20 bg-transparent text-[12px] font-mono text-foreground">
+                {index + 1}
+              </div>
+              <div>
+                <p className="text-sm font-medium leading-tight text-foreground">{step.label}</p>
+                <p className="site-card-copy mt-1.5 text-muted-foreground">{step.description}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">{step.label}</p>
-              <p className="site-card-copy mt-1 text-muted-foreground">{step.description}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Figma: "OTHER CHANNELS" — mono eyebrow + inline links. */}
+      <div className="mt-6 border-t border-foreground/10 pt-6">
+        <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+          Other channels
+        </p>
+        <div className="mt-3.5 flex items-center gap-6">
+          {OTHER_CHANNELS.map((c) => (
+            <a
+              key={c.label}
+              href={c.href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:decoration-foreground"
+            >
+              {c.label}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -109,6 +138,8 @@ function ContactPageContent() {
 
   return (
     <SitePageFrame>
+      {/* figma-canon: Instrument Sans (the Figma typeface) on headings. */}
+      <div className="figma-canon">
       <section ref={headerRef} className="site-hero-section pb-4 lg:pb-5">
         <div className="site-shell">
           <div className="grid w-full items-start gap-8 lg:grid-cols-[minmax(0,420px)_820px] lg:justify-between lg:gap-10">
@@ -183,6 +214,40 @@ function ContactPageContent() {
         </div>
       </section>
 
+      {/* Pipeline stats band (Figma /contact frame) — at web-main scale.
+         Three left-aligned columns split by vertical dividers, per Figma. */}
+      <section className="site-section">
+        <div className="site-shell">
+          <div className="grid border border-foreground/10 bg-card/60 sm:grid-cols-3 sm:divide-x sm:divide-foreground/10">
+            {[
+              {
+                eyebrow: "Pipeline speed",
+                stat: "3x Faster",
+                copy: "Maxwell's orchestration (GPT-4 + V0 + Opus) accelerates the generation of functional bases.",
+              },
+              {
+                eyebrow: "Development",
+                stat: "0% No-Code.",
+                copy: "All software is real code, eliminating dependencies on limited and fragile platforms.",
+              },
+              {
+                eyebrow: "Validation",
+                stat: "100% Human QA.",
+                copy: "Each line of AI-generated code is validated and refined by senior engineers before deployment.",
+              },
+            ].map((s) => (
+              <div key={s.eyebrow} className="p-6 lg:p-7">
+                <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                  {s.eyebrow}
+                </p>
+                <p className="site-section-title mb-2">{s.stat}</p>
+                <p className="site-card-copy text-muted-foreground">{s.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <FaqSection />
 
       <SiteCtaBlock
@@ -190,6 +255,7 @@ function ContactPageContent() {
         blockHref={lp(siteRoutes.home)}
         className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
       />
+      </div>
     </SitePageFrame>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  ArrowDown,
   ArrowRight,
   Mic,
   Paperclip,
@@ -204,9 +205,13 @@ export function HeroSection() {
               </span>
             </div>
 
-            {/* Main headline */}
+            {/* Main headline — Instrument Sans (the Figma typeface), matching
+               the 4 ported pages instead of the site's default serif display. */}
             <div className="mb-4 lg:mb-5">
-              <h1 className="text-[1.35rem] sm:text-[1.6rem] lg:text-[clamp(1.6rem,2.5vw,2.15rem)] font-display leading-[1.1] tracking-tight text-center">
+              <h1
+                className="text-[1.35rem] sm:text-[1.6rem] lg:text-[clamp(1.6rem,2.5vw,2.15rem)] leading-[1.1] tracking-tight text-center"
+                style={{ fontFamily: "var(--font-instrument)" }}
+              >
                 {t("headline")}
               </h1>
             </div>
@@ -216,16 +221,17 @@ export function HeroSection() {
               <div className="relative pb-[28px]">
                 {/* Blue badge — behind card, aligned with card width */}
                 <div
-                  className="absolute inset-x-0 bottom-0 h-[34px] rounded-b-[9px] flex items-end justify-start px-3.5 pb-1 text-[13px] font-medium text-white"
+                  className="absolute inset-x-0 bottom-0 h-[34px] rounded-b-[9px] flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-white"
                   style={{ background: "#1200C5" }}
                 >
                   <span className="flex items-center gap-1.5">
                     {t("howItWorks")}
                     <Link
-                      href={`/${locale}${siteRoutes.howItWorksHref}`}
-                      className="underline underline-offset-2 hover:opacity-80 transition-opacity"
+                      href={`/${locale}${siteRoutes.templates}`}
+                      className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
                     >
                       {t("howItWorksLink")}
+                      <ArrowDown className="h-3.5 w-3.5" />
                     </Link>
                   </span>
                 </div>
@@ -250,10 +256,13 @@ export function HeroSection() {
                       aria-label={t("placeholder")}
                     />
                     {!inputValue && !isInputFocused && (
-                      <div className="absolute left-0 right-0 top-0 px-4 py-3 pointer-events-none overflow-hidden">
+                      // Sugerencia rotativa: matchea exactamente el font-size
+                      // y padding del textarea para que no haya salto visual
+                      // entre los estados default / focus / writing.
+                      <div className="absolute left-0 right-0 top-0 px-3 lg:px-3.5 py-1.5 pointer-events-none overflow-hidden">
                         <span
                           key={currentSuggestion}
-                          className="block w-full truncate whitespace-nowrap text-[13px] text-muted-foreground/45 animate-fade-in text-left"
+                          className="block w-full truncate whitespace-nowrap text-[16px] leading-relaxed lg:text-[14px] text-muted-foreground/45 animate-fade-in text-left"
                         >
                           {suggestions[currentSuggestion]?.prompt}
                         </span>

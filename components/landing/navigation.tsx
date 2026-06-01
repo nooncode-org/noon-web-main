@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut, PanelRight, X } from "lucide-react";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
@@ -33,13 +33,7 @@ export type NavigationProps = {
 };
 
 export function Navigation({ viewer = null }: NavigationProps = {}) {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
-  const frameRef = useRef<number | null>(null);
-  const isScrolledRef = useRef(false);
-  const lastScrollYRef = useRef(0);
-  const isHiddenRef = useRef(false);
   const pathname = usePathname();
   const params = useParams();
 
@@ -62,74 +56,17 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
   const isActiveLink = (matches: string[]) =>
     matches.some((route) => pathname === route || pathname.endsWith(route) || pathname.includes(`${route}/`));
 
-  useEffect(() => {
-    const updateScrollState = () => {
-      frameRef.current = null;
-
-      const nextIsScrolled = window.scrollY > 20;
-      const currentScrollY = window.scrollY;
-      const scrollDelta = currentScrollY - lastScrollYRef.current;
-
-      if (nextIsScrolled !== isScrolledRef.current) {
-        isScrolledRef.current = nextIsScrolled;
-        setIsScrolled(nextIsScrolled);
-      }
-
-      if (currentScrollY <= 20 || scrollDelta < -6) {
-        if (isHiddenRef.current) {
-          isHiddenRef.current = false;
-          setIsHidden(false);
-        }
-      } else {
-        const nextIsHidden = !isMobileMenuOpen && currentScrollY > 120 && scrollDelta > 6;
-        if (nextIsHidden !== isHiddenRef.current) {
-          isHiddenRef.current = nextIsHidden;
-          setIsHidden(nextIsHidden);
-        }
-      }
-
-      lastScrollYRef.current = currentScrollY;
-    };
-
-    const handleScroll = () => {
-      if (frameRef.current !== null) return;
-      frameRef.current = window.requestAnimationFrame(updateScrollState);
-    };
-
-    updateScrollState();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
-    };
-  }, [isMobileMenuOpen]);
-
   return (
     <>
-      <header
-        className={`fixed z-[60] transition-all duration-500 ${
-          isHidden && !isMobileMenuOpen ? "-translate-y-[140%] opacity-0" : "translate-y-0 opacity-100"
-        } ${
-          isScrolled
-            ? "top-3 left-3 right-3 md:top-5 md:left-5 md:right-5"
-            : "top-0 left-3 right-3 md:top-0 md:left-5 md:right-5"
-        }`}
-      >
-        <nav
-          className={`transition-all duration-500 ${
-            isScrolled || isMobileMenuOpen
-              ? "liquid-glass-nav mx-auto rounded-2xl max-w-[1200px] overflow-hidden"
-              : "bg-transparent w-full"
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between transition-all duration-500 ${
-              isScrolled ? "h-14 px-6 lg:px-8" : "h-11 px-0"
-            }`}
-          >
+      {/* Navbar fijo en estado inicial: ancho completo, sin transformación
+         al hacer scroll. Backdrop blur sutil + bg semitransparente para
+         enmascarar el contenido que pasa por detrás al scrollear (sin
+         volver al pill flotante anterior). */}
+      <header className="fixed top-0 left-3 right-3 z-[60] md:left-5 md:right-5">
+        <nav className="w-full bg-background/70 backdrop-blur-md">
+          <div className="flex h-11 items-center justify-between px-0">
             <Link href={localHref(siteRoutes.home)} className="flex items-center group">
-              <NoonLogo variant="wordmark" height={isScrolled ? 18 : 22} />
+              <NoonLogo variant="wordmark" height={22} />
             </Link>
 
             <div className="hidden md:flex items-center gap-12">
@@ -160,10 +97,8 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
                 <Button
                   asChild
                   size="sm"
-                  className={`transition-[background-color,box-shadow,height,padding,font-size] duration-300 ${
-                    isScrolled ? "px-4 h-8 text-xs" : "px-6"
-                  }`}
-                  style={{ borderRadius: "10px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
+                  className="px-6"
+                  style={{ borderRadius: "8px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
                 >
                   <Link href={localHref("/signin")}>Sign up</Link>
                 </Button>
