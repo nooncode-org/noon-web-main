@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Code2, Users, Zap, Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -11,6 +11,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
+import { StatsCounterSection } from "@/components/sections/stats-counter-section";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -196,6 +197,45 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Enhanced: By The Numbers stats section */}
+      <StatsCounterSection
+        title="By The Numbers"
+        subtitle="Our track record"
+        variant="cards"
+        columns={4}
+        className="bg-secondary/20"
+        stats={[
+          {
+            value: 50,
+            suffix: "+",
+            label: "Projects Delivered",
+            description: "Across multiple industries",
+            icon: Code2,
+          },
+          {
+            value: 98,
+            suffix: "%",
+            label: "Client Satisfaction",
+            description: "Based on project feedback",
+            icon: Users,
+          },
+          {
+            value: 3,
+            suffix: "x",
+            label: "Faster Delivery",
+            description: "With AI-powered workflows",
+            icon: Zap,
+          },
+          {
+            value: 12,
+            suffix: "+",
+            label: "Countries Served",
+            description: "Global reach, local expertise",
+            icon: Globe,
+          },
+        ]}
+      />
 
       {/* ===================================================================
           2.5 CONTACT NOON CTA — banner block con bg #131313 (custom, NO

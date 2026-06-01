@@ -1,16 +1,18 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutGrid, Filter } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
-import { templates } from "@/data/templates";
+import { templates, templateCategories } from "@/data/templates";
 import { siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explore-builds-section";
+import { StatsCounterSection } from "@/components/sections/stats-counter-section";
 
 const templateBrandTone = siteTones.brand;
 
@@ -28,7 +30,15 @@ export default function TemplatesPage() {
 
   const t = useTranslations("templates");
 
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+  const filteredTemplates = useMemo(() => {
+    if (!activeFilter) return templates;
+    return templates.filter((t) => t.category === activeFilter);
+  }, [activeFilter]);
+
   const { ref: headerRef, isVisible: headerVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
+  const { ref: filterRef, isVisible: filterVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
 
   return (
     <SitePageFrame>
@@ -73,23 +83,87 @@ export default function TemplatesPage() {
       {/* Templates by category */}
       <section className="site-section bg-secondary/30">
         <div className="site-shell">
+          {/* Enhanced: Category filter chips */}
+          <div
+            ref={filterRef}
+            className={`mb-8 transition-all duration-700 ${filterVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-mono uppercase tracking-[0.1em] text-muted-foreground">
+                Filter by category
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setActiveFilter(null)}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                  activeFilter === null
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background/60 text-foreground hover:border-primary/50 hover:bg-background"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                All
+              </button>
+              {templateCategories.map((category, index) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveFilter(category)}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                    activeFilter === category
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background/60 text-foreground hover:border-primary/50 hover:bg-background"
+                  }`}
+                  style={{
+                    transitionDelay: `${index * 30}ms`,
+                  }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mb-8 flex items-center justify-between">
             <h2 className="liquid-glass-pill inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: templateBrandTone.accent }} />
-              {t("allTemplates")}
+              {activeFilter || t("allTemplates")}
             </h2>
             <span className="text-xs font-mono" style={{ color: templateBrandTone.accent }}>
-              {templates.length} templates
+              {filteredTemplates.length} template{filteredTemplates.length !== 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {templates.map((template, index) => (
-              <AnimatedTemplateCard key={template.slug} template={template} index={index} />
+            {filteredTemplates.map((template, index) => (
+              <div
+                key={template.slug}
+                className="transition-all duration-500"
+                style={{
+                  animation: "reveal-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+                  animationDelay: `${index * 50}ms`,
+                  opacity: 0,
+                }}
+              >
+                <AnimatedTemplateCard template={template} index={index} />
+              </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Enhanced: Template stats */}
+      <StatsCounterSection
+        variant="inline"
+        className="bg-background"
+        stats={[
+          { value: templates.length, label: "Templates Available" },
+          { value: templateCategories.length, label: "Categories" },
+          { value: 100, suffix: "%", label: "Production Ready" },
+          { value: 24, suffix: "/7", label: "Support Available" },
+        ]}
+      />
 
       <SiteCtaBlock
         title={t("cta.headline")}

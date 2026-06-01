@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
+import { IndustriesSection } from "@/components/sections/industries-section";
+import { StatsCounterSection } from "@/components/sections/stats-counter-section";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -63,6 +65,81 @@ async function UpgradePageContent({ params, searchParams }: Props) {
 
         {sessions.length > 0 && <UpgradeSessionList sessions={sessions} />}
       </div>
+
+      {/* Enhanced: Visual process explanation */}
+      <div className="mx-auto mt-16 max-w-4xl">
+        <div className="mb-8 text-center">
+          <p className="site-meta-label mb-3 text-muted-foreground">How it works</p>
+          <h2 className="site-section-title">Three steps to a better website</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              step: "01",
+              title: "Scan",
+              description: "We analyze your live website for performance, accessibility, UI/UX issues, and conversion opportunities.",
+              gradient: "from-primary/20 to-primary/5",
+            },
+            {
+              step: "02",
+              title: "Diagnose",
+              description: "Maxwell identifies specific improvements with detailed recommendations and priority rankings.",
+              gradient: "from-primary/15 to-primary/5",
+            },
+            {
+              step: "03",
+              title: "Generate",
+              description: "Get a fully upgraded version of your site with all improvements applied, ready for review.",
+              gradient: "from-primary/10 to-primary/5",
+            },
+          ].map((item, index) => (
+            <div
+              key={item.step}
+              className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-6 transition-all duration-500 hover:border-primary/30 hover:bg-card"
+              style={{
+                animation: "reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+                animationDelay: `${index * 100}ms`,
+                opacity: 0,
+              }}
+            >
+              {/* Gradient background */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
+                aria-hidden="true"
+              />
+              <div className="relative">
+                <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-sm font-mono text-primary">
+                  {item.step}
+                </span>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Enhanced: Stats section */}
+      <div className="mt-16">
+        <StatsCounterSection
+          variant="inline"
+          stats={[
+            { value: 500, suffix: "+", label: "Sites Analyzed" },
+            { value: 95, suffix: "%", label: "Improvement Rate" },
+            { value: 3, suffix: "min", label: "Avg. Scan Time" },
+            { value: 40, suffix: "%", label: "Conversion Boost" },
+          ]}
+        />
+      </div>
+
+      {/* Enhanced: Industries served */}
+      <IndustriesSection
+        title="Built for Every Industry"
+        subtitle="Upgrade any website"
+        className="mt-8"
+        columns={5}
+        showAll={false}
+      />
     </section>
   );
 }

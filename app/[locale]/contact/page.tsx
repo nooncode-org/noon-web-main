@@ -4,6 +4,10 @@ import { Suspense } from "react";
 import {
   ArrowRight,
   Mail,
+  Clock,
+  MessageSquare,
+  FileCheck,
+  Handshake,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -16,6 +20,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
+import { ProcessTimeline } from "@/components/sections/process-timeline";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -247,6 +252,40 @@ function ContactPageContent() {
           </div>
         </div>
       </section>
+
+      {/* Enhanced: Response Commitment timeline */}
+      <ProcessTimeline
+        title="Our Response Commitment"
+        subtitle="What to expect"
+        className="bg-secondary/20"
+        variant="vertical"
+        steps={[
+          {
+            number: "01",
+            title: "Acknowledgment",
+            description: "We confirm receipt of your inquiry within 2 business hours during working days.",
+            icon: Clock,
+          },
+          {
+            number: "02",
+            title: "Initial Review",
+            description: "Our team reviews your request and routes it to the appropriate specialist within 24 hours.",
+            icon: MessageSquare,
+          },
+          {
+            number: "03",
+            title: "Detailed Response",
+            description: "You receive a substantive reply with next steps, questions, or a preliminary assessment.",
+            icon: FileCheck,
+          },
+          {
+            number: "04",
+            title: "Follow-up Call",
+            description: "For qualified projects, we schedule a discovery call to discuss requirements in depth.",
+            icon: Handshake,
+          },
+        ]}
+      />
 
       <FaqSection />
 
