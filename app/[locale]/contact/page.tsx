@@ -4,10 +4,6 @@ import { Suspense } from "react";
 import {
   ArrowRight,
   Mail,
-  Clock,
-  MessageSquare,
-  FileCheck,
-  Handshake,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -20,7 +16,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { ProcessTimeline } from "@/components/sections/process-timeline";
+import { ResponseTimeline } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -253,36 +249,30 @@ function ContactPageContent() {
         </div>
       </section>
 
-      {/* Enhanced: Response Commitment timeline */}
-      <ProcessTimeline
+      {/* Premium: Response Commitment timeline */}
+      <ResponseTimeline
         title="Our Response Commitment"
-        subtitle="What to expect"
-        className="bg-secondary/20"
-        variant="vertical"
+        subtitle="Transparent communication at every step"
         steps={[
           {
-            number: "01",
+            time: "< 2h",
             title: "Acknowledgment",
-            description: "We confirm receipt of your inquiry within 2 business hours during working days.",
-            icon: Clock,
+            description: "We confirm receipt of your inquiry within 2 business hours during working days. You'll know we received your message.",
           },
           {
-            number: "02",
+            time: "24h",
             title: "Initial Review",
-            description: "Our team reviews your request and routes it to the appropriate specialist within 24 hours.",
-            icon: MessageSquare,
+            description: "Our team reviews your request and routes it to the appropriate specialist. Complex requests may require additional context.",
           },
           {
-            number: "03",
+            time: "48h",
             title: "Detailed Response",
-            description: "You receive a substantive reply with next steps, questions, or a preliminary assessment.",
-            icon: FileCheck,
+            description: "You receive a substantive reply with next steps, clarifying questions, or a preliminary assessment of your project.",
           },
           {
-            number: "04",
-            title: "Follow-up Call",
-            description: "For qualified projects, we schedule a discovery call to discuss requirements in depth.",
-            icon: Handshake,
+            time: "1 week",
+            title: "Discovery Call",
+            description: "For qualified projects, we schedule a discovery call to discuss requirements, constraints, and delivery expectations in depth.",
           },
         ]}
       />

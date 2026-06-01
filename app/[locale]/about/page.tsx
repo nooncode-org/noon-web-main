@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Code2, Users, Zap, Globe } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -11,7 +11,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
-import { StatsCounterSection } from "@/components/sections/stats-counter-section";
+import { ComparisonShowcase } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -198,41 +198,30 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Enhanced: By The Numbers stats section */}
-      <StatsCounterSection
-        title="By The Numbers"
-        subtitle="Our track record"
-        variant="cards"
-        columns={4}
-        className="bg-secondary/20"
-        stats={[
+      {/* Premium: The Noon Difference - Comparison showcase */}
+      <ComparisonShowcase
+        title="Why Traditional Development Falls Short"
+        subtitle="See how Noon transforms the way software gets built"
+        items={[
           {
-            value: 50,
-            suffix: "+",
-            label: "Projects Delivered",
-            description: "Across multiple industries",
-            icon: Code2,
+            label: "Requirements gathering",
+            traditional: "→ Weeks of meetings and documentation\n→ Scope creep and miscommunication\n→ Delayed project kickoff",
+            noon: "→ Maxwell analyzes your needs in real-time\n→ Generates technical spec automatically\n→ Start building within hours",
           },
           {
-            value: 98,
-            suffix: "%",
-            label: "Client Satisfaction",
-            description: "Based on project feedback",
-            icon: Users,
+            label: "Prototyping",
+            traditional: "→ Static mockups and wireframes\n→ Multiple revision cycles\n→ No working code until later phases",
+            noon: "→ Functional prototype in 24-48 hours\n→ Real code you can test and validate\n→ Iterate with actual software",
           },
           {
-            value: 3,
-            suffix: "x",
-            label: "Faster Delivery",
-            description: "With AI-powered workflows",
-            icon: Zap,
+            label: "Development",
+            traditional: "→ Manual coding from scratch\n→ Inconsistent quality across team\n→ Slow feedback loops",
+            noon: "→ AI-accelerated development pipeline\n→ Senior engineers validate every line\n→ Continuous delivery to production",
           },
           {
-            value: 12,
-            suffix: "+",
-            label: "Countries Served",
-            description: "Global reach, local expertise",
-            icon: Globe,
+            label: "Delivery",
+            traditional: "→ Big bang launches with high risk\n→ Last-minute bug fixes\n→ Handoff documentation gaps",
+            noon: "→ Incremental delivery you can track\n→ Production-ready from day one\n→ Full ownership of your code",
           },
         ]}
       />

@@ -3,8 +3,7 @@ import { auth } from "@/auth";
 import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
-import { IndustriesSection } from "@/components/sections/industries-section";
-import { StatsCounterSection } from "@/components/sections/stats-counter-section";
+import { BeforeAfterScan } from "@/components/sections/premium";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -119,27 +118,8 @@ async function UpgradePageContent({ params, searchParams }: Props) {
         </div>
       </div>
 
-      {/* Enhanced: Stats section */}
-      <div className="mt-16">
-        <StatsCounterSection
-          variant="inline"
-          stats={[
-            { value: 500, suffix: "+", label: "Sites Analyzed" },
-            { value: 95, suffix: "%", label: "Improvement Rate" },
-            { value: 3, suffix: "min", label: "Avg. Scan Time" },
-            { value: 40, suffix: "%", label: "Conversion Boost" },
-          ]}
-        />
-      </div>
-
-      {/* Enhanced: Industries served */}
-      <IndustriesSection
-        title="Built for Every Industry"
-        subtitle="Upgrade any website"
-        className="mt-8"
-        columns={5}
-        showAll={false}
-      />
+      {/* Premium: Before/After Scan visualization */}
+      <BeforeAfterScan className="mt-8" />
     </section>
   );
 }

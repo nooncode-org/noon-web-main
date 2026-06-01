@@ -12,7 +12,7 @@ import { templates, templateCategories } from "@/data/templates";
 import { siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explore-builds-section";
-import { StatsCounterSection } from "@/components/sections/stats-counter-section";
+import { TemplateHeroPreview } from "@/components/sections/premium";
 
 const templateBrandTone = siteTones.brand;
 
@@ -79,6 +79,9 @@ export default function TemplatesPage() {
           </div>
         </div>
       </section>
+
+      {/* Premium: Template hero preview */}
+      <TemplateHeroPreview className="bg-background" />
 
       {/* Templates by category */}
       <section className="site-section bg-secondary/30">
@@ -152,18 +155,6 @@ export default function TemplatesPage() {
           </div>
         </div>
       </section>
-
-      {/* Enhanced: Template stats */}
-      <StatsCounterSection
-        variant="inline"
-        className="bg-background"
-        stats={[
-          { value: templates.length, label: "Templates Available" },
-          { value: templateCategories.length, label: "Categories" },
-          { value: 100, suffix: "%", label: "Production Ready" },
-          { value: 24, suffix: "/7", label: "Support Available" },
-        ]}
-      />
 
       <SiteCtaBlock
         title={t("cta.headline")}
