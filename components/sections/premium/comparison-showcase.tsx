@@ -1,7 +1,20 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { Check, Minus, LoaderCircle } from "lucide-react";
+
+// ============================================================================
+// ComparisonShowcase — REBUILT to canon + dynamic content states (2026-06-01).
+// Honest before/after: the friction of the traditional approach on the left,
+// how Noon resolves each one on the right. The Noon column is ALIVE — when the
+// section scrolls into view, each dimension shows a brief "resolving…" state
+// (shimmer) that transitions into the resolved outcome with a check landing,
+// staggered top→bottom (mirrors the pipeline's loading→resolved language).
+// Theme-aware, single-accent (#1200c5), square. Static under reduced motion.
+// Loaded client-only (next/dynamic ssr:false in /about) so it can animate from
+// a non-final state without hydration conflicts.
+// ============================================================================
 
 interface ComparisonItem {
   label: string;
@@ -16,198 +29,167 @@ interface ComparisonShowcaseProps {
   className?: string;
 }
 
+const EASE = [0.32, 0.72, 0, 1] as const;
+
+function toPoints(block: string): string[] {
+  return block
+    .split("\n")
+    .map((l) => l.replace(/^→\s*/, "").trim())
+    .filter(Boolean);
+}
+
+// One Noon dimension: brief "resolving…" → resolved points (checks land).
+function NoonRow({ label, block, play, reduce, delay }: { label: string; block: string; play: boolean; reduce: boolean; delay: number }) {
+  const points = toPoints(block);
+  // The loading → resolved content transition is informational → runs on view
+  // regardless of prefers-reduced-motion. `reduce` only disables the check's
+  // spring scale below (large movement).
+  const [resolved, setResolved] = useState(!play);
+
+  useEffect(() => {
+    if (!play) {
+      setResolved(true);
+      return;
+    }
+    setResolved(false);
+    const t = setTimeout(() => setResolved(true), delay * 1000 + 850);
+    return () => clearTimeout(t);
+  }, [play, delay]);
+
+  return (
+    <div>
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">{label}</p>
+      <AnimatePresence mode="wait" initial={false}>
+        {resolved ? (
+          <motion.ul
+            key="resolved"
+            className="space-y-1.5"
+            initial={{ opacity: reduce ? 1 : 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            {points.map((p, i) => (
+              <li key={i} className="flex gap-2 text-sm leading-snug text-foreground/90">
+                <motion.span
+                  className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-primary"
+                  style={{ backgroundColor: "rgba(18,0,197,0.12)" }}
+                  initial={{ scale: reduce ? 1 : 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: reduce ? 0 : i * 0.07, type: "spring", stiffness: 460, damping: 22 }}
+                >
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                </motion.span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </motion.ul>
+        ) : (
+          <motion.div
+            key="resolving"
+            className="flex items-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <LoaderCircle className="h-3 w-3 animate-spin text-primary" />
+            <span
+              className="bg-clip-text font-mono text-[11px] text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, var(--muted-foreground) 0%, var(--foreground) 50%, var(--muted-foreground) 100%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 1.1s linear infinite",
+              }}
+            >
+              Resolving with Noon…
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function ComparisonShowcase({
-  title = "The Difference",
+  title = "The difference",
   subtitle,
   items,
   className = "",
 }: ComparisonShowcaseProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    if (!isInView) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [isInView, items.length]);
+  const ref = useRef<HTMLDivElement>(null);
+  // once:false → the Noon column re-resolves each time the section enters view.
+  const inView = useInView(ref, { margin: "-100px" });
+  const reduce = useReducedMotion() ?? false;
+  const play = inView;
 
   return (
-    <section ref={containerRef} className={`relative py-24 overflow-hidden ${className}`}>
-      {/* Background grid */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(rgba(18, 0, 197, 0.5) 1px, transparent 1px),
-                             linear-gradient(90deg, rgba(18, 0, 197, 0.5) 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-          }}
-        />
-      </div>
-
-      <div className="relative mx-auto max-w-6xl px-6">
+    <section ref={ref} className={`site-section relative overflow-hidden ${className}`}>
+      <div className="site-shell relative">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
+          className="mx-auto mb-10 max-w-2xl text-center lg:mb-12"
+          initial={{ opacity: 0, y: reduce ? 0 : 14 }}
+          animate={play ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: EASE }}
         >
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-mono tracking-wide text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Why Noon
           </span>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-foreground md:text-4xl lg:text-5xl">
-            {title}
-          </h2>
-          {subtitle && (
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              {subtitle}
-            </p>
-          )}
+          <h2 className="site-section-title mb-3">{title}</h2>
+          {subtitle && <p className="site-section-copy mx-auto max-w-xl text-muted-foreground">{subtitle}</p>}
         </motion.div>
 
-        {/* Comparison Grid */}
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Traditional Side */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-mono text-muted-foreground">
-                01
-              </span>
-              <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-                Traditional Approach
-              </span>
-            </div>
-            <div className="relative rounded-2xl border border-border/50 bg-muted/30 p-6 lg:p-8">
-              {/* Terminal mockup */}
-              <div className="rounded-lg border border-border/50 bg-background overflow-hidden">
-                <div className="flex items-center gap-2 border-b border-border/50 bg-muted/50 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-red-400/80" />
-                    <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
-                    <span className="h-3 w-3 rounded-full bg-green-400/80" />
-                  </div>
-                  <span className="ml-2 text-xs font-mono text-muted-foreground">
-                    traditional-process
-                  </span>
-                </div>
-                <div className="p-4 font-mono text-sm">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-2"
-                    >
-                      <div className="text-muted-foreground">
-                        <span className="text-red-400">$</span> {items[activeIndex].label}
-                      </div>
-                      <div className="pl-4 text-muted-foreground/70 leading-relaxed whitespace-pre-wrap">
-                        {items[activeIndex].traditional}
-                      </div>
-                      <div className="flex items-center gap-2 pt-2">
-                        <span className="h-2 w-2 rounded-full bg-red-400/60 animate-pulse" />
-                        <span className="text-xs text-red-400/80">Slow, manual process</span>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+        {/* Comparison — single bordered card, two columns + divider */}
+        <div className="overflow-hidden border border-foreground/10 bg-card/40">
+          <div className="grid lg:grid-cols-2 lg:divide-x lg:divide-foreground/10">
+            {/* Traditional (muted) — points slide in, staggered */}
+            <div className="p-6 lg:p-8">
+              <p className="mb-6 inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="flex h-5 w-5 items-center justify-center rounded-[6px] border border-foreground/15 bg-secondary/40">
+                  <Minus className="h-3 w-3" />
+                </span>
+                Traditional approach
+              </p>
+              <div className="space-y-5">
+                {items.map((item, di) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+                    animate={play ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.4, delay: reduce ? 0 : di * 0.1, ease: EASE }}
+                  >
+                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">{item.label}</p>
+                    <ul className="space-y-1.5">
+                      {toPoints(item.traditional).map((p, i) => (
+                        <li key={i} className="flex gap-2 text-sm leading-snug text-muted-foreground">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ))}
               </div>
             </div>
-          </motion.div>
 
-          {/* Noon Side */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative"
-          >
-            <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-mono text-primary">
-                02
-              </span>
-              <span className="text-sm font-medium uppercase tracking-wider text-primary">
+            {/* With Noon (accent) — each dimension resolves: loading → checks */}
+            <div className="bg-primary/[0.03] p-6 lg:p-8">
+              <p className="mb-6 inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-primary">
+                <span className="flex h-5 w-5 items-center justify-center rounded-[6px] text-primary" style={{ backgroundColor: "rgba(18,0,197,0.12)" }}>
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </span>
                 With Noon
-              </span>
-            </div>
-            <div className="relative rounded-2xl border border-primary/20 bg-primary/5 p-6 lg:p-8">
-              {/* Glow effect */}
-              <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
-              
-              {/* Terminal mockup */}
-              <div className="relative rounded-lg border border-primary/20 bg-background overflow-hidden">
-                <div className="flex items-center gap-2 border-b border-primary/10 bg-primary/5 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <span className="h-3 w-3 rounded-full bg-red-400/80" />
-                    <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
-                    <span className="h-3 w-3 rounded-full bg-green-400/80" />
-                  </div>
-                  <span className="ml-2 text-xs font-mono text-primary/80">
-                    noon-pipeline
-                  </span>
-                  <span className="ml-auto text-[10px] font-mono text-primary/60 bg-primary/10 px-2 py-0.5 rounded">
-                    AI-POWERED
-                  </span>
-                </div>
-                <div className="p-4 font-mono text-sm">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={activeIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-2"
-                    >
-                      <div className="text-foreground">
-                        <span className="text-primary">$</span> {items[activeIndex].label}
-                      </div>
-                      <div className="pl-4 text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                        {items[activeIndex].noon}
-                      </div>
-                      <div className="flex items-center gap-2 pt-2">
-                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                        <span className="text-xs text-green-500">Automated, instant</span>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+              </p>
+              <div className="space-y-5">
+                {items.map((item, di) => (
+                  <NoonRow key={item.label} label={item.label} block={item.noon} play={play} reduce={reduce} delay={0.3 + di * 0.55} />
+                ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-
-        {/* Progress indicators */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 flex justify-center gap-2"
-        >
-          {items.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === activeIndex
-                  ? "w-8 bg-primary"
-                  : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              }`}
-            />
-          ))}
-        </motion.div>
       </div>
     </section>
   );

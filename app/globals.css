@@ -47,6 +47,20 @@
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #dbe3ef;
   --sidebar-ring: #1200c5;
+
+  /* Pipeline code-editor syntax — light (GitHub-light family) */
+  --code-kw: #cf222e;
+  --code-fn: #8250df;
+  --code-prop: #0550ae;
+  --code-str: #0a3069;
+  --code-txt: #1f2328;
+  --code-punc: #57606a;
+  --code-gutter: #6e7781;
+  --code-add-bg: rgba(31, 136, 61, 0.1);
+  --code-add-mark: #1a7f37;
+  --code-rem-bg: rgba(207, 34, 46, 0.08);
+  --code-rem-mark: #cf222e;
+  --code-ok: #1a7f37;
 }
 
 @theme inline {
@@ -125,6 +139,20 @@
     --sidebar-accent-foreground: #e8edf7;
     --sidebar-border: #262626;
     --sidebar-ring: #1200c5;
+
+    /* Pipeline code-editor syntax — dark (GitHub-dark family) */
+    --code-kw: #ff7b72;
+    --code-fn: #d2a8ff;
+    --code-prop: #79c0ff;
+    --code-str: #a5d6ff;
+    --code-txt: #e6edf3;
+    --code-punc: #adbac7;
+    --code-gutter: #8b949e;
+    --code-add-bg: rgba(46, 160, 67, 0.15);
+    --code-add-mark: #3fb950;
+    --code-rem-bg: rgba(248, 81, 73, 0.15);
+    --code-rem-mark: #f85149;
+    --code-ok: #3fb950;
   }
 }
 

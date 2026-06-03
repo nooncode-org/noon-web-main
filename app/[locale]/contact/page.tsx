@@ -3,7 +3,10 @@
 import { Suspense } from "react";
 import {
   ArrowRight,
+  Code2,
   Mail,
+  Sparkles,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -20,10 +23,12 @@ import { ResponseTimeline } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
+// Real Noon social channels (mirrors footerSocialLinks in lib/site-config) —
+// TikTok / Facebook / Instagram only, per brand (no LinkedIn/GitHub/X).
 const OTHER_CHANNELS = [
-  { label: "LinkedIn", href: "https://www.linkedin.com" },
-  { label: "GitHub", href: "https://github.com" },
-  { label: "TikTok", href: "https://www.tiktok.com" },
+  { label: "TikTok", href: "https://www.tiktok.com/@nooncode.dev" },
+  { label: "Facebook", href: "https://www.facebook.com/people/Noon-Development-Agency/61571938881520/" },
+  { label: "Instagram", href: "https://www.instagram.com/nooncode.dev" },
 ];
 
 function ContactProcessPanel({ responseTime }: { responseTime: string }) {
@@ -185,10 +190,10 @@ function ContactPageContent() {
                 {canReturnToMaxwell ? (
                   <Link
                     href={maxwellReturnHref}
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+                    className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
                   >
                     {t("continueWithMaxwell")}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
                   </Link>
                 ) : null}
               </div>
@@ -215,36 +220,51 @@ function ContactPageContent() {
         </div>
       </section>
 
-      {/* Pipeline stats band (Figma /contact frame) — at web-main scale.
-         Three left-aligned columns split by vertical dividers, per Figma. */}
+      {/* Capabilities band — three honest, qualitative columns (no fabricated
+         metrics, no 3rd-party model names). Icon + category + a concrete claim
+         + supporting copy, split by vertical dividers (Vercel 3-up style). */}
       <section className="site-section">
         <div className="site-shell">
           <div className="grid border border-foreground/10 bg-card/60 sm:grid-cols-3 sm:divide-x sm:divide-foreground/10">
             {[
               {
+                icon: Sparkles,
                 eyebrow: "Pipeline speed",
-                stat: "3x Faster",
-                copy: "Maxwell's orchestration (GPT-4 + V0 + Opus) accelerates the generation of functional bases.",
+                headline: "Maxwell-accelerated",
+                copy: "Maxwell turns your need into a working, functional base — so engineers start from real software, not a blank file.",
               },
               {
+                icon: Code2,
                 eyebrow: "Development",
-                stat: "0% No-Code.",
-                copy: "All software is real code, eliminating dependencies on limited and fragile platforms.",
+                headline: "Real code, not no-code",
+                copy: "All software ships as real code — no lock-in to limited, fragile platforms.",
               },
               {
+                icon: UserCheck,
                 eyebrow: "Validation",
-                stat: "100% Human QA.",
-                copy: "Each line of AI-generated code is validated and refined by senior engineers before deployment.",
+                headline: "Human-reviewed",
+                copy: "AI-generated code is reviewed and refined by senior engineers before it ships.",
               },
-            ].map((s) => (
-              <div key={s.eyebrow} className="p-6 lg:p-7">
-                <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                  {s.eyebrow}
-                </p>
-                <p className="site-section-title mb-2">{s.stat}</p>
-                <p className="site-card-copy text-muted-foreground">{s.copy}</p>
-              </div>
-            ))}
+            ].map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.eyebrow} className="p-6 lg:p-7">
+                  <div className="mb-4 flex items-center gap-2.5">
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-[8px] text-primary"
+                      style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                      {s.eyebrow}
+                    </p>
+                  </div>
+                  <p className="site-card-title mb-2">{s.headline}</p>
+                  <p className="site-card-copy text-muted-foreground">{s.copy}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -257,22 +277,22 @@ function ContactPageContent() {
           {
             time: "< 2h",
             title: "Acknowledgment",
-            description: "We confirm receipt of your inquiry within 2 business hours during working days. You'll know we received your message.",
+            description: "We confirm we've got your inquiry within 2 business hours — you're never left wondering.",
           },
           {
             time: "24h",
             title: "Initial Review",
-            description: "Our team reviews your request and routes it to the appropriate specialist. Complex requests may require additional context.",
+            description: "Your request reaches the right specialist, with any missing context flagged early.",
           },
           {
             time: "48h",
             title: "Detailed Response",
-            description: "You receive a substantive reply with next steps, clarifying questions, or a preliminary assessment of your project.",
+            description: "A substantive reply: next steps, clarifying questions, or a first read on your project.",
           },
           {
             time: "1 week",
             title: "Discovery Call",
-            description: "For qualified projects, we schedule a discovery call to discuss requirements, constraints, and delivery expectations in depth.",
+            description: "For a strong fit, we set up a call to go deep on requirements, constraints, and delivery.",
           },
         ]}
       />
@@ -281,7 +301,7 @@ function ContactPageContent() {
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
-        blockHref={lp(siteRoutes.home)}
+        blockHref={lp(siteRoutes.maxwellStudio)}
         className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
       />
       </div>

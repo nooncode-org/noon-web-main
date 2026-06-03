@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { templates } from "@/data/templates";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 
 import { routing } from "@/i18n/routing";
@@ -47,9 +48,10 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
   }
 
   const t = await getTranslations({ locale, namespace: "templates.detail.cta" });
+  const viewer = await getAuthenticatedViewer();
 
   return (
-    <SitePageFrame>
+    <SitePageFrame viewer={viewer}>
       <div className="mx-auto w-full max-w-5xl px-6 py-12 lg:py-20">
         {/* Back link */}
         <Link
@@ -63,7 +65,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
         {/* Hero */}
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 mb-16">
           {/* Image */}
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-secondary/40">
+          <div className="relative aspect-video overflow-hidden border border-border bg-secondary/40">
             {template.image && (
               <Image
                 src={template.image}
@@ -118,7 +120,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
         {/* Details Grid */}
         <div className="grid gap-6 lg:grid-cols-3 mb-16">
           {/* Included */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="border border-border bg-card p-6">
             <h2 className="text-sm font-medium text-foreground mb-4">Included in baseline</h2>
             <ul className="space-y-3">
               {template.includes.map((item) => (
@@ -131,7 +133,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
           </div>
 
           {/* Extensions */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="border border-border bg-card p-6">
             <h2 className="text-sm font-medium text-foreground mb-4">Typical extensions</h2>
             <ul className="space-y-3">
               {template.extensions.map((item) => (
@@ -146,7 +148,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
           </div>
 
           {/* When to use */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="border border-border bg-card p-6">
             <h2 className="text-sm font-medium text-foreground mb-4">Best fit</h2>
             <div className="space-y-4">
               <div>
@@ -172,7 +174,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
         </div>
 
         {/* Promise */}
-        <div className="rounded-xl border border-border bg-secondary/20 p-6 lg:p-8 mb-16">
+        <div className="border border-border bg-secondary/20 p-6 lg:p-8 mb-16">
           <h2 className="text-sm font-medium text-foreground mb-3">What this baseline delivers</h2>
           <p className="site-section-copy text-muted-foreground">
             {template.baselinePromise}

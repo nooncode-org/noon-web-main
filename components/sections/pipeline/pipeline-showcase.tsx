@@ -1,344 +1,138 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import { MessageSquare, Cpu, Sparkles, Code2, Layers, CheckCircle } from "lucide-react";
-import { PipelineNode, MiniPipelineNode } from "./pipeline-node";
-import { AnimatedConnection, BranchConnection } from "./animated-connection";
-import {
-  MockupChat,
-  MockupTerminal,
-  MockupSpec,
-  MockupUIPreview,
-  MockupCodeDiff,
-  MockupDashboard,
-} from "./mockups";
+import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { MessageSquare, Sparkles, Code2, CheckCircle } from "lucide-react";
+import { PipelineNode } from "./pipeline-node";
+import { AnimatedConnection } from "./animated-connection";
+import { MockupBrief, MockupScope, MockupBuild, MockupProduct } from "./mockups";
 
-type PipelineStage = "idle" | "input" | "maxwell" | "ai-models" | "output" | "complete";
+// ============================================================================
+// PipelineShowcase — Noon's real delivery methodology as a linear system flow.
+//
+// Honest narrative (need → scope w/ Maxwell → human review & build → working
+// software), theme-aware, single-accent (#1200c5), square. NO hover/click/replay
+// chrome — the only motion lives INSIDE each card and is contextual to that
+// step: a typewriter brief, a "thinking" scope, a streamed review diff, and a
+// drawing dashboard. Each card runs its own animation once when the section
+// enters view, staggered left→right so the flow reads as a sequence. Fully
+// static under prefers-reduced-motion. Each step carries an APPROVED brand
+// principle (no invented metrics).
+// ============================================================================
+
+type StageKey = "need" | "scope" | "build" | "deliver";
+
+const STAGES: {
+  key: StageKey;
+  label: string;
+  sublabel: string;
+  principle: string;
+  icon: typeof MessageSquare;
+}[] = [
+  { key: "need", label: "Your need", sublabel: "In plain language", principle: "Tell us what you want to build", icon: MessageSquare },
+  { key: "scope", label: "Scope with Maxwell", sublabel: "AI-accelerated", principle: "Scope before execution", icon: Sparkles },
+  { key: "build", label: "Human review & build", sublabel: "Senior engineers", principle: "Judgment, not blind execution", icon: Code2 },
+  { key: "deliver", label: "Working software", sublabel: "You operate it", principle: "Working software, not documentation", icon: CheckCircle },
+];
+
+const MOCKUPS = { need: MockupBrief, scope: MockupScope, build: MockupBuild, deliver: MockupProduct } as const;
+
+// Left→right stagger so each card's contextual animation starts in flow order.
+const START_DELAY = [0, 0.5, 1.0, 1.5];
 
 export function PipelineShowcase() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-  const [currentStage, setCurrentStage] = useState<PipelineStage>("idle");
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  // once:false → the in-card animations re-play every time the section
+  // scrolls into view (reliably observable), without an infinite loop.
+  const isInView = useInView(containerRef, { margin: "-100px" });
+  const reduceMotion = useReducedMotion();
+  const play = isInView;
 
-  // Auto-play sequence when in view
-  useEffect(() => {
-    if (isInView && !isAutoPlaying) {
-      setIsAutoPlaying(true);
-      const stages: PipelineStage[] = ["input", "maxwell", "ai-models", "output", "complete"];
-      let currentIndex = 0;
-
-      const interval = setInterval(() => {
-        if (currentIndex < stages.length) {
-          setCurrentStage(stages[currentIndex]);
-          currentIndex++;
-        } else {
-          clearInterval(interval);
-          // Reset and loop after a pause
-          setTimeout(() => {
-            setCurrentStage("idle");
-            setIsAutoPlaying(false);
-          }, 3000);
-        }
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isInView, isAutoPlaying]);
-
-  const isStageActive = (stage: PipelineStage) => currentStage === stage;
-  const isStageComplete = (stage: PipelineStage) => {
-    const stageOrder: PipelineStage[] = ["idle", "input", "maxwell", "ai-models", "output", "complete"];
-    return stageOrder.indexOf(currentStage) > stageOrder.indexOf(stage);
+  const renderNode = (stage: (typeof STAGES)[number], i: number, fullWidth: boolean) => {
+    const Mockup = MOCKUPS[stage.key];
+    return (
+      <PipelineNode
+        label={stage.label}
+        sublabel={stage.sublabel}
+        principle={stage.principle}
+        icon={<stage.icon className="h-3.5 w-3.5" />}
+        delay={0.1 + i * 0.1}
+        fullWidth={fullWidth}
+      >
+        <Mockup play={play} animate={!reduceMotion} startDelay={reduceMotion ? 0 : START_DELAY[i]} />
+      </PipelineNode>
+    );
   };
 
   return (
-    <section
-      ref={containerRef}
-      className="relative py-24 overflow-hidden"
-      style={{
-        background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(18,0,197,0.03) 50%, rgba(0,0,0,0) 100%)",
-      }}
-    >
-      {/* Background grid */}
+    <section ref={containerRef} className="site-section relative overflow-hidden">
+      {/* Theme-aware grid backdrop (same --gl pattern as the page heroes) */}
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        aria-hidden
+        className="pointer-events-none absolute inset-0 [--gl:rgba(17,17,17,0.05)] dark:[--gl:rgba(255,255,255,0.05)]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
+          backgroundImage:
+            "linear-gradient(to right, var(--gl) 1px, transparent 1px), linear-gradient(to bottom, var(--gl) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+          backgroundPosition: "center",
+          maskImage: "radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 85%)",
+          WebkitMaskImage: "radial-gradient(ellipse 75% 70% at 50% 45%, #000 25%, transparent 85%)",
         }}
       />
 
-      <div className="site-shell relative">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
+      <div className="relative">
+        {/* Header (within the standard shell) */}
+        <div className="site-shell">
           <motion.div
-            className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ delay: 0.2 }}
+            className="mx-auto mb-12 max-w-2xl text-center lg:mb-16"
+            initial={{ opacity: 0, y: 16 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-medium text-primary">How Noon Works</span>
-          </motion.div>
-
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
-            From idea to production
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-primary">
-              in record time
+            <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              How it works
             </span>
-          </h2>
-
-          <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-            Maxwell orchestrates multiple AI models to transform your requirements into
-            production-ready software, with every line validated by senior engineers.
-          </p>
-        </motion.div>
-
-        {/* Pipeline visualization - Desktop */}
-        <div className="hidden lg:block">
-          <div className="flex items-center justify-center gap-2">
-            {/* Stage 1: User Input */}
-            <PipelineNode
-              label="Your Request"
-              sublabel="Natural language"
-              icon={<MessageSquare className="w-3 h-3" />}
-              isActive={isStageActive("input")}
-              isComplete={isStageComplete("input")}
-              delay={0.2}
-              size="md"
-            >
-              <MockupChat isActive={isStageActive("input") || isStageComplete("input")} />
-            </PipelineNode>
-
-            {/* Connection 1 */}
-            <AnimatedConnection
-              isActive={isStageComplete("input")}
-              delay={0.4}
-            />
-
-            {/* Stage 2: Maxwell */}
-            <PipelineNode
-              label="Maxwell"
-              sublabel="AI Orchestrator"
-              icon={<Cpu className="w-3 h-3" />}
-              isActive={isStageActive("maxwell")}
-              isComplete={isStageComplete("maxwell")}
-              delay={0.4}
-              size="md"
-            >
-              <MockupTerminal
-                isActive={isStageActive("maxwell") || isStageComplete("maxwell")}
-                stage={isStageComplete("maxwell") ? "routing" : isStageActive("maxwell") ? "analyzing" : "idle"}
-              />
-            </PipelineNode>
-
-            {/* Branch connection to 3 AI models */}
-            <div className="relative">
-              <BranchConnection isActive={isStageComplete("maxwell")} delay={0.6} />
-            </div>
-
-            {/* Stage 3: AI Models (vertical stack) */}
-            <div className="flex flex-col gap-2">
-              <MiniPipelineNode
-                label="GPT-4"
-                color="#10b981"
-                icon={<Sparkles className="w-2.5 h-2.5 text-emerald-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.7}
-              >
-                <MockupSpec isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-
-              <MiniPipelineNode
-                label="V0"
-                color="#3b82f6"
-                icon={<Layers className="w-2.5 h-2.5 text-blue-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.8}
-              >
-                <MockupUIPreview isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-
-              <MiniPipelineNode
-                label="Opus"
-                color="#f97316"
-                icon={<Code2 className="w-2.5 h-2.5 text-orange-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.9}
-              >
-                <MockupCodeDiff isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-            </div>
-
-            {/* Merge connection */}
-            <div className="relative">
-              <svg width="80" height="100" viewBox="0 0 80 100" className="overflow-visible">
-                <motion.path
-                  d="M0 10 Q40 10 60 50 L80 50"
-                  stroke={isStageComplete("ai-models") ? "rgba(18, 0, 197, 0.5)" : "rgba(255, 255, 255, 0.1)"}
-                  strokeWidth="2"
-                  fill="none"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: isStageComplete("maxwell") ? 1 : 0 }}
-                  transition={{ duration: 0.6, delay: 1 }}
-                />
-                <motion.path
-                  d="M0 50 L80 50"
-                  stroke={isStageComplete("ai-models") ? "rgba(18, 0, 197, 0.5)" : "rgba(255, 255, 255, 0.1)"}
-                  strokeWidth="2"
-                  fill="none"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: isStageComplete("maxwell") ? 1 : 0 }}
-                  transition={{ duration: 0.6, delay: 1.1 }}
-                />
-                <motion.path
-                  d="M0 90 Q40 90 60 50 L80 50"
-                  stroke={isStageComplete("ai-models") ? "rgba(18, 0, 197, 0.5)" : "rgba(255, 255, 255, 0.1)"}
-                  strokeWidth="2"
-                  fill="none"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: isStageComplete("maxwell") ? 1 : 0 }}
-                  transition={{ duration: 0.6, delay: 1.2 }}
-                />
-              </svg>
-            </div>
-
-            {/* Stage 4: Output */}
-            <PipelineNode
-              label="Production Ready"
-              sublabel="Human validated"
-              icon={<CheckCircle className="w-3 h-3" />}
-              isActive={isStageActive("output") || isStageActive("complete")}
-              isComplete={isStageComplete("output")}
-              delay={1.2}
-              size="lg"
-            >
-              <MockupDashboard isActive={isStageActive("output") || isStageActive("complete")} />
-            </PipelineNode>
-          </div>
+            <h2 className="site-section-title mb-3">
+              From problem to <span className="text-muted-foreground">working software.</span>
+            </h2>
+            <p className="site-section-copy mx-auto max-w-xl text-muted-foreground">
+              Maxwell accelerates the definition, senior engineers own the judgment, and the
+              result is real software you operate — not a prototype, not documentation.
+            </p>
+          </motion.div>
         </div>
 
-        {/* Pipeline visualization - Mobile/Tablet (vertical) */}
-        <div className="lg:hidden">
-          <div className="flex flex-col items-center gap-4">
-            {/* Stage 1: User Input */}
-            <PipelineNode
-              label="Your Request"
-              sublabel="Natural language"
-              icon={<MessageSquare className="w-3 h-3" />}
-              isActive={isStageActive("input")}
-              isComplete={isStageComplete("input")}
-              delay={0.2}
-              size="lg"
-            >
-              <MockupChat isActive={isStageActive("input") || isStageComplete("input")} />
-            </PipelineNode>
+        {/* Flow — wider container than the shell so the cards can breathe */}
+        <div className="mx-auto w-full max-w-[1480px] px-4">
+          {/* desktop (horizontal) */}
+          <div className="hidden items-stretch justify-center gap-0 lg:flex">
+            {STAGES.map((stage, i) => (
+              <div key={stage.key} className="flex items-stretch">
+                {renderNode(stage, i, false)}
+                {i < STAGES.length - 1 && (
+                  <div className="flex w-10 items-center">
+                    <AnimatedConnection active={play} animate={!reduceMotion} delay={0.3 + i * 0.5} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-            <AnimatedConnection direction="vertical" isActive={isStageComplete("input")} delay={0.3} />
-
-            {/* Stage 2: Maxwell */}
-            <PipelineNode
-              label="Maxwell"
-              sublabel="AI Orchestrator"
-              icon={<Cpu className="w-3 h-3" />}
-              isActive={isStageActive("maxwell")}
-              isComplete={isStageComplete("maxwell")}
-              delay={0.4}
-              size="lg"
-            >
-              <MockupTerminal
-                isActive={isStageActive("maxwell") || isStageComplete("maxwell")}
-                stage={isStageComplete("maxwell") ? "routing" : isStageActive("maxwell") ? "analyzing" : "idle"}
-              />
-            </PipelineNode>
-
-            <AnimatedConnection direction="vertical" isActive={isStageComplete("maxwell")} delay={0.5} />
-
-            {/* Stage 3: AI Models (horizontal on mobile) */}
-            <div className="flex gap-3 overflow-x-auto pb-2 w-full justify-center">
-              <MiniPipelineNode
-                label="GPT-4"
-                color="#10b981"
-                icon={<Sparkles className="w-2.5 h-2.5 text-emerald-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.6}
-              >
-                <MockupSpec isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-
-              <MiniPipelineNode
-                label="V0"
-                color="#3b82f6"
-                icon={<Layers className="w-2.5 h-2.5 text-blue-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.7}
-              >
-                <MockupUIPreview isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-
-              <MiniPipelineNode
-                label="Opus"
-                color="#f97316"
-                icon={<Code2 className="w-2.5 h-2.5 text-orange-400" />}
-                isActive={isStageActive("ai-models")}
-                delay={0.8}
-              >
-                <MockupCodeDiff isActive={isStageActive("ai-models") || isStageComplete("ai-models")} />
-              </MiniPipelineNode>
-            </div>
-
-            <AnimatedConnection direction="vertical" isActive={isStageComplete("ai-models")} delay={0.9} />
-
-            {/* Stage 4: Output */}
-            <PipelineNode
-              label="Production Ready"
-              sublabel="Human validated"
-              icon={<CheckCircle className="w-3 h-3" />}
-              isActive={isStageActive("output") || isStageActive("complete")}
-              isComplete={isStageComplete("output")}
-              delay={1}
-              size="lg"
-            >
-              <MockupDashboard isActive={isStageActive("output") || isStageActive("complete")} />
-            </PipelineNode>
+          {/* mobile / tablet (vertical) */}
+          <div className="flex flex-col items-center gap-0 lg:hidden">
+            {STAGES.map((stage, i) => (
+              <div key={stage.key} className="flex w-full max-w-sm flex-col items-stretch">
+                {renderNode(stage, i, true)}
+                {i < STAGES.length - 1 && (
+                  <div className="flex h-10 justify-center">
+                    <AnimatedConnection direction="vertical" active={play} animate={!reduceMotion} delay={0.3 + i * 0.5} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Stats band */}
-        <motion.div
-          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 1.5, duration: 0.6 }}
-        >
-          {[
-            { value: "3x", label: "Faster Delivery", sublabel: "vs traditional dev" },
-            { value: "100%", label: "Real Code", sublabel: "No low-code limits" },
-            { value: "24h", label: "First Prototype", sublabel: "For qualified projects" },
-            { value: "100%", label: "Human QA", sublabel: "Every line reviewed" },
-          ].map((stat, i) => (
-            <motion.div
-              key={i}
-              className="text-center"
-              initial={{ opacity: 0, y: 10 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1.6 + i * 0.1, duration: 0.4 }}
-            >
-              <p className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</p>
-              <p className="text-sm font-medium text-gray-300">{stat.label}</p>
-              <p className="text-xs text-gray-500">{stat.sublabel}</p>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );

@@ -4,14 +4,60 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard, Puzzle, Rocket, Workflow } from "lucide-react";
 import { PageSection } from "@/app/_components/site/page-section";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { PipelineShowcase } from "@/components/sections/pipeline";
+import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
+import dynamic from "next/dynamic";
+
+// Client-only: the PipelineShowcase uses framer-motion entrance animations whose
+// SSR'd `initial` transforms cause hydration mismatches. It's a below-the-fold
+// decorative diagram, so we skip SSR and render a static, content-bearing
+// fallback (header + the 4 steps) until the client chunk loads.
+const PipelineShowcase = dynamic(
+  () => import("@/components/sections/pipeline").then((m) => m.PipelineShowcase),
+  { ssr: false, loading: () => <PipelineShowcaseFallback /> }
+);
+
+function PipelineShowcaseFallback() {
+  const steps: [string, string][] = [
+    ["Your need", "Tell us what you want to build"],
+    ["Scope with Maxwell", "Scope before execution"],
+    ["Human review & build", "Judgment, not blind execution"],
+    ["Working software", "Working software, not documentation"],
+  ];
+  return (
+    <section className="site-section">
+      <div className="site-shell">
+        <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
+          <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            How it works
+          </span>
+          <h2 className="site-section-title mb-3">
+            From problem to <span className="text-muted-foreground">working software.</span>
+          </h2>
+          <p className="site-section-copy mx-auto max-w-xl text-muted-foreground">
+            Maxwell accelerates the definition, senior engineers own the judgment, and the
+            result is real software you operate — not a prototype, not documentation.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map(([label, principle]) => (
+            <div key={label} className="border border-foreground/10 bg-card/60 p-4">
+              <p className="text-[12px] font-medium text-foreground">{label}</p>
+              <p className="mt-2 text-[11px] leading-snug text-muted-foreground">{principle}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -26,11 +72,73 @@ type ServiceItem = {
   imageSide: "left" | "right";
 };
 
-type DecisionItem = {
-  label: string;
-  description: string;
-  tone: typeof siteTones.brand;
-};
+// ── "Common problems we solve" — buyer-language diagnostic band. Real content
+// (services.problemAreas in messages/en.json, previously unrendered): lets a
+// business owner self-recognize the pain before picking a service. Hairline
+// 2×2 grid, single-accent, theme-aware.
+const PROBLEM_AREAS: { icon: typeof Workflow; problem: string; summary: string; signals: [string, string] }[] = [
+  {
+    icon: Workflow,
+    problem: "Manual work that should be automated",
+    summary: "AI-assisted workflows for teams losing time to repetitive work and human bottlenecks.",
+    signals: ["Copying data between tools", "Progress depends on one operator"],
+  },
+  {
+    icon: LayoutDashboard,
+    problem: "Operations that need one central system",
+    summary: "Dashboards and portals that consolidate data, workflows, and reporting into one surface.",
+    signals: ["Data across disconnected tools", "No clear source of truth"],
+  },
+  {
+    icon: Rocket,
+    problem: "A product that needs to launch as real software",
+    summary: "Production-minded builds for founders who understand the problem and need something real.",
+    signals: ["Customer problem is validated", "Bottleneck is execution"],
+  },
+  {
+    icon: Puzzle,
+    problem: "Workflows that generic tools don't fit",
+    summary: "Custom software built around business logic that breaks inside generic tools.",
+    signals: ["Relying on workarounds", "Off-the-shelf tools don't fit"],
+  },
+];
+
+function ProblemAreas() {
+  return (
+    <PageSection eyebrow="Does this sound familiar?" title="Common problems we solve">
+      <div className="overflow-hidden border border-foreground/10">
+        <div className="grid gap-px bg-foreground/10 sm:grid-cols-2">
+          {PROBLEM_AREAS.map((p) => {
+            const Icon = p.icon;
+            return (
+              <div key={p.problem} className="flex flex-col bg-background p-6 lg:p-7">
+                <span
+                  className="mb-4 flex h-8 w-8 items-center justify-center rounded-[8px] text-primary"
+                  style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
+                </span>
+                <h3 className="text-[15px] font-medium leading-snug text-foreground">{p.problem}</h3>
+                <p className="mt-2 text-sm leading-snug text-muted-foreground">{p.summary}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {p.signals.map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
+                    >
+                      <span className="h-1 w-1 rounded-full bg-primary" />
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </PageSection>
+  );
+}
 
 export default function ServicesPage() {
   const params = useParams();
@@ -99,30 +207,54 @@ export default function ServicesPage() {
     },
   ];
 
-  const decisionGuide: DecisionItem[] = [
+  const decisionPaths: DecisionPath[] = [
     {
-      label: "You need Custom Development",
-      description:
-        "when the business needs a new system, workflow, platform, product, or integration built around specific logic.",
-      tone: siteTones.brand,
+      key: "build",
+      label: "Build path",
+      situation: "Something new",
+      prompt: "An idea, product, or system to build from scratch.",
+      steps: [
+        {
+          name: "Custom Development",
+          meta: "New build",
+          tagline: "Built around your real logic.",
+          line: "Software built around your real logic, users, and workflows.",
+          href: services[0].href,
+          icon: "boxes",
+        },
+        {
+          name: "Engineering Support",
+          meta: "Ongoing",
+          tagline: "Kept running after launch.",
+          line: "Technical capacity to keep it running and evolving after launch.",
+          href: services[2].href,
+          icon: "support",
+        },
+      ],
     },
     {
-      label: "You need Upgrade",
-      description:
-        "when something already exists and the goal is to improve clarity, structure, conversion, performance, or product quality.",
-      tone: siteTones.services,
-    },
-    {
-      label: "You need Engineering Support",
-      description:
-        "when the business needs technical capacity across software, hardware, infrastructure, or operational technology.",
-      tone: siteTones.gateway,
-    },
-    {
-      label: "You need Business Technology Audit",
-      description:
-        "when the symptoms are visible but the real bottleneck, priority, or implementation path needs diagnosis first.",
-      tone: siteTones.data,
+      key: "improve",
+      label: "Improvement path",
+      situation: "Something that exists",
+      prompt: "Software that's underperforming, unclear, or dated.",
+      steps: [
+        {
+          name: "Business Technology Audit",
+          meta: "Diagnostic",
+          tagline: "Find the real bottleneck.",
+          line: "Find the real bottleneck before committing to a change.",
+          href: services[3].href,
+          icon: "audit",
+        },
+        {
+          name: "Upgrade",
+          meta: "Existing surface",
+          tagline: "A stronger version, shipped.",
+          line: "Ship a stronger version of what you already have live.",
+          href: services[1].href,
+          icon: "upgrade",
+        },
+      ],
     },
   ];
 
@@ -181,10 +313,10 @@ export default function ServicesPage() {
             >
               <Link
                 href="#services-offer"
-                className="site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+                className="group site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
               >
                 Review services
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href={contactHref}
@@ -205,7 +337,8 @@ export default function ServicesPage() {
            lives inside a bordered card with a faded "noon" wordmark decoration
            on the right (intro-decor.svg). Replaces the previous plain
            section-header (eyebrow/title/description) rendering. */}
-        <div className="relative mb-6 overflow-hidden border border-foreground/10 bg-card/40 p-6 lg:mb-8 lg:p-8">
+        <div className="divide-y divide-foreground/10 overflow-hidden border border-foreground/10 bg-card/40">
+          <div className="relative overflow-hidden p-6 lg:p-8">
           <Image
             src="/figma/intro-decor.svg"
             alt=""
@@ -227,18 +360,15 @@ export default function ServicesPage() {
           </div>
         </div>
 
-        {/* Figma-style service cards: technical line illustration + text,
-            alternating sides. Built at web-main scale (site-card-title / text-sm).
-            Illustrations use `invert dark:invert-0` so the light-stroked SVGs
-            read correctly in both themes. */}
-        <div className="flex flex-col gap-4 lg:gap-5">
+        {/* Figma-style service blocks — connected with a divider only (no gap),
+            alternating illustration sides. */}
           {services.map((service) => {
             const imageFirst = service.imageSide === "left";
 
             return (
               <article
                 key={service.name}
-                className="overflow-hidden border border-foreground/10 bg-card/60"
+                className="overflow-hidden"
               >
                 {/* lg:min-h ensures all 4 cards have the same vertical extent
                    regardless of bullet count or illustration aspect ratio. */}
@@ -287,11 +417,11 @@ export default function ServicesPage() {
                        revierte cambiando siteTones.brand por service.tone). */}
                     <Link
                       href={service.href}
-                      className="mt-auto inline-flex w-fit items-center gap-2 border bg-background/40 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background/70"
+                      className="group mt-auto inline-flex w-fit items-center gap-2 border bg-background/40 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background/70"
                       style={{ borderColor: "rgba(18, 0, 197, 0.65)" }}
                     >
                       {service.linkLabel}
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
                     </Link>
                   </div>
                 </div>
@@ -300,6 +430,11 @@ export default function ServicesPage() {
           })}
         </div>
       </PageSection>
+
+      {/* Enrichment — "Common problems we solve" diagnostic band (real
+         services.problemAreas content) so a business owner self-recognizes
+         their pain before choosing a service. */}
+      <ProblemAreas />
 
       {/* Figma /Services frame 189:795 — large 3-line statement between the
          service cards and the decision guide. Mirrors sandbox home/Statement.tsx
@@ -310,36 +445,17 @@ export default function ServicesPage() {
 
       <PageSection
         id="which-service"
-        eyebrow="Decision guide"
-        title="Which service do you need?"
-        description="Use this as a practical first filter. Noon can still adjust the route after reviewing the context."
         className="bg-secondary/30 py-8 lg:py-10"
       >
-        {/* Figma /Services decision-guide cards: number chip on left + an
-           accent-bordered pill button containing the service name. The
-           description below references both. Mirrors sandbox DecisionGuide.tsx
-           (NumberBadge + bordered chip). */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {decisionGuide.map((item, index) => (
-            <div key={item.label} className="border border-foreground/10 bg-background/70 p-5 lg:p-6">
-              <div className="mb-4 flex items-center gap-3">
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center border bg-background/40 text-xs font-mono text-foreground"
-                  style={{ borderColor: "rgba(18, 0, 197, 0.65)" }}
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span
-                  className="inline-flex items-center border bg-background/40 px-3 py-1.5 text-sm font-medium text-foreground"
-                  style={{ borderColor: "rgba(18, 0, 197, 0.65)" }}
-                >
-                  {item.label}
-                </span>
-              </div>
-              <p className="site-card-copy text-muted-foreground">{item.description}</p>
-            </div>
-          ))}
-        </div>
+        {/* Decision map — two real business paths rendered as small animated
+           pipelines (connectors draw + a dot travels) instead of a flat grid.
+           See components/sections/decision-map.tsx. */}
+        <DecisionMap
+          eyebrow="Decision guide"
+          title="Start where you are."
+          subtitle="Noon covers four services across two paths — a build path for new software, and an improvement path for what you already run. Pick the closest fit and we adjust the route after reviewing your context."
+          paths={decisionPaths}
+        />
       </PageSection>
 
       {/* Premium: The Noon Pipeline - Interactive visualization */}
@@ -347,7 +463,7 @@ export default function ServicesPage() {
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
-        blockHref={lp(siteRoutes.home)}
+        blockHref={lp(siteRoutes.maxwellStudio)}
         className="pt-8 pb-10 lg:pt-10 lg:pb-12"
       />
       </div>
@@ -363,9 +479,9 @@ export default function ServicesPage() {
 // ============================================================================
 
 const STATEMENT_PARAGRAPHS: ReadonlyArray<string> = [
-  "We don't develop generic software to meet a list of requirements.",
-  "We design, plan, and develop high-performance systems that meet your strict business constraints.",
-  "If you're ready to launch, select your pipeline below.",
+  "We don't build to a spec sheet — we build around how your business actually runs.",
+  "Maxwell scopes the real problem with you, senior engineers own the build, and every change is reviewed by a person before it ships.",
+  "You get production software your team operates — reviewed, maintainable, and made to last, not a prototype or a slide deck.",
 ];
 
 function ScrollLitStatement() {

@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ArrowRight, Check, Code2, FileCode2, Folder, Globe, Layers, LayoutDashboard, Milestone, Minus, Receipt, ShieldCheck, Smartphone, Sparkles, Target, UserCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -11,9 +12,184 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
-import { ComparisonShowcase } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
+
+// ── "Why Noon" comparison (traditional vs Noon) ───────────────────────────
+const COMPARISON_TITLE = "Why traditional development falls short";
+const COMPARISON_SUBTITLE = "See how Noon transforms the way software gets built";
+const COMPARISON_ITEMS = [
+  {
+    label: "Requirements",
+    traditional: "→ Weeks of meetings and documentation\n→ Scope creep and miscommunication\n→ Delayed project kickoff",
+    noon: "→ Maxwell turns your need into a clear scope\n→ What's in and out, agreed up front\n→ Scope before execution",
+  },
+  {
+    label: "Prototyping",
+    traditional: "→ Static mockups and wireframes\n→ Multiple revision cycles\n→ No working code until later phases",
+    noon: "→ A working prototype you can actually use\n→ Real code, not slides\n→ You iterate on actual software",
+  },
+  {
+    label: "Development",
+    traditional: "→ Manual coding from scratch\n→ Inconsistent quality across the team\n→ Slow feedback loops",
+    noon: "→ AI-accelerated, senior engineers review the work\n→ Production-minded code\n→ Judgment, not blind execution",
+  },
+  {
+    label: "Delivery",
+    traditional: "→ Big-bang launches with high risk\n→ Last-minute bug fixes\n→ Handoff documentation gaps",
+    noon: "→ Incremental delivery you can track\n→ Working software, not documentation\n→ Ownership aligned with your engagement model",
+  },
+] as const;
+
+// ── "What working with Noon looks like" — qualitative credibility (the #1 gap
+// vs Vercel/Linear). Built from REAL, approved commitments (FAQ + brand
+// principles), not fabricated testimonials/metrics (owner chose qualitative).
+const COMMITMENTS: { icon: typeof Target; title: string; body: string }[] = [
+  {
+    icon: Target,
+    title: "Scoped before we build",
+    body: "Maxwell clarifies the real problem and the exact build scope before any production code is written.",
+  },
+  {
+    icon: Code2,
+    title: "Real code, no lock-in",
+    body: "Everything ships as real code on a standard stack — never low-code you can't move off.",
+  },
+  {
+    icon: UserCheck,
+    title: "Senior engineers own it",
+    body: "AI accelerates the work, but a senior engineer reviews it and owns the judgment.",
+  },
+  {
+    icon: Receipt,
+    title: "Transparent pricing",
+    body: "A clear quote after the scoping phase — no hourly surprises, no hidden fees.",
+  },
+  {
+    icon: Milestone,
+    title: "Incremental delivery",
+    body: "You get working software in phases and can track progress — not a big-bang reveal.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Your data stays yours",
+    body: "Ownership follows the engagement model, and your data remains yours.",
+  },
+];
+
+// ── "What we build" — Noon's delivery areas (real, previously-unrendered
+// services.serviceTypes from messages/en.json): concrete technical domains +
+// real example types. The "use-case grid" pattern, adapted to a services firm.
+const WHAT_WE_BUILD: { icon: typeof Globe; title: string; description: string; examples: [string, string, string] }[] = [
+  {
+    icon: Sparkles,
+    title: "AI & Automation",
+    description:
+      "Intelligent assistants, workflow automation, and AI-powered tooling for teams that need speed without losing operational control.",
+    examples: ["AI assistants", "Automated workflows", "Smart integrations"],
+  },
+  {
+    icon: Globe,
+    title: "Web Solutions",
+    description:
+      "From customer-facing experiences to internal platforms, built as real software with production-grade architecture.",
+    examples: ["Web platforms", "Dashboards", "Portals"],
+  },
+  {
+    icon: Smartphone,
+    title: "Mobile Solutions",
+    description:
+      "Native and cross-platform mobile applications focused on clear flows and operational reliability.",
+    examples: ["iOS apps", "Android apps", "Cross-platform"],
+  },
+  {
+    icon: Code2,
+    title: "Custom Software",
+    description:
+      "Software shaped around your internal logic and non-standard workflows when generic systems stop being useful.",
+    examples: ["Internal tools", "Custom integrations", "Business systems"],
+  },
+];
+
+function toPoints(block: string): string[] {
+  return block.split("\n").map((l) => l.replace(/^→\s*/, "").trim()).filter(Boolean);
+}
+
+// Static, content-bearing fallback rendered on the server / until the
+// client chunk loads (the animated ComparisonShowcase is client-only).
+function ComparisonFallback() {
+  return (
+    <section className="site-section relative overflow-hidden">
+      <div className="site-shell relative">
+        <div className="mx-auto mb-10 max-w-2xl text-center lg:mb-12">
+          <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Why Noon
+          </span>
+          <h2 className="site-section-title mb-3">{COMPARISON_TITLE}</h2>
+          <p className="site-section-copy mx-auto max-w-xl text-muted-foreground">{COMPARISON_SUBTITLE}</p>
+        </div>
+        <div className="overflow-hidden border border-foreground/10 bg-card/40">
+          <div className="grid lg:grid-cols-2 lg:divide-x lg:divide-foreground/10">
+            <div className="p-6 lg:p-8">
+              <p className="mb-6 inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="flex h-5 w-5 items-center justify-center rounded-[6px] border border-foreground/15 bg-secondary/40">
+                  <Minus className="h-3 w-3" />
+                </span>
+                Traditional approach
+              </p>
+              <div className="space-y-5">
+                {COMPARISON_ITEMS.map((item) => (
+                  <div key={item.label}>
+                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">{item.label}</p>
+                    <ul className="space-y-1.5">
+                      {toPoints(item.traditional).map((p, i) => (
+                        <li key={i} className="flex gap-2 text-sm leading-snug text-muted-foreground">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-primary/[0.03] p-6 lg:p-8">
+              <p className="mb-6 inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-primary">
+                <span className="flex h-5 w-5 items-center justify-center rounded-[6px] text-primary" style={{ backgroundColor: "rgba(18,0,197,0.12)" }}>
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </span>
+                With Noon
+              </p>
+              <div className="space-y-5">
+                {COMPARISON_ITEMS.map((item) => (
+                  <div key={item.label}>
+                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">{item.label}</p>
+                    <ul className="space-y-1.5">
+                      {toPoints(item.noon).map((p, i) => (
+                        <li key={i} className="flex gap-2 text-sm leading-snug text-foreground/90">
+                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-primary" style={{ backgroundColor: "rgba(18,0,197,0.12)" }}>
+                            <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                          </span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const ComparisonShowcase = dynamic(
+  () => import("@/components/sections/premium").then((m) => m.ComparisonShowcase),
+  { ssr: false, loading: () => <ComparisonFallback /> }
+);
 
 // ============================================================================
 // SHARED — grid backdrop (same idea as the hero, reused only where the Figma
@@ -100,10 +276,10 @@ export default function AboutPage() {
             >
               <Link
                 href={lp(siteRoutes.maxwellStudio)}
-                className="site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+                className="group site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
               >
                 {t("hero.startWithMaxwell")}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href={lp(siteRoutes.services)}
@@ -174,6 +350,55 @@ export default function AboutPage() {
       </section>
 
       {/* ===================================================================
+          1.5 WHAT WE BUILD — delivery areas (real serviceTypes content). The
+              "use-case grid" pattern, adapted: concrete domains + examples.
+         =================================================================== */}
+      <section className="site-section">
+        <div className="site-shell">
+          <RevealBlock className="mb-8 max-w-2xl lg:mb-10">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              Delivery areas
+            </span>
+            <h2 className="site-section-title">
+              Four types of software <span className="text-muted-foreground">we deliver.</span>
+            </h2>
+          </RevealBlock>
+          <RevealBlock className="overflow-hidden border border-foreground/10">
+            <div className="grid gap-px bg-foreground/10 sm:grid-cols-2">
+              {WHAT_WE_BUILD.map((d) => {
+                const Icon = d.icon;
+                return (
+                  <div key={d.title} className="flex flex-col bg-background p-6 lg:p-8">
+                    <div className="mb-4 flex items-center gap-3">
+                      <span
+                        className="flex h-9 w-9 items-center justify-center rounded-[8px] text-primary"
+                        style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                      >
+                        <Icon className="h-4 w-4" strokeWidth={1.75} />
+                      </span>
+                      <h3 className="text-base font-medium text-foreground">{d.title}</h3>
+                    </div>
+                    <p className="text-sm leading-snug text-muted-foreground">{d.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {d.examples.map((ex) => (
+                        <span
+                          key={ex}
+                          className="inline-flex items-center rounded-full border border-foreground/10 bg-card/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
+                        >
+                          {ex}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </RevealBlock>
+        </div>
+      </section>
+
+      {/* ===================================================================
           2. FROM IDEA TO LAUNCH — steps + terminal. (Figma-only, hardcoded.)
          =================================================================== */}
       <section className="site-section">
@@ -192,39 +417,51 @@ export default function AboutPage() {
               ))}
             </div>
             <RevealBlock delay={200}>
-              <PipelineTerminal />
+              <DeliveryTimeline />
             </RevealBlock>
           </div>
         </div>
       </section>
 
-      {/* Premium: The Noon Difference - Comparison showcase */}
-      <ComparisonShowcase
-        title="Why Traditional Development Falls Short"
-        subtitle="See how Noon transforms the way software gets built"
-        items={[
-          {
-            label: "Requirements gathering",
-            traditional: "→ Weeks of meetings and documentation\n→ Scope creep and miscommunication\n→ Delayed project kickoff",
-            noon: "→ Maxwell analyzes your needs in real-time\n→ Generates technical spec automatically\n→ Start building within hours",
-          },
-          {
-            label: "Prototyping",
-            traditional: "→ Static mockups and wireframes\n→ Multiple revision cycles\n→ No working code until later phases",
-            noon: "→ Functional prototype in 24-48 hours\n→ Real code you can test and validate\n→ Iterate with actual software",
-          },
-          {
-            label: "Development",
-            traditional: "→ Manual coding from scratch\n→ Inconsistent quality across team\n→ Slow feedback loops",
-            noon: "→ AI-accelerated development pipeline\n→ Senior engineers validate every line\n→ Continuous delivery to production",
-          },
-          {
-            label: "Delivery",
-            traditional: "→ Big bang launches with high risk\n→ Last-minute bug fixes\n→ Handoff documentation gaps",
-            noon: "→ Incremental delivery you can track\n→ Production-ready from day one\n→ Full ownership of your code",
-          },
-        ]}
-      />
+      {/* Premium: The Noon Difference — comparison showcase (client-only; the
+         animated Noon column resolves each dimension. Static fallback on SSR.) */}
+      <ComparisonShowcase title={COMPARISON_TITLE} subtitle={COMPARISON_SUBTITLE} items={[...COMPARISON_ITEMS]} />
+
+      {/* ===================================================================
+          Enrichment — "What working with Noon looks like": qualitative
+          credibility / what-to-expect from real, approved commitments. Honest
+          trust layer (no fabricated testimonials or metrics).
+         =================================================================== */}
+      <section className="site-section">
+        <div className="site-shell">
+          <RevealBlock className="mb-8 max-w-2xl lg:mb-10">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              How we work
+            </span>
+            <h2 className="site-section-title">What working with Noon looks like.</h2>
+          </RevealBlock>
+          <RevealBlock className="overflow-hidden border border-foreground/10">
+            <div className="grid gap-px bg-foreground/10 sm:grid-cols-2 lg:grid-cols-3">
+              {COMMITMENTS.map((c) => {
+                const Icon = c.icon;
+                return (
+                  <div key={c.title} className="bg-background p-6 lg:p-7">
+                    <span
+                      className="mb-4 flex h-8 w-8 items-center justify-center rounded-[8px] text-primary"
+                      style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                    >
+                      <Icon className="h-4 w-4" strokeWidth={1.75} />
+                    </span>
+                    <h3 className="text-[15px] font-medium leading-snug text-foreground">{c.title}</h3>
+                    <p className="mt-2 text-sm leading-snug text-muted-foreground">{c.body}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </RevealBlock>
+        </div>
+      </section>
 
       {/* ===================================================================
           2.5 CONTACT NOON CTA — banner block con bg #131313 (custom, NO
@@ -274,8 +511,8 @@ export default function AboutPage() {
                 100% in code, ready to support the growth of your infrastructure.
               </p>
             </div>
-            <div className="mx-auto mt-10 max-w-3xl">
-              <EngineDeploymentMockup />
+            <div className="mx-auto mt-10 max-w-4xl">
+              <SystemArchitecture />
             </div>
           </RevealBlock>
         </div>
@@ -319,39 +556,24 @@ export default function AboutPage() {
         <div className="site-shell">
           <RevealBlock className="border border-foreground/10 px-6 py-8 lg:px-10 lg:py-10">
             <p className="site-section-copy max-w-3xl text-muted-foreground">{t("stack.description")}</p>
-            {/* Figma brand-logo band — 2 rows of 5. Logos are light-stroked SVGs,
-                so invert in light mode (invert) and keep as-is in dark (dark:invert-0). */}
-            {/* Grid divisor: 5 cols × 2 rows con borde exterior + divisores
-               internos. La grid tiene su propio borde perimetral (border) y
-               cada celda agrega border-r y border-b para formar la rejilla;
-               last-col y last-row no duplican el borde exterior. */}
-            <div className="mt-8 grid grid-cols-5 border border-foreground/10">
-              {TECH_LOGO_ROWS.flat().map((logo, i) => {
-                const isLastCol = (i + 1) % 5 === 0;
-                const isLastRow = i >= 5;
-                return (
-                  <div
-                    key={logo.alt}
-                    className={`flex h-28 items-center justify-center ${
-                      !isLastCol ? "border-r border-foreground/10" : ""
-                    } ${!isLastRow ? "border-b border-foreground/10" : ""}`}
-                  >
+            {/* Brand-logo band — Noon's approved stack (12), uniform isotypes.
+               Hairline grid via gap-px; responsive 3 → 4 → 6 columns. SVGs are
+               dark, so dark:invert flips them to white in dark mode. */}
+            <div className="mt-8 overflow-hidden border border-foreground/10">
+              <div className="grid grid-cols-3 gap-px bg-foreground/10 sm:grid-cols-4 lg:grid-cols-6">
+                {TECH_LOGOS.map((logo) => (
+                  <div key={logo.alt} className="flex h-24 items-center justify-center bg-background lg:h-28">
                     <Image
                       src={logo.src}
                       width={40}
                       height={40}
                       alt={logo.alt}
                       unoptimized
-                      // AWS tiene padding interno en el SVG (smile + texto no
-                      // llenan el viewBox); lo scaleo +25% para compensar y
-                      // matchear el peso visual de los demás isotipos.
-                      className={`opacity-40 transition-opacity duration-300 hover:opacity-100 dark:invert ${
-                        logo.alt === "AWS" ? "h-12 w-12" : "h-10 w-10"
-                      }`}
+                      className="h-9 w-9 opacity-40 transition-opacity duration-300 hover:opacity-100 dark:invert lg:h-10 lg:w-10"
                     />
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </RevealBlock>
         </div>
@@ -362,7 +584,7 @@ export default function AboutPage() {
       <SiteCtaBlock
         title={t("cta.headline")}
         description={t("cta.description")}
-        blockHref={lp(siteRoutes.home)}
+        blockHref={lp(siteRoutes.maxwellStudio)}
         className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
       />
       </div>
@@ -381,23 +603,22 @@ const LAUNCH_STEPS = [
   { n: "04", title: "Judgment, not blind execution" },
 ] as const;
 
-// Tech stack: 10 isotipos uniformes 24×24 (simple-icons CDN). Sin wordmarks
-// — todos son íconos cuadrados del mismo tamaño visual.
-const TECH_LOGO_ROWS = [
-  [
-    { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript" },
-    { src: "/figma/logos/logo-supabase.svg", alt: "Supabase" },
-    { src: "/figma/logos/logo-anthropic.svg", alt: "Anthropic" },
-    { src: "/figma/logos/logo-cursor.svg", alt: "Cursor" },
-    { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js" },
-  ],
-  [
-    { src: "/figma/logos/logo-vercel.svg", alt: "Vercel" },
-    { src: "/figma/logos/logo-aws.svg", alt: "AWS" },
-    { src: "/figma/logos/logo-openai.svg", alt: "OpenAI" },
-    { src: "/figma/logos/logo-nextjs.svg", alt: "Next.js" },
-    { src: "/figma/logos/logo-github.svg", alt: "GitHub" },
-  ],
+// Tech stack — Noon's approved stack (12), uniform isotypes (simple-icons).
+// Aligned to the brand stack (added React/Tailwind/Python/PostgreSQL/Stripe/
+// Flutter; dropped off-stack Anthropic/Cursor/AWS/GitHub).
+const TECH_LOGOS = [
+  { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript" },
+  { src: "/figma/logos/logo-react.svg", alt: "React" },
+  { src: "/figma/logos/logo-nextjs.svg", alt: "Next.js" },
+  { src: "/figma/logos/logo-tailwind.svg", alt: "Tailwind CSS" },
+  { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js" },
+  { src: "/figma/logos/logo-python.svg", alt: "Python" },
+  { src: "/figma/logos/logo-postgresql.svg", alt: "PostgreSQL" },
+  { src: "/figma/logos/logo-supabase.svg", alt: "Supabase" },
+  { src: "/figma/logos/logo-vercel.svg", alt: "Vercel" },
+  { src: "/figma/logos/logo-stripe.svg", alt: "Stripe" },
+  { src: "/figma/logos/logo-openai.svg", alt: "OpenAI" },
+  { src: "/figma/logos/logo-flutter.svg", alt: "Flutter" },
 ] as const;
 
 // ============================================================================
@@ -489,12 +710,34 @@ function FileTreeMockup() {
           <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
         </div>
       </div>
-      <div className="space-y-1.5 p-4 font-mono text-xs leading-5 text-muted-foreground/70">
-        <div className="text-foreground">your-project/</div>
-        <div className="ml-3.5">├── src/</div>
-        <div className="ml-7">│ ├── components/</div>
-        <div className="ml-7">│ └── lib/</div>
-        <div className="ml-3.5">└── package.json</div>
+      <div className="space-y-1 p-4 font-mono text-xs">
+        {[
+          { depth: 0, name: "your-project/", kind: "dir" },
+          { depth: 1, name: "src/", kind: "dir" },
+          { depth: 2, name: "app/", kind: "dir" },
+          { depth: 2, name: "components/", kind: "dir" },
+          { depth: 2, name: "lib/", kind: "dir" },
+          { depth: 1, name: "package.json", kind: "file" },
+        ].map((n) => (
+          <div key={n.name} className="flex items-center gap-2" style={{ paddingLeft: n.depth * 16 }}>
+            {n.kind === "dir" ? (
+              <Folder className="h-3.5 w-3.5 shrink-0 text-primary/70" strokeWidth={1.75} />
+            ) : (
+              <FileCode2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" strokeWidth={1.75} />
+            )}
+            <span
+              className={
+                n.kind === "file"
+                  ? "text-muted-foreground/70"
+                  : n.depth === 0
+                    ? "font-medium text-foreground"
+                    : "text-foreground/80"
+              }
+            >
+              {n.name}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -601,173 +844,245 @@ function LaunchStep({ step, index }: { step: { n: string; title: string }; index
   );
 }
 
-function PipelineTerminal() {
-  const lines: { text: string; tone: "command" | "log" | "muted" | "success" | "info" }[] = [
-    { text: "$ npx create-noon-app@latest init", tone: "command" },
-    { text: "→ [Maxwell AI] Analyzing system architecture requirements...", tone: "log" },
-    {
-      text: "Direction is defined and agreed before production code is written. Ambiguity is resolved at the start, not during development.",
-      tone: "muted",
-    },
-    { text: "✔ Direction is defined and agreed before production code.", tone: "success" },
-    { text: "✔ Core pipeline generated in workspace.json", tone: "success" },
-    { text: "🚀 Initializing git repository... Done.", tone: "info" },
-  ];
+// ── "From idea to launch" — incremental delivery timeline ───────────────────
+// Replaces the old fictional `npx create-noon-app` CLI (Noon is not an npm
+// package). Honest + tangible: the running example project (order-tracking
+// portal) shipping in phases, reinforcing the approved "incremental delivery
+// you can track" principle. Illustrative product UI — no fabricated metrics.
+const DELIVERY_PHASES: { n: string; name: string; note: string; status: "shipped" | "active" | "planned" }[] = [
+  { n: "01", name: "Auth + order list", note: "login · scoped per client", status: "shipped" },
+  { n: "02", name: "Live status + history", note: "Supabase Realtime · search", status: "shipped" },
+  { n: "03", name: "Alerts + admin view", note: "email + SMS · Noon ops", status: "active" },
+  { n: "04", name: "Launch", note: "live in production", status: "planned" },
+];
 
-  const toneClass = (tone: (typeof lines)[number]["tone"]) => {
-    switch (tone) {
-      case "command":
-        return "text-foreground";
-      case "muted":
-        return "text-muted-foreground/60";
-      default:
-        return "text-muted-foreground";
-    }
-  };
-  const toneColor = (tone: (typeof lines)[number]["tone"]) => {
-    switch (tone) {
-      case "log":
-        return siteTones.gateway.accent;
-      case "success":
-        return siteTones.gateway.accent;
-      case "info":
-        return siteTones.services.accent;
-      default:
-        return undefined;
-    }
-  };
+const STATUS_META: Record<"shipped" | "active" | "planned", { label: string; cls: string }> = {
+  shipped: { label: "Shipped", cls: "border-foreground/15 text-muted-foreground" },
+  active: { label: "In progress", cls: "border-primary/30 text-primary" },
+  planned: { label: "Planned", cls: "border-foreground/10 text-muted-foreground/50" },
+};
 
+function DeliveryTimeline() {
+  const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.2 });
+  const last = DELIVERY_PHASES.length - 1;
   return (
-    <div className="overflow-hidden border border-foreground/10 bg-foreground/[0.04] dark:bg-[#0a0a0a]">
-      <div className="flex items-center justify-between border-b border-foreground/10 px-4 py-2.5">
-        <span className="font-mono text-[0.625rem] uppercase tracking-[0.1em] text-muted-foreground/70">
-          noon-pipeline ~ bash
+    <div ref={ref} className="overflow-hidden border border-foreground/10 bg-background/60 dark:bg-[#090909]">
+      {/* header */}
+      <div className="flex items-center gap-2 border-b border-foreground/10 px-5 py-2.5">
+        <Milestone className="h-3.5 w-3.5 text-muted-foreground/60" strokeWidth={1.75} />
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/60">
+          Incremental delivery
         </span>
-        <span className="font-mono text-[0.625rem] text-muted-foreground/40">●●●</span>
+        <span className="ml-auto hidden font-mono text-[10px] text-muted-foreground/40 sm:block">
+          order-tracking portal
+        </span>
       </div>
-      <div className="flex flex-col gap-2 p-5 font-mono text-xs leading-5">
-        {lines.map((line, i) => (
-          <div key={i} className={toneClass(line.tone)} style={{ color: toneColor(line.tone) }}>
-            {line.text}
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center justify-between border-t border-foreground/10 px-4 py-2.5">
-        <span className="font-mono text-[0.625rem] text-muted-foreground/60">ACTIVE_FLOW: STEP_1/4</span>
-        <span className="font-mono text-[0.625rem] text-muted-foreground/60">maxwell.noon.dev</span>
+
+      {/* phases on a vertical timeline */}
+      <div className="px-5 py-2">
+        {DELIVERY_PHASES.map((p, i) => {
+          const s = STATUS_META[p.status];
+          return (
+            <div
+              key={p.n}
+              className={`flex items-center gap-4 py-3.5 transition-all duration-700 ${
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+              }`}
+              style={{ transitionDelay: `${i * 100}ms` }}
+            >
+              {/* timeline node + spine */}
+              <div className="relative flex w-4 shrink-0 items-center justify-center self-stretch">
+                <span
+                  aria-hidden
+                  className={`absolute left-1/2 w-px -translate-x-1/2 bg-foreground/15 ${
+                    i === 0 ? "bottom-0 top-1/2" : i === last ? "bottom-1/2 top-0" : "inset-y-0"
+                  }`}
+                />
+                {p.status === "active" ? (
+                  <span className="relative z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary ring-4 ring-background dark:ring-[#090909]">
+                    <span className="h-1 w-1 rounded-full bg-primary-foreground" />
+                  </span>
+                ) : p.status === "shipped" ? (
+                  <span className="relative z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-foreground/70 ring-4 ring-background dark:ring-[#090909]">
+                    <Check className="h-2 w-2 text-background" strokeWidth={4} />
+                  </span>
+                ) : (
+                  <span className="relative z-10 h-2.5 w-2.5 rounded-full border border-foreground/30 bg-background ring-4 ring-background dark:bg-[#090909] dark:ring-[#090909]" />
+                )}
+              </div>
+
+              {/* phase label */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground/45">{p.n}</span>
+                  <span className="text-[13px] font-medium leading-tight text-foreground">{p.name}</span>
+                </div>
+                <p className="mt-0.5 font-mono text-[10px] leading-tight text-muted-foreground/60">{p.note}</p>
+              </div>
+
+              {/* status pill */}
+              <span className={`shrink-0 rounded-full border px-2 py-0.5 font-mono text-[9.5px] ${s.cls}`}>
+                {s.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 // ============================================================================
-// ENGINEERING AT ITS CORE — Maxwell Engine Deployment mockup
+// ENGINEERING AT ITS CORE — system architecture of a Noon-built product.
+// Real runtime layers (surface → application → typed core → data) on Noon's
+// actual stack (real brand logos), plus the engineering defaults that keep it
+// production-grade. Replaces the old fictional "Maxwell Engine v2.6.0 / QA
+// 98/100" deployment mock — a fabricated metric and a product that doesn't
+// exist. No invented numbers; theme-aware; flush-bottom so it reads as a
+// screen embedded in the panel.
 // ============================================================================
 
-function EngineDeploymentMockup() {
-  const logs = [
-    { t: "00:00.1", color: undefined, msg: "Initializing Maxwell Engine v2.6.0…" },
-    { t: "00:00.4", color: siteTones.brandStructural.accent, msg: "→  Scanning project structure (142 files)" },
-    { t: "00:01.2", color: siteTones.brandStructural.accent, msg: "→  Running type-safety checks…" },
-    { t: "00:02.1", color: siteTones.gateway.accent, msg: "✓  TypeScript strict — 0 errors" },
-    { t: "00:02.8", color: siteTones.brandStructural.accent, msg: "→  Building production artifacts…" },
-    { t: "00:04.3", color: siteTones.gateway.accent, msg: "✓  Build complete  2.4 MB → 1.1 MB gzip" },
-    { t: "00:04.9", color: siteTones.brandStructural.accent, msg: "→  Deploying to production edge…" },
-    { t: "00:06.1", color: siteTones.gateway.accent, msg: "✓  Deployment successful · noon.dev" },
-  ];
+type ArchNode = { name: string; logo?: string; icon?: typeof Globe };
 
-  const tree = [
-    "project-repo/",
-    "├ src/",
-    "│  ├ app/",
-    "│  ├ components/",
-    "│  └ lib/",
-    "├ public/",
-    "├ package.json",
-    "├ tsconfig.json",
-    "└ next.config.ts",
-  ];
+const ARCH_LAYERS: { n: string; label: string; meta: string; nodes: ArchNode[] }[] = [
+  {
+    n: "01",
+    label: "Surface",
+    meta: "web · mobile · admin",
+    nodes: [
+      { name: "Web app", icon: Globe },
+      { name: "Mobile", icon: Smartphone },
+      { name: "Admin", icon: LayoutDashboard },
+    ],
+  },
+  {
+    n: "02",
+    label: "Application",
+    meta: "server-rendered · edge-deployed",
+    nodes: [
+      { name: "Next.js", logo: "/figma/logos/logo-nextjs.svg" },
+      { name: "Vercel", logo: "/figma/logos/logo-vercel.svg" },
+    ],
+  },
+  {
+    n: "03",
+    label: "Typed core",
+    meta: "end-to-end TypeScript · server actions",
+    nodes: [
+      { name: "TypeScript", logo: "/figma/logos/logo-typescript.svg" },
+      { name: "Node.js", logo: "/figma/logos/logo-nodejs.svg" },
+    ],
+  },
+  {
+    n: "04",
+    label: "Data & services",
+    meta: "Postgres · auth · realtime · storage",
+    nodes: [
+      { name: "Supabase", logo: "/figma/logos/logo-supabase.svg" },
+      { name: "AWS", logo: "/figma/logos/logo-aws.svg" },
+    ],
+  },
+];
 
-  const tags = ["Architecture", "Type-safety", "Security"];
+const ARCH_DEFAULTS = [
+  "Typed end-to-end",
+  "Senior-engineer review",
+  "Incremental delivery",
+  "Versioned in Git",
+] as const;
 
+function ArchChip({ node }: { node: ArchNode }) {
+  const Icon = node.icon;
   return (
-    <div className="overflow-hidden border border-b-0 border-foreground/10 bg-background/60 dark:bg-[#090909]">
-      {/* Title bar */}
-      <div className="flex items-center gap-3 border-b border-foreground/10 px-4 py-2.5">
-        <div className="flex gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-        </div>
-        <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-muted-foreground/50">
-          Interactive Workspace
+    <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-foreground/10 bg-card/70 px-2.5 py-1.5">
+      {node.logo ? (
+        <Image src={node.logo} width={16} height={16} alt="" unoptimized className="h-4 w-4 opacity-90 dark:invert" />
+      ) : Icon ? (
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.75} />
+      ) : null}
+      <span className="text-[12px] font-medium text-foreground/85">{node.name}</span>
+    </span>
+  );
+}
+
+function SystemArchitecture() {
+  const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.2 });
+  const last = ARCH_LAYERS.length - 1;
+  return (
+    <div
+      ref={ref}
+      className="overflow-hidden border border-b-0 border-foreground/10 bg-background/60 dark:bg-[#090909]"
+    >
+      {/* header */}
+      <div className="flex items-center gap-2 border-b border-foreground/10 px-5 py-2.5">
+        <Layers className="h-3.5 w-3.5 text-muted-foreground/60" strokeWidth={1.75} />
+        <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/60">
+          System architecture
+        </span>
+        <span className="ml-auto hidden font-mono text-[10px] tracking-wide text-muted-foreground/40 sm:block">
+          request flows top → down
         </span>
       </div>
 
-      {/* Header: title + QA score */}
-      <div className="flex items-center justify-between gap-4 border-b border-foreground/10 px-4 py-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">Maxwell Engine Deployment</span>
-            <span
-              className="rounded-full px-2 py-0.5 font-mono text-[0.625rem]"
-              style={{
-                color: siteTones.brandStructural.accent,
-                backgroundColor: siteTones.brandStructural.mutedSurface,
-              }}
-            >
-              #NOON-2026
-            </span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
+      {/* runtime layers — components tap off a vertical request spine */}
+      <div className="px-5 py-1">
+        {ARCH_LAYERS.map((layer, i) => (
+          <div
+            key={layer.n}
+            className={`flex flex-col gap-3 py-4 transition-all duration-700 sm:flex-row sm:items-center sm:gap-4 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+            }`}
+            style={{ transitionDelay: `${i * 100}ms` }}
+          >
+            {/* spine + node */}
+            <div className="relative hidden w-5 shrink-0 items-center justify-center self-stretch sm:flex">
               <span
-                key={tag}
-                className="flex items-center gap-1 bg-foreground/5 px-2 py-0.5 font-mono text-[0.625rem] text-muted-foreground/70"
-              >
-                <span style={{ color: siteTones.gateway.accent }}>✓</span>
-                {tag}
-              </span>
-            ))}
+                aria-hidden
+                className={`absolute left-1/2 w-px -translate-x-1/2 bg-foreground/15 ${
+                  i === 0 ? "bottom-0 top-1/2" : i === last ? "bottom-1/2 top-0" : "inset-y-0"
+                }`}
+              />
+              <span className="relative z-10 h-2 w-2 rounded-full bg-foreground/40 ring-4 ring-background dark:ring-[#090909]" />
+            </div>
+
+            {/* label + meta */}
+            <div className="min-w-0 sm:w-64 sm:shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] text-muted-foreground/45">{layer.n}</span>
+                <span className="text-[13px] font-medium leading-tight text-foreground">{layer.label}</span>
+              </div>
+              <p className="mt-1 font-mono text-[10px] leading-tight text-muted-foreground/65">{layer.meta}</p>
+            </div>
+
+            {/* connecting trace */}
+            <span aria-hidden className="hidden h-px flex-1 bg-foreground/10 sm:block" />
+
+            {/* component nodes */}
+            <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+              {layer.nodes.map((node) => (
+                <ArchChip key={node.name} node={node} />
+              ))}
+            </div>
           </div>
-        </div>
-        <div
-          className="flex shrink-0 items-baseline gap-1 px-3 py-1.5"
-          style={{ backgroundColor: siteTones.gateway.mutedSurface }}
-        >
-          <span className="font-mono text-[0.625rem]" style={{ color: siteTones.gateway.accent }}>
-            QA
-          </span>
-          <span className="font-mono text-xl font-bold leading-none" style={{ color: siteTones.gateway.accent }}>
-            98
-          </span>
-          <span className="font-mono text-[0.625rem]" style={{ color: siteTones.gateway.accent }}>
-            / 100
-          </span>
-        </div>
+        ))}
       </div>
 
-      {/* Body: log + file tree */}
-      <div className="flex">
-        <div className="flex-1 overflow-hidden px-4 py-3">
-          <div className="space-y-1.5 font-mono text-[0.6875rem] leading-4">
-            {logs.map((log, i) => (
-              <div key={i} className="flex gap-2.5">
-                <span className="shrink-0 text-muted-foreground/30">[{log.t}]</span>
-                <span style={{ color: log.color }} className={log.color ? "" : "text-muted-foreground/60"}>
-                  {log.msg}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="hidden w-44 shrink-0 border-l border-foreground/10 px-4 py-3 sm:block">
-          <div className="space-y-1 font-mono text-[0.625rem] leading-4 text-muted-foreground/50">
-            {tree.map((node, i) => (
-              <div key={i}>{node}</div>
-            ))}
-          </div>
-        </div>
+      {/* engineering defaults — full-width rail */}
+      <div
+        className={`flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-foreground/10 bg-foreground/[0.02] px-5 py-3 transition-all duration-700 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ transitionDelay: `${ARCH_LAYERS.length * 100}ms` }}
+      >
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/45">
+          Engineering defaults
+        </span>
+        {ARCH_DEFAULTS.map((item) => (
+          <span key={item} className="inline-flex items-center gap-1.5 text-[12px] text-foreground/80">
+            <Check className="h-3 w-3 shrink-0 text-primary" strokeWidth={3} />
+            {item}
+          </span>
+        ))}
       </div>
     </div>
   );

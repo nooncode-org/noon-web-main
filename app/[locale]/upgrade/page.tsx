@@ -94,32 +94,25 @@ async function UpgradePageContent({ params, searchParams }: Props) {
           ].map((item, index) => (
             <div
               key={item.step}
-              className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-6 transition-all duration-500 hover:border-primary/30 hover:bg-card"
+              className="group border border-foreground/10 bg-card/50 p-6 transition-colors duration-300 hover:border-foreground/20"
               style={{
                 animation: "reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
                 animationDelay: `${index * 100}ms`,
                 opacity: 0,
               }}
             >
-              {/* Gradient background */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
-                aria-hidden="true"
-              />
-              <div className="relative">
-                <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-sm font-mono text-primary">
-                  {item.step}
-                </span>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-              </div>
+              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-[8px] border border-primary/30 bg-primary/10 text-sm font-mono text-primary">
+                {item.step}
+              </span>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Premium: Before/After Scan visualization */}
-      <BeforeAfterScan className="mt-8" />
+      <BeforeAfterScan className="mt-20" />
     </section>
   );
 }

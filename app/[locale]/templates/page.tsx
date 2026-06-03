@@ -2,13 +2,13 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, LayoutGrid, Filter } from "lucide-react";
+import { ArrowRight, Check, Filter, LayoutGrid, Minus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
-import { templates, templateCategories } from "@/data/templates";
+import { templates, templateCategories, templatePrinciples, templateSelectionGuides } from "@/data/templates";
 import { siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explore-builds-section";
@@ -64,10 +64,10 @@ export default function TemplatesPage() {
             >
               <Link
                 href={lp(siteRoutes.maxwellStudio)}
-                className="site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+                className="group site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
               >
                 {t("hero.startWithMaxwell")}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href={lp(siteRoutes.services)}
@@ -82,6 +82,60 @@ export default function TemplatesPage() {
 
       {/* Premium: Template hero preview */}
       <TemplateHeroPreview className="bg-background" />
+
+      {/* Enrichment — how Noon templates work: real principles + selection
+         guide (templatePrinciples / templateSelectionGuides, previously
+         unrendered). Sets honest expectations: a structured starting point,
+         not a boxed product. */}
+      <section className="site-section">
+        <div className="site-shell">
+          <div className="mb-8 max-w-2xl lg:mb-10">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              How templates work
+            </span>
+            <h2 className="site-section-title">
+              Structured starting points, <span className="text-muted-foreground">not boxed products.</span>
+            </h2>
+          </div>
+
+          {/* the 3 principles — hairline 3-up */}
+          <div className="overflow-hidden border border-foreground/10">
+            <div className="grid gap-px bg-foreground/10 lg:grid-cols-3">
+              {templatePrinciples.map((p) => (
+                <div key={p.title} className="bg-background p-6 lg:p-7">
+                  <h3 className="text-[15px] font-medium leading-snug text-foreground">{p.title}</h3>
+                  <p className="mt-2 text-sm leading-snug text-muted-foreground">{p.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* selection guide — when to use / when not */}
+          <div className="mt-4 overflow-hidden border border-foreground/10">
+            <div className="grid gap-px bg-foreground/10 lg:grid-cols-3">
+              {templateSelectionGuides.map((g, i) => (
+                <div key={g.title} className="flex flex-col bg-background p-6 lg:p-7">
+                  <span
+                    className={`mb-3 flex h-7 w-7 items-center justify-center rounded-[8px] ${
+                      i === 0 ? "text-primary" : "border border-foreground/15 text-muted-foreground"
+                    }`}
+                    style={i === 0 ? { backgroundColor: "rgba(18,0,197,0.10)" } : undefined}
+                  >
+                    {i === 0 ? (
+                      <Check className="h-4 w-4" strokeWidth={2.5} />
+                    ) : (
+                      <Minus className="h-4 w-4" strokeWidth={2.5} />
+                    )}
+                  </span>
+                  <h3 className="text-sm font-medium leading-snug text-foreground">{g.title}</h3>
+                  <p className="mt-1.5 text-sm leading-snug text-muted-foreground">{g.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Templates by category */}
       <section className="site-section bg-secondary/30">
@@ -159,7 +213,7 @@ export default function TemplatesPage() {
       <SiteCtaBlock
         title={t("cta.headline")}
         description={t("cta.description")}
-        blockHref={lp(siteRoutes.home)}
+        blockHref={lp(siteRoutes.maxwellStudio)}
         className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
       />
     </SitePageFrame>
