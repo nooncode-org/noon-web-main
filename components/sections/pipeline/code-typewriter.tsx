@@ -26,11 +26,10 @@ export function CodeTypewriter({
 
   useEffect(() => {
     if (!isActive) {
-      setDisplayedCode("");
-      indexRef.current = 0;
       return;
     }
 
+    indexRef.current = 0;
     const interval = setInterval(() => {
       if (indexRef.current < code.length) {
         setDisplayedCode(code.slice(0, indexRef.current + 1));
@@ -41,7 +40,13 @@ export function CodeTypewriter({
       }
     }, speed);
 
-    return () => clearInterval(interval);
+    // Reset in cleanup (on deactivate/unmount) rather than synchronously in
+    // the effect body, which the react-hooks rules flag as cascading setState.
+    return () => {
+      clearInterval(interval);
+      setDisplayedCode("");
+      indexRef.current = 0;
+    };
   }, [isActive, code, speed, onComplete]);
 
   // Cursor blink
@@ -59,7 +64,7 @@ export function CodeTypewriter({
     const lines = text.split("\n");
     return lines.map((line, lineIndex) => {
       // Highlight keywords
-      let highlighted = line
+      const highlighted = line
         .replace(
           /\b(const|let|var|function|return|import|export|from|async|await|if|else|for|while|class|interface|type)\b/g,
           '<span class="text-purple-400">$1</span>'

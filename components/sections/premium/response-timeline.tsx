@@ -18,12 +18,6 @@ interface ResponseTimelineProps {
   className?: string;
 }
 
-const statusIcons = {
-  pending: Clock,
-  active: Zap,
-  complete: Check,
-};
-
 export function ResponseTimeline({
   title = "What to Expect",
   subtitle,
