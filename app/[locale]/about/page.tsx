@@ -13,6 +13,7 @@ import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
 import { MaxwellStudioPreview } from "@/components/sections/maxwell-studio-preview";
+import { TechEcosystem } from "@/components/sections/tech-ecosystem";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -750,37 +751,16 @@ export default function AboutPage() {
          =================================================================== */}
       <section id="technology" className="site-section">
         <div className="site-shell">
-          <RevealBlock className="border border-foreground/10 px-6 py-8 lg:px-10 lg:py-10">
-            <p className="site-section-copy max-w-3xl text-muted-foreground">{t("stack.description")}</p>
-            {/* Stack & integrations — grouped by layer (real recognizable logos
-               + names). Hairline-divided rows; SVGs are dark → dark:invert. */}
-            <div className="mt-8 divide-y divide-foreground/10 overflow-hidden border border-foreground/10">
-              {TECH_STACK_GROUPS.map((group) => (
-                <div
-                  key={group.label}
-                  className="flex flex-col gap-3 bg-background px-5 py-4 sm:flex-row sm:items-center sm:gap-6 lg:px-6"
-                >
-                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/70 sm:w-40">
-                    {group.label}
-                  </span>
-                  <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
-                    {group.logos.map((logo) => (
-                      <span key={logo.alt} className="inline-flex items-center gap-2">
-                        <Image
-                          src={logo.src}
-                          width={28}
-                          height={28}
-                          alt={logo.alt}
-                          unoptimized
-                          className="h-5 w-5 opacity-50 transition-opacity duration-300 hover:opacity-100 dark:invert"
-                        />
-                        <span className="text-[12.5px] text-muted-foreground">{logo.alt}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <RevealBlock className="mb-8 max-w-2xl lg:mb-10">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              Tools &amp; technology
+            </span>
+            <h2 className="site-section-title">The technology behind every build</h2>
+            <p className="site-section-copy mt-3 text-muted-foreground">{t("stack.description")}</p>
+          </RevealBlock>
+          <RevealBlock delay={150}>
+            <TechEcosystem />
           </RevealBlock>
         </div>
       </section>
@@ -808,44 +788,6 @@ const LAUNCH_STEPS = [
   { n: "03", title: "Explicit exclusions" },
   { n: "04", title: "Judgment, not blind execution" },
 ] as const;
-
-// Tech stack & integrations — Noon's real, approved stack, grouped by layer so
-// the logos read as a real engineering stack (recognizable isotypes + names),
-// not a loose icon wall. simple-icons SVGs are dark → dark:invert in dark mode.
-const TECH_STACK_GROUPS: { label: string; logos: { src: string; alt: string }[] }[] = [
-  {
-    label: "Languages",
-    logos: [
-      { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript" },
-      { src: "/figma/logos/logo-python.svg", alt: "Python" },
-    ],
-  },
-  {
-    label: "Frontend",
-    logos: [
-      { src: "/figma/logos/logo-react.svg", alt: "React" },
-      { src: "/figma/logos/logo-nextjs.svg", alt: "Next.js" },
-      { src: "/figma/logos/logo-tailwind.svg", alt: "Tailwind CSS" },
-      { src: "/figma/logos/logo-flutter.svg", alt: "Flutter" },
-    ],
-  },
-  {
-    label: "Backend & data",
-    logos: [
-      { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js" },
-      { src: "/figma/logos/logo-postgresql.svg", alt: "PostgreSQL" },
-      { src: "/figma/logos/logo-supabase.svg", alt: "Supabase" },
-    ],
-  },
-  {
-    label: "Platform & services",
-    logos: [
-      { src: "/figma/logos/logo-vercel.svg", alt: "Vercel" },
-      { src: "/figma/logos/logo-openai.svg", alt: "OpenAI" },
-      { src: "/figma/logos/logo-stripe.svg", alt: "Stripe" },
-    ],
-  },
-];
 
 // ============================================================================
 // SHARED PRIMITIVES
