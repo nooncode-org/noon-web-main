@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
+
+// Deterministic pseudo-random in [0, 1) from a seed. Replaces Math.random()
+// so particle values are computed purely during render (react-hooks/purity)
+// and stay stable across re-renders instead of changing on every render.
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 type Particle = {
   id: number;
@@ -31,26 +39,23 @@ export function FloatingParticles({
   minDuration = 15,
   maxDuration = 30,
 }: FloatingParticlesProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // Deterministic seeded values mean SSR and client render identically, so no
+  // client-only `mounted` gate is needed (it previously existed only to avoid
+  // a hydration mismatch from Math.random).
   const particles = useMemo<Particle[]>(() => {
-    if (!mounted) return [];
-    return Array.from({ length: count }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: minSize + Math.random() * (maxSize - minSize),
-      duration: minDuration + Math.random() * (maxDuration - minDuration),
-      delay: Math.random() * -maxDuration,
-      opacity: 0.1 + Math.random() * 0.3,
-    }));
-  }, [mounted, count, minSize, maxSize, minDuration, maxDuration]);
-
-  if (!mounted) return null;
+    return Array.from({ length: count }, (_, i) => {
+      const seed = i * 6;
+      return {
+        id: i,
+        x: seededRandom(seed + 1) * 100,
+        y: seededRandom(seed + 2) * 100,
+        size: minSize + seededRandom(seed + 3) * (maxSize - minSize),
+        duration: minDuration + seededRandom(seed + 4) * (maxDuration - minDuration),
+        delay: seededRandom(seed + 5) * -maxDuration,
+        opacity: 0.1 + seededRandom(seed + 6) * 0.3,
+      };
+    });
+  }, [count, minSize, maxSize, minDuration, maxDuration]);
 
   return (
     <div

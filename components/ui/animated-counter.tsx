@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 
 type AnimatedCounterProps = {
@@ -33,44 +33,40 @@ export function AnimatedCounter({
     once: true,
   });
   const animationRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-
-  const animate = useCallback(
-    (timestamp: number) => {
-      if (!startTimeRef.current) {
-        startTimeRef.current = timestamp;
-      }
-
-      const elapsed = timestamp - startTimeRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutExpo(progress);
-
-      setCount(easedProgress * end);
-
-      if (progress < 1) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        setCount(end);
-      }
-    },
-    [duration, end]
-  );
 
   useEffect(() => {
-    if (isVisible && !hasAnimated) {
-      const timeoutId = setTimeout(() => {
-        setHasAnimated(true);
-        animationRef.current = requestAnimationFrame(animate);
-      }, delay);
+    if (!isVisible || hasAnimated) return;
 
-      return () => {
-        clearTimeout(timeoutId);
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
+    const timeoutId = setTimeout(() => {
+      setHasAnimated(true);
+
+      // Local closure instead of a self-referential useCallback (which the
+      // react-hooks rules flag as "used before declared"). `tick` is only
+      // invoked on the next animation frame, after it is assigned.
+      let startTime: number | null = null;
+      const tick = (timestamp: number) => {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        setCount(easeOutExpo(progress) * end);
+
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(tick);
+        } else {
+          setCount(end);
         }
       };
-    }
-  }, [isVisible, hasAnimated, animate, delay]);
+
+      animationRef.current = requestAnimationFrame(tick);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isVisible, hasAnimated, duration, end, delay]);
 
   useEffect(() => {
     return () => {
