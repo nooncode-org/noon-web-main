@@ -50,7 +50,6 @@ export const templates = [
     slug: "client-portal-saas",
     name: "Client Portal SaaS",
     category: "SaaS",
-    image: "/templates/client-portal-saas.jpg",
     summary:
       "A production-ready foundation for service businesses that need authenticated users, accounts, billing, and delivery workflows.",
     bestFit: ["Client-facing SaaS", "Subscription services", "Account-based software"],
@@ -68,7 +67,6 @@ export const templates = [
     slug: "operations-command-center",
     name: "Operations Command Center",
     category: "Dashboards",
-    image: "/templates/operations-command-center.jpg",
     summary:
       "A central dashboard for teams that need live visibility across orders, tasks, approvals, and reporting.",
     bestFit: ["Ops reporting", "Team dashboards", "Executive visibility"],
@@ -86,7 +84,6 @@ export const templates = [
     slug: "approval-workflow-tool",
     name: "Approval Workflow Tool",
     category: "Internal tools",
-    image: "/templates/approval-workflow-tool.jpg",
     summary:
       "An internal operational tool for approvals, assignments, escalations, and process visibility.",
     bestFit: ["Internal approvals", "Ops routing", "Admin workflows"],
@@ -104,7 +101,6 @@ export const templates = [
     slug: "customer-support-ai-assistant",
     name: "Customer Support AI Assistant",
     category: "AI assistants",
-    image: "/templates/customer-support-ai-assistant.jpg",
     summary:
       "A structured base for AI-assisted support with escalation paths, human handoff, and operational visibility.",
     bestFit: ["Support automation", "Internal assistants", "Helpdesk acceleration"],
@@ -122,7 +118,6 @@ export const templates = [
     slug: "multi-vendor-marketplace",
     name: "Multi-Vendor Marketplace",
     category: "Marketplaces",
-    image: "/templates/multi-vendor-marketplace.jpg",
     summary:
       "A marketplace starting point with vendor onboarding, catalog structure, and buyer-seller operational flows.",
     bestFit: ["Service marketplaces", "Product marketplaces", "B2B matching platforms"],
@@ -140,7 +135,6 @@ export const templates = [
     slug: "reservation-platform",
     name: "Reservation Platform",
     category: "Booking platforms",
-    image: "/templates/reservation-platform.jpg",
     summary:
       "A booking-oriented foundation for businesses that need scheduling, availability, and managed reservations.",
     bestFit: ["Hospitality", "Services scheduling", "Booking operations"],
@@ -158,7 +152,6 @@ export const templates = [
     slug: "commerce-operations-storefront",
     name: "Commerce Operations Storefront",
     category: "E-commerce",
-    image: "/templates/commerce-operations-storefront.jpg",
     summary:
       "A commerce-ready foundation combining storefront flows with operational management and order oversight.",
     bestFit: ["Digital commerce", "Operational storefronts", "Catalog businesses"],
@@ -176,7 +169,6 @@ export const templates = [
     slug: "field-service-mobile-app",
     name: "Field Service Mobile App",
     category: "Mobile apps",
-    image: "/templates/field-service-mobile-app.jpg",
     summary:
       "A mobile starting point for operators and field teams who need tasks, statuses, and lightweight operational workflows.",
     bestFit: ["Field teams", "Internal mobile tools", "Service operations"],

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { TemplateMockup } from "@/components/landing/explore-builds-section";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check, X } from "lucide-react";
@@ -64,17 +64,9 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
         {/* Hero */}
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 mb-16">
-          {/* Image */}
-          <div className="relative aspect-video overflow-hidden border border-border bg-secondary/40">
-            {template.image && (
-              <Image
-                src={template.image}
-                alt={template.name}
-                fill
-                className="object-cover"
-                priority
-              />
-            )}
+          {/* Preview — the same faithful product mockup shown on the card grid */}
+          <div className="relative aspect-video overflow-hidden rounded-[10px] border border-border bg-secondary/40">
+            <TemplateMockup category={template.category} />
           </div>
 
           {/* Info */}
