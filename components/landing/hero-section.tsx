@@ -19,6 +19,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { getMaxwellStudioHubHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
+import { HeroTemplatesPanel } from "./hero-templates-panel";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 
@@ -48,6 +49,7 @@ export function HeroSection() {
   const [urlInputValue, setUrlInputValue] = useState("");
   const [urlInputLoading, setUrlInputLoading] = useState(false);
   const [showMyChatsLink, setShowMyChatsLink] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
@@ -226,6 +228,10 @@ export function HeroSection() {
                 >
                   <span className="flex items-center gap-1.5">
                     {t("howItWorks")}
+                    {/* Antes este link navegaba directo a /templates. Ahora actúa
+                       como toggle que despliega el carrusel HeroTemplatesPanel
+                       debajo del chat. Se preserva el <Link> original comentado
+                       como safety net por si se quiere revertir a navegación:
                     <Link
                       href={`/${locale}${siteRoutes.templates}`}
                       className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
@@ -233,6 +239,21 @@ export function HeroSection() {
                       {t("howItWorksLink")}
                       <ArrowDown className="h-3.5 w-3.5" />
                     </Link>
+                    */}
+                    <button
+                      type="button"
+                      onClick={() => setShowTemplates((v) => !v)}
+                      aria-expanded={showTemplates}
+                      aria-controls="hero-templates-panel"
+                      className="inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                    >
+                      {t("howItWorksLink")}
+                      <ArrowDown
+                        className={`h-3.5 w-3.5 transition-transform duration-300 ${
+                          showTemplates ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
                   </span>
                 </div>
 
@@ -396,6 +417,9 @@ export function HeroSection() {
                   </div>
                 </div>{/* end dark card */}
               </div>
+
+              {/* Collapsible templates carousel — toggled by the badge link */}
+              <HeroTemplatesPanel open={showTemplates} locale={locale} />
 
               {/* Prompt Suggestions */}
               <div className="mt-3 lg:mt-4">
