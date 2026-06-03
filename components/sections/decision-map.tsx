@@ -118,7 +118,7 @@ export function DecisionMap({
             the dashed line meets the hub) */}
         <div className="rounded-[8px] border border-foreground/20 bg-card/40 py-6 pl-0 pr-5 sm:ml-[126px] lg:py-7 lg:pr-8">
           <div className="relative h-[280px] w-full">
-            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
+            <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
               {/* dashed segment continuing from the box edge to the Noon hub */}
               <motion.line
                 x1="0" y1={HUB.y} x2={HUB.x} y2={HUB.y}

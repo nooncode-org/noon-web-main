@@ -185,7 +185,7 @@ export function MockupBrief({ play = false, animate = true, startDelay = 0 }: Mo
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-2.5 py-2">
+      <div ref={scrollRef} tabIndex={0} aria-label="Example scoping conversation" className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-2.5 py-2">
         {CHAT.slice(0, shown).map((turn, i) =>
           turn.who === "user" ? (
             <motion.div key={i} className="flex justify-end" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
@@ -319,7 +319,7 @@ export function MockupScope({ play = false, animate = true, startDelay = 0 }: Mo
         </div>
       ) : (
         // Scrolls within the card when the doc is taller than the space.
-        <div className="h-full space-y-2.5 overflow-y-auto pr-1">
+        <div tabIndex={0} aria-label="Example scope document" className="h-full space-y-2.5 overflow-y-auto pr-1">
           {SCOPE_DOC.map((section, si) => (
             <motion.div
               key={section.h}
@@ -409,7 +409,7 @@ export function MockupBuild({ play = false, startDelay = 0 }: MockupProps) {
       </div>
 
       {/* Body */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div tabIndex={0} aria-label="Example code review" className="min-h-0 flex-1 overflow-y-auto">
         {!done ? (
           <div className="px-2.5 py-2.5">
             <Working label="Reviewing changes…" />
@@ -529,7 +529,7 @@ export function MockupProduct({ play = false, startDelay = 0 }: MockupProps) {
       {!live ? (
         <Working label="Deploying to production…" />
       ) : (
-        <div className="h-full space-y-2 overflow-y-auto pr-1">
+        <div tabIndex={0} aria-label="Example orders dashboard" className="h-full space-y-2 overflow-y-auto pr-1">
           {/* title + live pill */}
           <motion.div
             className="flex items-center justify-between"
@@ -552,9 +552,9 @@ export function MockupProduct({ play = false, startDelay = 0 }: MockupProps) {
             transition={{ delay: 0.05, duration: 0.3, ease: EASE }}
           >
             <p className="text-[8px] uppercase tracking-[0.06em] text-muted-foreground/70">Orders · 12 days</p>
-            <div className="h-9 w-full">
+            <div className="h-9 w-full" aria-hidden="true">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={ORDER_TREND} margin={{ top: 3, right: 0, bottom: 0, left: 0 }}>
+                <AreaChart data={ORDER_TREND} accessibilityLayer={false} margin={{ top: 3, right: 0, bottom: 0, left: 0 }}>
                   <defs>
                     <linearGradient id="ord-trend" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#1200c5" stopOpacity={0.35} />

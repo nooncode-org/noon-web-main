@@ -32,7 +32,7 @@ export function ContactRouteDiagram() {
   return (
     <div ref={ref} className="overflow-hidden rounded-[8px] border border-foreground/10 bg-card/40 px-5 py-6 lg:px-6">
       <div className="relative h-[240px] w-full">
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
+        <svg aria-hidden="true" className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
           {ROW_Y.map((y, i) => (
             <motion.line
               key={y}
