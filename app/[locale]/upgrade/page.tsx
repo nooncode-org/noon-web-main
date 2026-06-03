@@ -4,6 +4,7 @@ import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
 import { BeforeAfterScan } from "@/components/sections/premium";
+import { Activity, ScanSearch, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -77,19 +78,19 @@ async function UpgradePageContent({ params, searchParams }: Props) {
               step: "01",
               title: "Scan",
               description: "We analyze your live website for performance, accessibility, UI/UX issues, and conversion opportunities.",
-              gradient: "from-primary/20 to-primary/5",
+              Icon: ScanSearch,
             },
             {
               step: "02",
               title: "Diagnose",
               description: "Maxwell identifies specific improvements with detailed recommendations and priority rankings.",
-              gradient: "from-primary/15 to-primary/5",
+              Icon: Activity,
             },
             {
               step: "03",
               title: "Generate",
               description: "Get a fully upgraded version of your site with all improvements applied, ready for review.",
-              gradient: "from-primary/10 to-primary/5",
+              Icon: Sparkles,
             },
           ].map((item, index) => (
             <div
@@ -101,10 +102,13 @@ async function UpgradePageContent({ params, searchParams }: Props) {
                 opacity: 0,
               }}
             >
-              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-[8px] border border-primary/30 bg-primary/10 text-sm font-mono text-primary">
-                {item.step}
+              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-[8px] border border-primary/30 bg-primary/10 text-primary">
+                <item.Icon className="h-5 w-5" strokeWidth={1.75} />
               </span>
-              <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
+              <div className="mb-2 flex items-center gap-2">
+                <span className="font-mono text-[11px] text-muted-foreground/50">{item.step}</span>
+                <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
+              </div>
               <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
             </div>
           ))}

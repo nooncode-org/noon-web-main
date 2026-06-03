@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { Check, Minus, LoaderCircle } from "lucide-react";
+import { Check, Minus, LoaderCircle, ClipboardList, Layers, Code2, Rocket, Circle } from "lucide-react";
 
 // ============================================================================
 // ComparisonShowcase — REBUILT to canon + dynamic content states (2026-06-01).
@@ -31,6 +31,15 @@ interface ComparisonShowcaseProps {
 
 const EASE = [0.32, 0.72, 0, 1] as const;
 
+// Per-dimension iconography so the comparison is scannable at a glance.
+// Maps the known /about dimensions; falls back to a neutral dot.
+const DIMENSION_ICONS: Record<string, typeof Check> = {
+  Requirements: ClipboardList,
+  Prototyping: Layers,
+  Development: Code2,
+  Delivery: Rocket,
+};
+
 function toPoints(block: string): string[] {
   return block
     .split("\n")
@@ -56,9 +65,13 @@ function NoonRow({ label, block, play, reduce, delay }: { label: string; block: 
     return () => clearTimeout(t);
   }, [play, delay]);
 
+  const Icon = DIMENSION_ICONS[label] ?? Circle;
   return (
     <div>
-      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">{label}</p>
+      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">
+        <Icon className="h-3 w-3" strokeWidth={1.75} />
+        {label}
+      </p>
       <AnimatePresence mode="wait" initial={false}>
         {resolved ? (
           <motion.ul
@@ -153,14 +166,19 @@ export function ComparisonShowcase({
                 Traditional approach
               </p>
               <div className="space-y-5">
-                {items.map((item, di) => (
+                {items.map((item, di) => {
+                  const DimIcon = DIMENSION_ICONS[item.label] ?? Circle;
+                  return (
                   <motion.div
                     key={item.label}
                     initial={{ opacity: 0, y: reduce ? 0 : 10 }}
                     animate={play ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.4, delay: reduce ? 0 : di * 0.1, ease: EASE }}
                   >
-                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">{item.label}</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+                      <DimIcon className="h-3 w-3" strokeWidth={1.75} />
+                      {item.label}
+                    </p>
                     <ul className="space-y-1.5">
                       {toPoints(item.traditional).map((p, i) => (
                         <li key={i} className="flex gap-2 text-sm leading-snug text-muted-foreground">
@@ -170,7 +188,8 @@ export function ComparisonShowcase({
                       ))}
                     </ul>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

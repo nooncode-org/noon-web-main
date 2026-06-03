@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ArrowRight, Check, Code2, FileCode2, Folder, Globe, Layers, LayoutDashboard, Milestone, Minus, Receipt, ShieldCheck, Smartphone, Sparkles, Target, UserCheck } from "lucide-react";
+import { ArrowRight, Check, Circle, ClipboardList, Code2, FileCode2, Folder, Globe, Layers, LayoutDashboard, Milestone, Minus, Receipt, Rocket, Route, ShieldCheck, Smartphone, Sparkles, Target, UserCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -40,6 +40,15 @@ const COMPARISON_ITEMS = [
     noon: "→ Incremental delivery you can track\n→ Working software, not documentation\n→ Ownership aligned with your engagement model",
   },
 ] as const;
+
+// Per-dimension iconography for the comparison fallback (mirrors the icons in
+// the client ComparisonShowcase so there's no flash on hydration).
+const DIMENSION_ICONS: Record<string, typeof Check> = {
+  Requirements: ClipboardList,
+  Prototyping: Layers,
+  Development: Code2,
+  Delivery: Rocket,
+};
 
 // ── "What working with Noon looks like" — qualitative credibility (the #1 gap
 // vs Vercel/Linear). Built from REAL, approved commitments (FAQ + brand
@@ -111,6 +120,105 @@ const WHAT_WE_BUILD: { icon: typeof Globe; title: string; description: string; e
   },
 ];
 
+// Compact, on-brand product-UI mockups — one per delivery area, so each domain
+// SHOWS the kind of interface it produces (not just an icon). Illustrative
+// product UI (sample data), single-accent, theme-aware.
+function DomainMockup({ kind }: { kind: string }) {
+  const frame = "overflow-hidden rounded-[8px] border border-foreground/10 bg-background/60";
+  if (kind === "AI & Automation") {
+    return (
+      <div className={`${frame} p-3`}>
+        <div className="mb-2 flex items-center gap-1.5">
+          <span
+            className="flex h-4 w-4 items-center justify-center rounded-full text-primary"
+            style={{ backgroundColor: "rgba(18,0,197,0.14)" }}
+          >
+            <Sparkles className="h-2.5 w-2.5" />
+          </span>
+          <span className="text-[9px] font-medium text-foreground/80">Assistant</span>
+        </div>
+        <div className="flex justify-end">
+          <span className="max-w-[82%] rounded-[6px] border border-primary/30 bg-primary/10 px-2 py-1 text-[9px] leading-snug text-foreground/85">
+            Automate the weekly ops report
+          </span>
+        </div>
+        <div className="mt-1.5 flex justify-start">
+          <span className="max-w-[88%] rounded-[6px] border border-foreground/10 bg-card/60 px-2 py-1 text-[9px] leading-snug text-muted-foreground">
+            On it — pulling the data and drafting it now.
+          </span>
+        </div>
+        <div className="mt-2 flex items-center gap-1.5 rounded-[6px] border border-foreground/10 px-2 py-1.5">
+          <span className="h-1 w-1 rounded-full bg-primary" />
+          <span className="text-[9px] text-muted-foreground/55">Ask the assistant…</span>
+        </div>
+      </div>
+    );
+  }
+  if (kind === "Web Solutions") {
+    return (
+      <div className={`${frame} p-3`}>
+        <div className="grid grid-cols-3 gap-1.5">
+          {([["Users", "1,284"], ["Revenue", "$48k"], ["Active", "312"]] as const).map(([l, v]) => (
+            <div key={l} className="rounded-[6px] border border-foreground/10 px-1.5 py-1">
+              <p className="text-[6.5px] uppercase tracking-wide text-muted-foreground/60">{l}</p>
+              <p className="text-[11px] font-semibold leading-tight text-foreground">{v}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2.5 flex h-12 items-end gap-1">
+          {[40, 64, 48, 80, 56, 72, 92, 68].map((barH, i) => (
+            <span
+              key={i}
+              className="flex-1 rounded-sm"
+              style={{ height: `${barH}%`, backgroundColor: i === 6 ? "#1200c5" : "rgba(18,0,197,0.28)" }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (kind === "Mobile Solutions") {
+    return (
+      <div className="flex justify-center py-1">
+        <div className="w-[92px] overflow-hidden rounded-[12px] border border-foreground/15 bg-background/60 px-2 pb-2 pt-1.5">
+          <div className="mx-auto mb-2 h-1 w-7 rounded-full bg-foreground/20" />
+          <div className="mb-2 h-1.5 w-14 rounded-full bg-foreground/30" />
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="mb-1 flex items-center gap-1.5 rounded-[5px] border border-foreground/10 px-1.5 py-1.5 last:mb-0"
+            >
+              <span className={`h-2.5 w-2.5 rounded-full ${i === 0 ? "bg-primary" : "bg-primary/25"}`} />
+              <span className="h-1 flex-1 rounded-full bg-foreground/15" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  // Custom Software
+  return (
+    <div className={frame}>
+      <div className="flex items-center gap-1.5 border-b border-foreground/10 px-2.5 py-1.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
+        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
+        <span className="ml-1 font-mono text-[8px] text-muted-foreground/60">workflow</span>
+      </div>
+      <div className="divide-y divide-foreground/10">
+        {([["Intake", "Done"], ["Approval", "Active"], ["Dispatch", "Queued"]] as const).map(([l, s]) => (
+          <div key={l} className="flex items-center justify-between px-2.5 py-1.5">
+            <span className="text-[9px] text-foreground/80">{l}</span>
+            <span className="inline-flex items-center gap-1 text-[8px]">
+              <span className={`h-1.5 w-1.5 rounded-full ${s === "Active" ? "bg-primary" : "bg-foreground/25"}`} />
+              <span className={s === "Active" ? "text-primary" : "text-muted-foreground/55"}>{s}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function toPoints(block: string): string[] {
   return block.split("\n").map((l) => l.replace(/^→\s*/, "").trim()).filter(Boolean);
 }
@@ -139,9 +247,14 @@ function ComparisonFallback() {
                 Traditional approach
               </p>
               <div className="space-y-5">
-                {COMPARISON_ITEMS.map((item) => (
+                {COMPARISON_ITEMS.map((item) => {
+                  const DimIcon = DIMENSION_ICONS[item.label] ?? Circle;
+                  return (
                   <div key={item.label}>
-                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">{item.label}</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/70">
+                      <DimIcon className="h-3 w-3" strokeWidth={1.75} />
+                      {item.label}
+                    </p>
                     <ul className="space-y-1.5">
                       {toPoints(item.traditional).map((p, i) => (
                         <li key={i} className="flex gap-2 text-sm leading-snug text-muted-foreground">
@@ -151,7 +264,8 @@ function ComparisonFallback() {
                       ))}
                     </ul>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <div className="bg-primary/[0.03] p-6 lg:p-8">
@@ -162,9 +276,14 @@ function ComparisonFallback() {
                 With Noon
               </p>
               <div className="space-y-5">
-                {COMPARISON_ITEMS.map((item) => (
+                {COMPARISON_ITEMS.map((item) => {
+                  const DimIcon = DIMENSION_ICONS[item.label] ?? Circle;
+                  return (
                   <div key={item.label}>
-                    <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">{item.label}</p>
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-primary/80">
+                      <DimIcon className="h-3 w-3" strokeWidth={1.75} />
+                      {item.label}
+                    </p>
                     <ul className="space-y-1.5">
                       {toPoints(item.noon).map((p, i) => (
                         <li key={i} className="flex gap-2 text-sm leading-snug text-foreground/90">
@@ -176,7 +295,8 @@ function ComparisonFallback() {
                       ))}
                     </ul>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -370,9 +490,10 @@ export default function AboutPage() {
                 const Icon = d.icon;
                 return (
                   <div key={d.title} className="flex flex-col bg-background p-6 lg:p-8">
-                    <div className="mb-4 flex items-center gap-3">
+                    <DomainMockup kind={d.title} />
+                    <div className="mb-3 mt-5 flex items-center gap-2.5">
                       <span
-                        className="flex h-9 w-9 items-center justify-center rounded-[8px] text-primary"
+                        className="flex h-8 w-8 items-center justify-center rounded-[8px] text-primary"
                         style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
                       >
                         <Icon className="h-4 w-4" strokeWidth={1.75} />
@@ -528,9 +649,14 @@ export default function AboutPage() {
             {/* Operating model */}
             <div className="border border-foreground/10 bg-card/80 p-6 lg:p-8">
               <Eyebrow>{t("operatingModel.eyebrow")}</Eyebrow>
-              <div className="mt-8 space-y-8">
+              <div className="mt-8">
                 {principles.map((principle, index) => (
-                  <PrincipleItem key={principle.number} principle={principle} index={index} />
+                  <PrincipleItem
+                    key={principle.number}
+                    principle={principle}
+                    index={index}
+                    last={index === principles.length - 1}
+                  />
                 ))}
               </div>
             </div>
@@ -1092,19 +1218,39 @@ function SystemArchitecture() {
 // OPERATING MODEL vs BOUNDARIES
 // ============================================================================
 
-function PrincipleItem({ principle, index }: { principle: { number: string; title: string; description: string }; index: number }) {
+const PRINCIPLE_ICONS = [Target, Route, Sparkles] as const;
+
+function PrincipleItem({
+  principle,
+  index,
+  last,
+}: {
+  principle: { number: string; title: string; description: string };
+  index: number;
+  last: boolean;
+}) {
   const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.3 });
+  const Icon = PRINCIPLE_ICONS[index] ?? Target;
   return (
     <div
       ref={ref}
-      className={`flex items-start gap-4 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+      className={`relative flex gap-4 pb-8 transition-all duration-700 last:pb-0 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
       style={{ transitionDelay: `${index * 120}ms` }}
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-foreground/20 font-mono text-sm text-muted-foreground">
-        {principle.number}
-      </span>
-      <div>
-        <h3 className="site-card-title">{principle.title}</h3>
+      {/* spine + icon node — reads as a sequential process, not a flat list */}
+      <div className="relative flex w-10 shrink-0 justify-center">
+        {!last && (
+          <span aria-hidden className="absolute bottom-0 left-1/2 top-10 w-px -translate-x-1/2 bg-foreground/15" />
+        )}
+        <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 bg-card text-primary">
+          <Icon className="h-4 w-4" strokeWidth={1.75} />
+        </span>
+      </div>
+      <div className="pt-1">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[11px] text-muted-foreground/45">{principle.number}</span>
+          <h3 className="site-card-title">{principle.title}</h3>
+        </div>
         <p className="site-card-copy mt-1.5 text-muted-foreground">{principle.description}</p>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Filter, LayoutGrid, Minus } from "lucide-react";
+import { ArrowRight, Check, Filter, Gauge, LayoutGrid, LayoutTemplate, Minus, Shapes } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
@@ -15,6 +15,10 @@ import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explo
 import { TemplateHeroPreview } from "@/components/sections/premium";
 
 const templateBrandTone = siteTones.brand;
+
+// Icons for the 3 "how templates work" principles (structured start / faster /
+// shaped to the real problem) so the cards aren't text-only.
+const TEMPLATE_PRINCIPLE_ICONS = [LayoutTemplate, Gauge, Shapes] as const;
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -102,12 +106,21 @@ export default function TemplatesPage() {
           {/* the 3 principles — hairline 3-up */}
           <div className="overflow-hidden border border-foreground/10">
             <div className="grid gap-px bg-foreground/10 lg:grid-cols-3">
-              {templatePrinciples.map((p) => (
+              {templatePrinciples.map((p, i) => {
+                const Icon = TEMPLATE_PRINCIPLE_ICONS[i] ?? LayoutTemplate;
+                return (
                 <div key={p.title} className="bg-background p-6 lg:p-7">
+                  <span
+                    className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] text-primary"
+                    style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={1.75} />
+                  </span>
                   <h3 className="text-[15px] font-medium leading-snug text-foreground">{p.title}</h3>
                   <p className="mt-2 text-sm leading-snug text-muted-foreground">{p.description}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

@@ -5,6 +5,9 @@ import {
   ArrowRight,
   Code2,
   Mail,
+  Reply,
+  Route,
+  ScanSearch,
   Sparkles,
   UserCheck,
 } from "lucide-react";
@@ -34,14 +37,17 @@ const OTHER_CHANNELS = [
 function ContactProcessPanel({ responseTime }: { responseTime: string }) {
   const steps = [
     {
+      icon: Route,
       label: "Route",
       description: "Pick the closest request type so it reaches the right review path.",
     },
     {
+      icon: ScanSearch,
       label: "Review",
       description: responseTime,
     },
     {
+      icon: Reply,
       label: "Next step",
       description: "Noon replies with clarification, proposal direction, or direct guidance.",
     },
@@ -49,30 +55,33 @@ function ContactProcessPanel({ responseTime }: { responseTime: string }) {
 
   return (
     <div>
-      {/* Figma: "HOW IT MOVES" stepper card — all 3 steps share the same
-         outlined neutral chip (sandbox ContactAside.tsx has no brand fill on
-         step 1). Steps are separated by top borders only. */}
+      {/* "HOW IT MOVES" — a compact visual process flow: icon nodes on a spine,
+         so the 3 steps read as a sequence at a glance instead of a numbered list. */}
       <div className="border border-foreground/10 bg-card/40 p-5 lg:p-6">
         <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
           How it moves
         </p>
         <div className="mt-5">
-          {steps.map((step, index) => (
-            <div
-              key={step.label}
-              className={`grid grid-cols-[1.75rem_1fr] gap-3 ${
-                index > 0 ? "mt-4 border-t border-foreground/10 pt-4" : ""
-              }`}
-            >
-              <div className="flex h-7 w-7 items-center justify-center border border-foreground/20 bg-transparent text-[12px] font-mono text-foreground">
-                {index + 1}
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            const last = index === steps.length - 1;
+            return (
+              <div key={step.label} className="relative flex gap-3 pb-5 last:pb-0">
+                <div className="relative flex w-8 shrink-0 justify-center">
+                  {!last && (
+                    <span aria-hidden className="absolute bottom-0 left-1/2 top-8 w-px -translate-x-1/2 bg-foreground/15" />
+                  )}
+                  <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-[8px] border border-foreground/15 bg-card text-primary">
+                    <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </span>
+                </div>
+                <div className="pt-0.5">
+                  <p className="text-sm font-medium leading-tight text-foreground">{step.label}</p>
+                  <p className="site-card-copy mt-1 text-muted-foreground">{step.description}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium leading-tight text-foreground">{step.label}</p>
-                <p className="site-card-copy mt-1.5 text-muted-foreground">{step.description}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
