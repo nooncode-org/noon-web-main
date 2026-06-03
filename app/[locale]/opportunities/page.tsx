@@ -147,20 +147,12 @@ export default function OpportunitiesPage() {
                 return (
                   <article
                     key={area.title}
-                    className={`relative flex min-h-[200px] flex-col overflow-hidden border border-foreground/10 bg-card/60 p-6 transition-all duration-700 lg:min-h-[210px] lg:p-7 ${
+                    className={`flex min-h-[200px] flex-col border border-foreground/10 bg-card/60 p-6 transition-all duration-700 lg:min-h-[210px] lg:p-7 ${
                       areasVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >
-                    {/* Faint oversized category icon as a card watermark — gives each
-                       area visual identity (Linear-style) without forcing a product
-                       mockup onto a partnership role. */}
-                    <Icon
-                      aria-hidden
-                      className="pointer-events-none absolute -bottom-6 -right-5 h-32 w-32 text-primary/[0.08]"
-                      strokeWidth={1}
-                    />
-                    <div className="relative z-10 flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
                       <h3 className="site-card-title">{area.title}</h3>
                       {/* Figma canon: dark translucent bg + accent-colored border,
                          category-specific icon per area (Invest=$, Sellers=cart,
@@ -174,8 +166,8 @@ export default function OpportunitiesPage() {
                         <Icon className="h-4 w-4" strokeWidth={2} />
                       </Link>
                     </div>
-                    <p className="site-card-copy relative z-10 mt-4 text-muted-foreground">{area.description}</p>
-                    <div className="relative z-10 mt-auto flex flex-wrap gap-2 pt-5">
+                    <p className="site-card-copy mt-4 text-muted-foreground">{area.description}</p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-5">
                       {area.tags.map((tag) => (
                         <span
                           key={tag}

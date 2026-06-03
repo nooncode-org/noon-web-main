@@ -121,97 +121,142 @@ const WHAT_WE_BUILD: { icon: typeof Globe; title: string; description: string; e
   },
 ];
 
-// Compact, on-brand product-UI mockups — one per delivery area, so each domain
-// SHOWS the kind of interface it produces (not just an icon). Illustrative
-// product UI (sample data), single-accent, theme-aware.
+// Shared product-window chrome for the delivery-area mockups.
+function MockupChrome({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-1.5 border-b border-white/10 bg-[#0a0a0a] px-2.5 py-1.5">
+      <span className="h-2 w-2 rounded-full bg-zinc-700" />
+      <span className="h-2 w-2 rounded-full bg-zinc-700" />
+      <span className="h-2 w-2 rounded-full bg-zinc-700" />
+      <span className="ml-1 font-mono text-[8px] uppercase tracking-wide text-zinc-600">{label}</span>
+    </div>
+  );
+}
+
+// Product-UI mockups — one per delivery area — rendered in the product's native
+// dark palette (consistent with the Maxwell/Upgrade previews) so each domain
+// reads as a real product screenshot, not a generic flat panel. Coherent sample
+// data, single accent; the only motion is a live status pulse.
 function DomainMockup({ kind }: { kind: string }) {
-  const frame = "overflow-hidden rounded-[8px] border border-foreground/10 bg-background/60";
+  const frame =
+    "overflow-hidden rounded-[8px] border border-white/10 bg-[#050505] text-zinc-100 shadow-[0_14px_34px_-18px_rgba(0,0,0,0.7)]";
+
   if (kind === "AI & Automation") {
+    const steps = [
+      { label: "Trigger · Mondays 9:00", state: "done" },
+      { label: "Pull data · 3 sources", state: "done" },
+      { label: "Draft + format report", state: "active" },
+      { label: "Send to #ops channel", state: "queued" },
+    ] as const;
     return (
-      <div className={`${frame} p-3`}>
-        <div className="mb-2 flex items-center gap-1.5">
-          <span
-            className="flex h-4 w-4 items-center justify-center rounded-full text-primary"
-            style={{ backgroundColor: "rgba(18,0,197,0.14)" }}
-          >
-            <Sparkles className="h-2.5 w-2.5" />
-          </span>
-          <span className="text-[9px] font-medium text-foreground/80">Assistant</span>
-        </div>
-        <div className="flex justify-end">
-          <span className="max-w-[82%] rounded-[6px] border border-primary/30 bg-primary/10 px-2 py-1 text-[9px] leading-snug text-foreground/85">
-            Automate the weekly ops report
-          </span>
-        </div>
-        <div className="mt-1.5 flex justify-start">
-          <span className="max-w-[88%] rounded-[6px] border border-foreground/10 bg-card/60 px-2 py-1 text-[9px] leading-snug text-muted-foreground">
-            On it — pulling the data and drafting it now.
-          </span>
-        </div>
-        <div className="mt-2 flex items-center gap-1.5 rounded-[6px] border border-foreground/10 px-2 py-1.5">
-          <span className="h-1 w-1 rounded-full bg-primary" />
-          <span className="text-[9px] text-muted-foreground/55">Ask the assistant…</span>
+      <div className={frame}>
+        <MockupChrome label="automation" />
+        <div className="p-3">
+          <div className="mb-2.5 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-zinc-200">Weekly ops report</span>
+            <span className="inline-flex items-center gap-1 font-mono text-[8px] text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> Active
+            </span>
+          </div>
+          <div className="space-y-2">
+            {steps.map((s) => (
+              <div key={s.label} className="flex items-center gap-2 text-[10px]">
+                <span
+                  className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full ${
+                    s.state === "done"
+                      ? "bg-[#1200c5]"
+                      : s.state === "active"
+                        ? "border border-[#4155ef]"
+                        : "border border-zinc-700"
+                  }`}
+                >
+                  {s.state === "done" && <Check className="h-2 w-2 text-white" strokeWidth={4} />}
+                  {s.state === "active" && (
+                    <span className="h-1 w-1 rounded-full bg-[#4155ef] motion-safe:animate-pulse" />
+                  )}
+                </span>
+                <span className={s.state === "queued" ? "text-zinc-600" : "text-zinc-300"}>{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
+
   if (kind === "Web Solutions") {
     return (
-      <div className={`${frame} p-3`}>
-        <div className="grid grid-cols-3 gap-1.5">
-          {([["Users", "1,284"], ["Revenue", "$48k"], ["Active", "312"]] as const).map(([l, v]) => (
-            <div key={l} className="rounded-[6px] border border-foreground/10 px-1.5 py-1">
-              <p className="text-[6.5px] uppercase tracking-wide text-muted-foreground/60">{l}</p>
-              <p className="text-[11px] font-semibold leading-tight text-foreground">{v}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2.5 flex h-12 items-end gap-1">
-          {[40, 64, 48, 80, 56, 72, 92, 68].map((barH, i) => (
-            <span
-              key={i}
-              className="flex-1 rounded-sm"
-              style={{ height: `${barH}%`, backgroundColor: i === 6 ? "#1200c5" : "rgba(18,0,197,0.28)" }}
-            />
-          ))}
+      <div className={frame}>
+        <MockupChrome label="dashboard" />
+        <div className="p-3">
+          <div className="grid grid-cols-3 gap-1.5">
+            {([["Users", "1,284"], ["Revenue", "$48k"], ["Active", "312"]] as const).map(([l, v]) => (
+              <div key={l} className="rounded-[6px] border border-white/10 bg-white/[0.02] px-1.5 py-1">
+                <p className="text-[6.5px] uppercase tracking-wide text-zinc-500">{l}</p>
+                <p className="text-[11px] font-semibold leading-tight text-zinc-100">{v}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 flex h-12 items-end gap-1">
+            {[40, 64, 48, 80, 56, 72, 92, 68].map((barH, i) => (
+              <span
+                key={i}
+                className="flex-1 rounded-sm"
+                style={{ height: `${barH}%`, backgroundColor: i === 6 ? "#4155ef" : "rgba(65,85,239,0.3)" }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
+
   if (kind === "Mobile Solutions") {
+    const rows = [
+      { r: "Route 12", s: "On way", tone: "bg-amber-400 motion-safe:animate-pulse" },
+      { r: "Route 9", s: "Done", tone: "bg-emerald-400" },
+      { r: "Route 7", s: "Queued", tone: "bg-zinc-600" },
+    ] as const;
     return (
       <div className="flex justify-center py-1">
-        <div className="w-[92px] overflow-hidden rounded-[12px] border border-foreground/15 bg-background/60 px-2 pb-2 pt-1.5">
-          <div className="mx-auto mb-2 h-1 w-7 rounded-full bg-foreground/20" />
-          <div className="mb-2 h-1.5 w-14 rounded-full bg-foreground/30" />
-          {[0, 1, 2, 3].map((i) => (
+        <div className="w-[100px] overflow-hidden rounded-[14px] border border-white/12 bg-[#050505] px-2 pb-2 pt-1.5 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.85)]">
+          <div className="mx-auto mb-2 h-1 w-7 rounded-full bg-zinc-700" />
+          <div className="mb-1.5 flex items-center justify-between px-0.5">
+            <span className="text-[9px] font-semibold text-zinc-200">Deliveries</span>
+            <span className="h-3 w-3 rounded-full bg-[#1200c5]/70" />
+          </div>
+          {rows.map((row) => (
             <div
-              key={i}
-              className="mb-1 flex items-center gap-1.5 rounded-[5px] border border-foreground/10 px-1.5 py-1.5 last:mb-0"
+              key={row.r}
+              className="mb-1 flex items-center justify-between rounded-[5px] border border-white/10 px-1.5 py-1 last:mb-0"
             >
-              <span className={`h-2.5 w-2.5 rounded-full ${i === 0 ? "bg-primary" : "bg-primary/25"}`} />
-              <span className="h-1 flex-1 rounded-full bg-foreground/15" />
+              <span className="text-[8px] text-zinc-300">{row.r}</span>
+              <span className="inline-flex items-center gap-1">
+                <span className={`h-1.5 w-1.5 rounded-full ${row.tone}`} />
+                <span className="text-[7px] text-zinc-500">{row.s}</span>
+              </span>
             </div>
           ))}
         </div>
       </div>
     );
   }
-  // Custom Software
+
+  // Custom Software — admin / workflow window
   return (
     <div className={frame}>
-      <div className="flex items-center gap-1.5 border-b border-foreground/10 px-2.5 py-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
-        <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
-        <span className="ml-1 font-mono text-[8px] text-muted-foreground/60">workflow</span>
-      </div>
-      <div className="divide-y divide-foreground/10">
+      <MockupChrome label="workflow" />
+      <div className="divide-y divide-white/5">
         {([["Intake", "Done"], ["Approval", "Active"], ["Dispatch", "Queued"]] as const).map(([l, s]) => (
-          <div key={l} className="flex items-center justify-between px-2.5 py-1.5">
-            <span className="text-[9px] text-foreground/80">{l}</span>
-            <span className="inline-flex items-center gap-1 text-[8px]">
-              <span className={`h-1.5 w-1.5 rounded-full ${s === "Active" ? "bg-primary" : "bg-foreground/25"}`} />
-              <span className={s === "Active" ? "text-primary" : "text-muted-foreground/55"}>{s}</span>
+          <div key={l} className="flex items-center justify-between px-2.5 py-2 text-[10px]">
+            <span className="text-zinc-300">{l}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  s === "Active" ? "bg-[#4155ef] motion-safe:animate-pulse" : s === "Done" ? "bg-emerald-400" : "bg-zinc-600"
+                }`}
+              />
+              <span className={s === "Active" ? "text-[#7d8bf2]" : "text-zinc-500"}>{s}</span>
             </span>
           </div>
         ))}
