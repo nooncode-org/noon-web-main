@@ -12,6 +12,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
+import { MaxwellStudioPreview } from "@/components/sections/maxwell-studio-preview";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -520,6 +521,30 @@ export default function AboutPage() {
       </section>
 
       {/* ===================================================================
+          THE PRODUCT — Maxwell scoping studio (faithful product preview).
+         =================================================================== */}
+      <section className="site-section">
+        <div className="site-shell">
+          <RevealBlock className="mb-8 max-w-2xl lg:mb-10">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
+              <span className="h-px w-8 bg-foreground/30" />
+              The product
+            </span>
+            <h2 className="site-section-title">
+              Every project starts in <span className="text-muted-foreground">Maxwell.</span>
+            </h2>
+            <p className="site-section-copy mt-3 text-muted-foreground">
+              You describe what you want to build. Maxwell turns it into a clear scope and a
+              working prototype you can use and approve — before any production code is written.
+            </p>
+          </RevealBlock>
+          <RevealBlock delay={150}>
+            <MaxwellStudioPreview />
+          </RevealBlock>
+        </div>
+      </section>
+
+      {/* ===================================================================
           2. FROM IDEA TO LAUNCH — steps + terminal. (Figma-only, hardcoded.)
          =================================================================== */}
       <section className="site-section">
@@ -682,24 +707,34 @@ export default function AboutPage() {
         <div className="site-shell">
           <RevealBlock className="border border-foreground/10 px-6 py-8 lg:px-10 lg:py-10">
             <p className="site-section-copy max-w-3xl text-muted-foreground">{t("stack.description")}</p>
-            {/* Brand-logo band — Noon's approved stack (12), uniform isotypes.
-               Hairline grid via gap-px; responsive 3 → 4 → 6 columns. SVGs are
-               dark, so dark:invert flips them to white in dark mode. */}
-            <div className="mt-8 overflow-hidden border border-foreground/10">
-              <div className="grid grid-cols-3 gap-px bg-foreground/10 sm:grid-cols-4 lg:grid-cols-6">
-                {TECH_LOGOS.map((logo) => (
-                  <div key={logo.alt} className="flex h-24 items-center justify-center bg-background lg:h-28">
-                    <Image
-                      src={logo.src}
-                      width={40}
-                      height={40}
-                      alt={logo.alt}
-                      unoptimized
-                      className="h-9 w-9 opacity-40 transition-opacity duration-300 hover:opacity-100 dark:invert lg:h-10 lg:w-10"
-                    />
+            {/* Stack & integrations — grouped by layer (real recognizable logos
+               + names). Hairline-divided rows; SVGs are dark → dark:invert. */}
+            <div className="mt-8 divide-y divide-foreground/10 overflow-hidden border border-foreground/10">
+              {TECH_STACK_GROUPS.map((group) => (
+                <div
+                  key={group.label}
+                  className="flex flex-col gap-3 bg-background px-5 py-4 sm:flex-row sm:items-center sm:gap-6 lg:px-6"
+                >
+                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/70 sm:w-40">
+                    {group.label}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
+                    {group.logos.map((logo) => (
+                      <span key={logo.alt} className="inline-flex items-center gap-2">
+                        <Image
+                          src={logo.src}
+                          width={28}
+                          height={28}
+                          alt={logo.alt}
+                          unoptimized
+                          className="h-5 w-5 opacity-50 transition-opacity duration-300 hover:opacity-100 dark:invert"
+                        />
+                        <span className="text-[12.5px] text-muted-foreground">{logo.alt}</span>
+                      </span>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </RevealBlock>
         </div>
@@ -729,23 +764,43 @@ const LAUNCH_STEPS = [
   { n: "04", title: "Judgment, not blind execution" },
 ] as const;
 
-// Tech stack — Noon's approved stack (12), uniform isotypes (simple-icons).
-// Aligned to the brand stack (added React/Tailwind/Python/PostgreSQL/Stripe/
-// Flutter; dropped off-stack Anthropic/Cursor/AWS/GitHub).
-const TECH_LOGOS = [
-  { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript" },
-  { src: "/figma/logos/logo-react.svg", alt: "React" },
-  { src: "/figma/logos/logo-nextjs.svg", alt: "Next.js" },
-  { src: "/figma/logos/logo-tailwind.svg", alt: "Tailwind CSS" },
-  { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js" },
-  { src: "/figma/logos/logo-python.svg", alt: "Python" },
-  { src: "/figma/logos/logo-postgresql.svg", alt: "PostgreSQL" },
-  { src: "/figma/logos/logo-supabase.svg", alt: "Supabase" },
-  { src: "/figma/logos/logo-vercel.svg", alt: "Vercel" },
-  { src: "/figma/logos/logo-stripe.svg", alt: "Stripe" },
-  { src: "/figma/logos/logo-openai.svg", alt: "OpenAI" },
-  { src: "/figma/logos/logo-flutter.svg", alt: "Flutter" },
-] as const;
+// Tech stack & integrations — Noon's real, approved stack, grouped by layer so
+// the logos read as a real engineering stack (recognizable isotypes + names),
+// not a loose icon wall. simple-icons SVGs are dark → dark:invert in dark mode.
+const TECH_STACK_GROUPS: { label: string; logos: { src: string; alt: string }[] }[] = [
+  {
+    label: "Languages",
+    logos: [
+      { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript" },
+      { src: "/figma/logos/logo-python.svg", alt: "Python" },
+    ],
+  },
+  {
+    label: "Frontend",
+    logos: [
+      { src: "/figma/logos/logo-react.svg", alt: "React" },
+      { src: "/figma/logos/logo-nextjs.svg", alt: "Next.js" },
+      { src: "/figma/logos/logo-tailwind.svg", alt: "Tailwind CSS" },
+      { src: "/figma/logos/logo-flutter.svg", alt: "Flutter" },
+    ],
+  },
+  {
+    label: "Backend & data",
+    logos: [
+      { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js" },
+      { src: "/figma/logos/logo-postgresql.svg", alt: "PostgreSQL" },
+      { src: "/figma/logos/logo-supabase.svg", alt: "Supabase" },
+    ],
+  },
+  {
+    label: "Platform & services",
+    logos: [
+      { src: "/figma/logos/logo-vercel.svg", alt: "Vercel" },
+      { src: "/figma/logos/logo-openai.svg", alt: "OpenAI" },
+      { src: "/figma/logos/logo-stripe.svg", alt: "Stripe" },
+    ],
+  },
+];
 
 // ============================================================================
 // SHARED PRIMITIVES

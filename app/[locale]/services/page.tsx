@@ -140,120 +140,6 @@ function ProblemAreas() {
   );
 }
 
-// Compact, real product-UI mockups — one per service — so each offering is
-// tangible (app window / before→after / status page / audit findings) instead
-// of an abstract illustration. Single-accent (#1200c5), square, theme-aware.
-function ServiceMockup({ name }: { name: string }) {
-  const frame = "w-full max-w-[230px] overflow-hidden rounded-[8px] border border-foreground/12 bg-background/70";
-
-  if (name === "Custom Development") {
-    return (
-      <div className={frame}>
-        <div className="flex items-center gap-1.5 border-b border-foreground/10 px-2.5 py-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/15" />
-          <span className="ml-auto font-mono text-[8px] text-muted-foreground/55">internal-tool</span>
-        </div>
-        <div className="flex">
-          <div className="w-[36%] space-y-1 border-r border-foreground/10 p-2">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className={`flex items-center gap-1 rounded-[3px] px-1 py-0.5 ${i === 0 ? "bg-primary/10" : ""}`}>
-                <span className={`h-1.5 w-1.5 rounded-[2px] ${i === 0 ? "bg-primary" : "bg-foreground/20"}`} />
-                <span className="h-1 flex-1 rounded-full bg-foreground/12" />
-              </div>
-            ))}
-          </div>
-          <div className="flex-1 space-y-1.5 p-2">
-            <div className="h-1.5 w-2/3 rounded-full bg-foreground/20" />
-            <div className="grid grid-cols-2 gap-1">
-              <div className="h-7 rounded-[4px] border border-foreground/10" />
-              <div className="h-7 rounded-[4px] border border-foreground/10" />
-            </div>
-            <div className="h-1 w-full rounded-full bg-foreground/10" />
-            <div className="h-1 w-4/5 rounded-full bg-foreground/10" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (name === "Upgrade") {
-    return (
-      <div className={`${frame} p-3`}>
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <p className="mb-1 font-mono text-[8px] uppercase tracking-wide text-muted-foreground/55">Before</p>
-            <div className="flex h-12 items-end gap-1 rounded-[5px] border border-foreground/10 p-1.5">
-              {[30, 22, 38, 26].map((h, i) => (
-                <span key={i} className="flex-1 rounded-sm bg-foreground/15" style={{ height: `${h}%` }} />
-              ))}
-            </div>
-          </div>
-          <ArrowRight className="mb-4 h-3 w-3 shrink-0 text-primary" />
-          <div className="flex-1">
-            <p className="mb-1 font-mono text-[8px] uppercase tracking-wide text-primary/70">After</p>
-            <div className="flex h-12 items-end gap-1 rounded-[5px] border border-primary/30 bg-primary/[0.04] p-1.5">
-              {[58, 74, 66, 92].map((h, i) => (
-                <span key={i} className="flex-1 rounded-sm bg-primary/60" style={{ height: `${h}%` }} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (name === "Engineering Support") {
-    return (
-      <div className={`${frame} p-3`}>
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          <span className="text-[9px] font-medium text-foreground/80">All systems operational</span>
-        </div>
-        <div className="space-y-1.5">
-          {["API", "Workers", "Database"].map((s) => (
-            <div key={s} className="flex items-center justify-between rounded-[4px] border border-foreground/10 px-2 py-1">
-              <span className="text-[8.5px] text-muted-foreground">{s}</span>
-              <span className="inline-flex items-center gap-1">
-                <span className="h-1 w-1 rounded-full bg-primary" />
-                <span className="text-[7.5px] text-primary">Up</span>
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2 flex gap-[2px]">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <span
-              key={i}
-              className="h-3 flex-1 rounded-[1px]"
-              style={{ backgroundColor: i === 7 ? "rgba(18,0,197,0.35)" : "rgba(18,0,197,0.6)" }}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Business Technology Audit
-  return (
-    <div className={frame}>
-      <div className="flex items-center justify-between border-b border-foreground/10 px-2.5 py-1.5">
-        <span className="font-mono text-[8px] uppercase tracking-wide text-muted-foreground/55">Audit findings</span>
-        <span className="rounded-[3px] bg-primary/10 px-1.5 py-0.5 text-[8px] font-semibold text-primary">12</span>
-      </div>
-      <div className="divide-y divide-foreground/10">
-        {([["Data silos", "High"], ["Manual steps", "Med"], ["No backups", "High"]] as const).map(([l, sev]) => (
-          <div key={l} className="flex items-center gap-2 px-2.5 py-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${sev === "High" ? "bg-primary" : "bg-primary/40"}`} />
-            <span className="text-[9px] text-foreground/80">{l}</span>
-            <span className="ml-auto text-[7.5px] text-muted-foreground/55">{sev}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function ServicesPage() {
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
@@ -487,16 +373,26 @@ export default function ServicesPage() {
                 {/* lg:min-h ensures all 4 cards have the same vertical extent
                    regardless of bullet count or illustration aspect ratio. */}
                 <div className={`flex flex-col lg:min-h-[280px] ${imageFirst ? "lg:flex-row" : "lg:flex-row-reverse"}`}>
-                  {/* Product mockup panel — a compact, real product-UI mockup per
-                     service (app window / before→after / status / audit findings)
-                     so each offering is tangible, not an abstract illustration.
-                     The divider sits only on the side adjacent to the text panel. */}
+                  {/* Illustration panel — fixed-width column with a uniform
+                     160×160 inner box. All 4 SVGs are object-contained inside
+                     that box so different aspect ratios (headphones wide,
+                     clipboard tall) render at the same visible size. The
+                     divider sits only on the side adjacent to the text panel. */}
                   <div
-                    className={`relative flex shrink-0 items-center justify-center p-6 lg:w-[300px] border-foreground/10 ${
+                    className={`relative flex shrink-0 items-center justify-center p-8 lg:w-[280px] border-foreground/10 ${
                       imageFirst ? "lg:border-r" : "lg:border-l"
                     }`}
                   >
-                    <ServiceMockup name={service.name} />
+                    <div className="relative h-[160px] w-[160px]">
+                      <Image
+                        src={service.illustration}
+                        alt=""
+                        fill
+                        sizes="160px"
+                        className="object-contain opacity-70 invert dark:invert-0"
+                        unoptimized
+                      />
+                    </div>
                   </div>
 
                   {/* Text panel — Figma sandbox has NO icon badge; just the title. */}
