@@ -223,7 +223,9 @@ export function HeroSection() {
               <div className="relative pb-[28px]">
                 {/* Blue badge — behind card, aligned with card width */}
                 <div
-                  className="absolute inset-x-0 bottom-0 h-[34px] rounded-b-[9px] flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-white"
+                  className={`absolute inset-x-0 bottom-0 h-[34px] ${
+                    showTemplates ? "rounded-b-none" : "rounded-b-[9px]"
+                  } flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-white`}
                   style={{ background: "#1200C5" }}
                 >
                   <span className="flex items-center gap-1.5">

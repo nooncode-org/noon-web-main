@@ -41,11 +41,11 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
       aria-hidden={!open}
       className={`grid transition-all duration-500 ease-out ${
         open
-          ? "grid-rows-[1fr] opacity-100 mt-4"
+          ? "grid-rows-[1fr] opacity-100 mt-0"
           : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
       }`}
     >
-      <div className="overflow-hidden">
+      <div className="overflow-hidden rounded-b-[12px] bg-[#1200C5] px-3.5 pb-3.5 pt-1">
         {/* Carousel row */}
         <div
           ref={scrollRef}
@@ -68,7 +68,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
             <Link
               key={template.slug}
               href={localHref(getTemplateHref(template.slug))}
-              className="group relative aspect-[3/2] w-[200px] shrink-0 snap-start overflow-hidden rounded-[10px] border border-foreground/8 bg-foreground/[0.04] sm:w-[230px]"
+              className="group relative aspect-[3/2] w-[200px] shrink-0 snap-start overflow-hidden rounded-[10px] border border-foreground/8 bg-[#1200C5] sm:w-[230px]"
             >
               <Image
                 src={template.image}
