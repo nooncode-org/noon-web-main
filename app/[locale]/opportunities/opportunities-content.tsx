@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, DollarSign, Layers, Settings, ShoppingCart } from "lucide-react";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
+import { ContactRouteDiagram } from "@/components/sections/contact-route-diagram";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
@@ -117,10 +117,10 @@ export function OpportunitiesContent() {
               >
                 <Link
                   href={contactHref}
-                  className="site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+                  className="group site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
                 >
                   Contact Noon
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
                 </Link>
               </div>
             </div>
@@ -209,19 +209,12 @@ export function OpportunitiesContent() {
                 </div>
               </div>
               <div
-                className={`mx-auto w-fit overflow-hidden border border-foreground/10 bg-card/40 transition-all duration-700 ${
+                className={`transition-all duration-700 ${
                   howVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
                 }`}
                 style={{ transitionDelay: "150ms" }}
               >
-                <Image
-                  src="/figma/opportunities-cube.png"
-                  alt="Isometric technical cube illustrating one contact route across all paths"
-                  width={405}
-                  height={342}
-                  className="block h-auto w-full max-w-[400px] opacity-90 invert dark:opacity-80 dark:invert-0"
-                  unoptimized
-                />
+                <ContactRouteDiagram />
               </div>
             </div>
           </div>
@@ -230,7 +223,7 @@ export function OpportunitiesContent() {
         <SiteCtaBlock
           title="Ready to build?"
           description="Start a conversation with Maxwell or reach out directly."
-          blockHref={lp(siteRoutes.home)}
+          blockHref={lp(siteRoutes.maxwellStudio)}
           className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
         />
       </div>

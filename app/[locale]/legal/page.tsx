@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Shield, Cookie, Scale } from "lucide-react";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -47,9 +48,10 @@ type LegalPageProps = {
 export default async function LegalPage({ params }: LegalPageProps) {
   const { locale } = await params;
   const lp = (href: string) => `/${locale}${href}`;
+  const viewer = await getAuthenticatedViewer();
 
   return (
-    <SitePageFrame>
+    <SitePageFrame viewer={viewer}>
       <div className="site-shell py-12 lg:py-16">
         {/* Header */}
         <div className="mx-auto mb-10 max-w-3xl text-center lg:mb-12">

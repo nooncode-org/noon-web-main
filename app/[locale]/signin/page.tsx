@@ -3,6 +3,7 @@ import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { auth, isGoogleAuthConfigured } from "@/auth";
 import { signInWithGoogleAction } from "./actions";
 import { normalizeInternalRedirect } from "@/lib/auth/redirect";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 
 type Props = {
   searchParams: Promise<{ redirectTo?: string; error?: string }>;
@@ -21,9 +22,10 @@ export default async function SignInPage({ searchParams }: Props) {
   }
 
   const googleConfigured = isGoogleAuthConfigured();
+  const viewer = await getAuthenticatedViewer();
 
   return (
-    <SitePageFrame>
+    <SitePageFrame viewer={viewer}>
       <section className="min-h-[calc(100vh-4rem)] px-6 py-16 lg:py-24">
         <div className="mx-auto max-w-xl">
           <div className="rounded-[10px] border border-border bg-card/95 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur">

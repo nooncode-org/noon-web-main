@@ -2,7 +2,13 @@
 
 import {
   ArrowRight,
+  Code2,
   Mail,
+  Reply,
+  Route,
+  ScanSearch,
+  Sparkles,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -17,23 +23,28 @@ import { ResponseTimeline } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
+// Real Noon social channels (mirrors footerSocialLinks in lib/site-config) —
+// TikTok / Facebook / Instagram only, per brand (no LinkedIn/GitHub/X).
 const OTHER_CHANNELS = [
-  { label: "LinkedIn", href: "https://www.linkedin.com" },
-  { label: "GitHub", href: "https://github.com" },
-  { label: "TikTok", href: "https://www.tiktok.com" },
+  { label: "TikTok", href: "https://www.tiktok.com/@nooncode.dev" },
+  { label: "Facebook", href: "https://www.facebook.com/people/Noon-Development-Agency/61571938881520/" },
+  { label: "Instagram", href: "https://www.instagram.com/nooncode.dev" },
 ];
 
 function ContactProcessPanel({ responseTime }: { responseTime: string }) {
   const steps = [
     {
+      icon: Route,
       label: "Route",
       description: "Pick the closest request type so it reaches the right review path.",
     },
     {
+      icon: ScanSearch,
       label: "Review",
       description: responseTime,
     },
     {
+      icon: Reply,
       label: "Next step",
       description: "Noon replies with clarification, proposal direction, or direct guidance.",
     },
@@ -41,30 +52,33 @@ function ContactProcessPanel({ responseTime }: { responseTime: string }) {
 
   return (
     <div>
-      {/* Figma: "HOW IT MOVES" stepper card — all 3 steps share the same
-         outlined neutral chip (sandbox ContactAside.tsx has no brand fill on
-         step 1). Steps are separated by top borders only. */}
+      {/* "HOW IT MOVES" — a compact visual process flow: icon nodes on a spine,
+         so the 3 steps read as a sequence at a glance instead of a numbered list. */}
       <div className="border border-foreground/10 bg-card/40 p-5 lg:p-6">
         <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
           How it moves
         </p>
         <div className="mt-5">
-          {steps.map((step, index) => (
-            <div
-              key={step.label}
-              className={`grid grid-cols-[1.75rem_1fr] gap-3 ${
-                index > 0 ? "mt-4 border-t border-foreground/10 pt-4" : ""
-              }`}
-            >
-              <div className="flex h-7 w-7 items-center justify-center border border-foreground/20 bg-transparent text-[12px] font-mono text-foreground">
-                {index + 1}
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            const last = index === steps.length - 1;
+            return (
+              <div key={step.label} className="relative flex gap-3 pb-5 last:pb-0">
+                <div className="relative flex w-8 shrink-0 justify-center">
+                  {!last && (
+                    <span aria-hidden className="absolute bottom-0 left-1/2 top-8 w-px -translate-x-1/2 bg-foreground/15" />
+                  )}
+                  <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-[8px] border border-foreground/15 bg-card text-primary">
+                    <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </span>
+                </div>
+                <div className="pt-0.5">
+                  <p className="text-sm font-medium leading-tight text-foreground">{step.label}</p>
+                  <p className="site-card-copy mt-1 text-muted-foreground">{step.description}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium leading-tight text-foreground">{step.label}</p>
-                <p className="site-card-copy mt-1.5 text-muted-foreground">{step.description}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -174,10 +188,10 @@ export function ContactPageContent() {
                 {canReturnToMaxwell ? (
                   <Link
                     href={maxwellReturnHref}
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+                    className="group inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-secondary"
                   >
                     {t("continueWithMaxwell")}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
                   </Link>
                 ) : null}
               </div>
@@ -204,36 +218,51 @@ export function ContactPageContent() {
         </div>
       </section>
 
-      {/* Pipeline stats band (Figma /contact frame) — at web-main scale.
-         Three left-aligned columns split by vertical dividers, per Figma. */}
+      {/* Capabilities band — three honest, qualitative columns (no fabricated
+         metrics, no 3rd-party model names). Icon + category + a concrete claim
+         + supporting copy, split by vertical dividers (Vercel 3-up style). */}
       <section className="site-section">
         <div className="site-shell">
           <div className="grid border border-foreground/10 bg-card/60 sm:grid-cols-3 sm:divide-x sm:divide-foreground/10">
             {[
               {
+                icon: Sparkles,
                 eyebrow: "Pipeline speed",
-                stat: "3x Faster",
-                copy: "Maxwell's orchestration (GPT-4 + V0 + Opus) accelerates the generation of functional bases.",
+                headline: "Maxwell-accelerated",
+                copy: "Maxwell turns your need into a working, functional base — so engineers start from real software, not a blank file.",
               },
               {
+                icon: Code2,
                 eyebrow: "Development",
-                stat: "0% No-Code.",
-                copy: "All software is real code, eliminating dependencies on limited and fragile platforms.",
+                headline: "Real code, not no-code",
+                copy: "All software ships as real code — no lock-in to limited, fragile platforms.",
               },
               {
+                icon: UserCheck,
                 eyebrow: "Validation",
-                stat: "100% Human QA.",
-                copy: "Each line of AI-generated code is validated and refined by senior engineers before deployment.",
+                headline: "Human-reviewed",
+                copy: "AI-generated code is reviewed and refined by senior engineers before it ships.",
               },
-            ].map((s) => (
-              <div key={s.eyebrow} className="p-6 lg:p-7">
-                <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                  {s.eyebrow}
-                </p>
-                <p className="site-section-title mb-2">{s.stat}</p>
-                <p className="site-card-copy text-muted-foreground">{s.copy}</p>
-              </div>
-            ))}
+            ].map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.eyebrow} className="p-6 lg:p-7">
+                  <div className="mb-4 flex items-center gap-2.5">
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-[8px] text-primary"
+                      style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+                      {s.eyebrow}
+                    </p>
+                  </div>
+                  <p className="site-card-title mb-2">{s.headline}</p>
+                  <p className="site-card-copy text-muted-foreground">{s.copy}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -246,22 +275,22 @@ export function ContactPageContent() {
           {
             time: "< 2h",
             title: "Acknowledgment",
-            description: "We confirm receipt of your inquiry within 2 business hours during working days. You'll know we received your message.",
+            description: "We confirm we've got your inquiry within 2 business hours — you're never left wondering.",
           },
           {
             time: "24h",
             title: "Initial Review",
-            description: "Our team reviews your request and routes it to the appropriate specialist. Complex requests may require additional context.",
+            description: "Your request reaches the right specialist, with any missing context flagged early.",
           },
           {
             time: "48h",
             title: "Detailed Response",
-            description: "You receive a substantive reply with next steps, clarifying questions, or a preliminary assessment of your project.",
+            description: "A substantive reply: next steps, clarifying questions, or a first read on your project.",
           },
           {
             time: "1 week",
             title: "Discovery Call",
-            description: "For qualified projects, we schedule a discovery call to discuss requirements, constraints, and delivery expectations in depth.",
+            description: "For a strong fit, we set up a call to go deep on requirements, constraints, and delivery.",
           },
         ]}
       />
@@ -270,7 +299,7 @@ export function ContactPageContent() {
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
-        blockHref={lp(siteRoutes.home)}
+        blockHref={lp(siteRoutes.maxwellStudio)}
         className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
       />
       </div>
