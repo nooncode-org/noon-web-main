@@ -9,6 +9,7 @@ import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
+import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/studio/_actions/share-prototype";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
@@ -897,12 +898,18 @@ export function StudioShell({
     previousDemoUrl?: string,
     previousVersionId?: string | null,
     confirmationToken?: string,
+    // 1-based poll attempt. Bounds the recursion so a misbehaving v0 cannot
+    // loop forever (see lib/maxwell/prototype-poll-policy.ts). The server is
+    // authoritative — it reverts the session and returns `failed` at the cap —
+    // but we also stop here defensively in case of an older server build.
+    attempt: number = 1,
   ) {
     try {
       const params = new URLSearchParams({
         chatId,
         session_id: pollSessionId,
         action,
+        attempt: String(attempt),
       });
       if (prompt) {
         params.set("prompt", prompt.substring(0, 500));
@@ -923,6 +930,11 @@ export function StudioShell({
       const data = await res.json();
 
       if (data.status === "pending") {
+        // Defensive client-side stop: terminate even if the server keeps
+        // answering `pending` past the budget (e.g. a stale server build).
+        if (hasExceededPollBudget(attempt)) {
+          return handlePollError(action);
+        }
         const nextConfirmationToken =
           typeof data.completion_token === "string" ? data.completion_token : confirmationToken;
         setTimeout(
@@ -934,6 +946,7 @@ export function StudioShell({
             previousDemoUrl,
             previousVersionId,
             nextConfirmationToken,
+            attempt + 1,
           ),
           5000,
         );
