@@ -20,6 +20,8 @@ const allValidEnv = {
   RESEND_API_KEY: "resend-key",
   MAIL_FROM: "noreply@example.com",
   MAIL_PROVIDER: "resend",
+  STRIPE_SECRET_KEY: "sk_test_123",
+  STRIPE_WEBHOOK_SECRET: "whsec_123",
   NOON_APP_BASE_URL: "https://noon-app.example.com",
   NOON_WEBSITE_WEBHOOK_SECRET: "shared-secret",
   NODE_ENV: "production",
@@ -55,6 +57,22 @@ describe("checkRuntimeEnv", () => {
     expect(r.ok).toBe(false);
     const resend = r.criticalMissing.find((c) => c.service === "Resend");
     expect(resend?.missing).toEqual(["MAIL_FROM"]);
+  });
+
+  it("reports missing Stripe secret key as critical (primary payment path)", () => {
+    const env = { ...allValidEnv, STRIPE_SECRET_KEY: "" };
+    const r = checkRuntimeEnv(env);
+    expect(r.ok).toBe(false);
+    expect(r.criticalMissing.map((c) => c.service)).toEqual(["Stripe"]);
+    expect(r.criticalMissing[0]?.missing).toEqual(["STRIPE_SECRET_KEY"]);
+  });
+
+  it("reports missing Stripe webhook secret as critical (cannot confirm payment)", () => {
+    const env = { ...allValidEnv, STRIPE_WEBHOOK_SECRET: "" };
+    const r = checkRuntimeEnv(env);
+    expect(r.ok).toBe(false);
+    const stripe = r.criticalMissing.find((c) => c.service === "Stripe");
+    expect(stripe?.missing).toEqual(["STRIPE_WEBHOOK_SECRET"]);
   });
 
   it("reports NoonApp as optional missing (does NOT mark report as failed)", () => {

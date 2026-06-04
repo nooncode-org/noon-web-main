@@ -1,6 +1,6 @@
 # project.context.core.md - Noon Website / Maxwell Studio
 
-> Last updated: 2026-05-26
+> Last updated: 2026-06-04
 > Active session: D-slice ADR-023/024 cross-repo prototype decision contract is live end-to-end; soft launch hardening from `NoonWeb Roadmap.md` and `NoonWeb_Roadmap_Gaps_v3.md` continues
 > Operating mode: Website-only implementation, with App coordination through the existing payment + proposal-review contracts plus the new prototype-decision contract (ADR-023) and prototype signed-read contract (ADR-024)
 
@@ -8,7 +8,7 @@
 
 - `C:\Users\white\Downloads\NoonWeb Roadmap.md` is the primary decision source for the current launch.
 - `C:\Users\white\Downloads\NoonWeb_Roadmap_Gaps_v3.md` is supporting context for gaps and future v3 work.
-- Do not use prior Stripe-first decisions as launch truth unless the roadmap changes.
+- Launch payment is Stripe Checkout (primary) with manual evidence as a fallback (owner decision 2026-06-04). Treat this as truth over older manual-only notes elsewhere in this doc's history.
 - Do not modify `App-nooncode` unless a verified cross-project contract requires it.
 
 ## Product Boundary
@@ -22,16 +22,17 @@
 
 - Launch the current English website before the future v3 redesign.
 - Initial launch is EN-only; `/es`, `/fr`, and `/de` redirect to `/en`.
-- Fase 1 payment uses manual `submit_payment_evidence`, not Stripe Checkout.
-- Stripe Checkout code may exist in the repository, but it is not the active Fase 1 payment path unless the roadmap is explicitly changed.
+- Fase 1 payment is Stripe Checkout as the primary path; manual `submit_payment_evidence` remains as a fallback channel.
+- Both paths render in the public proposal UI (`components/maxwell/public-proposal-payment.tsx`): "Pay with card" (Stripe) is the primary CTA, "paid through another channel" (manual evidence) is the secondary fallback.
 - Public launch should happen after the current scope passes local gates and production env/runtime checks.
 
 ## Payment Contract
 
 - PM review lives in Noon App.
 - Noon App sends review decisions to `POST /api/integrations/noon-app/proposal-review-decision`.
-- A public proposal can receive payment evidence only after it is sent or payment-pending.
-- Client evidence is submitted through `POST /api/maxwell/payment` with `action: "submit_payment_evidence"` and either `public_token` or `proposal_request_id`.
+- A public proposal can be paid (Stripe Checkout) or receive payment evidence (manual fallback) only after it is sent or payment-pending.
+- Primary path: the client starts Stripe Checkout via `POST /api/maxwell/checkout`; the `checkout.session.completed` webhook (`POST /api/stripe/webhook`) confirms payment via `confirmProposalPayment`.
+- Fallback path: client evidence is submitted through `POST /api/maxwell/payment` with `action: "submit_payment_evidence"` and either `public_token` or `proposal_request_id`.
 - The proposal owner must be authenticated, or an authorized reviewer session must be present.
 - Submitted evidence moves the proposal to `payment_under_verification`.
 - A reviewer still verifies payment through the internal payment actions before workspace activation.
@@ -84,7 +85,7 @@
 - Contact notification email HTML is escaped.
 - Prototype iframe is sandboxed and uses `referrerPolicy`.
 - `review-sla` accepts `REVIEW_API_SECRET` or `CRON_SECRET`.
-- The active soft-launch payment path is manual evidence submission.
+- The primary soft-launch payment path is Stripe Checkout; manual evidence submission remains as a fallback.
 - Sentry instrumentation is live (`SENTRY_DSN` + `SENTRY_TRACES_SAMPLE_RATE=0.1` set in Vercel Production since 2026-05-18). Coexists with Vercel Analytics.
 - UptimeRobot monitors `https://noon-main.vercel.app/api/health` every 5 minutes since 2026-05-18.
 - Legacy `NOON_APP_WEBHOOK_SECRET` fallback removed from code 2026-05-25 (PR #15); canonical `NOON_WEBSITE_WEBHOOK_SECRET` is the only one read by `lib/runtime-env.ts`. Vercel-side env-var deletion is a separate operator step.
@@ -94,7 +95,7 @@
 ## Open Risks
 
 - The live Supabase/Vercel runtime must be checked before public launch.
-- Stripe env vars may still exist from a prior slice; they are not launch-critical for Fase 1 manual evidence.
+- Stripe env vars (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) are launch-critical: card checkout is the primary payment path, and the boot guard (`lib/server/runtime-env.ts`) now fails fast in production if either is missing.
 - `npm audit` has reported high-severity dependency advisories before; upgrade must be a controlled dependency slice.
 - v3 remains deferred until after the current EN-only launch unless the roadmap is replaced.
 - D-slice flag flip (`MAXWELL_PROTOTIPO_DECISION_ROUTE=1`) requires a bilateral Web↔App smoke test before being turned on in Vercel Production. Preview can be flipped earlier for staging tests.
