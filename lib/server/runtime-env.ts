@@ -9,6 +9,15 @@
  * - OpenAI: critical (Maxwell chat depends on it).
  * - V0:     critical (prototype generation depends on it).
  * - Resend: critical (proposal email delivery). All 3 vars must travel together.
+ * - Stripe: critical (card checkout is the primary launch payment path — the
+ *           public proposal renders "Pay with card" as the primary CTA). Both
+ *           vars travel together: STRIPE_SECRET_KEY powers checkout-session
+ *           creation, STRIPE_WEBHOOK_SECRET powers the confirmation webhook.
+ *           Missing the secret key 503s the primary CTA; missing the webhook
+ *           secret takes payment that can never be confirmed (proposal stuck in
+ *           payment_pending) — so boot must fail rather than ship either half.
+ *           The manual `submit_payment_evidence` path remains as a fallback but
+ *           is no longer the only payment route, so it does not soften this gate.
  * - NoonApp: optional. Per .env.example lines 40-42, when either var is empty the
  *            outbound webhook is skipped and the proposal draft is still stored
  *            locally — degraded but not broken. Surfaced as warning, not failure.
@@ -104,6 +113,12 @@ export function checkRuntimeEnv(
       "Resend",
       "critical",
       ["RESEND_API_KEY", "MAIL_FROM", "MAIL_PROVIDER"],
+      env,
+    ),
+    buildCheck(
+      "Stripe",
+      "critical",
+      ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
       env,
     ),
     buildCheck(

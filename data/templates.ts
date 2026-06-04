@@ -48,6 +48,7 @@ export const templateSelectionGuides = [
 export const templates = [
   {
     slug: "client-portal-saas",
+    image: "/templates/client-portal-saas.jpg",
     name: "Client Portal SaaS",
     category: "SaaS",
     summary:
@@ -65,6 +66,7 @@ export const templates = [
   },
   {
     slug: "operations-command-center",
+    image: "/templates/operations-command-center.jpg",
     name: "Operations Command Center",
     category: "Dashboards",
     summary:
@@ -82,6 +84,7 @@ export const templates = [
   },
   {
     slug: "approval-workflow-tool",
+    image: "/templates/approval-workflow-tool.jpg",
     name: "Approval Workflow Tool",
     category: "Internal tools",
     summary:
@@ -99,6 +102,7 @@ export const templates = [
   },
   {
     slug: "customer-support-ai-assistant",
+    image: "/templates/customer-support-ai-assistant.jpg",
     name: "Customer Support AI Assistant",
     category: "AI assistants",
     summary:
@@ -116,6 +120,7 @@ export const templates = [
   },
   {
     slug: "multi-vendor-marketplace",
+    image: "/templates/multi-vendor-marketplace.jpg",
     name: "Multi-Vendor Marketplace",
     category: "Marketplaces",
     summary:
@@ -133,6 +138,7 @@ export const templates = [
   },
   {
     slug: "reservation-platform",
+    image: "/templates/reservation-platform.jpg",
     name: "Reservation Platform",
     category: "Booking platforms",
     summary:
@@ -150,6 +156,7 @@ export const templates = [
   },
   {
     slug: "commerce-operations-storefront",
+    image: "/templates/commerce-operations-storefront.jpg",
     name: "Commerce Operations Storefront",
     category: "E-commerce",
     summary:
@@ -167,6 +174,7 @@ export const templates = [
   },
   {
     slug: "field-service-mobile-app",
+    image: "/templates/field-service-mobile-app.jpg",
     name: "Field Service Mobile App",
     category: "Mobile apps",
     summary:

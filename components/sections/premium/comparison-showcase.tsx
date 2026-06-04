@@ -55,12 +55,12 @@ function NoonRow({ label, block, play, reduce, delay }: { label: string; block: 
   // spring scale below (large movement).
   const [resolved, setResolved] = useState(!play);
 
+  // Only schedule the async resolve here (no synchronous setState in the effect
+  // body). The initial resolving/resolved state comes from useState(!play), and
+  // the parent keys this row by `play` so it remounts (re-initializes) whenever
+  // the section enters/leaves the viewport.
   useEffect(() => {
-    if (!play) {
-      setResolved(true);
-      return;
-    }
-    setResolved(false);
+    if (!play) return;
     const t = setTimeout(() => setResolved(true), delay * 1000 + 850);
     return () => clearTimeout(t);
   }, [play, delay]);
@@ -203,7 +203,7 @@ export function ComparisonShowcase({
               </p>
               <div className="space-y-5">
                 {items.map((item, di) => (
-                  <NoonRow key={item.label} label={item.label} block={item.noon} play={play} reduce={reduce} delay={0.3 + di * 0.55} />
+                  <NoonRow key={`${item.label}-${play}`} label={item.label} block={item.noon} play={play} reduce={reduce} delay={0.3 + di * 0.55} />
                 ))}
               </div>
             </div>
