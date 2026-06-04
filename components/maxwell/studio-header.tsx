@@ -9,10 +9,11 @@ import {
   CircleDashed,
   MessageSquare,
   Monitor,
+  MoreHorizontal,
   Plus,
-  Share2,
-  Sparkles,
+  Star,
   Trash2,
+  Upload,
   User,
 } from "lucide-react";
 import {
@@ -197,7 +198,7 @@ export function StudioHeader({
 
   return (
     <>
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
+    <header className="flex items-center justify-between border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
       <div className="flex min-w-0 items-center gap-2.5">
         <Link
           href={siteRoutes.home}
@@ -206,25 +207,7 @@ export function StudioHeader({
         >
           <ArrowLeft className="h-3.5 w-3.5" />
         </Link>
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary/60 text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" />
-        </div>
-        <div className="min-w-0">
-          <p
-            className="truncate text-[13px] font-display leading-none transition-all duration-500"
-            title={displayName}
-          >
-            {displayName}
-          </p>
-          {hasWorkspace && (
-            <p className="mt-1 hidden truncate text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/65 sm:block">
-              {viewerEmail}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex">
+        <div className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex">
         <CircleDashed className={`h-3.5 w-3.5 ${isProcessing ? "animate-spin" : ""}`} />
         <Popover open={draftsOpen} onOpenChange={setDraftsOpen}>
           <PopoverTrigger asChild>
@@ -235,6 +218,7 @@ export function StudioHeader({
             >
               <span className="shrink-0">Drafts</span>
               <span className="text-muted-foreground/50">/</span>
+              <Star className="h-3 w-3 shrink-0 text-muted-foreground/70" />
               <span className="truncate font-medium text-foreground/90">{displayName}</span>
               <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
             </button>
@@ -311,6 +295,7 @@ export function StudioHeader({
             </ul>
           </PopoverContent>
         </Popover>
+        </div>
       </div>
 
       <div className="flex min-w-0 items-center justify-end gap-2">
@@ -332,20 +317,43 @@ export function StudioHeader({
           <CorrectionCounter used={correctionsUsed} max={maxCorrections} />
         )}
 
-        <Link
-          href={agentHref}
-          className="hidden items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground sm:flex"
-        >
-          <User className="h-3 w-3" />
-          Talk to agent
-        </Link>
         <button
           type="button"
-          className="hidden items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground md:flex"
+          aria-label="Share"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
         >
-          <Share2 className="h-3 w-3" />
-          Share
+          <Upload className="h-3.5 w-3.5" />
         </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-label="More options"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-52 p-1">
+            {onNewDraftChat && (
+              <button
+                type="button"
+                onClick={onNewDraftChat}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-foreground transition-colors hover:bg-secondary"
+              >
+                <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                New chat
+              </button>
+            )}
+            <Link
+              href={agentHref}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-foreground transition-colors hover:bg-secondary"
+            >
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
+              Talk to agent
+            </Link>
+          </PopoverContent>
+        </Popover>
         <UserMenu
           viewer={{ email: viewerEmail, name: null, image: null }}
           locale={currentLocale}
