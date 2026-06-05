@@ -211,7 +211,7 @@ export function HeroSection() {
                the 4 ported pages instead of the site's default serif display. */}
             <div className="mb-4 lg:mb-5">
               <h1
-                className="text-[1.35rem] sm:text-[1.6rem] lg:text-[clamp(1.6rem,2.5vw,2.15rem)] leading-[1.1] tracking-tight text-center"
+                className="text-[1.3rem] sm:text-[1.5rem] lg:text-[clamp(1.5rem,2.35vw,2rem)] leading-[1.1] tracking-tight text-center"
                 style={{ fontFamily: "var(--font-instrument)" }}
               >
                 {t("headline")}
