@@ -7,6 +7,7 @@
  * when the audit UI evolves. All handlers are no-ops / links.
  */
 
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { UpgradeAuditPanel } from "@/components/upgrade/upgrade-audit";
 import { DEMO_AUDIT } from "./demo-data";
@@ -14,6 +15,7 @@ import { DEMO_AUDIT } from "./demo-data";
 const noop = () => {};
 
 export function UpgradeDemo({ className = "" }: { className?: string }) {
+  const locale = useLocale();
   return (
     <div
       className={`overflow-hidden rounded-[12px] border border-foreground/10 bg-background shadow-[0_24px_60px_-30px_rgba(0,0,0,0.55)] ${className}`}
@@ -39,7 +41,7 @@ export function UpgradeDemo({ className = "" }: { className?: string }) {
       <div className="flex items-center justify-between gap-3 border-t border-foreground/10 px-5 py-3 text-xs text-muted-foreground">
         <span>This is the real Upgrade audit — interactive demo with sample data.</span>
         <Link
-          href="/en/upgrade"
+          href={`/${locale}/upgrade`}
           className="text-foreground/85 underline-offset-4 hover:underline"
         >
           Run it on your site →

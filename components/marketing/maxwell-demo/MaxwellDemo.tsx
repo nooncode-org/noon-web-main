@@ -13,6 +13,7 @@
  */
 
 import { useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { StudioHeader } from "@/components/maxwell/studio-header";
 import { StudioChatPane } from "@/components/maxwell/studio-chat-pane";
@@ -28,6 +29,7 @@ import {
 const noop = () => {};
 
 export function MaxwellDemo({ className = "" }: { className?: string }) {
+  const locale = useLocale();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState("");
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
@@ -102,7 +104,7 @@ export function MaxwellDemo({ className = "" }: { className?: string }) {
           This is the real Maxwell studio — interactive demo with sample data.
         </span>
         <Link
-          href="/en/maxwell/studio"
+          href={`/${locale}/maxwell/studio`}
           className="text-foreground/85 underline-offset-4 hover:underline"
         >
           Open the real studio →
