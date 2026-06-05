@@ -24,6 +24,7 @@ import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
 import type { ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
 // ============================================================================
 // Message sub-components
@@ -49,8 +50,10 @@ function formatDuration(durationMs?: number) {
   return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
 }
 
-function formatRelativeTime(createdAt: string | undefined, now: number) {
-  if (!createdAt) return null;
+function formatRelativeTime(createdAt: string | undefined, now: number | null) {
+  // `now` is null until the component has hydrated, so SSR + first client paint
+  // render no relative time (they'd otherwise disagree as wall-clock advances).
+  if (!createdAt || now == null) return null;
 
   const timestamp = Date.parse(createdAt);
   if (Number.isNaN(timestamp)) return null;
@@ -188,7 +191,7 @@ function AssistantMessage({
   content: string;
   durationMs?: number;
   createdAt?: string;
-  now: number;
+  now: number | null;
   isLatest: boolean;
   isThinking: boolean;
   copied: boolean;
@@ -391,6 +394,7 @@ export function StudioChatPane({
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
+  const mounted = useHasMounted();
   const [now, setNow] = useState(() => Date.now());
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [feedbackByMessageId, setFeedbackByMessageId] = useState<
@@ -554,7 +558,7 @@ export function StudioChatPane({
                 content={msg.content}
                 durationMs={msg.durationMs}
                 createdAt={msg.createdAt}
-                now={now}
+                now={mounted ? now : null}
                 isLatest={i === latestAssistantIndex}
                 isThinking={isThinking}
                 copied={copiedMessageId === messageId}
