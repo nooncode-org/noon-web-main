@@ -416,8 +416,7 @@ export function ServicesContent() {
                        revierte cambiando siteTones.brand por service.tone). */}
                     <Link
                       href={service.href}
-                      className="group mt-auto inline-flex w-fit items-center gap-2 border bg-background/40 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background/70"
-                      style={{ borderColor: "rgba(18, 0, 197, 0.65)" }}
+                      className="group mt-auto inline-flex w-fit items-center gap-2 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {service.linkLabel}
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
