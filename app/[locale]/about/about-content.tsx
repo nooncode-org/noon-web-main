@@ -146,7 +146,9 @@ const MOCKUP_EASE = [0.32, 0.72, 0, 1] as const;
 
 function DomainMockup({ kind }: { kind: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: "-60px" });
+  // once: reveal a single time and stay — otherwise scrolling a mockup out of
+  // view re-collapses it (and NumberFlow counts back down to 0) every cycle.
+  const inView = useInView(ref, { margin: "-60px", once: true });
   const reduce = useReducedMotion() ?? false;
   // Render the final (visible) state during SSR + first client paint so the
   // markup matches (no hydration mismatch); only drive the entrance from
