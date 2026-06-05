@@ -14,10 +14,17 @@ in code. The page does NOT regress while waiting.
 
 ## Group A — Product captures
 
-- [POSTPONED] **A1** Maxwell studio · "Prototype ready" two-pane → `public/product/maxwell-studio.png`
+> **NOTE (approach change 2026-06-04):** Instead of screenshots we now embed
+> the REAL product components live on marketing pages
+> (`components/marketing/maxwell-demo/`). The /about Maxwell demo uses the real
+> StudioHeader + StudioChatPane, so A1 is superseded there. Same plan for
+> Upgrade next. Screenshots only stay useful for preview-pane content and the
+> delivered-software / template thumbnails (can't render those live).
+
+- [SUPERSEDED] **A1** Maxwell studio · "Prototype ready" → replaced by live MaxwellDemo on /about
 - [RECEIVED] **A2** Maxwell studio · Intake / empty state → `public/product/maxwell-intake.png` (captured by Claude via localhost auth bypass, 2880×1800, dark)
 - [PENDING] **A3** Maxwell studio · Generating prototype (polling) → `public/product/maxwell-generating.png`
-- [PENDING] **A4** Upgrade · Audit logged-in (real score + findings) → `public/product/upgrade-audit.png`
+- [SUPERSEDED] **A4** Upgrade · Audit → replaced by live UpgradeDemo on /upgrade (real UpgradeAuditPanel + demo data)
 - [PENDING] **A5** Upgrade · Generated version → `public/product/upgrade-version.png`
 - [PENDING] **A6** Delivered software · AI & Automation → `public/product/built-ai.png`
 - [PENDING] **A7** Delivered software · Web → `public/product/built-web.png`

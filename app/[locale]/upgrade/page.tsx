@@ -4,7 +4,7 @@ import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
 import { BeforeAfterScan } from "@/components/sections/premium";
-import { UpgradeAuditPreview } from "@/components/sections/upgrade-audit-preview";
+import { UpgradeDemo } from "@/components/marketing/upgrade-demo/UpgradeDemo";
 import { Activity, ScanSearch, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -122,7 +122,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
           <p className="site-meta-label mb-3 text-muted-foreground">What you get back</p>
           <h2 className="site-section-title">A clear, scored audit of your site</h2>
         </div>
-        <UpgradeAuditPreview />
+        <UpgradeDemo />
       </div>
 
       {/* Premium: Before/After Scan visualization */}
