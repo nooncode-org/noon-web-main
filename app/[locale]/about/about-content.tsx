@@ -11,7 +11,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
-import { MaxwellStudioPreview } from "@/components/sections/maxwell-studio-preview";
+import { MaxwellDemo } from "@/components/marketing/maxwell-demo/MaxwellDemo";
 import { TechEcosystem } from "@/components/sections/tech-ecosystem";
 
 const LOCALES = ["en", "es", "fr", "de"];
@@ -584,7 +584,7 @@ export function AboutContent() {
             </p>
           </RevealBlock>
           <RevealBlock delay={150}>
-            <MaxwellStudioPreview />
+            <MaxwellDemo />
           </RevealBlock>
         </div>
       </section>
