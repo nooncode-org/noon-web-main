@@ -14,11 +14,11 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Monitor } from "lucide-react";
 import { StudioHeader } from "@/components/maxwell/studio-header";
 import { StudioChatPane } from "@/components/maxwell/studio-chat-pane";
 import type { ReplyTarget } from "@/components/maxwell/studio-shell";
 import { getContactHref } from "@/lib/site-config";
+import { DemoPrototypePreview } from "./DemoPrototypePreview";
 import {
   DEMO_MESSAGES,
   DEMO_PROJECT_NAME,
@@ -88,10 +88,12 @@ export function MaxwellDemo({ className = "" }: { className?: string }) {
           />
         </div>
 
-        {/* Right: preview placeholder (phase 2 will replace this with a real
-           static prototype rendering — keeping the chat alive in phase 1
-           means we ship the demo today and iterate on the preview next) */}
-        <PreviewPlaceholder />
+        {/* Right: the generated prototype preview (a faithful client order
+           portal — the scope from the demo conversation). Hidden on mobile
+           where the chat is the focus. */}
+        <div className="hidden min-h-0 lg:block">
+          <DemoPrototypePreview />
+        </div>
       </div>
 
       {/* Footer CTA */}
@@ -110,25 +112,3 @@ export function MaxwellDemo({ className = "" }: { className?: string }) {
   );
 }
 
-function PreviewPlaceholder() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-4 px-8 py-12 text-center bg-secondary/30">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground">
-        <Monitor className="h-6 w-6" strokeWidth={1.5} />
-      </div>
-      <div>
-        <p className="text-sm font-medium text-foreground/85">Working prototype</p>
-        <p className="mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">
-          Maxwell generates a real, interactive prototype here — sign in to try
-          it yourself.
-        </p>
-      </div>
-      <Link
-        href="/en/maxwell/studio"
-        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        Open the studio
-      </Link>
-    </div>
-  );
-}
