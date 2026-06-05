@@ -6,7 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
+import NumberFlow from "@number-flow/react";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
@@ -135,9 +139,20 @@ function MockupChrome({ label }: { label: string }) {
 
 // Product-UI mockups — one per delivery area — rendered in the product's native
 // dark palette (consistent with the Maxwell/Upgrade previews) so each domain
-// reads as a real product screenshot, not a generic flat panel. Coherent sample
-// data, single accent; the only motion is a live status pulse.
+// reads as a real product screenshot, not a generic flat panel. On scroll-into-
+// view the data comes alive (KPIs count up, bars grow, steps/rows stagger in).
+// No decorative glows; respects prefers-reduced-motion.
+const MOCKUP_EASE = [0.32, 0.72, 0, 1] as const;
+
 function DomainMockup({ kind }: { kind: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "-60px" });
+  const reduce = useReducedMotion() ?? false;
+  // Render the final (visible) state during SSR + first client paint so the
+  // markup matches (no hydration mismatch); only drive the entrance from
+  // inView after mount.
+  const mounted = useHasMounted();
+  const show = !mounted || inView || reduce;
   const frame =
     "overflow-hidden rounded-[8px] border border-white/10 bg-[#050505] text-zinc-100 shadow-[0_14px_34px_-18px_rgba(0,0,0,0.7)]";
 
@@ -149,7 +164,7 @@ function DomainMockup({ kind }: { kind: string }) {
       { label: "Send to #ops channel", state: "queued" },
     ] as const;
     return (
-      <div className={frame}>
+      <div ref={ref} className={frame}>
         <MockupChrome label="automation" />
         <div className="p-3">
           <div className="mb-2.5 flex items-center justify-between">
@@ -159,8 +174,14 @@ function DomainMockup({ kind }: { kind: string }) {
             </span>
           </div>
           <div className="space-y-2">
-            {steps.map((s) => (
-              <div key={s.label} className="flex items-center gap-2 text-[10px]">
+            {steps.map((s, i) => (
+              <motion.div
+                key={s.label}
+                className="flex items-center gap-2 text-[10px]"
+                initial={false}
+                animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }}
+                transition={{ duration: 0.35, delay: 0.15 + i * 0.12, ease: MOCKUP_EASE }}
+              >
                 <span
                   className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full ${
                     s.state === "done"
@@ -176,7 +197,7 @@ function DomainMockup({ kind }: { kind: string }) {
                   )}
                 </span>
                 <span className={s.state === "queued" ? "text-zinc-600" : "text-zinc-300"}>{s.label}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -186,23 +207,32 @@ function DomainMockup({ kind }: { kind: string }) {
 
   if (kind === "Web Solutions") {
     return (
-      <div className={frame}>
+      <div ref={ref} className={frame}>
         <MockupChrome label="dashboard" />
         <div className="p-3">
           <div className="grid grid-cols-3 gap-1.5">
-            {([["Users", "1,284"], ["Revenue", "$48k"], ["Active", "312"]] as const).map(([l, v]) => (
-              <div key={l} className="rounded-[6px] border border-white/10 bg-white/[0.02] px-1.5 py-1">
-                <p className="text-[6.5px] uppercase tracking-wide text-zinc-500">{l}</p>
-                <p className="text-[11px] font-semibold leading-tight text-zinc-100">{v}</p>
-              </div>
-            ))}
+            {([["Users", 1284, "", ""], ["Revenue", 48, "$", "k"], ["Active", 312, "", ""]] as const).map(
+              ([l, val, pre, suf]) => (
+                <div key={l} className="rounded-[6px] border border-white/10 bg-white/[0.02] px-1.5 py-1">
+                  <p className="text-[6.5px] uppercase tracking-wide text-zinc-500">{l}</p>
+                  <p className="text-[11px] font-semibold leading-tight text-zinc-100">
+                    {pre}
+                    <NumberFlow value={show ? val : 0} />
+                    {suf}
+                  </p>
+                </div>
+              ),
+            )}
           </div>
           <div className="mt-2.5 flex h-12 items-end gap-1">
             {[40, 64, 48, 80, 56, 72, 92, 68].map((barH, i) => (
-              <span
+              <motion.span
                 key={i}
-                className="flex-1 rounded-sm"
+                className="flex-1 origin-bottom rounded-sm"
                 style={{ height: `${barH}%`, backgroundColor: i === 6 ? "#4155ef" : "rgba(65,85,239,0.3)" }}
+                initial={false}
+                animate={show ? { scaleY: 1 } : { scaleY: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 + i * 0.05, ease: MOCKUP_EASE }}
               />
             ))}
           </div>
@@ -218,24 +248,27 @@ function DomainMockup({ kind }: { kind: string }) {
       { r: "Route 7", s: "Queued", tone: "bg-zinc-600" },
     ] as const;
     return (
-      <div className="flex justify-center py-1">
+      <div ref={ref} className="flex justify-center py-1">
         <div className="w-[100px] overflow-hidden rounded-[14px] border border-white/12 bg-[#050505] px-2 pb-2 pt-1.5 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.85)]">
           <div className="mx-auto mb-2 h-1 w-7 rounded-full bg-zinc-700" />
           <div className="mb-1.5 flex items-center justify-between px-0.5">
             <span className="text-[9px] font-semibold text-zinc-200">Deliveries</span>
             <span className="h-3 w-3 rounded-full bg-[#1200c5]/70" />
           </div>
-          {rows.map((row) => (
-            <div
+          {rows.map((row, i) => (
+            <motion.div
               key={row.r}
               className="mb-1 flex items-center justify-between rounded-[5px] border border-white/10 px-1.5 py-1 last:mb-0"
+              initial={false}
+              animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -5 }}
+              transition={{ duration: 0.3, delay: 0.2 + i * 0.1, ease: MOCKUP_EASE }}
             >
               <span className="text-[8px] text-zinc-300">{row.r}</span>
               <span className="inline-flex items-center gap-1">
                 <span className={`h-1.5 w-1.5 rounded-full ${row.tone}`} />
                 <span className="text-[7px] text-zinc-500">{row.s}</span>
               </span>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -244,11 +277,17 @@ function DomainMockup({ kind }: { kind: string }) {
 
   // Custom Software — admin / workflow window
   return (
-    <div className={frame}>
+    <div ref={ref} className={frame}>
       <MockupChrome label="workflow" />
       <div className="divide-y divide-white/5">
-        {([["Intake", "Done"], ["Approval", "Active"], ["Dispatch", "Queued"]] as const).map(([l, s]) => (
-          <div key={l} className="flex items-center justify-between px-2.5 py-2 text-[10px]">
+        {([["Intake", "Done"], ["Approval", "Active"], ["Dispatch", "Queued"]] as const).map(([l, s], i) => (
+          <motion.div
+            key={l}
+            className="flex items-center justify-between px-2.5 py-2 text-[10px]"
+            initial={false}
+            animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }}
+            transition={{ duration: 0.35, delay: 0.2 + i * 0.12, ease: MOCKUP_EASE }}
+          >
             <span className="text-zinc-300">{l}</span>
             <span className="inline-flex items-center gap-1.5">
               <span
@@ -258,7 +297,7 @@ function DomainMockup({ kind }: { kind: string }) {
               />
               <span className={s === "Active" ? "text-[#7d8bf2]" : "text-zinc-500"}>{s}</span>
             </span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
