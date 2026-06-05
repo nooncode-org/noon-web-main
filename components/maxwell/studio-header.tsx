@@ -2,20 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   ChevronDown,
   CircleDashed,
+  LogOut,
   MessageSquare,
   Monitor,
-  MoreHorizontal,
+  PanelRight,
   Plus,
   Star,
   Trash2,
   Upload,
   User,
+  X,
 } from "lucide-react";
+import { signOutAction } from "@/lib/auth/signout-action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +29,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { UserMenu } from "@/components/ui/user-menu";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
 import type { StudioPhase, ActiveView } from "./studio-shell";
-
-const STUDIO_DEFAULT_LOCALE = "en";
-const STUDIO_LOCALES = ["en", "es", "fr", "de"];
 
 // ============================================================================
 // Phase label map
@@ -182,11 +180,8 @@ export function StudioHeader({
   onNewDraftChat,
   onDeleteDraftSession,
 }: StudioHeaderProps) {
-  const params = useParams();
-  const rawLocale = typeof params?.locale === "string" ? params.locale : null;
-  const currentLocale =
-    rawLocale && STUDIO_LOCALES.includes(rawLocale) ? rawLocale : STUDIO_DEFAULT_LOCALE;
   const [draftsOpen, setDraftsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // B31 — Track the row staged for deletion. Single-row state is enough: the
   // AlertDialog is modal so only one delete prompt can be open at a time. We
   // keep the row's title around so the dialog can name what is being deleted
@@ -324,44 +319,101 @@ export function StudioHeader({
         >
           <Upload className="h-3.5 w-3.5" />
         </button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              aria-label="More options"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-            >
-              <MoreHorizontal className="h-3.5 w-3.5" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-52 p-1">
-            {onNewDraftChat && (
-              <button
-                type="button"
-                onClick={onNewDraftChat}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-foreground transition-colors hover:bg-secondary"
-              >
-                <Plus className="h-3.5 w-3.5 text-muted-foreground" />
-                New chat
-              </button>
-            )}
-            <Link
-              href={agentHref}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-foreground transition-colors hover:bg-secondary"
-            >
-              <User className="h-3.5 w-3.5 text-muted-foreground" />
-              Talk to agent
-            </Link>
-          </PopoverContent>
-        </Popover>
-        <UserMenu
-          viewer={{ email: viewerEmail, name: null, image: null }}
-          locale={currentLocale}
-          showStudioLink={false}
-          triggerClassName="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background/60 text-xs font-medium text-foreground/85 transition-colors hover:bg-background hover:text-foreground"
-        />
+        <button
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+        >
+          <PanelRight className="h-3.5 w-3.5" />
+        </button>
       </div>
     </header>
+
+    {/* Mobile-nav-style side drawer (reused from landing/navigation.tsx so the
+        studio uses the same Noon profile panel). Opens from the right. */}
+    <div
+      className={`fixed inset-0 z-[998] transition-all duration-300 ${
+        menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      }`}
+      style={{ backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(2px)" }}
+      onClick={() => setMenuOpen(false)}
+    />
+    <div
+      className={`fixed top-1.5 right-1.5 bottom-1.5 z-[999] w-72 transition-all duration-300 ${
+        menuOpen ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 translate-x-full pointer-events-none"
+      }`}
+    >
+      <div className="h-full rounded-[10px] border border-foreground/10 bg-background/95 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
+        {/* Header — Noon wordmark + close */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/8">
+          <Link
+            href={siteRoutes.home}
+            className="text-base font-display tracking-tight text-foreground"
+            onClick={() => setMenuOpen(false)}
+          >
+            noon
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center justify-center w-7 h-7 rounded-[6px] border border-foreground/10 bg-secondary/50 text-muted-foreground"
+            aria-label="Close menu"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Studio shortcuts */}
+        <div className="px-3 py-3 space-y-1">
+          {onNewDraftChat && (
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                onNewDraftChat();
+              }}
+              className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              New chat
+            </button>
+          )}
+          <Link
+            href={agentHref}
+            onClick={() => setMenuOpen(false)}
+            className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+          >
+            <User className="h-4 w-4 text-muted-foreground" />
+            Talk to agent
+          </Link>
+        </div>
+
+        {/* Profile section — pushed to bottom */}
+        <div className="mt-auto px-4 pb-4 pt-1 space-y-3">
+          <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
+            <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+              Signed in as
+            </p>
+            <p
+              className="mt-0.5 truncate text-xs font-mono text-foreground"
+              title={viewerEmail}
+            >
+              {viewerEmail}
+            </p>
+          </div>
+          <form action={signOutAction} onSubmit={() => setMenuOpen(false)}>
+            <button
+              type="submit"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
 
     {/*
       B31 — Destructive-action confirmation. The popover's per-row delete
