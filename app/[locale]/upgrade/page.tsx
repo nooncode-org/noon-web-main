@@ -5,7 +5,7 @@ import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
 import { BeforeAfterScan } from "@/components/sections/premium";
 import { UpgradeDemo } from "@/components/marketing/upgrade-demo/UpgradeDemo";
-import { Activity, ScanSearch, Sparkles } from "lucide-react";
+import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -73,47 +73,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
           <p className="site-meta-label mb-3 text-muted-foreground">How it works</p>
           <h2 className="site-section-title">Three steps to a better website</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {[
-            {
-              step: "01",
-              title: "Scan",
-              description: "We analyze your live website for performance, accessibility, UI/UX issues, and conversion opportunities.",
-              Icon: ScanSearch,
-            },
-            {
-              step: "02",
-              title: "Diagnose",
-              description: "Maxwell identifies specific improvements with detailed recommendations and priority rankings.",
-              Icon: Activity,
-            },
-            {
-              step: "03",
-              title: "Generate",
-              description: "Get a fully upgraded version of your site with all improvements applied, ready for review.",
-              Icon: Sparkles,
-            },
-          ].map((item, index) => (
-            <div
-              key={item.step}
-              className="group border border-foreground/10 bg-card/50 p-6 transition-colors duration-300 hover:border-foreground/20"
-              style={{
-                animation: "reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
-                animationDelay: `${index * 100}ms`,
-                opacity: 0,
-              }}
-            >
-              <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-[8px] border border-primary/30 bg-primary/10 text-primary">
-                <item.Icon className="h-5 w-5" strokeWidth={1.75} />
-              </span>
-              <div className="mb-2 flex items-center gap-2">
-                <span className="font-mono text-[11px] text-muted-foreground/50">{item.step}</span>
-                <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-              </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-            </div>
-          ))}
-        </div>
+        <UpgradeSteps />
       </div>
 
       {/* What you get back — faithful representation of the real audit output */}
