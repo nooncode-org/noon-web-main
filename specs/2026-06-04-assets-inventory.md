@@ -67,8 +67,8 @@ in code. The page does NOT regress while waiting.
 
 ## Group F — Noon brand
 
-- [PENDING] **F1** Noon wordmark SVG (vector, hi-res)
-- [PENDING] **F2** Noon icon-only SVG
+- [INTEGRATED] **F1** Noon wordmark SVG → inlined in `components/ui/noon-logo.tsx` (LogoWordmark) with `fill=currentColor`, theme-adaptive (black/light, white/dark), used in header + footer + lockup. Replaced the old light/dark PNG pair (deleted `public/logo-wordmark*.png`). Source: `Recurso 29.svg` (RGB/SVG).
+- [PENDING] **F2** Noon icon-only SVG → would let the `icon`/`lockup` variants drop `public/logo-icon.png` (PNG) for a vector too; currently still PNG.
 - [RECEIVED] **F2b** Maxwell character icon (pixel-art crop of head + moustache, from talknew.gif first frame) → `public/maxwell-icon.png` (256×256, head centered on transparent square)
 - [PENDING] **F3** Favicon HD set (audit if current is enough)
 - [PENDING] **F4** Decorative illustrations (4 service-block SVGs — audit if current Figma ones are official)
