@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -504,8 +505,8 @@ export function StudioChatPane({
           Fades out as soon as the first message appears. */}
       {messages.length === 0 && !isWorkspaceVisible && (
         <div className="pointer-events-none absolute inset-0 bottom-40 flex flex-col items-center justify-center gap-5 px-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-border bg-secondary/60">
-            <Sparkles className="h-6 w-6 text-primary" strokeWidth={1.75} aria-hidden="true" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-border bg-secondary/60 overflow-hidden">
+            <Image src="/maxwell-icon.png" alt="" aria-hidden="true" width={48} height={48} className="h-full w-full object-cover" />
           </div>
           <div className="text-center">
             <p className="text-[17px] font-medium tracking-tight text-foreground/90">
