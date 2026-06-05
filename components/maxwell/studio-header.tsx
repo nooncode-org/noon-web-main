@@ -197,7 +197,7 @@ export function StudioHeader({
       <div className="flex min-w-0 items-center gap-2.5">
         <Link
           href={siteRoutes.home}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           aria-label="Back to Noon"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -315,7 +315,7 @@ export function StudioHeader({
         <button
           type="button"
           aria-label="Share"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
         >
           <Upload className="h-3.5 w-3.5" />
         </button>
@@ -323,7 +323,7 @@ export function StudioHeader({
           type="button"
           onClick={() => setMenuOpen(true)}
           aria-label="Open menu"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
         >
           <PanelRight className="h-3.5 w-3.5" />
         </button>
