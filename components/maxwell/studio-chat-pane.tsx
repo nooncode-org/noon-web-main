@@ -485,16 +485,23 @@ export function StudioChatPane({
     shouldStickToBottomRef.current = distanceFromBottom < 160;
   }
 
-  // Keep the latest exchange visible without yanking the user away while reading older messages.
+  // Keep the latest exchange visible without yanking the user away while reading
+  // older messages. Scroll only the chat's OWN overflow container — never use
+  // bottomRef.scrollIntoView(), which also scrolls every ancestor (including the
+  // document), so an embedded pane (e.g. the marketing demo below the fold)
+  // would hijack the whole page on mount.
   useEffect(() => {
-    if (shouldStickToBottomRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!shouldStickToBottomRef.current) return;
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
   }, [messages, isThinking, phase, stopNotice]);
 
-  // Focus input when idle
+  // Focus input when idle — preventScroll so focusing the composer never yanks
+  // the page (same embedded-below-the-fold concern as the auto-scroll above).
   useEffect(() => {
-    if (canSend) setTimeout(() => inputRef.current?.focus(), 50);
+    if (canSend) setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
   }, [canSend, inputRef]);
 
   useEffect(() => {
