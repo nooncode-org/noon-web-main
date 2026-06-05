@@ -3,6 +3,7 @@
 import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Check, Minus, LoaderCircle, ClipboardList, Layers, Code2, Rocket, Circle } from "lucide-react";
+import { EASE } from "@/lib/motion";
 
 // ============================================================================
 // ComparisonShowcase — REBUILT to canon + dynamic content states (2026-06-01).
@@ -28,8 +29,6 @@ interface ComparisonShowcaseProps {
   items: ComparisonItem[];
   className?: string;
 }
-
-const EASE = [0.32, 0.72, 0, 1] as const;
 
 // Per-dimension iconography so the comparison is scannable at a glance.
 // Maps the known /about dimensions; falls back to a neutral dot.

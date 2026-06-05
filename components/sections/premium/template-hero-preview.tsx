@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Code2, Database, FileCode2, Folder, Layers, Lock, Palette } from "lucide-react";
+import { EASE } from "@/lib/motion";
 
 // ============================================================================
 // TemplateHeroPreview — /templates intro. The copy promises "real software,
@@ -13,8 +14,6 @@ import { ArrowRight, Code2, Database, FileCode2, Folder, Layers, Lock, Palette }
 // rounded-2xl, shadows, gradients and macOS dots). Square, flat, single-accent,
 // theme-aware.
 // ============================================================================
-
-const EASE = [0.32, 0.72, 0, 1] as const;
 
 const FEATURES: { icon: typeof Code2; label: string }[] = [
   { icon: Code2, label: "Production code" },

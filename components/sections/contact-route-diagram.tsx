@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { DollarSign, Layers, Settings, ShoppingCart } from "lucide-react";
+import { EASE } from "@/lib/motion";
 
 // ============================================================================
 // ContactRouteDiagram — /opportunities "one contact route for all paths" made
@@ -13,7 +14,6 @@ import { DollarSign, Layers, Settings, ShoppingCart } from "lucide-react";
 // HTML nodes), flat, single-accent (#1200c5), theme-aware, motion always-on.
 // ============================================================================
 
-const EASE = [0.32, 0.72, 0, 1] as const;
 const HUB = { x: 80, y: 50 };
 const TRACK_X = 14;
 const ROW_Y = [14, 38, 62, 86] as const;

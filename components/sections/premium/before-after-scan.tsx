@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Code2, Eye, Gauge, Smartphone } from "lucide-react";
+import { EASE } from "@/lib/motion";
 
 // ============================================================================
 // BeforeAfterScan — the /upgrade transformation, told qualitatively.
@@ -12,8 +13,6 @@ import { ArrowRight, Code2, Eye, Gauge, Smartphone } from "lucide-react";
 // Now: honest qualitative before→after across the dimensions Maxwell rebuilds,
 // no invented numbers. Square, flat, single-accent (#1200c5), theme-aware.
 // ============================================================================
-
-const EASE = [0.32, 0.72, 0, 1] as const;
 
 const DIMENSIONS: { label: string; icon: typeof Gauge; before: string; after: string }[] = [
   { label: "Performance", icon: Gauge, before: "Slow, heavy", after: "Fast and lean" },

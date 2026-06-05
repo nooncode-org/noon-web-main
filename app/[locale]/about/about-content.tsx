@@ -6,11 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
-import { useHasMounted } from "@/hooks/use-has-mounted";
+import { EASE } from "@/lib/motion";
+import { useRevealMotion } from "@/hooks/use-reveal-motion";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
@@ -142,19 +142,9 @@ function MockupChrome({ label }: { label: string }) {
 // reads as a real product screenshot, not a generic flat panel. On scroll-into-
 // view the data comes alive (KPIs count up, bars grow, steps/rows stagger in).
 // No decorative glows; respects prefers-reduced-motion.
-const MOCKUP_EASE = [0.32, 0.72, 0, 1] as const;
-
 function DomainMockup({ kind }: { kind: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  // once: reveal a single time and stay — otherwise scrolling a mockup out of
-  // view re-collapses it (and NumberFlow counts back down to 0) every cycle.
-  const inView = useInView(ref, { margin: "-60px", once: true });
-  const reduce = useReducedMotion() ?? false;
-  // Render the final (visible) state during SSR + first client paint so the
-  // markup matches (no hydration mismatch); only drive the entrance from
-  // inView after mount.
-  const mounted = useHasMounted();
-  const show = !mounted || inView || reduce;
+  // Reveal once on scroll-into-view; SSR-safe (see useRevealMotion).
+  const { ref, show } = useRevealMotion({ margin: "-60px" });
   const frame =
     "overflow-hidden rounded-[8px] border border-white/10 bg-[#050505] text-zinc-100 shadow-[0_14px_34px_-18px_rgba(0,0,0,0.7)]";
 
@@ -182,7 +172,7 @@ function DomainMockup({ kind }: { kind: string }) {
                 className="flex items-center gap-2 text-[10px]"
                 initial={false}
                 animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }}
-                transition={{ duration: 0.35, delay: 0.15 + i * 0.12, ease: MOCKUP_EASE }}
+                transition={{ duration: 0.35, delay: 0.15 + i * 0.12, ease: EASE }}
               >
                 <span
                   className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full ${
@@ -234,7 +224,7 @@ function DomainMockup({ kind }: { kind: string }) {
                 style={{ height: `${barH}%`, backgroundColor: i === 6 ? "#4155ef" : "rgba(65,85,239,0.3)" }}
                 initial={false}
                 animate={show ? { scaleY: 1 } : { scaleY: 0 }}
-                transition={{ duration: 0.5, delay: 0.15 + i * 0.05, ease: MOCKUP_EASE }}
+                transition={{ duration: 0.5, delay: 0.15 + i * 0.05, ease: EASE }}
               />
             ))}
           </div>
@@ -263,7 +253,7 @@ function DomainMockup({ kind }: { kind: string }) {
               className="mb-1 flex items-center justify-between rounded-[5px] border border-white/10 px-1.5 py-1 last:mb-0"
               initial={false}
               animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -5 }}
-              transition={{ duration: 0.3, delay: 0.2 + i * 0.1, ease: MOCKUP_EASE }}
+              transition={{ duration: 0.3, delay: 0.2 + i * 0.1, ease: EASE }}
             >
               <span className="text-[8px] text-zinc-300">{row.r}</span>
               <span className="inline-flex items-center gap-1">
@@ -288,7 +278,7 @@ function DomainMockup({ kind }: { kind: string }) {
             className="flex items-center justify-between px-2.5 py-2 text-[10px]"
             initial={false}
             animate={show ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }}
-            transition={{ duration: 0.35, delay: 0.2 + i * 0.12, ease: MOCKUP_EASE }}
+            transition={{ duration: 0.35, delay: 0.2 + i * 0.12, ease: EASE }}
           >
             <span className="text-zinc-300">{l}</span>
             <span className="inline-flex items-center gap-1.5">

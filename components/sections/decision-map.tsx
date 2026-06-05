@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { Boxes, GitBranch, LifeBuoy, ScanSearch, TrendingUp, User } from "lucide-react";
+import { EASE } from "@/lib/motion";
 
 // ============================================================================
 // DecisionMap — Services decision diagram in the spirit of Vercel's "Secure
@@ -14,8 +15,6 @@ import { Boxes, GitBranch, LifeBuoy, ScanSearch, TrendingUp, User } from "lucide
 // (SVG viewBox 0–100 + % positioning). Flat, single accent (#1200c5),
 // theme-aware, motion always-on (owner preference), SSR-safe.
 // ============================================================================
-
-const EASE = [0.32, 0.72, 0, 1] as const;
 
 const ICONS = {
   boxes: Boxes,
