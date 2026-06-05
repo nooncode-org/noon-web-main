@@ -12,6 +12,7 @@ import {
   formatElapsed,
   pollingStatusText,
 } from "@/lib/maxwell/polling-progress";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
 /**
  * B28 — Contador de tiempo transcurrido mientras se polling v0.
@@ -22,6 +23,7 @@ import {
  * típico sin alarmar (no es error, solo demora).
  */
 function ElapsedPollingBadge({ startedAt }: { startedAt: number }) {
+  const mounted = useHasMounted();
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -29,7 +31,10 @@ function ElapsedPollingBadge({ startedAt }: { startedAt: number }) {
     return () => clearInterval(interval);
   }, []);
 
-  const seconds = Math.max(0, Math.floor((now - startedAt) / 1000));
+  // Until hydrated, render 0 elapsed so SSR + first client paint agree. This
+  // badge currently only mounts after a client-side polling action, but the
+  // gate keeps it hydration-safe regardless of where it ends up rendered.
+  const seconds = mounted ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
   const phase = classifyPollingPhase(seconds);
   const isExtended = phase === "extended";
 
