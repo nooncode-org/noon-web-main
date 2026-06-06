@@ -13,6 +13,47 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-06-06] — AI MVP milestone UI + project mapping (PR-B)
+
+> **Summary:** Closes the loop on the AI MVP milestones handoff: maps App's
+> `project_id` back to a local workspace and renders the client-status UI from
+> the milestone `kind` (§19.3). Stacked on **PR-A** (the receiver). App already
+> returns its `projectId` in the payment-confirmed response but NoonWeb
+> discarded it; now we capture it at confirmation and the client's workspace
+> page shows the post-payment build status the receiver persists.
+> PR `feat/ai-mvp-milestone-ui` (base: `feat/ai-mvp-milestone-receiver`).
+
+### Added
+
+- **`lib/maxwell/ai-mvp-milestone-copy.ts`** — `AI_MVP_MILESTONE_COPY`
+  (§19.3 client copy keyed by `kind`, compiler-exhaustive) + `pickCurrentMilestone`
+  (newest-first picker that skips unknown kinds for forward-compat).
+- **`supabase/migrations/20260606_022_client_workspace_noon_app_project_id.sql`**
+  — `client_workspace.noon_app_project_id` (nullable text) + partial index.
+  Additive; self-registers.
+- **`lib/maxwell/repositories.ts`** — `setClientWorkspaceNoonAppProjectId`
+  (write-once: only sets when currently NULL, so a retry can't overwrite the
+  mapping) + `noonAppProjectId` on the `ClientWorkspace` type / row / mapper.
+- **`lib/noon-app-integration.ts`** — `extractNoonAppProjectId` (best-effort
+  parse of App's payment-confirmed response; null on any unrecognised shape).
+- **`tests/maxwell/ai-mvp-milestone-copy.test.ts`** — copy-map + picker units.
+
+### Changed
+
+- **`lib/maxwell/payment-activation.ts`** — `notifyNoonApp` now captures the
+  `projectId` from the payment-confirmed response and persists it on the
+  workspace. Best-effort + isolated try/catch: a parse miss or write failure
+  never fails the payment handoff.
+- **`app/[locale]/maxwell/workspace/[sessionId]/page.tsx`** — renders an AI MVP
+  milestone banner (label + description from `kind`, "Open first version" link
+  on `version-ready`) when the workspace has a mapped project id. Degrades to no
+  banner otherwise — the existing timeline is unaffected.
+- **`tests/maxwell/payment.test.ts`** + five workspace-fixture test files —
+  cover projectId capture (present / absent / persist-failure-tolerated) and
+  carry the new `noonAppProjectId` field.
+
+---
+
 ## [2026-06-06] — AI MVP milestone receiver (cross-repo, App → NoonWeb)
 
 > **Summary:** Built the inbound receiver for App's post-payment AI MVP

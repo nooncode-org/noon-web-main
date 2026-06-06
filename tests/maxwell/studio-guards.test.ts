@@ -47,6 +47,7 @@ function makeWorkspace(overrides: Partial<ClientWorkspace> = {}): ClientWorkspac
     paymentStatus: "pending",
     workspaceStatus: "in_preparation",
     latestUpdateSummary: null,
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,

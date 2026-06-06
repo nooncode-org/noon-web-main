@@ -8,9 +8,18 @@ import {
   getClientWorkspaceBySession,
   getWorkspaceUpdates,
   getLatestProposalRequest,
+  getAiMvpMilestonesByProjectId,
   isProposalAwaitingWorkspace,
 } from "@/lib/maxwell/repositories";
-import type { ProposalStatus, WorkspaceUpdate } from "@/lib/maxwell/repositories";
+import type {
+  AiMvpMilestone,
+  ProposalStatus,
+  WorkspaceUpdate,
+} from "@/lib/maxwell/repositories";
+import {
+  AI_MVP_MILESTONE_COPY,
+  pickCurrentMilestone,
+} from "@/lib/maxwell/ai-mvp-milestone-copy";
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
@@ -137,6 +146,36 @@ function WorkspacePreparing({
   );
 }
 
+function MilestoneBanner({ milestone }: { milestone: AiMvpMilestone }) {
+  const copy = AI_MVP_MILESTONE_COPY[milestone.kind];
+  const showVersionLink =
+    milestone.kind === "version-ready" && Boolean(milestone.versionUrl);
+
+  return (
+    <section className="rounded-xl border border-foreground/15 bg-secondary/40 p-6">
+      <div className="mb-2 flex items-center gap-2.5">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          Project build
+        </span>
+      </div>
+      <p className="text-sm font-medium leading-snug">{copy.label}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {copy.description}
+      </p>
+      {showVersionLink && (
+        <a
+          href={milestone.versionUrl ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="site-primary-action mt-4 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
+        >
+          Open first version {"->"}
+        </a>
+      )}
+    </section>
+  );
+}
+
 function UpdateCard({ update }: { update: WorkspaceUpdate }) {
   return (
     <div className="relative pl-6">
@@ -210,6 +249,16 @@ export default async function WorkspacePage({ params }: Props) {
   const materials = updates.filter((update) => update.updateType === "material");
   const timeline = updates.filter((update) => update.updateType !== "material");
 
+  // PR-B: surface App's post-payment AI MVP pipeline status, derived from the
+  // milestone `kind` alone (§19.3). Only available once the workspace has been
+  // mapped to an App project id (captured at payment confirmation); otherwise no
+  // banner renders and the timeline below is the only project signal.
+  const milestone = workspace.noonAppProjectId
+    ? pickCurrentMilestone(
+        await getAiMvpMilestonesByProjectId(workspace.noonAppProjectId),
+      )
+    : null;
+
   const statusCfg = WORKSPACE_STATUS_META[workspace.workspaceStatus as WorkspaceStatus];
   const contactHref = getContactHref({
     inquiry: "project-update",
@@ -244,6 +293,8 @@ export default async function WorkspacePage({ params }: Props) {
       </div>
 
       <div className="mx-auto max-w-3xl space-y-10 px-6 py-8">
+        {milestone && <MilestoneBanner milestone={milestone} />}
+
         {materials.length > 0 && (
           <section>
             <h2 className="mb-4 text-xs font-mono uppercase tracking-widest text-muted-foreground">

@@ -391,6 +391,23 @@ export async function sendInboundProposalToNoonApp(input: {
   );
 }
 
+/**
+ * Pull App's project id out of the payment-confirmed response (PR-B).
+ *
+ * App's `/api/integrations/website/payment-confirmed` returns
+ * `{ idempotent, linkId, leadId, proposalId, projectId, status }`
+ * (App/lib/server/website-integration.ts). We only need `projectId`, and only
+ * to map inbound AI MVP milestones back to a local workspace. Best-effort by
+ * design: returns null for any shape we don't recognise so a contract drift on
+ * App's side degrades the milestone UI gracefully instead of failing the
+ * payment flow.
+ */
+export function extractNoonAppProjectId(response: unknown): string | null {
+  if (!response || typeof response !== "object") return null;
+  const projectId = (response as { projectId?: unknown }).projectId;
+  return typeof projectId === "string" && projectId.trim() ? projectId : null;
+}
+
 export async function sendPaymentConfirmedToNoonApp(input: {
   session: StudioSession;
   proposal: ProposalRequest;
