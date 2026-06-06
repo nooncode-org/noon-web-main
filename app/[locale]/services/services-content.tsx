@@ -11,6 +11,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
+import { HowWeWork } from "@/components/sections/how-we-work";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -394,6 +395,10 @@ export function ServicesContent() {
          foreground as the section scrolls through the viewport (word-by-word
          reveal threshold). */}
       <ScrollLitStatement />
+
+      {/* How we work — the process as Linear-style numbered pillars with the
+         human-review step emphasized; visualizes the statement above. */}
+      <HowWeWork />
 
       <PageSection
         id="which-service"
