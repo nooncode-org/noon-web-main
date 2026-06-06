@@ -66,7 +66,10 @@
 @theme inline {
   --font-sans: var(--font-instrument), 'Instrument Sans', system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
-  --font-display: var(--font-instrument-serif), 'Instrument Serif', Georgia, serif;
+  /* All-sans system (owner decision 2026-06-05): display = Instrument Sans, to
+     match Vercel/Linear + the Figma canon. The serif (--font-instrument-serif)
+     is now unused; remove it + its next/font load in a later cleanup. */
+  --font-display: var(--font-instrument), 'Instrument Sans', system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -189,7 +192,7 @@
     font-family: var(--font-display);
     font-size: 1.35rem;
     line-height: 1.1;
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
   }
 
   .site-hero-copy {
@@ -201,7 +204,7 @@
     font-family: var(--font-display);
     font-size: 1.25rem;
     line-height: 1.18;
-    letter-spacing: 0;
+    letter-spacing: -0.015em;
   }
 
   .site-section-copy {
@@ -213,7 +216,7 @@
     font-family: var(--font-display);
     font-size: 1rem;
     line-height: 1.25;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
   }
 
   .site-card-copy {
@@ -277,10 +280,10 @@
     font-family: var(--font-display);
   }
 
-  /* Figma-port pages: headings use Instrument Sans (the exact typeface the
-     Figma design uses) instead of the site's default Instrument Serif display
-     face. Scoped to .figma-canon so the rest of the site keeps its serif
-     headings. Higher specificity than .site-*-title so it wins. */
+  /* All-sans system (2026-06-05): the whole site now uses Instrument Sans for
+     display, so this .figma-canon override is redundant (it just re-asserts
+     sans). Kept as a harmless no-op; safe to delete along with the .figma-canon
+     wrappers in a later cleanup. */
   .figma-canon :is(h1, h2, h3, h4, h5, h6),
   .figma-canon .site-hero-title,
   .figma-canon .site-section-title,
