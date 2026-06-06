@@ -117,6 +117,7 @@ function fullWorkspace(): ClientWorkspace {
     paymentStatus: "confirmed",
     workspaceStatus: "active",
     latestUpdateSummary: "Kickoff done",
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

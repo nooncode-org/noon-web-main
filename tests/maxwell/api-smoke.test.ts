@@ -48,6 +48,7 @@ function ws(workspaceStatus: ClientWorkspace["workspaceStatus"]): ClientWorkspac
     paymentStatus: "confirmed",
     workspaceStatus,
     latestUpdateSummary: null,
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   };
 }

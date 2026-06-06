@@ -9,6 +9,7 @@ import {
   getProposalRequest,
   getStudioSession,
   getStudioVersions,
+  setClientWorkspaceNoonAppProjectId,
   updateProposalRequestStatus,
   updateStudioSessionStatus,
   type ClientWorkspace,
@@ -24,6 +25,7 @@ import { buildWorkspaceUrl } from "@/lib/maxwell/public-url";
 import {
   NoonAppIntegrationError,
   buildWebsiteProposalPayload,
+  extractNoonAppProjectId,
   sendPaymentConfirmedToNoonApp,
 } from "@/lib/noon-app-integration";
 import { log } from "@/lib/server/logger";
@@ -303,13 +305,14 @@ async function sendLifecycleEmailsForPayment(input: {
 async function notifyNoonApp(input: {
   session: StudioSession;
   proposal: ProposalRequest;
+  workspaceId: string;
   paymentReference?: string | null;
   summary?: string | null;
 }) {
   const versions = await getStudioVersions(input.session.id);
 
   try {
-    await sendPaymentConfirmedToNoonApp({
+    const response = await sendPaymentConfirmedToNoonApp({
       session: input.session,
       proposal: input.proposal,
       versions,
@@ -323,6 +326,25 @@ async function notifyNoonApp(input: {
       actor: "website",
       notes: "Payment confirmation sent to Noon App.",
     });
+
+    // PR-B: App returns its internal project id in the payment-confirmed
+    // response. Persist it on the workspace so the client-status page can map
+    // inbound AI MVP milestones (keyed by that project id) back to this client.
+    // Best-effort and isolated: a parse miss or write failure must NOT fail the
+    // payment handoff (the notification + audit already succeeded), so it lives
+    // in its own try/catch and only logs on failure. setClient...ProjectId is
+    // write-once, so a webhook retry never clobbers an existing mapping.
+    const noonAppProjectId = extractNoonAppProjectId(response);
+    if (noonAppProjectId) {
+      try {
+        await setClientWorkspaceNoonAppProjectId(input.workspaceId, noonAppProjectId);
+      } catch (error) {
+        log.error("maxwell.noon-app-project-id-capture", error, {
+          workspace_id: input.workspaceId,
+          proposal_id: input.proposal.id,
+        });
+      }
+    }
   } catch (error) {
     await appendProposalReviewEvent({
       proposalRequestId: input.proposal.id,
@@ -448,6 +470,7 @@ export async function confirmProposalPayment(input: {
   await notifyNoonApp({
     session,
     proposal,
+    workspaceId: workspace.id,
     paymentReference: input.paymentReference ?? input.providerPaymentIntentId ?? input.providerSessionId,
     summary: input.summary,
   });

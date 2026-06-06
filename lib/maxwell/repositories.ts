@@ -224,6 +224,8 @@ export type ClientWorkspace = {
   paymentStatus: WorkspacePaymentStatus;
   workspaceStatus: WorkspaceStatus;
   latestUpdateSummary: string | null;
+  /** App's internal project UUID, captured from the payment-confirmed response. */
+  noonAppProjectId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -341,6 +343,7 @@ type ProposalReviewEventRow = {
 type WorkspaceRow = {
   id: string; studio_session_id: string; payment_status: string;
   workspace_status: string; latest_update_summary: string | null;
+  noon_app_project_id: string | null;
   created_at: string | Date; updated_at: string | Date;
 };
 
@@ -515,6 +518,7 @@ function mapWorkspace(r: WorkspaceRow): ClientWorkspace {
     paymentStatus: r.payment_status as WorkspacePaymentStatus,
     workspaceStatus: r.workspace_status as WorkspaceStatus,
     latestUpdateSummary: r.latest_update_summary,
+    noonAppProjectId: r.noon_app_project_id ?? null,
     createdAt: toIsoTimestamp(r.created_at)!,
     updatedAt: toIsoTimestamp(r.updated_at)!,
   };
@@ -1488,6 +1492,27 @@ export async function getClientWorkspaceBySession(studioSessionId: string): Prom
     ORDER BY created_at DESC LIMIT 1
   `;
   return rows[0] ? mapWorkspace(rows[0]) : null;
+}
+
+/**
+ * Persist App's project id on the workspace, captured from the payment-confirmed
+ * response (PR-B). Write-once: only sets the column when it is currently NULL, so
+ * a webhook retry or a corrected/different id can never silently overwrite the
+ * mapping the client UI relies on. Returns true when this call set the value.
+ */
+export async function setClientWorkspaceNoonAppProjectId(
+  id: string,
+  noonAppProjectId: string,
+): Promise<boolean> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  const rows = await sql<{ id: string }[]>`
+    UPDATE client_workspace
+    SET noon_app_project_id = ${noonAppProjectId}, updated_at = ${now}
+    WHERE id = ${id} AND noon_app_project_id IS NULL
+    RETURNING id
+  `;
+  return rows.length > 0;
 }
 
 export async function activateClientWorkspace(id: string, latestUpdateSummary?: string): Promise<ClientWorkspace> {

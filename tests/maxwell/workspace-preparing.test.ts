@@ -130,6 +130,7 @@ function fakeWorkspace(overrides: Partial<ClientWorkspace> = {}): ClientWorkspac
     paymentStatus: "confirmed",
     workspaceStatus: "active",
     latestUpdateSummary: null,
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,

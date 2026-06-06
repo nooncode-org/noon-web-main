@@ -62,6 +62,7 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getProposalRequest: vi.fn(),
   getStudioSession: vi.fn(),
   getStudioVersions: vi.fn(async () => []),
+  setClientWorkspaceNoonAppProjectId: vi.fn(async () => true),
   updateProposalRequestStatus: vi.fn(),
   updateStudioSessionStatus: vi.fn(async () => undefined),
 }));
@@ -98,6 +99,11 @@ vi.mock("@/lib/noon-app-integration", async () => {
     })),
     NoonAppIntegrationError,
     sendPaymentConfirmedToNoonApp: vi.fn(async () => undefined),
+    extractNoonAppProjectId: (response: unknown) => {
+      if (!response || typeof response !== "object") return null;
+      const projectId = (response as { projectId?: unknown }).projectId;
+      return typeof projectId === "string" && projectId.trim() ? projectId : null;
+    },
   };
 });
 
@@ -182,6 +188,7 @@ function fakeWorkspace(overrides: Partial<ClientWorkspace> = {}): ClientWorkspac
     paymentStatus: "confirmed",
     workspaceStatus: "active",
     latestUpdateSummary: null,
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
