@@ -5,6 +5,7 @@ import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css'
+import { MotionProvider } from "@/components/providers/motion-provider"
 
 const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://noon-main.vercel.app");
 
@@ -98,7 +99,7 @@ export default function RootLayout({
             });
           `}
         </Script>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         {/* Vercel Analytics + Speed Insights — chosen observability path,
             see roadmap §10.8.3. No third-party error tracker (e.g. Sentry)
             is wired by design. Both components are no-ops in non-Vercel

@@ -830,6 +830,21 @@
     }
   }
 
+  /* Global reduced-motion baseline (Vercel-grade a11y, WCAG 2.3.3): neutralize
+     animation + transition durations site-wide, collapse infinite loops to a
+     single frame, and keep instant scroll. Lets every CSS / inline-transition
+     reveal settle at its end-state with no motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   /* ── Enhanced Motion Design Utilities ─────────────────────────────────── */
 
   /* Smooth reveal animations */
