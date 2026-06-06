@@ -1,7 +1,9 @@
 # project.context.core.md - Noon Website / Maxwell Studio
 
-> Last updated: 2026-06-04
+> Last updated: 2026-06-05
 > Active session: D-slice ADR-023/024 cross-repo prototype decision contract is live end-to-end; soft launch hardening from `NoonWeb Roadmap.md` and `NoonWeb_Roadmap_Gaps_v3.md` continues
+>
+> **2026-06-05 session — branch `feat/motion-foundation` (pushed, PR pending):** Assets inventory reconciled to implemented reality (`specs/2026-06-04-assets-inventory.md`: A covered/superseded, A19 dropped; E logos resolved official + colors fixed; F4 verified Figma-official; B/C/D/G/H postponed). Reduced-motion foundation shipped — `MotionConfig reducedMotion="user"` + new `usePrefersReducedMotion` (reads the initial `matchMedia` value, fixing framer's missed pre-set state) wired through `useRevealOnView`/`useRevealMotion`, plus a global CSS reduced-motion baseline; Playwright-verified (/about hidden-under-reduce 54→7, at parity with normal motion). Dark/light mode verified HEALTHY — the audit's "`dark:` dead / light broken" claim is STALE (`.dark` toggles via the layout inline script, `@custom-variant dark` makes `dark:` class-based, both themes render correctly). **Resume next:** Services decision-map (Tier 1); open backlog in `specs/2026-06-01-noon-vs-vercel-audit.md`.
 > Operating mode: Website-only implementation, with App coordination through the existing payment + proposal-review contracts plus the new prototype-decision contract (ADR-023) and prototype signed-read contract (ADR-024)
 
 ## Active Roadmap Inputs
