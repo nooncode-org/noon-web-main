@@ -307,6 +307,16 @@ export type V0StatusResult = {
   status: "pending" | "completed" | "failed";
   demoUrl?: string;
   versionId?: string;
+  /**
+   * Per-file source code of the generated prototype, as returned by the V0 SDK
+   * (`latestVersion.files`). Captured so the poll endpoint can persist the code
+   * on the studio_version and the share flow can forward it to App as
+   * `prototype.generated_html` (the post-payment Opus pipeline reads it).
+   * Structurally compatible with `V0SourceFile` in
+   * `lib/maxwell/serialize-v0-source.ts` (kept inline to avoid coupling this
+   * low-level integration module to lib/maxwell).
+   */
+  files?: { name: string; content: string }[];
 };
 
 /**
@@ -315,17 +325,31 @@ export type V0StatusResult = {
 export async function getV0PrototypeStatus(chatId: string): Promise<V0StatusResult> {
   try {
     const result = await v0.chats.getById({ chatId }) as {
-      latestVersion?: { id?: string; status: "pending" | "completed" | "failed"; demoUrl?: string };
+      latestVersion?: {
+        id?: string;
+        status: "pending" | "completed" | "failed";
+        demoUrl?: string;
+        files?: { name?: string; content?: string }[];
+      };
     };
-    
+
     if (!result.latestVersion) {
       return { status: "pending" };
     }
+
+    const files = Array.isArray(result.latestVersion.files)
+      ? result.latestVersion.files
+          .filter((f): f is { name: string; content: string } =>
+            typeof f?.name === "string" && typeof f?.content === "string",
+          )
+          .map((f) => ({ name: f.name, content: f.content }))
+      : undefined;
 
     return {
       status: result.latestVersion.status,
       demoUrl: result.latestVersion.demoUrl,
       versionId: result.latestVersion.id,
+      ...(files && files.length > 0 ? { files } : {}),
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

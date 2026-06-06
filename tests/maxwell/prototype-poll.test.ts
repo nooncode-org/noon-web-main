@@ -96,6 +96,7 @@ function fakeVersion(overrides: Partial<StudioVersion> = {}): StudioVersion {
     changeSummary: null,
     source: "initial",
     createdAt: new Date().toISOString(),
+    generatedHtml: null,
     ...overrides,
   };
 }
@@ -470,6 +471,47 @@ describe("prototype/poll — persistencia happy path", () => {
       "session-1",
       "prototype_ready",
     );
+  });
+
+  it("action=create: serializa los files de V0 y los persiste como generated_html", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+      files: [
+        { name: "app/page.tsx", content: "export default function Page() { return null; }" },
+        { name: "components/hero.tsx", content: "export const Hero = () => null;" },
+      ],
+    });
+
+    await GET(
+      buildUrl({
+        chatId: "chat-1",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: token,
+      }),
+    );
+
+    const call = vi.mocked(repos.createStudioVersion).mock.calls[0]?.[0];
+    expect(call?.generatedHtml).toContain("// === file: app/page.tsx ===");
+    expect(call?.generatedHtml).toContain("// === file: components/hero.tsx ===");
+    expect(call?.generatedHtml).toContain("export const Hero = () => null;");
+  });
+
+  it("action=create: sin files de V0 persiste generated_html = null", async () => {
+    // getV0PrototypeStatus base mock (beforeEach) no incluye `files`.
+    await GET(
+      buildUrl({
+        chatId: "chat-1",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: token,
+      }),
+    );
+
+    const call = vi.mocked(repos.createStudioVersion).mock.calls[0]?.[0];
+    expect(call?.generatedHtml).toBeNull();
   });
 
   it("action=update con prompt: persiste correction_request del usuario y dos transiciones", async () => {
