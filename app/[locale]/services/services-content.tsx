@@ -11,52 +11,6 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
-import dynamic from "next/dynamic";
-
-// Client-only: the PipelineShowcase uses framer-motion entrance animations whose
-// SSR'd `initial` transforms cause hydration mismatches. It's a below-the-fold
-// decorative diagram, so we skip SSR and render a static, content-bearing
-// fallback (header + the 4 steps) until the client chunk loads.
-const PipelineShowcase = dynamic(
-  () => import("@/components/sections/pipeline").then((m) => m.PipelineShowcase),
-  { ssr: false, loading: () => <PipelineShowcaseFallback /> }
-);
-
-function PipelineShowcaseFallback() {
-  const steps: [string, string][] = [
-    ["Your need", "Tell us what you want to build"],
-    ["Scope with Maxwell", "Scope before execution"],
-    ["Human review & build", "Judgment, not blind execution"],
-    ["Working software", "Working software, not documentation"],
-  ];
-  return (
-    <section className="site-section">
-      <div className="site-shell">
-        <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
-          <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            How it works
-          </span>
-          <h2 className="site-section-title mb-3">
-            From problem to <span className="text-muted-foreground">working software.</span>
-          </h2>
-          <p className="site-section-copy mx-auto max-w-xl text-muted-foreground">
-            Maxwell accelerates the definition, senior engineers own the judgment, and the
-            result is real software you operate — not a prototype, not documentation.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map(([label, principle]) => (
-            <div key={label} className="border border-foreground/10 bg-card/60 p-4">
-              <p className="text-[12px] font-medium text-foreground">{label}</p>
-              <p className="mt-2 text-[11px] leading-snug text-muted-foreground">{principle}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -455,9 +409,6 @@ export function ServicesContent() {
           paths={decisionPaths}
         />
       </PageSection>
-
-      {/* Premium: The Noon Pipeline - Interactive visualization */}
-      <PipelineShowcase />
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
