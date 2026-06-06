@@ -1364,8 +1364,9 @@ function ScrollLitAboutStatement() {
       <GridBackdrop mask="radial-gradient(ellipse 60% 70% at 50% 50%, #000 12%, transparent 72%)" />
       <div className="site-shell relative">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 py-8 text-center lg:py-12">
-          <span className="text-[11px] font-mono uppercase tracking-[0.14em] text-foreground">
-            Actual results
+          <span className="site-meta-label inline-flex items-center gap-2 font-mono text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Our approach
           </span>
           <h2 className="site-hero-title">
             <span className="text-foreground/30">
@@ -1374,8 +1375,8 @@ function ScrollLitAboutStatement() {
             <span className="text-foreground">problems with code.</span>
           </h2>
           <p className="site-section-copy max-w-md text-muted-foreground">
-            Let Maxwell audit your idea and generate a preliminary technical roadmap in minutes. No commitments, just
-            real engineering.
+            Let Maxwell audit your idea and map out a preliminary technical roadmap — no
+            commitment, just real engineering.
           </p>
         </div>
       </div>
