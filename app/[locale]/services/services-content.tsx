@@ -12,6 +12,7 @@ import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
 import { HowWeWork } from "@/components/sections/how-we-work";
+import { StackAuthority } from "@/components/sections/stack-authority";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -282,6 +283,10 @@ export function ServicesContent() {
           </div>
         </div>
       </section>
+
+      {/* Honest "built-on" authority + the human-review wedge — credibility
+         early, before the service blocks (refs put proof high). */}
+      <StackAuthority />
 
       <PageSection
         id="services-offer"
