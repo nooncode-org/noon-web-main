@@ -13,6 +13,44 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-06-06] — AI MVP milestone receiver (cross-repo, App → NoonWeb)
+
+> **Summary:** Built the inbound receiver for App's post-payment AI MVP
+> pipeline milestones (handoff `2026-06-06-noonweb-ai-mvp-milestones-handoff.md`).
+> App emits client-safe milestones (`started` / `version-ready` / `escalated`)
+> over the same durable HMAC-signed outbound queue as proposal-review-decision
+> (ADR-027); until this endpoint existed those deliveries failed and App's queue
+> retried into the void. The receiver verifies the signature, validates the §58
+> client-safe body, persists idempotently on `(project_id, kind)`, and returns
+> 2xx so App can mark the ledger row delivered. This is **PR-A** of the handoff;
+> the client-status UI + `project_id`→session mapping is the follow-up **PR-B**.
+> PR `feat/ai-mvp-milestone-receiver`.
+
+### Added
+
+- **`app/api/integrations/noon-app/ai-mvp-milestone/route.ts`** — `POST`
+  receiver. Reuses `readSignedNoonAppJson` (identical HMAC scheme to
+  proposal-review-decision: `${ts}.${rawBody}`, ±5min skew, missing-timestamp
+  rejected per the F-1 fix), validates the body, persists, returns 2xx. Honours
+  `version_url` only on `version-ready`.
+- **`supabase/migrations/20260606_021_ai_mvp_milestone.sql`** — new
+  `ai_mvp_milestone` table (`project_id`, `kind`, `version_url`, timestamps),
+  `UNIQUE (project_id, kind)` mirroring App's idempotency key for structural
+  dedup. RLS + backend-only grants mirror `20260406_004`. Self-registers in
+  `schema_migrations`. Additive only.
+- **`lib/maxwell/repositories.ts`** — `recordAiMvpMilestone` (idempotent upsert
+  on `(project_id, kind)`; `COALESCE` keeps a stored `version_url` from being
+  clobbered by a later null; `xmax = 0` distinguishes first-arrival from retry)
+  + `getAiMvpMilestonesByProjectId` (source for the PR-B UI) and the
+  `AiMvpMilestone` / `AiMvpMilestoneKind` types.
+- **`lib/noon-app-integration.ts`** — `noonAppAiMvpMilestonePayloadSchema`
+  (Zod, §58 client-safe: only `event` / `kind` / `project_id` / `version_url`).
+- **`tests/maxwell/ai-mvp-milestone-webhook.test.ts`** — 19 tests: full
+  signature matrix, payload validation, per-kind persistence, version_url
+  honoured only on `version-ready`, and dedup replay.
+
+---
+
 ## [2026-05-25] — D-slice ADR-023 UI: prototipo decision route built behind flag
 
 > **Summary:** Built the full client-facing surface for the D-slice cross-repo
