@@ -195,7 +195,7 @@ export function TemplatesContent() {
           </div>
 
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="liquid-glass-pill inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+            <h2 className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-secondary/40 px-3 py-1 text-xs font-mono text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: templateBrandTone.accent }} />
               {activeFilter || t("allTemplates")}
             </h2>
