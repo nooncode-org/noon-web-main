@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { FloatingTechElements } from "@/components/landing/floating-tech-elements";
 import { FooterSection } from "@/components/landing/footer-section";
 import { Navigation } from "@/components/landing/navigation";
 import type { UserMenuViewer } from "@/components/ui/user-menu";
@@ -31,7 +30,6 @@ export function UpgradeLayoutChrome({ children, viewer = null }: UpgradeLayoutCh
           style={{ boxShadow: "0 0 0 9999px var(--background)" }}
         />
       </div>
-      <FloatingTechElements />
       <Navigation viewer={viewer} />
       <main id="upgrade-page-frame" className="relative z-10 flex-1 pb-8 pt-24 lg:pb-10 lg:pt-24">
         {children}
