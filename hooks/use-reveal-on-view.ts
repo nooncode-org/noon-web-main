@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
+import { usePrefersReducedMotion } from "./use-prefers-reduced-motion";
 
 type UseRevealOnViewOptions = {
   threshold?: number | number[];
@@ -27,7 +27,7 @@ export function useRevealOnView<T extends Element = HTMLDivElement>({
   initialVisible = false,
 }: UseRevealOnViewOptions = {}) {
   const ref = useRef<T | null>(null);
-  const reduce = useReducedMotion() ?? false;
+  const reduce = usePrefersReducedMotion();
   const [intersected, setIntersected] = useState(initialVisible);
 
   useEffect(() => {
