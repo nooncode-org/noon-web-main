@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, getDevBypassEmail } from "@/auth";
 import { StudioShell } from "@/components/maxwell/studio-shell";
 import { buildSignInHref } from "@/lib/auth/redirect";
 import { isPrototipoDecisionRouteEnabled } from "@/lib/maxwell/prototipo-route-flag";
@@ -25,7 +25,9 @@ export default async function MaxwellStudioPage({ params, searchParams }: Props)
   const studioPath = `/${locale}/maxwell/studio`;
 
   const session = await auth();
-  const viewerEmail = session?.user?.email ?? null;
+  // Dev bypass: use DEV_VIEWER_EMAIL from .env.local when Google auth is not
+  // configured. getDevBypassEmail() always returns null in production.
+  const viewerEmail = session?.user?.email ?? getDevBypassEmail();
 
   if (!viewerEmail) {
     // Signed-out visitor. A param-less visit has no conversation to restore

@@ -30,6 +30,7 @@ yarn-error.log*
 .tmp-chrome-pdf/
 .tmp-chrome-pdf2/
 .tmp-edge-pdf/
+tmp-*
 .dev-home.html
 .data/
 

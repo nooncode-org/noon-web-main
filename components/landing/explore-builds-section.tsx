@@ -356,6 +356,13 @@ const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }
   "Mobile apps": MobileMockup,
 };
 
+// Exported so the template detail page can reuse the SAME faithful code mockup
+// as the card grid (instead of a separate, AI-generated preview image).
+export function TemplateMockup({ category, enhanced = false }: { category: string; enhanced?: boolean }) {
+  const Mockup = MockupByCategory[category] ?? SaaSMockup;
+  return <Mockup enhanced={enhanced} />;
+}
+
 // ============================================================================
 // Template Card
 // ============================================================================

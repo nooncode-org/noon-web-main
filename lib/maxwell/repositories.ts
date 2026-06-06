@@ -230,6 +230,8 @@ export type ClientWorkspace = {
   paymentStatus: WorkspacePaymentStatus;
   workspaceStatus: WorkspaceStatus;
   latestUpdateSummary: string | null;
+  /** App's internal project UUID, captured from the payment-confirmed response. */
+  noonAppProjectId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -347,6 +349,7 @@ type ProposalReviewEventRow = {
 type WorkspaceRow = {
   id: string; studio_session_id: string; payment_status: string;
   workspace_status: string; latest_update_summary: string | null;
+  noon_app_project_id: string | null;
   created_at: string | Date; updated_at: string | Date;
 };
 
@@ -522,6 +525,7 @@ function mapWorkspace(r: WorkspaceRow): ClientWorkspace {
     paymentStatus: r.payment_status as WorkspacePaymentStatus,
     workspaceStatus: r.workspace_status as WorkspaceStatus,
     latestUpdateSummary: r.latest_update_summary,
+    noonAppProjectId: r.noon_app_project_id ?? null,
     createdAt: toIsoTimestamp(r.created_at)!,
     updatedAt: toIsoTimestamp(r.updated_at)!,
   };
@@ -1501,6 +1505,27 @@ export async function getClientWorkspaceBySession(studioSessionId: string): Prom
   return rows[0] ? mapWorkspace(rows[0]) : null;
 }
 
+/**
+ * Persist App's project id on the workspace, captured from the payment-confirmed
+ * response (PR-B). Write-once: only sets the column when it is currently NULL, so
+ * a webhook retry or a corrected/different id can never silently overwrite the
+ * mapping the client UI relies on. Returns true when this call set the value.
+ */
+export async function setClientWorkspaceNoonAppProjectId(
+  id: string,
+  noonAppProjectId: string,
+): Promise<boolean> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  const rows = await sql<{ id: string }[]>`
+    UPDATE client_workspace
+    SET noon_app_project_id = ${noonAppProjectId}, updated_at = ${now}
+    WHERE id = ${id} AND noon_app_project_id IS NULL
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 export async function activateClientWorkspace(id: string, latestUpdateSummary?: string): Promise<ClientWorkspace> {
   const sql = getDb();
   const now = new Date().toISOString();
@@ -1748,4 +1773,95 @@ export async function insertProposalAccessAudit(input: {
       ${input.userAgentTruncated ?? null}
     )
   `;
+}
+
+// ============================================================================
+// ai_mvp_milestone  (cross-repo post-payment pipeline milestones from App)
+// ============================================================================
+
+/** §19.3 client-copy keys — keep in sync with the CHECK constraint (migration 0021). */
+export type AiMvpMilestoneKind = "started" | "version-ready" | "escalated";
+
+export type AiMvpMilestone = {
+  id: string;
+  projectId: string;
+  kind: AiMvpMilestoneKind;
+  versionUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AiMvpMilestoneRow = {
+  id: string;
+  project_id: string;
+  kind: AiMvpMilestoneKind;
+  version_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+function mapAiMvpMilestone(r: AiMvpMilestoneRow): AiMvpMilestone {
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    kind: r.kind,
+    versionUrl: r.version_url,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+/**
+ * Persist one inbound AI MVP milestone, idempotent on (project_id, kind).
+ *
+ * App's durable queue retries on any non-2xx, so the same milestone can land
+ * repeatedly (handoff §5/§6). The UNIQUE (project_id, kind) constraint mirrors
+ * App's idempotency key `aimvp-milestone:<project_id>:<kind>`, making dedup
+ * structural rather than time-based:
+ *
+ *   - First arrival            → INSERT, `created: true`.
+ *   - Retry (same project+kind)→ ON CONFLICT updates `version_url` only when a
+ *     non-null one arrives (a later `version-ready` re-send that finally carries
+ *     a resolved URL fills the gap; an early null never clobbers a stored URL).
+ *     Returns `created: false`.
+ *
+ * Either way the row is upserted and the caller can safely return 2xx.
+ */
+export async function recordAiMvpMilestone(input: {
+  projectId: string;
+  kind: AiMvpMilestoneKind;
+  versionUrl?: string | null;
+}): Promise<{ milestone: AiMvpMilestone; created: boolean }> {
+  const sql = getDb();
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+
+  // xmax = 0 on a freshly inserted row; non-zero when the row already existed
+  // and the ON CONFLICT branch ran. This distinguishes first-arrival from retry
+  // without a second round-trip.
+  const rows = await sql<(AiMvpMilestoneRow & { was_inserted: boolean })[]>`
+    INSERT INTO ai_mvp_milestone (id, project_id, kind, version_url, created_at, updated_at)
+    VALUES (${id}, ${input.projectId}, ${input.kind}, ${input.versionUrl ?? null}, ${now}, ${now})
+    ON CONFLICT (project_id, kind) DO UPDATE SET
+      version_url = COALESCE(EXCLUDED.version_url, ai_mvp_milestone.version_url),
+      updated_at = ${now}
+    RETURNING *, (xmax = 0) AS was_inserted
+  `;
+
+  const row = rows[0];
+  const { was_inserted, ...milestoneRow } = row;
+  return { milestone: mapAiMvpMilestone(milestoneRow), created: was_inserted };
+}
+
+/** All milestones for a project, newest transition first. Source for the PR-B UI. */
+export async function getAiMvpMilestonesByProjectId(
+  projectId: string,
+): Promise<AiMvpMilestone[]> {
+  const sql = getDb();
+  const rows = await sql<AiMvpMilestoneRow[]>`
+    SELECT * FROM ai_mvp_milestone
+    WHERE project_id = ${projectId}
+    ORDER BY created_at DESC
+  `;
+  return rows.map(mapAiMvpMilestone);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -23,6 +24,7 @@ import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
 import type { ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
 // ============================================================================
 // Message sub-components
@@ -48,8 +50,10 @@ function formatDuration(durationMs?: number) {
   return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
 }
 
-function formatRelativeTime(createdAt: string | undefined, now: number) {
-  if (!createdAt) return null;
+function formatRelativeTime(createdAt: string | undefined, now: number | null) {
+  // `now` is null until the component has hydrated, so SSR + first client paint
+  // render no relative time (they'd otherwise disagree as wall-clock advances).
+  if (!createdAt || now == null) return null;
 
   const timestamp = Date.parse(createdAt);
   if (Number.isNaN(timestamp)) return null;
@@ -187,7 +191,7 @@ function AssistantMessage({
   content: string;
   durationMs?: number;
   createdAt?: string;
-  now: number;
+  now: number | null;
   isLatest: boolean;
   isThinking: boolean;
   copied: boolean;
@@ -390,6 +394,7 @@ export function StudioChatPane({
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
+  const mounted = useHasMounted();
   const [now, setNow] = useState(() => Date.now());
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [feedbackByMessageId, setFeedbackByMessageId] = useState<
@@ -408,7 +413,7 @@ export function StudioChatPane({
     (phase === "prototype_ready" ||
       phase === "revision_requested" ||
       phase === "approved_for_proposal");
-  const contentFrameClass = isWorkspaceVisible ? "w-full" : "mx-auto w-full max-w-[820px]";
+  const contentFrameClass = isWorkspaceVisible ? "w-full" : "mx-auto w-full max-w-[720px]";
   const hasDraft = input.trim().length > 0;
   const canSubmit = hasDraft && !isThinking;
   const messageStackClass = isWorkspaceVisible
@@ -480,16 +485,23 @@ export function StudioChatPane({
     shouldStickToBottomRef.current = distanceFromBottom < 160;
   }
 
-  // Keep the latest exchange visible without yanking the user away while reading older messages.
+  // Keep the latest exchange visible without yanking the user away while reading
+  // older messages. Scroll only the chat's OWN overflow container — never use
+  // bottomRef.scrollIntoView(), which also scrolls every ancestor (including the
+  // document), so an embedded pane (e.g. the marketing demo below the fold)
+  // would hijack the whole page on mount.
   useEffect(() => {
-    if (shouldStickToBottomRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!shouldStickToBottomRef.current) return;
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
   }, [messages, isThinking, phase, stopNotice]);
 
-  // Focus input when idle
+  // Focus input when idle — preventScroll so focusing the composer never yanks
+  // the page (same embedded-below-the-fold concern as the auto-scroll above).
   useEffect(() => {
-    if (canSend) setTimeout(() => inputRef.current?.focus(), 50);
+    if (canSend) setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
   }, [canSend, inputRef]);
 
   useEffect(() => {
@@ -498,7 +510,25 @@ export function StudioChatPane({
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="relative flex flex-col h-full bg-background">
+      {/* Empty / intake state — absolutely centered so it sits in the middle
+          of the chat area without interfering with the scroll container.
+          Fades out as soon as the first message appears. */}
+      {messages.length === 0 && !isWorkspaceVisible && (
+        <div className="pointer-events-none absolute inset-0 bottom-40 flex flex-col items-center justify-center gap-5 px-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-border bg-secondary/60 overflow-hidden">
+            <Image src="/maxwell-icon.png" alt="" aria-hidden="true" width={48} height={48} className="h-full w-full object-cover" />
+          </div>
+          <div className="text-center">
+            <p className="text-[17px] font-medium tracking-tight text-foreground/90">
+              Soy Maxwell, arquitecto de soluciones en Noon.
+            </p>
+            <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
+              Cuéntame qué quieres construir y te ayudo a convertirlo en una dirección clara y construible.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Messages */}
       <div
         ref={scrollContainerRef}
@@ -535,7 +565,7 @@ export function StudioChatPane({
                 content={msg.content}
                 durationMs={msg.durationMs}
                 createdAt={msg.createdAt}
-                now={now}
+                now={mounted ? now : null}
                 isLatest={i === latestAssistantIndex}
                 isThinking={isThinking}
                 copied={copiedMessageId === messageId}

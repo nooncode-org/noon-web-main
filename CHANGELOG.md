@@ -66,6 +66,85 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-06-06] — AI MVP milestone UI + project mapping (PR-B)
+
+> **Summary:** Closes the loop on the AI MVP milestones handoff: maps App's
+> `project_id` back to a local workspace and renders the client-status UI from
+> the milestone `kind` (§19.3). Stacked on **PR-A** (the receiver). App already
+> returns its `projectId` in the payment-confirmed response but NoonWeb
+> discarded it; now we capture it at confirmation and the client's workspace
+> page shows the post-payment build status the receiver persists.
+> PR `feat/ai-mvp-milestone-ui` (base: `feat/ai-mvp-milestone-receiver`).
+
+### Added
+
+- **`lib/maxwell/ai-mvp-milestone-copy.ts`** — `AI_MVP_MILESTONE_COPY`
+  (§19.3 client copy keyed by `kind`, compiler-exhaustive) + `pickCurrentMilestone`
+  (newest-first picker that skips unknown kinds for forward-compat).
+- **`supabase/migrations/20260606_022_client_workspace_noon_app_project_id.sql`**
+  — `client_workspace.noon_app_project_id` (nullable text) + partial index.
+  Additive; self-registers.
+- **`lib/maxwell/repositories.ts`** — `setClientWorkspaceNoonAppProjectId`
+  (write-once: only sets when currently NULL, so a retry can't overwrite the
+  mapping) + `noonAppProjectId` on the `ClientWorkspace` type / row / mapper.
+- **`lib/noon-app-integration.ts`** — `extractNoonAppProjectId` (best-effort
+  parse of App's payment-confirmed response; null on any unrecognised shape).
+- **`tests/maxwell/ai-mvp-milestone-copy.test.ts`** — copy-map + picker units.
+
+### Changed
+
+- **`lib/maxwell/payment-activation.ts`** — `notifyNoonApp` now captures the
+  `projectId` from the payment-confirmed response and persists it on the
+  workspace. Best-effort + isolated try/catch: a parse miss or write failure
+  never fails the payment handoff.
+- **`app/[locale]/maxwell/workspace/[sessionId]/page.tsx`** — renders an AI MVP
+  milestone banner (label + description from `kind`, "Open first version" link
+  on `version-ready`) when the workspace has a mapped project id. Degrades to no
+  banner otherwise — the existing timeline is unaffected.
+- **`tests/maxwell/payment.test.ts`** + five workspace-fixture test files —
+  cover projectId capture (present / absent / persist-failure-tolerated) and
+  carry the new `noonAppProjectId` field.
+
+---
+
+## [2026-06-06] — AI MVP milestone receiver (cross-repo, App → NoonWeb)
+
+> **Summary:** Built the inbound receiver for App's post-payment AI MVP
+> pipeline milestones (handoff `2026-06-06-noonweb-ai-mvp-milestones-handoff.md`).
+> App emits client-safe milestones (`started` / `version-ready` / `escalated`)
+> over the same durable HMAC-signed outbound queue as proposal-review-decision
+> (ADR-027); until this endpoint existed those deliveries failed and App's queue
+> retried into the void. The receiver verifies the signature, validates the §58
+> client-safe body, persists idempotently on `(project_id, kind)`, and returns
+> 2xx so App can mark the ledger row delivered. This is **PR-A** of the handoff;
+> the client-status UI + `project_id`→session mapping is the follow-up **PR-B**.
+> PR `feat/ai-mvp-milestone-receiver`.
+
+### Added
+
+- **`app/api/integrations/noon-app/ai-mvp-milestone/route.ts`** — `POST`
+  receiver. Reuses `readSignedNoonAppJson` (identical HMAC scheme to
+  proposal-review-decision: `${ts}.${rawBody}`, ±5min skew, missing-timestamp
+  rejected per the F-1 fix), validates the body, persists, returns 2xx. Honours
+  `version_url` only on `version-ready`.
+- **`supabase/migrations/20260606_021_ai_mvp_milestone.sql`** — new
+  `ai_mvp_milestone` table (`project_id`, `kind`, `version_url`, timestamps),
+  `UNIQUE (project_id, kind)` mirroring App's idempotency key for structural
+  dedup. RLS + backend-only grants mirror `20260406_004`. Self-registers in
+  `schema_migrations`. Additive only.
+- **`lib/maxwell/repositories.ts`** — `recordAiMvpMilestone` (idempotent upsert
+  on `(project_id, kind)`; `COALESCE` keeps a stored `version_url` from being
+  clobbered by a later null; `xmax = 0` distinguishes first-arrival from retry)
+  + `getAiMvpMilestonesByProjectId` (source for the PR-B UI) and the
+  `AiMvpMilestone` / `AiMvpMilestoneKind` types.
+- **`lib/noon-app-integration.ts`** — `noonAppAiMvpMilestonePayloadSchema`
+  (Zod, §58 client-safe: only `event` / `kind` / `project_id` / `version_url`).
+- **`tests/maxwell/ai-mvp-milestone-webhook.test.ts`** — 19 tests: full
+  signature matrix, payload validation, per-kind persistence, version_url
+  honoured only on `version-ready`, and dedup replay.
+
+---
+
 ## [2026-05-25] — D-slice ADR-023 UI: prototipo decision route built behind flag
 
 > **Summary:** Built the full client-facing surface for the D-slice cross-repo

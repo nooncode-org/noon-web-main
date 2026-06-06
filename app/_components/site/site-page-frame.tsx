@@ -1,20 +1,24 @@
 import type { ReactNode } from "react";
-import { FloatingTechElements } from "@/components/landing/floating-tech-elements";
 import { FooterSection } from "@/components/landing/footer-section";
 import { Navigation } from "@/components/landing/navigation";
 import { SiteScrollIndicator } from "@/app/_components/site/site-scroll-indicator";
-import { getAuthenticatedViewer } from "@/lib/auth/session";
+import type { UserMenuViewer } from "@/components/ui/user-menu";
 
 type SitePageFrameProps = {
   children: ReactNode;
+  /**
+   * Authenticated viewer for the navbar UserMenu. Server pages should pass
+   * `viewer={await getAuthenticatedViewer()}` to keep the auth-aware menu;
+   * client pages pass nothing (viewer = null → anonymous Sign up CTA).
+   *
+   * Made into an explicit prop (instead of auto-fetching) so this component
+   * can be used both from server and client pages — async + auto-fetch was
+   * incompatible with the "use client" marketing pages.
+   */
+  viewer?: UserMenuViewer | null;
 };
 
-export async function SitePageFrame({ children }: SitePageFrameProps) {
-  // Server-fetched viewer so `Navigation` can render the auth-aware user menu
-  // (sign out + Maxwell Studio link) instead of the anonymous "Sign up" CTA.
-  // Falls back to `null` for anonymous traffic.
-  const viewer = await getAuthenticatedViewer();
-
+export function SitePageFrame({ children, viewer = null }: SitePageFrameProps) {
   return (
     <main
       id="site-page-frame"
@@ -31,7 +35,6 @@ export async function SitePageFrame({ children }: SitePageFrameProps) {
         />
       </div>
       <SiteScrollIndicator />
-      <FloatingTechElements />
       <Navigation viewer={viewer} />
       <div className="relative z-10 flex-1 pt-28 lg:pt-32">{children}</div>
       <FooterSection />

@@ -391,6 +391,23 @@ export async function sendInboundProposalToNoonApp(input: {
   );
 }
 
+/**
+ * Pull App's project id out of the payment-confirmed response (PR-B).
+ *
+ * App's `/api/integrations/website/payment-confirmed` returns
+ * `{ idempotent, linkId, leadId, proposalId, projectId, status }`
+ * (App/lib/server/website-integration.ts). We only need `projectId`, and only
+ * to map inbound AI MVP milestones back to a local workspace. Best-effort by
+ * design: returns null for any shape we don't recognise so a contract drift on
+ * App's side degrades the milestone UI gracefully instead of failing the
+ * payment flow.
+ */
+export function extractNoonAppProjectId(response: unknown): string | null {
+  if (!response || typeof response !== "object") return null;
+  const projectId = (response as { projectId?: unknown }).projectId;
+  return typeof projectId === "string" && projectId.trim() ? projectId : null;
+}
+
 export async function sendPaymentConfirmedToNoonApp(input: {
   session: StudioSession;
   proposal: ProposalRequest;
@@ -451,4 +468,21 @@ export const noonAppProposalReviewDecisionPayloadSchema = z.object({
     review_status: z.string().optional(),
   }),
   customer: z.unknown().optional(),
+});
+
+/**
+ * Inbound AI MVP pipeline milestone from App (handoff
+ * 2026-06-06-noonweb-ai-mvp-milestones-handoff.md §4).
+ *
+ * §58 client-safe body — by construction this schema accepts ONLY the three
+ * permitted fields. `version_url` is meaningful only on `version-ready`; on the
+ * other kinds App omits it. We do not *reject* a stray null/url on the other
+ * kinds (the receiver simply ignores it for non-`version-ready`), but we do
+ * validate the URL shape when present so a malformed value is a 400, not a row.
+ */
+export const noonAppAiMvpMilestonePayloadSchema = z.object({
+  event: z.literal("ai_mvp_milestone"),
+  kind: z.enum(["started", "version-ready", "escalated"]),
+  project_id: z.string().min(1),
+  version_url: z.string().url().optional(),
 });

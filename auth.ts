@@ -78,3 +78,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 export function isGoogleAuthConfigured() {
   return isGoogleConfigured();
 }
+
+// Dev-only bypass: returns a fake viewer email when Google auth is not
+// configured and NODE_ENV is not production. Set DEV_VIEWER_EMAIL in
+// .env.local to enable. Never active in production (checked at runtime).
+export function getDevBypassEmail(): string | null {
+  if (process.env.NODE_ENV === "production") return null;
+  const email = process.env.DEV_VIEWER_EMAIL?.trim();
+  return email && email.length > 0 ? email : null;
+}

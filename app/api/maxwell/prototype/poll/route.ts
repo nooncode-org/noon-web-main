@@ -8,12 +8,42 @@ import {
   getLatestStudioVersion,
   updateStudioSessionStatus,
   appendStudioMessage,
+  type StudioSession,
 } from "@/lib/maxwell/repositories";
+import {
+  hasExceededPollBudget,
+  normalizePollAttempt,
+  shouldRescueUnstableCompletion,
+} from "@/lib/maxwell/prototype-poll-policy";
 import { log } from "@/lib/server/logger";
 import { serializeV0Source } from "@/lib/maxwell/serialize-v0-source";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Revert an in-flight session out of its generating/revision state when the
+ * poll loop gives up, so it is not left orphaned. Reads the current status
+ * first and only transitions from the expected in-flight states, mirroring the
+ * v0-error reverts in `app/api/maxwell/prototype/route.ts`:
+ *   - create flow stuck in `generating_prototype` → `clarifying`
+ *   - update flow stuck in `revision_requested` / `revision_applied` → `prototype_ready`
+ */
+async function revertInFlightSession(
+  session: StudioSession,
+  action: string,
+): Promise<void> {
+  const fresh = await getStudioSession(session.id);
+  if (!fresh) return;
+  if (action === "create" && fresh.status === "generating_prototype") {
+    await updateStudioSessionStatus(fresh.id, "clarifying");
+  } else if (
+    action === "update" &&
+    (fresh.status === "revision_requested" || fresh.status === "revision_applied")
+  ) {
+    await updateStudioSessionStatus(fresh.id, "prototype_ready");
+  }
+}
 
 async function isPreviewUrlReady(url: string): Promise<boolean> {
   const controller = new AbortController();
@@ -61,6 +91,9 @@ export async function GET(request: Request) {
     const previousDemoUrl = searchParams.get("previous_demo_url");
     const previousVersionId = searchParams.get("previous_version_id");
     const confirmationToken = searchParams.get("confirmation_token");
+    // 1-based poll attempt sent by the client. Bounds the loop (give-up cap +
+    // signature-instability rescue) — see lib/maxwell/prototype-poll-policy.ts.
+    const attempt = normalizePollAttempt(searchParams.get("attempt"));
 
     if (!chatId || !sessionId || !action) {
       return NextResponse.json({ message: "Missing query params" }, { status: 400 });
@@ -86,6 +119,23 @@ export async function GET(request: Request) {
     // Call v0 API to check status
     const statusResult = await getV0PrototypeStatus(chatId);
 
+    // Bounded-loop guard: the client passes its 1-based attempt count. Once it
+    // reaches the hard cap without a committable version, give up gracefully —
+    // revert the in-flight session so it is not orphaned in `generating_prototype`
+    // (or a revision state), and report `failed` so the client stops recursing.
+    // A genuinely-ready prototype is committed well before this cap thanks to the
+    // rescue threshold below, so reaching it means the preview never stabilized.
+    if (hasExceededPollBudget(attempt)) {
+      await revertInFlightSession(session, action);
+      log.info("maxwell.prototype.poll", "Poll budget exceeded — giving up", {
+        session_id: session.id,
+        action,
+        attempt,
+        last_status: statusResult.status,
+      });
+      return NextResponse.json({ status: "failed", code: "POLL_TIMEOUT" });
+    }
+
     if (statusResult.status === "pending") {
       return NextResponse.json({ status: "pending" });
     }
@@ -108,7 +158,14 @@ export async function GET(request: Request) {
       // Guardrail: require one extra poll cycle with the same completed signature.
       // This reduces race conditions where v0 marks completed before the final preview
       // is fully stabilized for immediate rendering.
-      if (confirmationToken !== completionSignature) {
+      //
+      // Rescue: v0's chat-mode can keep regenerating the version id, so the
+      // signature never stabilizes and the loop would never end. Once we are past
+      // the rescue threshold, stop requiring stabilization and accept the latest
+      // completed version — the preview-ready gate below still protects against
+      // committing a cold URL. See lib/maxwell/prototype-poll-policy.ts.
+      const stabilized = confirmationToken === completionSignature;
+      if (!stabilized && !shouldRescueUnstableCompletion(attempt)) {
         return NextResponse.json({ status: "pending", completion_token: completionSignature });
       }
 

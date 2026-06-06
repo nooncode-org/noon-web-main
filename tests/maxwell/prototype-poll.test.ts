@@ -49,6 +49,10 @@ import * as authSession from "@/lib/auth/session";
 import * as ownership from "@/lib/auth/ownership";
 import * as repos from "@/lib/maxwell/repositories";
 import { GET } from "@/app/api/maxwell/prototype/poll/route";
+import {
+  MAX_PROTOTYPE_POLL_ATTEMPTS,
+  POLL_RESCUE_AFTER_ATTEMPTS,
+} from "@/lib/maxwell/prototype-poll-policy";
 
 const ROUTE_BASE = "http://localhost/api/maxwell/prototype/poll";
 
@@ -551,6 +555,132 @@ describe("prototype/poll — persistencia happy path", () => {
 // ============================================================================
 // Acción desconocida
 // ============================================================================
+
+// ============================================================================
+// Bounded loop — give up at the hard cap (revert + failed)
+// ============================================================================
+
+describe("prototype/poll — give up at the poll budget cap", () => {
+  it("create: attempt en el cap con v0 pending → failed POLL_TIMEOUT + revierte a clarifying", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({ status: "pending" });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        attempt: String(MAX_PROTOTYPE_POLL_ATTEMPTS),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("failed");
+    expect(body.code).toBe("POLL_TIMEOUT");
+    expect(repos.updateStudioSessionStatus).toHaveBeenCalledWith("session-1", "clarifying");
+    expect(repos.createStudioVersion).not.toHaveBeenCalled();
+  });
+
+  it("update: attempt sobre el cap → failed + revierte revision_requested a prototype_ready", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "revision_requested" }),
+    );
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({ status: "pending" });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "update",
+        attempt: String(MAX_PROTOTYPE_POLL_ATTEMPTS + 5),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("failed");
+    expect(body.code).toBe("POLL_TIMEOUT");
+    expect(repos.updateStudioSessionStatus).toHaveBeenCalledWith("session-1", "prototype_ready");
+    expect(repos.createStudioVersion).not.toHaveBeenCalled();
+  });
+
+  it("no se rinde antes del cap (attempt-1 con pending → pending normal)", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({ status: "pending" });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        attempt: String(MAX_PROTOTYPE_POLL_ATTEMPTS - 1),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(repos.updateStudioSessionStatus).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// Bounded loop — rescue an unstable-signature completion
+// ============================================================================
+
+describe("prototype/poll — rescue de firma inestable", () => {
+  const demoUrl = "https://preview.v0.dev/abc?token=xyz";
+  const staleToken = "old-version|https://preview.v0.dev/old";
+
+  beforeEach(() => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+    });
+    stubPreviewFetch({ ok: true });
+  });
+
+  it("completed con token desfasado por debajo del umbral → sigue pending (espera estabilización)", async () => {
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: staleToken,
+        attempt: String(POLL_RESCUE_AFTER_ATTEMPTS - 1),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(repos.createStudioVersion).not.toHaveBeenCalled();
+  });
+
+  it("completed con token desfasado en el umbral + preview lista → commitea igual (rescate)", async () => {
+    const res = await GET(
+      buildUrl({
+        chatId: "chat-1",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: staleToken,
+        attempt: String(POLL_RESCUE_AFTER_ATTEMPTS),
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("completed");
+    expect(repos.createStudioVersion).toHaveBeenCalled();
+    expect(repos.updateStudioSessionStatus).toHaveBeenCalledWith("session-1", "prototype_ready");
+  });
+
+  it("rescate sigue exigiendo preview lista (no commitea URL fría)", async () => {
+    stubPreviewFetch({ ok: false, status: 404 });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: staleToken,
+        attempt: String(POLL_RESCUE_AFTER_ATTEMPTS),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(repos.createStudioVersion).not.toHaveBeenCalled();
+  });
+});
 
 describe("prototype/poll — acción desconocida", () => {
   it("action no soportada con status completed cae al 'unknown' final", async () => {

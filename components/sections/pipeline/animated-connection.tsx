@@ -19,19 +19,21 @@ export function AnimatedConnection({
   const [particles, setParticles] = useState<number[]>([]);
 
   useEffect(() => {
-    if (isActive) {
-      // Generate particles when active
-      const interval = setInterval(() => {
-        setParticles((prev) => {
-          const newParticles = [...prev, Date.now()];
-          // Keep only last 5 particles
-          return newParticles.slice(-5);
-        });
-      }, 400);
-      return () => clearInterval(interval);
-    } else {
+    if (!isActive) return;
+    // Generate particles while active; clearing them is done in the cleanup
+    // below (on deactivate/unmount) to avoid a synchronous setState in the
+    // effect body, which can trigger cascading renders.
+    const interval = setInterval(() => {
+      setParticles((prev) => {
+        const newParticles = [...prev, Date.now()];
+        // Keep only last 5 particles
+        return newParticles.slice(-5);
+      });
+    }, 400);
+    return () => {
+      clearInterval(interval);
       setParticles([]);
-    }
+    };
   }, [isActive]);
 
   const isHorizontal = direction === "horizontal";

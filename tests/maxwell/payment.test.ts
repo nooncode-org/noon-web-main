@@ -54,6 +54,7 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getClientWorkspaceBySession: vi.fn(),
   createClientWorkspace: vi.fn(),
   activateClientWorkspace: vi.fn(),
+  setClientWorkspaceNoonAppProjectId: vi.fn(async () => true),
   getLatestProposalRequest: vi.fn(),
   updateProposalRequestStatus: vi.fn(),
 }));
@@ -112,6 +113,13 @@ vi.mock("@/lib/noon-app-integration", async () => {
     })),
     NoonAppIntegrationError,
     sendPaymentConfirmedToNoonApp: vi.fn(async () => undefined),
+    // Mirror the real helper so notifyNoonApp can pull projectId out of the
+    // (mocked) payment-confirmed response.
+    extractNoonAppProjectId: (response: unknown) => {
+      if (!response || typeof response !== "object") return null;
+      const projectId = (response as { projectId?: unknown }).projectId;
+      return typeof projectId === "string" && projectId.trim() ? projectId : null;
+    },
   };
 });
 
@@ -191,6 +199,7 @@ function fakeWorkspace(overrides: Partial<ClientWorkspace> = {}): ClientWorkspac
     paymentStatus: "confirmed",
     workspaceStatus: "active",
     latestUpdateSummary: null,
+    noonAppProjectId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -482,6 +491,9 @@ describe("payment — verify_payment", () => {
     vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
     vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
     vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(fakeWorkspace());
+    // activateWorkspaceForPayment always re-activates (and returns) the workspace,
+    // even when one already exists — mock its return so the activation result is defined.
+    vi.mocked(repos.activateClientWorkspace).mockResolvedValue(fakeWorkspace());
 
     const res = await POST(postReq({
       action: "verify_payment",
@@ -685,6 +697,89 @@ describe("payment — confirm_payment", () => {
     expect(repos.createClientWorkspace).toHaveBeenCalled();
     expect(repos.activateClientWorkspace).toHaveBeenCalled();
     expect(noonApp.sendPaymentConfirmedToNoonApp).toHaveBeenCalled();
+  });
+
+  // PR-B: capture App's project id from the payment-confirmed response and
+  // persist it on the workspace so the client-status page can map AI MVP
+  // milestones back to this client.
+  it("PR-B: persiste el projectId que devuelve App en el workspace", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.createClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "in_preparation" }),
+    );
+    vi.mocked(repos.activateClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "active" }),
+    );
+    vi.mocked(noonApp.sendPaymentConfirmedToNoonApp).mockResolvedValueOnce({
+      projectId: "proj-123",
+    });
+
+    const res = await POST(postReq({
+      action: "confirm_payment",
+      session_id: "session-1",
+      payment_status: "confirmed",
+      payment_reference: "REF-1",
+    }));
+
+    expect(res.status).toBe(200);
+    expect(repos.setClientWorkspaceNoonAppProjectId).toHaveBeenCalledWith(
+      "workspace-1",
+      "proj-123",
+    );
+  });
+
+  it("PR-B: NO persiste projectId cuando App no lo devuelve", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.createClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "in_preparation" }),
+    );
+    vi.mocked(repos.activateClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "active" }),
+    );
+    // Default mock returns undefined → no projectId to capture.
+
+    const res = await POST(postReq({
+      action: "confirm_payment",
+      session_id: "session-1",
+      payment_status: "confirmed",
+      payment_reference: "REF-1",
+    }));
+
+    expect(res.status).toBe(200);
+    expect(repos.setClientWorkspaceNoonAppProjectId).not.toHaveBeenCalled();
+  });
+
+  it("PR-B: una falla al persistir el projectId NO rompe el pago (best-effort)", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.createClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "in_preparation" }),
+    );
+    vi.mocked(repos.activateClientWorkspace).mockResolvedValue(
+      fakeWorkspace({ workspaceStatus: "active" }),
+    );
+    vi.mocked(noonApp.sendPaymentConfirmedToNoonApp).mockResolvedValueOnce({
+      projectId: "proj-123",
+    });
+    vi.mocked(repos.setClientWorkspaceNoonAppProjectId).mockRejectedValueOnce(
+      new Error("db write failed"),
+    );
+
+    const res = await POST(postReq({
+      action: "confirm_payment",
+      session_id: "session-1",
+      payment_status: "confirmed",
+      payment_reference: "REF-1",
+    }));
+
+    // Payment still succeeds — the capture is best-effort.
+    expect(res.status).toBe(200);
+    expect(repos.setClientWorkspaceNoonAppProjectId).toHaveBeenCalled();
   });
 });
 
