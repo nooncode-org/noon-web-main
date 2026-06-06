@@ -452,3 +452,20 @@ export const noonAppProposalReviewDecisionPayloadSchema = z.object({
   }),
   customer: z.unknown().optional(),
 });
+
+/**
+ * Inbound AI MVP pipeline milestone from App (handoff
+ * 2026-06-06-noonweb-ai-mvp-milestones-handoff.md §4).
+ *
+ * §58 client-safe body — by construction this schema accepts ONLY the three
+ * permitted fields. `version_url` is meaningful only on `version-ready`; on the
+ * other kinds App omits it. We do not *reject* a stray null/url on the other
+ * kinds (the receiver simply ignores it for non-`version-ready`), but we do
+ * validate the URL shape when present so a malformed value is a 400, not a row.
+ */
+export const noonAppAiMvpMilestonePayloadSchema = z.object({
+  event: z.literal("ai_mvp_milestone"),
+  kind: z.enum(["started", "version-ready", "escalated"]),
+  project_id: z.string().min(1),
+  version_url: z.string().url().optional(),
+});
