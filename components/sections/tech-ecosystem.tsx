@@ -57,7 +57,7 @@ const TOOLS: Tool[] = [
     name: "Supabase",
     role: "Backend & data",
     logo: "/figma/logos/logo-supabase.svg",
-    color: "#3FCF8E",
+    color: "#3ECF8E",
     desc: "Managed Postgres with authentication, realtime, and storage built in.",
     benefits: ["Postgres", "Auth", "Realtime"],
     highlight: "Open-source · Postgres-native",
@@ -75,7 +75,7 @@ const TOOLS: Tool[] = [
 
 const ALSO: { src: string; alt: string; color: string }[] = [
   { src: "/figma/logos/logo-typescript.svg", alt: "TypeScript", color: "#3178C6" },
-  { src: "/figma/logos/logo-react.svg", alt: "React", color: "#58C4DC" },
+  { src: "/figma/logos/logo-react.svg", alt: "React", color: "#61DAFB" },
   { src: "/figma/logos/logo-tailwind.svg", alt: "Tailwind CSS", color: "#06B6D4" },
   { src: "/figma/logos/logo-nodejs.svg", alt: "Node.js", color: "#5FA04E" },
   { src: "/figma/logos/logo-python.svg", alt: "Python", color: "#3776AB" },
