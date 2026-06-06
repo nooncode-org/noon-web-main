@@ -13,6 +13,59 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-06-06] — Capture + forward V0 prototype source code as `generated_html`
+
+> **Summary:** Closes the cross-repo §5 gap (handoff
+> `docs/handoffs/2026-06-06-noonweb-prototype-flow-handoff.md`, App repo): the
+> share flow now sends the actual V0 source code in `prototype.generated_html`,
+> not just a demo URL. App's post-payment Opus pipeline (Iter 9) reads the
+> approved prototipo CODE from `prototype_workspaces.generated_html` to build the
+> functional MVP; without it Opus received `null`/a URL and escalated to a human.
+> The V0 SDK already returns the code in `latestVersion.files[]` — NoonWeb was
+> discarding it. No App-side change required (`generated_html` already exists in
+> the contract, schema, persistence, and Opus consumption). See
+> `docs/handoff-piedra-2026-06-06-generated-html-code.md` for the App-side FYI
+> (optional `generated_content` placeholder cleanup + stale srcDoc semantics).
+> PR `feat/studio-version-generated-source`.
+
+### Added
+
+- **`lib/maxwell/serialize-v0-source.ts`** — `serializeV0Source(files)` pure
+  helper turning the V0 SDK's per-file output into a single delimited string
+  (`// === file: <path> ===\n<content>` blocks). Returns `null` when there are
+  no files / all empty, so the share action omits the field and older versions
+  degrade to demo-url-only.
+- **`supabase/migrations/20260606_020_studio_version_generated_html.sql`** —
+  additive nullable `studio_version.generated_html text` column. Stores the
+  serialized V0 source per version. Metadata-only `ADD COLUMN`; self-registers in
+  `schema_migrations`.
+- Tests: `tests/maxwell/serialize-v0-source.test.ts` (serializer units) +
+  share-payload and poll-capture coverage in the existing suites.
+
+### Changed
+
+- **`lib/api-ia.ts`** — `V0StatusResult` gains `files?: { name; content }[]`;
+  `getV0PrototypeStatus` now captures `latestVersion.files` (previously discarded
+  by the response cast) and filters to well-formed entries.
+- **`app/api/maxwell/prototype/poll/route.ts`** — serializes the V0 files on
+  version commit and persists them via `createStudioVersion({ generatedHtml })`.
+- **`lib/maxwell/repositories.ts`** — `StudioVersion.generatedHtml`, `VersionRow`,
+  `mapVersion`, and `createStudioVersion` (input + INSERT) carry the new column.
+- **`app/[locale]/maxwell/studio/_actions/share-prototype.ts`** — forwards
+  `latest.generatedHtml` as `prototype.generated_html` on share (the helper +
+  wire payload already supported the field).
+
+### Notes
+
+- **Operator:** apply migration `20260606_020` to the DB and record it in
+  `schema_migrations` (the prebuild `check-migrations --strict` flags drift when
+  `CHECK_MIGRATIONS=1`).
+- **Pending (not code):** App-side FYI/optional cleanup (Piedra) + a cross-repo
+  smoke confirming code lands in `prototype_workspaces.generated_html` and Opus
+  consumes it.
+
+---
+
 ## [2026-06-06] — AI MVP milestone UI + project mapping (PR-B)
 
 > **Summary:** Closes the loop on the AI MVP milestones handoff: maps App's

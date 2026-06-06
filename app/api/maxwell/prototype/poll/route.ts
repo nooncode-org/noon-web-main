@@ -16,6 +16,7 @@ import {
   shouldRescueUnstableCompletion,
 } from "@/lib/maxwell/prototype-poll-policy";
 import { log } from "@/lib/server/logger";
+import { serializeV0Source } from "@/lib/maxwell/serialize-v0-source";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -193,13 +194,19 @@ export async function GET(request: Request) {
         return NextResponse.json({ status: "pending" });
       }
 
-      // Generation successful. Commit to Database.
+      // Generation successful. Commit to Database. Persist the V0 source code
+      // (serialized per-file blocks) so the share flow can forward it to App as
+      // `prototype.generated_html` for the post-payment Opus pipeline. Null when
+      // V0 returned no files — the share action then omits the field and the
+      // version degrades to demo-url-only.
+      const generatedHtml = serializeV0Source(statusResult.files);
       const version = await createStudioVersion({
         studioSessionId: session.id,
         previewUrl: statusResult.demoUrl, // Guardamos la URL completa con el token para el iframe
         v0ChatId: chatId,
         changeSummary: action === "update" && prompt ? prompt : undefined,
         source: action === "update" ? "correction" : "initial",
+        generatedHtml,
       });
 
       if (action === "create") {

@@ -148,6 +148,12 @@ export type StudioVersion = {
   changeSummary: string | null;
   source: VersionSource;
   createdAt: string;
+  /**
+   * Serialized V0 source code for this version (delimited per-file blocks),
+   * forwarded to App on share as `prototype.generated_html`. Null for versions
+   * created before migration 020 or when V0 returned no files.
+   */
+  generatedHtml: string | null;
 };
 
 export type StudioEventType =
@@ -301,7 +307,7 @@ type BriefRow = {
 type VersionRow = {
   id: string; studio_session_id: string; version_number: number;
   preview_url: string; v0_chat_id: string; change_summary: string | null;
-  source: string; created_at: string | Date;
+  source: string; created_at: string | Date; generated_html: string | null;
 };
 
 type ProposalRow = {
@@ -479,6 +485,7 @@ function mapVersion(r: VersionRow): StudioVersion {
     versionNumber: Number(r.version_number), previewUrl: r.preview_url,
     v0ChatId: r.v0_chat_id, changeSummary: r.change_summary,
     source: r.source as VersionSource, createdAt: toIsoTimestamp(r.created_at)!,
+    generatedHtml: r.generated_html,
   };
 }
 
@@ -952,6 +959,8 @@ export async function createStudioVersion(input: {
   v0ChatId: string;
   changeSummary?: string;
   source: VersionSource;
+  /** Serialized V0 source code for this version (delimited per-file blocks). */
+  generatedHtml?: string | null;
 }): Promise<StudioVersion> {
   const sql = getDb();
   const id = crypto.randomUUID();
@@ -969,11 +978,13 @@ export async function createStudioVersion(input: {
     const rows = await tx<VersionRow[]>`
       INSERT INTO studio_version (
         id, studio_session_id, version_number,
-        preview_url, v0_chat_id, change_summary, source, created_at
+        preview_url, v0_chat_id, change_summary, source, created_at,
+        generated_html
       ) VALUES (
         ${id}, ${input.studioSessionId}, ${versionNumber},
         ${input.previewUrl}, ${input.v0ChatId}, ${input.changeSummary ?? null},
-        ${input.source}, ${now}
+        ${input.source}, ${now},
+        ${input.generatedHtml ?? null}
       )
       RETURNING *
     `;

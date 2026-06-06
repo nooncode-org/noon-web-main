@@ -170,6 +170,36 @@ describe("requestPrototipoShare — happy paths", () => {
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.lead).not.toHaveProperty("customer");
   });
+
+  it("includes prototype.generated_html when provided", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(201, happyData()));
+    global.fetch = fetchMock;
+
+    await requestPrototipoShare({
+      ...happyInput,
+      prototype: {
+        ...happyInput.prototype,
+        generatedHtml: "// === file: app/page.tsx ===\nexport default () => null;",
+      },
+    });
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body.prototype.generated_html).toBe(
+      "// === file: app/page.tsx ===\nexport default () => null;",
+    );
+  });
+
+  it("omits prototype.generated_html when not provided", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(201, happyData()));
+    global.fetch = fetchMock;
+
+    await requestPrototipoShare(happyInput);
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body.prototype).not.toHaveProperty("generated_html");
+  });
 });
 
 describe("requestPrototipoShare — error code mapping", () => {

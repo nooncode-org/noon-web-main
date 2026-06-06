@@ -46,6 +46,7 @@ function makeVersion(n: number, source: "initial" | "correction" = "initial"): S
     changeSummary: source === "correction" ? `Change #${n}` : null,
     source,
     createdAt: new Date().toISOString(),
+    generatedHtml: null,
   };
 }
 

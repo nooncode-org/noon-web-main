@@ -179,6 +179,13 @@ export async function sharePrototypeAction(
       v0ChatId: latest.v0ChatId,
       versionNumber: latest.versionNumber,
       deployedUrl: latest.previewUrl,
+      // The serialized V0 source code (delimited per-file blocks), captured at
+      // generation time. Load-bearing for App's post-payment Opus pipeline,
+      // which reads it from `prototype_workspaces.generated_html` to improve the
+      // approved prototipo into the functional MVP. Null on pre-migration-020
+      // versions or when V0 returned no files — App's `deployed_url OR
+      // generated_html` refine still passes on `deployed_url`.
+      generatedHtml: latest.generatedHtml,
       generatedAt: latest.createdAt,
     },
     // Lead enrichment metadata for parity with the legacy `inbound-proposal`
