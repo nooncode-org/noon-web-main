@@ -16,6 +16,7 @@ import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
 import { MaxwellDemo } from "@/components/marketing/maxwell-demo/MaxwellDemo";
+import { HumanReviewProof } from "@/components/sections/human-review-proof";
 import { TechEcosystem } from "@/components/sections/tech-ecosystem";
 
 const LOCALES = ["en", "es", "fr", "de"];
@@ -619,6 +620,10 @@ export function AboutContent() {
           </RevealBlock>
         </div>
       </section>
+
+      {/* The wedge as a believable artifact: AI drafts → a senior engineer
+         reviews & approves. The thing a code generator can't show. */}
+      <HumanReviewProof />
 
       {/* ===================================================================
           2. FROM IDEA TO LAUNCH — steps + terminal. (Figma-only, hardcoded.)
