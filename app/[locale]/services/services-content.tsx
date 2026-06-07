@@ -279,6 +279,13 @@ export function ServicesContent() {
               >
                 Contact Noon
               </Link>
+              <Link
+                href={lp("/work")}
+                className="group inline-flex items-center gap-1.5 px-2 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                See our work
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+              </Link>
             </div>
           </div>
         </div>
