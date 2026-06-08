@@ -41,10 +41,57 @@ export type SendProposalEmailInput = {
   to: string;
   publicUrl: string;
   projectTitle: string;
+  /**
+   * Approved activation amount in major units (e.g. 349 for $349.00), as set
+   * by the PM at approval time (`proposal_request.approved_amount_usd`). This
+   * is the single payable activation fee the client is charged at checkout —
+   * NOT a membership monthly, which is optional, not always offered, and is
+   * not stored as a structured field (it only lives inside the proposal text).
+   * When present (> 0) the email surfaces it so the client sees the headline
+   * number before opening the proposal; when absent — e.g. the SLA auto-send
+   * of a still `pending_review`, not-yet-priced proposal — the amount line is
+   * omitted entirely and the email is unchanged from its previous form.
+   */
+  approvedAmountUsd?: number | null;
+  /** ISO 4217 currency for `approvedAmountUsd`. Defaults to "USD" when omitted. */
+  approvedCurrency?: string | null;
 };
 
 export function isProposalEmailConfigured(): boolean {
   return isResendConfigured();
+}
+
+/**
+ * Formats the activation amount for display. Mirrors `formatAmount` in
+ * `lifecycle-emails.ts` (en-US currency style → "$349.00") so the proposal
+ * email and the later "Payment received" receipt render the same figure the
+ * same way. Falls back to a plain "USD 349.00" if the runtime ICU database
+ * does not recognise the currency code (very unlikely with USD) — better a
+ * slightly ugly line than a failed send.
+ */
+function formatActivationAmount(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount);
+  } catch {
+    return `${currency.toUpperCase()} ${amount.toFixed(2)}`;
+  }
+}
+
+/**
+ * Returns the formatted activation line (e.g. "$349.00") when a positive
+ * approved amount is present, or null when there is nothing to show. Centralises
+ * the "do we render the amount?" decision so the text and HTML builders stay
+ * in sync.
+ */
+function resolveActivationLine(input: SendProposalEmailInput): string | null {
+  const amount = input.approvedAmountUsd;
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+  return formatActivationAmount(amount, input.approvedCurrency ?? "USD");
 }
 
 function buildProposalEmailSubject(projectTitle: string, versionNumber: number): string {
@@ -52,22 +99,45 @@ function buildProposalEmailSubject(projectTitle: string, versionNumber: number):
 }
 
 function buildProposalEmailText(input: SendProposalEmailInput): string {
-  return [
+  const activation = resolveActivationLine(input);
+
+  const lines = [
     "Your Noon project proposal is ready.",
     "",
     `Project: ${input.projectTitle}`,
     `Proposal version: v${input.versionNumber}`,
+  ];
+
+  if (activation) {
+    lines.push(
+      `Activation: ${activation} (payment options and the full breakdown are in your proposal)`,
+    );
+  }
+
+  lines.push(
     `Validity: ${PROPOSAL_VALIDITY_DAYS} days from the first time you open the proposal link.`,
     "",
     `Open your proposal: ${input.publicUrl}`,
     "",
     "If you would prefer direct assistance, you can reply to this email and the Noon team will help you.",
-  ].join("\n");
+  );
+
+  return lines.join("\n");
 }
 
 function buildProposalEmailHtml(input: SendProposalEmailInput): string {
   const projectTitle = escapeHtml(input.projectTitle);
   const publicUrl = escapeHtml(input.publicUrl);
+  const activation = resolveActivationLine(input);
+
+  // Activation row, rendered only when a positive approved amount is present.
+  // The muted parenthetical signals the figure is the activation fee and that
+  // the payment options (single payment vs. membership) live in the proposal —
+  // never implying membership is mandatory.
+  const activationRow = activation
+    ? `<br />Activation: <strong>${escapeHtml(activation)}</strong>
+          <span style="color:#8a7f71;">(payment options and the full breakdown are in your proposal)</span>`
+    : "";
 
   return `
     <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
@@ -76,7 +146,7 @@ function buildProposalEmailHtml(input: SendProposalEmailInput): string {
         <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Your proposal is ready</h1>
         <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
           Project: <strong>${projectTitle}</strong><br />
-          Proposal version: <strong>v${input.versionNumber}</strong>
+          Proposal version: <strong>v${input.versionNumber}</strong>${activationRow}
         </p>
         <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
           This link stays valid for ${PROPOSAL_VALIDITY_DAYS} days starting from the first time you open it.

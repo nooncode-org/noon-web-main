@@ -145,6 +145,11 @@ export async function POST(request: Request) {
               session.goalSummary ??
               session.initialPrompt ??
               `Proposal ${proposal.id}`,
+            // Surface the headline activation amount in the email body. Both
+            // values were validated as a positive USD amount earlier in this
+            // handler before reaching the `sent` transition.
+            approvedAmountUsd: approvedAmount,
+            approvedCurrency,
           });
 
           await appendProposalReviewEvent({

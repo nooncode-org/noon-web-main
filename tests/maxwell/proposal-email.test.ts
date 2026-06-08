@@ -78,6 +78,69 @@ describe("sendProposalEmail", () => {
     expect(payload.subject).toContain("Client portal");
     expect(payload.html).toContain("Open proposal");
     expect(payload.text).toContain("15 days");
+    // No approved amount supplied → the activation line must NOT appear
+    // (backward-compatible with the SLA auto-send path, which sends a
+    // still-unpriced pending_review proposal).
+    expect(payload.text).not.toContain("Activation:");
+    expect(payload.html).not.toContain("Activation:");
+  });
+
+  it("surfaces the activation amount when an approved amount is supplied", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_amount" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProposalEmail({
+      proposalId: "proposal-2",
+      versionNumber: 1,
+      to: "client@example.com",
+      publicUrl: "https://noon.com/maxwell/proposal/token-2",
+      projectTitle: "Client portal",
+      approvedAmountUsd: 349,
+      approvedCurrency: "USD",
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+
+    // The headline activation figure appears, formatted like the receipt email
+    // ("$349.00"), framed as the activation fee with the modalities deferred to
+    // the proposal — never implying membership is mandatory.
+    expect(payload.text).toContain("Activation: $349.00");
+    expect(payload.text).toContain("payment options and the full breakdown are in your proposal");
+    expect(payload.html).toContain("$349.00");
+    expect(payload.html).toContain("Activation:");
+  });
+
+  it("omits the activation line when the approved amount is zero or missing", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_zero" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProposalEmail({
+      proposalId: "proposal-3",
+      versionNumber: 1,
+      to: "client@example.com",
+      publicUrl: "https://noon.com/maxwell/proposal/token-3",
+      projectTitle: "Client portal",
+      approvedAmountUsd: 0,
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+
+    expect(payload.text).not.toContain("Activation:");
+    expect(payload.html).not.toContain("Activation:");
   });
 });
 
