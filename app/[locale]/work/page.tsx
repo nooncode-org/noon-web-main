@@ -38,7 +38,7 @@ const CASES: CaseStudy[] = [
     metrics: ["20h → <3h / week", "−75% order processing time"],
     stack: ["Next.js", "Node.js", "Supabase", "Shopify API", "GPT-4o"],
     image: {
-      src: "/work/cs1-pallet.png",
+      src: "/work/cs1-ordwell.png",
       alt: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue",
       w: 1560,
       h: 980,
@@ -53,7 +53,7 @@ const CASES: CaseStudy[] = [
     metrics: ["−22% UX support tickets", "in the first 60 days"],
     stack: ["React", "TypeScript", "Tailwind"],
     image: {
-      src: "/work/cs2-tandem.png",
+      src: "/work/cs2-crewfield.png",
       alt: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed",
       w: 1560,
       h: 980,
@@ -68,7 +68,7 @@ const CASES: CaseStudy[] = [
     metrics: ["4 features in 90 days", "−60% production incidents"],
     stack: ["Next.js", "Python", "Supabase", "Vercel", "Claude 3.7 Sonnet"],
     image: {
-      src: "/work/cs3-vantage.png",
+      src: "/work/cs3-lotvane.png",
       alt: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables",
       w: 1560,
       h: 980,
@@ -83,7 +83,7 @@ const CASES: CaseStudy[] = [
     metrics: ["$4,200/mo identified", "2 tools → 1 integration"],
     stack: ["Audit", "Roadmap"],
     image: {
-      src: "/work/cs4-strata.png",
+      src: "/work/cs4-stackbrief.png",
       alt: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap",
       w: 1560,
       h: 980,
@@ -98,7 +98,7 @@ const CASES: CaseStudy[] = [
     metrics: ["No-shows 28% → 11%", "−40% admin time / appointment"],
     stack: ["Next.js", "Supabase", "Twilio", "Whisper", "Claude Opus 4.8"],
     image: {
-      src: "/work/cs5-cura.png",
+      src: "/work/cs5-visitra.png",
       alt: "Clinical scheduling app on desktop and mobile, with a weekly calendar, reminder timeline, and AI visit summary",
       w: 1760,
       h: 1000,
@@ -113,7 +113,7 @@ const CASES: CaseStudy[] = [
     metrics: ["+34% repeat purchases", "+28% AOV from members"],
     stack: ["Next.js", "Node.js", "Supabase", "Stripe", "Resend", "GPT-5.1"],
     image: {
-      src: "/work/cs6-ember.png",
+      src: "/work/cs6-embertide.png",
       alt: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
       w: 1560,
       h: 980,
