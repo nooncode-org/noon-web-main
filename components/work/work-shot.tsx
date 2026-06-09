@@ -78,7 +78,7 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
   return (
     <Dialog>
       <div className="group relative lg:left-1/2 lg:w-[min(94vw,1400px)] lg:-translate-x-1/2">
-        <div className="overflow-hidden rounded-[12px] border border-foreground/12 bg-card/30">
+        <div className="overflow-hidden rounded-[14px] border border-foreground/12 bg-card/30">
           <ScaledFrame frame={frame} interactive="lg" />
         </div>
 
@@ -87,7 +87,7 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
           <button
             type="button"
             aria-label={`View full size — ${frame.title}`}
-            className="absolute inset-0 cursor-zoom-in rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:hidden"
+            className="absolute inset-0 cursor-zoom-in rounded-[14px] outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:hidden"
           />
         </DialogTrigger>
 
