@@ -108,12 +108,16 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
         </DialogTrigger>
       </div>
 
+      {/* No dialog frame — border/padding/bg removed so only the mockup shows.
+         The previous border-foreground/15 read as a white hairline on top of
+         the dark mockups in dark theme (and p-2 was a white frame in light
+         theme); the mockup carries its own window border + 14px radius. */}
       <DialogContent
         aria-describedby={undefined}
-        className="block w-[min(96vw,1700px)] max-w-none gap-0 overflow-hidden border-foreground/15 bg-background p-2 sm:max-w-none"
+        className="block w-[min(96vw,1700px)] max-w-none gap-0 overflow-hidden rounded-[14px] border-transparent bg-transparent p-0 shadow-2xl sm:max-w-none"
       >
         <DialogTitle className="sr-only">{frame.title}</DialogTitle>
-        <div className="max-h-[88vh] overflow-auto overscroll-contain rounded-[8px]">
+        <div className="max-h-[88vh] overflow-auto overscroll-contain rounded-[14px]">
           <div className="w-full min-w-[1100px]">
             <ScaledFrame frame={frame} interactive="always" lazy={false} />
           </div>
