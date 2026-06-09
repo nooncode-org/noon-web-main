@@ -41,7 +41,11 @@ function ScaledFrame({
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
-    const measure = () => setScale(el.clientWidth / frame.w);
+    // +1px overscan: the scaled iframe otherwise lands ~0.2–0.4px short of its
+    // box (transform sub-pixel rounding), exposing the container bg as a hairline
+    // — invisible on light mockups, a white seam on the dark ones. Overscanning
+    // makes the iframe fully cover its box; overflow-hidden clips the sliver.
+    const measure = () => setScale((el.clientWidth + 1) / frame.w);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
