@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
@@ -22,6 +23,9 @@ type CaseStudy = {
   summary: string; // problem → what we built, condensed
   metrics: string[];
   stack: string[];
+  // Anonymized product recreation (Claude Design handoff → real-browser capture,
+  // design_handoff_noon_work/). Fictional product identity; disclosed below grid.
+  image: { src: string; alt: string; w: number; h: number };
 };
 
 const CASES: CaseStudy[] = [
@@ -33,6 +37,12 @@ const CASES: CaseStudy[] = [
       "Inventory in a spreadsheet, orders in the carrier portal, returns in a separate form — the team was the integration. We built an internal operations platform wired directly to Shopify and their 3PL, with AI return classification and customer-response drafting.",
     metrics: ["20h → <3h / week", "−75% order processing time"],
     stack: ["Next.js", "Node.js", "Supabase", "Shopify API", "GPT-4o"],
+    image: {
+      src: "/work/cs1-pallet.png",
+      alt: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue",
+      w: 1560,
+      h: 980,
+    },
   },
   {
     service: "Upgrade",
@@ -42,6 +52,12 @@ const CASES: CaseStudy[] = [
       "The product worked, but three years of growth without structure left inconsistent flows and an onboarding that confused users from day one. We did a full frontend rebuild — shorter flows, consistent navigation, a real-time dashboard with a clear hierarchy.",
     metrics: ["−22% UX support tickets", "in the first 60 days"],
     stack: ["React", "TypeScript", "Tailwind"],
+    image: {
+      src: "/work/cs2-tandem.png",
+      alt: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed",
+      w: 1560,
+      h: 980,
+    },
   },
   {
     service: "Engineering Support",
@@ -51,6 +67,12 @@ const CASES: CaseStudy[] = [
       "One technical founder was handling features, bugs, and infrastructure at once — everything bottlenecked. We embedded three developers as a direct extension of the team, with AI market-comparable analysis and buyer-report generation.",
     metrics: ["4 features in 90 days", "−60% production incidents"],
     stack: ["Next.js", "Python", "Supabase", "Vercel", "Claude 3.7 Sonnet"],
+    image: {
+      src: "/work/cs3-vantage.png",
+      alt: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables",
+      w: 1560,
+      h: 980,
+    },
   },
   {
     service: "Business Technology Audit",
@@ -60,6 +82,12 @@ const CASES: CaseStudy[] = [
       "12 SaaS tools accumulated over years — no one knew which overlapped, which to cut, or what was worth building. A two-week audit covered the full stack, vendor costs, and workflows, ending in a prioritized cut / keep / build plan.",
     metrics: ["$4,200/mo identified", "2 tools → 1 integration"],
     stack: ["Audit", "Roadmap"],
+    image: {
+      src: "/work/cs4-strata.png",
+      alt: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap",
+      w: 1560,
+      h: 980,
+    },
   },
   {
     service: "Custom Development",
@@ -69,6 +97,12 @@ const CASES: CaseStudy[] = [
       "Scheduling, reminders, and patient history lived across three disconnected systems, driving high no-shows and manual admin. We built a scheduling + patient-communication platform integrated with their clinical system, with consultation transcription and automated summaries.",
     metrics: ["No-shows 28% → 11%", "−40% admin time / appointment"],
     stack: ["Next.js", "Supabase", "Twilio", "Whisper", "Claude Opus 4.8"],
+    image: {
+      src: "/work/cs5-cura.png",
+      alt: "Clinical scheduling app on desktop and mobile, with a weekly calendar, reminder timeline, and AI visit summary",
+      w: 1760,
+      h: 1000,
+    },
   },
   {
     service: "Custom Development",
@@ -78,6 +112,12 @@ const CASES: CaseStudy[] = [
       "Repeat customers had no reason to return, and in-store and online purchase history lived in separate systems — so every campaign was manual and generic. We built a unified loyalty + automated marketing system across their POS and online store.",
     metrics: ["+34% repeat purchases", "+28% AOV from members"],
     stack: ["Next.js", "Node.js", "Supabase", "Stripe", "Resend", "GPT-5.1"],
+    image: {
+      src: "/work/cs6-ember.png",
+      alt: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
+      w: 1560,
+      h: 980,
+    },
   },
 ];
 
@@ -142,8 +182,20 @@ export default async function WorkPage({ params }: WorkPageProps) {
           {CASES.map((c) => (
             <article
               key={c.title}
-              className="flex flex-col rounded-[12px] border border-foreground/12 bg-card/30 p-6 lg:p-7"
+              className="flex flex-col overflow-hidden rounded-[12px] border border-foreground/12 bg-card/30 p-6 lg:p-7"
             >
+              {/* product shot — real-browser capture of the delivered product's
+                 anonymized recreation (backdrop + window shadow baked in) */}
+              <div className="-mx-6 -mt-6 mb-5 border-b border-foreground/10 lg:-mx-7 lg:-mt-7">
+                <Image
+                  src={c.image.src}
+                  alt={c.image.alt}
+                  width={c.image.w}
+                  height={c.image.h}
+                  sizes="(min-width: 1024px) 490px, 100vw"
+                  className="h-auto w-full"
+                />
+              </div>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
                   {c.service} · {c.sector}
@@ -178,6 +230,12 @@ export default async function WorkPage({ params }: WorkPageProps) {
             </article>
           ))}
         </div>
+
+        {/* honesty note — the shots are anonymized recreations, not client UIs */}
+        <p className="mx-auto mt-5 max-w-5xl text-center font-mono text-[10.5px] text-muted-foreground/55">
+          Interfaces shown are anonymized recreations of delivered products — names, brands, and
+          data have been changed to protect client confidentiality.
+        </p>
 
         {/* track record */}
         <div className="mx-auto mt-16 max-w-5xl lg:mt-20">

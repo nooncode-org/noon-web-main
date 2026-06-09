@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pallet — Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e9e9e6;
+    --app:#ffffff;
+    --panel:#fbfbfa;
+    --panel-2:#f6f6f4;
+    --border:#ececea;
+    --border-2:#e3e3e0;
+    --line:#f0f0ee;
+    --ink:#181815;
+    --ink-2:#5f5f59;
+    --ink-3:#9b9b93;
+    --green:#1f8a5b;
+    --green-bg:#e7f3ec;
+    --green-line:#cfe8da;
+    --amber:#a96e12;
+    --amber-bg:#f8f0dd;
+    --blue:#3a63b0;
+    --blue-bg:#e9eef8;
+    --rose:#b23b46;
+    --rose-bg:#f8e8ea;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(20,20,18,.04), 0 12px 40px rgba(20,20,18,.10), 0 40px 100px rgba(20,20,18,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #f1f1ef, var(--bg));
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden;
+  }
+  .iconify{font-size:18px;flex:none}
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .window{
+    width:1440px;background:var(--app);border-radius:14px;box-shadow:var(--shadow);
+    overflow:hidden;transform-origin:center center;border:1px solid rgba(0,0,0,.05);
+    display:flex;flex-direction:column;
+  }
+  /* browser chrome */
+  .chrome{height:46px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;
+    background:linear-gradient(#fbfbfa,#f4f4f2);border-bottom:1px solid var(--border-2)}
+  .lights{display:flex;gap:8px}
+  .lights span{width:12px;height:12px;border-radius:50%}
+  .lights span:nth-child(1){background:#f0605c}
+  .lights span:nth-child(2){background:#f5bd4f}
+  .lights span:nth-child(3){background:#61c454}
+  .navbtns{display:flex;gap:10px;color:var(--ink-3)}
+  .navbtns svg{width:17px;height:17px}
+  .url{flex:1;max-width:520px;height:28px;background:#fff;border:1px solid var(--border-2);
+    border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-2);font-size:12.5px}
+  .url svg{width:13px;height:13px;color:var(--green)}
+  .url .path{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:-.2px}
+  .url .path b{color:var(--ink);font-weight:500}
+  .chrome-right{margin-left:auto;display:flex;gap:14px;color:var(--ink-3)}
+  .chrome-right svg{width:17px;height:17px}
+
+  .app{flex:1;display:flex;min-height:0}
+
+  /* sidebar */
+  .sidebar{width:236px;flex:none;background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;padding:16px 0}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 18px 16px}
+  .logo{width:30px;height:30px;border-radius:8px;background:#181815;color:#fff;display:flex;align-items:center;justify-content:center}
+  .logo svg{width:17px;height:17px;stroke-width:2}
+  .brand .name{font-weight:700;font-size:16px;letter-spacing:-.3px}
+  .brand .badge{margin-left:auto;font-size:10px;color:var(--ink-3);border:1px solid var(--border-2);padding:2px 6px;border-radius:5px;font-weight:600;letter-spacing:.3px}
+  .nav{display:flex;flex-direction:column;gap:1px;padding:6px 12px}
+  .nav .label{font-size:10.5px;font-weight:600;letter-spacing:.6px;color:var(--ink-3);text-transform:uppercase;padding:14px 8px 6px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:7px 10px;border-radius:8px;color:var(--ink-2);font-size:13.5px;font-weight:500;text-decoration:none;position:relative}
+  .nav a svg{width:17px;height:17px;color:var(--ink-3)}
+  .nav a .ct{margin-left:auto;font-size:11px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;background:#fff;border:1px solid var(--border-2);padding:1px 6px;border-radius:20px}
+  .nav a.active{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.04);border:1px solid var(--border-2)}
+  .nav a.active svg{color:var(--green)}
+  .nav a:hover:not(.active){background:#fff}
+  .side-foot{margin-top:auto;padding:12px 14px 2px}
+  .wh{display:flex;align-items:center;gap:10px;padding:9px 11px;background:#fff;border:1px solid var(--border-2);border-radius:9px}
+  .wh svg{width:18px;height:18px;color:var(--ink-2)}
+  .wh .t{font-size:12.5px;font-weight:600;line-height:1.3;white-space:nowrap}
+  .wh .s{font-size:11px;color:var(--ink-3);line-height:1.3;white-space:nowrap}
+  .wh .car{margin-left:auto;color:var(--ink-3)}
+  .wh .car svg{width:14px;height:14px}
+
+  /* topbar */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--app)}
+  .topbar{height:62px;flex:none;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 28px}
+  .crumbs{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-3)}
+  .crumbs b{color:var(--ink);font-weight:600}
+  .crumbs svg{width:13px;height:13px}
+  .search{margin-left:8px;width:300px;height:34px;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:9px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--ink-3);font-size:13px}
+  .search svg{width:15px;height:15px}
+  .search .k{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10.5px;border:1px solid var(--border-2);background:#fff;border-radius:5px;padding:2px 6px;color:var(--ink-3)}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .icbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative}
+  .icbtn svg{width:17px;height:17px}
+  .icbtn .dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:2px solid #fff}
+  .me{display:flex;align-items:center;gap:9px;padding-left:6px}
+  .ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2f9e6f,#1f6f8a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700}
+  .me .t{font-size:12.5px;font-weight:600;line-height:1.3;white-space:nowrap}
+  .me .s{font-size:11px;color:var(--ink-3);line-height:1.3;white-space:nowrap}
+  .me .car svg{width:13px;height:13px;color:var(--ink-3)}
+
+  /* content */
+  .content{flex:1;padding:24px 28px 26px}
+  .page-head{display:flex;align-items:center;margin-bottom:18px}
+  .page-head h1{font-size:21px;font-weight:700;letter-spacing:-.5px}
+  .page-head .sub{font-size:12.5px;color:var(--ink-3);margin-top:2px;white-space:nowrap}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--green);font-weight:600;background:var(--green-bg);border:1px solid var(--green-line);padding:3px 9px;border-radius:20px;margin-left:12px;vertical-align:middle}
+  .live .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);position:relative}
+  .live .pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--green);opacity:.35;animation:pulse 1.8s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.5}100%{transform:scale(1.8);opacity:0}}
+  .ph-actions{margin-left:auto;display:flex;gap:9px}
+  .btn{height:34px;border-radius:9px;border:1px solid var(--border-2);background:#fff;display:flex;align-items:center;gap:7px;padding:0 13px;font-size:12.5px;font-weight:600;color:var(--ink);font-family:inherit;cursor:pointer}
+  .btn svg{width:15px;height:15px;color:var(--ink-2)}
+  .btn.primary{background:#181815;color:#fff;border-color:#181815}
+  .btn.primary svg{color:#fff}
+
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+  .metric{background:var(--app);border:1px solid var(--border);border-radius:var(--radius);padding:17px 18px;position:relative;overflow:hidden}
+  .metric .cap{font-size:12px;color:var(--ink-2);font-weight:500;display:flex;align-items:center;gap:7px}
+  .metric .cap svg{width:14px;height:14px;color:var(--ink-3)}
+  .metric .val{font-size:27px;font-weight:700;letter-spacing:-.7px;margin-top:9px;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:7px}
+  .metric .val small{font-size:13px;color:var(--ink-3);font-weight:600}
+  .chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;font-variant-numeric:tabular-nums}
+  .chip svg{width:11px;height:11px;stroke-width:2.5}
+  .chip.up{color:var(--green);background:var(--green-bg)}
+  .chip.down{color:var(--rose);background:var(--rose-bg)}
+  .chip.flat{color:var(--ink-2);background:var(--panel-2)}
+  .metric .foot{margin-top:11px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-3)}
+  .spark{position:absolute;right:14px;top:16px;width:74px;height:30px}
+
+  /* grid */
+  .grid{display:grid;grid-template-columns:1fr 376px;gap:16px;align-items:start}
+  .card{background:var(--app);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .card-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .card-head h2{font-size:14px;font-weight:700;letter-spacing:-.2px}
+  .card-head .meta{font-size:11.5px;color:var(--ink-3)}
+  .card-head .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .seg{display:flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:2px}
+  .seg span{font-size:11.5px;font-weight:600;color:var(--ink-3);padding:4px 10px;border-radius:6px;cursor:pointer}
+  .seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .linkbtn{font-size:12px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:4px}
+  .linkbtn svg{width:13px;height:13px}
+
+  /* table */
+  .tbl{flex:1;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+  thead th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+    color:var(--ink-3);padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  thead th.r,td.r{text-align:right}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:middle}
+  tbody tr:hover{background:var(--panel)}
+  .oid{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink);font-weight:500}
+  .cust{display:flex;align-items:center;gap:9px;min-width:0}
+  .cust > div:last-child{min-width:0;overflow:hidden;flex:1}
+  .cust .a{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#fff;flex:none}
+  .cust .n{font-weight:600;color:var(--ink);font-size:12.5px;white-space:nowrap;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+  .cust .e{font-size:10.5px;color:var(--ink-3);white-space:nowrap;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+  .money{font-family:"JetBrains Mono",monospace;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+  .chan{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);font-weight:500;white-space:nowrap}
+  .chan svg{width:14px;height:14px;color:var(--ink-3)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid transparent;white-space:nowrap}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.ok{color:var(--green);background:var(--green-bg);border-color:var(--green-line)}
+  .pill.ok .d{background:var(--green)}
+  .pill.proc{color:var(--amber);background:var(--amber-bg);border-color:#ecdcb4}
+  .pill.proc .d{background:var(--amber)}
+  .pill.new{color:var(--blue);background:var(--blue-bg);border-color:#d2ddf3}
+  .pill.new .d{background:var(--blue)}
+  .pill.hold{color:var(--ink-2);background:var(--panel-2);border-color:var(--border-2)}
+  .pill.hold .d{background:var(--ink-3)}
+  .tm{font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* returns queue */
+  .returns{flex:1;overflow:hidden;padding:6px 8px}
+  .ret{display:flex;align-items:flex-start;gap:12px;padding:12.5px 11px;border-radius:9px}
+  .ret:hover{background:var(--panel)}
+  .ret + .ret{border-top:1px solid var(--line)}
+  .ret .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
+  .ret .ic svg{width:17px;height:17px}
+  .ic.restock{background:var(--green-bg);color:var(--green)}
+  .ic.refund{background:var(--blue-bg);color:var(--blue)}
+  .ic.inspect{background:var(--amber-bg);color:var(--amber)}
+  .ic.damage{background:var(--rose-bg);color:var(--rose)}
+  .ret .body{flex:1;min-width:0}
+  .ret .l1{display:flex;align-items:center;gap:8px}
+  .ret .rid{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink);font-weight:500}
+  .ret .reason{font-size:12.5px;color:var(--ink);font-weight:600;margin-top:3px;line-height:1.25}
+  .ret .l3{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .tag{font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:2px 7px;border-radius:5px;text-transform:uppercase}
+  .tag.restock{background:var(--green-bg);color:var(--green)}
+  .tag.refund{background:var(--blue-bg);color:var(--blue)}
+  .tag.inspect{background:var(--amber-bg);color:var(--amber)}
+  .tag.damage{background:var(--rose-bg);color:var(--rose)}
+  .conf{font-size:10.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+  .conf .bar{width:42px;height:4px;border-radius:3px;background:var(--border-2);overflow:hidden}
+  .conf .bar i{display:block;height:100%;background:var(--green);border-radius:3px}
+  .ret .amt{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);font-weight:500;text-align:right}
+  .ret .ago{font-size:10.5px;color:var(--ink-3);text-align:right;margin-top:4px}
+  .ai-foot{padding:10px 14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-3)}
+  .ai-foot svg{width:14px;height:14px;color:var(--green)}
+  .ai-foot b{color:var(--ink-2);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="window" id="win" data-screen-label="CS1 — Pallet Operations">
+    <!-- browser chrome -->
+    <div class="chrome">
+      <div class="lights"><span></span><span></span><span></span></div>
+      <div class="navbtns"><i class="iconify" data-icon="tabler:chevron-left"></i><i class="iconify" data-icon="tabler:chevron-right"></i><i class="iconify" data-icon="tabler:rotate-clockwise"></i></div>
+      <div class="url"><i class="iconify" data-icon="tabler:lock"></i><span class="path">app.pallet.io<b>/operations</b></span></div>
+      <div class="chrome-right"><i class="iconify" data-icon="tabler:plus"></i><i class="iconify" data-icon="tabler:layout-grid"></i></div>
+    </div>
+
+    <div class="app">
+      <!-- sidebar -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo"><i class="iconify" data-icon="tabler:stack-2"></i></div>
+          <div class="name">Pallet</div>
+          <div class="badge">OPS</div>
+        </div>
+        <nav class="nav">
+          <a class="active" href="#"><i class="iconify" data-icon="tabler:layout-grid"></i>Overview</a>
+          <a href="#"><i class="iconify" data-icon="tabler:receipt"></i>Orders<span class="ct">1,284</span></a>
+          <a href="#"><i class="iconify" data-icon="tabler:package"></i>Inventory</a>
+          <a href="#"><i class="iconify" data-icon="tabler:rotate"></i>Returns<span class="ct">57</span></a>
+          <a href="#"><i class="iconify" data-icon="tabler:users"></i>Customers</a>
+          <a href="#"><i class="iconify" data-icon="tabler:building-store"></i>Channels</a>
+          <div class="label">Insights</div>
+          <a href="#"><i class="iconify" data-icon="tabler:trending-up"></i>Analytics</a>
+          <a href="#"><i class="iconify" data-icon="tabler:truck"></i>Shipping</a>
+          <a href="#"><i class="iconify" data-icon="tabler:settings"></i>Settings</a>
+        </nav>
+        <div class="side-foot">
+          <div class="wh">
+            <i class="iconify" data-icon="tabler:building-warehouse"></i>
+            <div><div class="t">Reno — DC West</div><div class="s">3 warehouses</div></div>
+            <span class="car"><i class="iconify" data-icon="tabler:selector"></i></span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- main -->
+      <main class="main">
+        <div class="topbar">
+          <div class="crumbs"><span>Workspace</span><i class="iconify" data-icon="tabler:chevron-right"></i><b>Operations</b></div>
+          <div class="search"><i class="iconify" data-icon="tabler:search"></i>Search orders, SKUs, customers…</div>
+          <div class="top-right">
+            <div class="icbtn"><i class="iconify" data-icon="tabler:bell"></i><span class="dot"></span></div>
+            <div class="icbtn"><i class="iconify" data-icon="tabler:help"></i></div>
+            <div class="me">
+              <div class="ava">MR</div>
+              <div><div class="t">Maya Reyes</div><div class="s">Ops lead</div></div>
+              <span class="car"><i class="iconify" data-icon="tabler:chevron-down"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <h1>Operations overview <span class="live"><span class="pulse"></span>Live</span></h1>
+              <div class="sub">Updated continuously · Monday, June 9 · 11:42 AM PT</div>
+            </div>
+            <div class="ph-actions">
+              <button class="btn"><i class="iconify" data-icon="tabler:calendar"></i>Today</button>
+              <button class="btn"><i class="iconify" data-icon="tabler:download"></i>Export</button>
+              <button class="btn primary"><i class="iconify" data-icon="tabler:plus"></i>New order</button>
+            </div>
+          </div>
+
+          <!-- metrics -->
+          <div class="metrics">
+            <div class="metric">
+              <div class="cap"><i class="iconify" data-icon="tabler:shopping-bag"></i>Open orders</div>
+              <div class="val">1,284 <span class="chip up"><i class="iconify" data-icon="tabler:arrow-up"></i>12.4%</span></div>
+              <div class="foot">342 awaiting fulfillment</div>
+              <svg class="spark" viewBox="0 0 74 30"><polyline points="0,22 12,18 24,21 36,12 48,15 60,7 74,5" fill="none" stroke="#1f8a5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="metric">
+              <div class="cap"><i class="iconify" data-icon="tabler:package"></i>Units in stock</div>
+              <div class="val">86,420 <span class="chip down"><i class="iconify" data-icon="tabler:arrow-down"></i>3.1%</span></div>
+              <div class="foot">14 SKUs below reorder point</div>
+              <svg class="spark" viewBox="0 0 74 30"><polyline points="0,6 12,9 24,8 36,14 48,13 60,19 74,21" fill="none" stroke="#b23b46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="metric">
+              <div class="cap"><i class="iconify" data-icon="tabler:rotate"></i>Returns in queue</div>
+              <div class="val">57 <span class="chip flat">98% auto</span></div>
+              <div class="foot">model-classified · 1 flagged</div>
+              <svg class="spark" viewBox="0 0 74 30"><polyline points="0,16 12,17 24,12 36,15 48,11 60,13 74,9" fill="none" stroke="#a96e12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="metric">
+              <div class="cap"><i class="iconify" data-icon="tabler:circle-check"></i>Fulfillment rate</div>
+              <div class="val">98.2<small>%</small> <span class="chip up"><i class="iconify" data-icon="tabler:arrow-up"></i>0.6</span></div>
+              <div class="foot">avg. handling 4.2h · SLA met</div>
+              <svg class="spark" viewBox="0 0 74 30"><polyline points="0,18 12,14 24,15 36,11 48,12 60,8 74,7" fill="none" stroke="#1f8a5b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <!-- grid -->
+          <div class="grid">
+            <section class="card">
+              <div class="card-head">
+                <h2>Live orders</h2>
+                <span class="meta">· 342 active</span>
+                <div class="right">
+                  <div class="seg"><span class="on">All</span><span>Unfulfilled</span><span>Flagged</span></div>
+                  <a class="linkbtn" href="#">View all <i class="iconify" data-icon="tabler:arrow-right"></i></a>
+                </div>
+              </div>
+              <div class="tbl">
+                <table>
+                  <colgroup><col style="width:88px"><col><col style="width:44px"><col style="width:88px"><col style="width:80px"><col style="width:100px"><col style="width:84px"></colgroup>
+                  <thead>
+                    <tr><th>Order</th><th>Customer</th><th>Items</th><th>Channel</th><th class="r">Total</th><th>Status</th><th class="r">Time</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="oid">#PAL-48217</td>
+                      <td><div class="cust"><div class="a" style="background:#2f9e6f">DK</div><div><div class="n">Devon Kerr</div><div class="e">d.kerr@gmail.com</div></div></div></td>
+                      <td>3</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:world"></i>Online</span></td>
+                      <td class="r money">$142.00</td>
+                      <td><span class="pill new"><span class="d"></span>New</span></td>
+                      <td class="r tm">just now</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48216</td>
+                      <td><div class="cust"><div class="a" style="background:#c47b2f">LM</div><div><div class="n">Lucia Marín</div><div class="e">lucia@outlook.com</div></div></div></td>
+                      <td>1</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:shopping-cart"></i>Amazon</span></td>
+                      <td class="r money">$58.50</td>
+                      <td><span class="pill proc"><span class="d"></span>Processing</span></td>
+                      <td class="r tm">2m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48215</td>
+                      <td><div class="cust"><div class="a" style="background:#3a63b0">TN</div><div><div class="n">Theo Nakamura</div><div class="e">theo.n@gmail.com</div></div></div></td>
+                      <td>6</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:building-store"></i>Retail POS</span></td>
+                      <td class="r money">$310.20</td>
+                      <td><span class="pill ok"><span class="d"></span>Fulfilled</span></td>
+                      <td class="r tm">4m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48214</td>
+                      <td><div class="cust"><div class="a" style="background:#8a5cc4">RB</div><div><div class="n">Renata Boyd</div><div class="e">renata@boyd.co</div></div></div></td>
+                      <td>2</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:world"></i>Online</span></td>
+                      <td class="r money">$94.00</td>
+                      <td><span class="pill proc"><span class="d"></span>Processing</span></td>
+                      <td class="r tm">7m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48213</td>
+                      <td><div class="cust"><div class="a" style="background:#b23b46">SC</div><div><div class="n">Sam Cho</div><div class="e">s.cho@gmail.com</div></div></div></td>
+                      <td>4</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:shopping-cart"></i>Amazon</span></td>
+                      <td class="r money">$176.75</td>
+                      <td><span class="pill hold"><span class="d"></span>On hold</span></td>
+                      <td class="r tm">11m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48212</td>
+                      <td><div class="cust"><div class="a" style="background:#1f6f8a">AO</div><div><div class="n">Amara Okafor</div><div class="e">amara.o@gmail.com</div></div></div></td>
+                      <td>1</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:world"></i>Online</span></td>
+                      <td class="r money">$39.99</td>
+                      <td><span class="pill ok"><span class="d"></span>Fulfilled</span></td>
+                      <td class="r tm">14m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48211</td>
+                      <td><div class="cust"><div class="a" style="background:#6b8a1f">JF</div><div><div class="n">Jonas Feld</div><div class="e">jonasf@gmail.com</div></div></div></td>
+                      <td>8</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:building-store"></i>Retail POS</span></td>
+                      <td class="r money">$522.40</td>
+                      <td><span class="pill ok"><span class="d"></span>Fulfilled</span></td>
+                      <td class="r tm">18m ago</td>
+                    </tr>
+                    <tr>
+                      <td class="oid">#PAL-48210</td>
+                      <td><div class="cust"><div class="a" style="background:#c4486f">EV</div><div><div class="n">Elena Vargas</div><div class="e">elena.v@gmail.com</div></div></div></td>
+                      <td>2</td>
+                      <td><span class="chan"><i class="iconify" data-icon="tabler:world"></i>Online</span></td>
+                      <td class="r money">$87.30</td>
+                      <td><span class="pill proc"><span class="d"></span>Processing</span></td>
+                      <td class="r tm">22m ago</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- returns queue -->
+            <section class="card">
+              <div class="card-head">
+                <h2>Returns queue</h2>
+                <div class="right"><a class="linkbtn" href="#">Manage <i class="iconify" data-icon="tabler:arrow-right"></i></a></div>
+              </div>
+              <div class="returns">
+                <div class="ret">
+                  <div class="ic restock"><i class="iconify" data-icon="tabler:refresh"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2204</span></div>
+                    <div class="reason">Wrong size — Merino Crew, M</div>
+                    <div class="l3"><span class="tag restock">Restock</span><span class="conf"><span class="bar"><i style="width:97%"></i></span>97%</span></div>
+                  </div>
+                  <div><div class="amt">$64.00</div><div class="ago">3m</div></div>
+                </div>
+                <div class="ret">
+                  <div class="ic refund"><i class="iconify" data-icon="tabler:rotate"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2203</span></div>
+                    <div class="reason">Changed mind — Canvas Tote</div>
+                    <div class="l3"><span class="tag refund">Refund</span><span class="conf"><span class="bar"><i style="width:94%"></i></span>94%</span></div>
+                  </div>
+                  <div><div class="amt">$38.00</div><div class="ago">9m</div></div>
+                </div>
+                <div class="ret">
+                  <div class="ic damage"><i class="iconify" data-icon="tabler:alert-triangle"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2202</span></div>
+                    <div class="reason">Arrived damaged — Ceramic Mug ×2</div>
+                    <div class="l3"><span class="tag damage">Damaged</span><span class="conf"><span class="bar"><i style="width:99%"></i></span>99%</span></div>
+                  </div>
+                  <div><div class="amt">$28.00</div><div class="ago">15m</div></div>
+                </div>
+                <div class="ret">
+                  <div class="ic inspect"><i class="iconify" data-icon="tabler:search"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2201</span></div>
+                    <div class="reason">Defect reported — Bluetooth Speaker</div>
+                    <div class="l3"><span class="tag inspect">Inspect</span><span class="conf"><span class="bar"><i style="width:71%;background:#a96e12"></i></span>71%</span></div>
+                  </div>
+                  <div><div class="amt">$120.00</div><div class="ago">26m</div></div>
+                </div>
+                <div class="ret">
+                  <div class="ic restock"><i class="iconify" data-icon="tabler:refresh"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2200</span></div>
+                    <div class="reason">Wrong color — Linen Shirt, Sand</div>
+                    <div class="l3"><span class="tag restock">Restock</span><span class="conf"><span class="bar"><i style="width:96%"></i></span>96%</span></div>
+                  </div>
+                  <div><div class="amt">$72.00</div><div class="ago">41m</div></div>
+                </div>
+                <div class="ret">
+                  <div class="ic refund"><i class="iconify" data-icon="tabler:rotate"></i></div>
+                  <div class="body">
+                    <div class="l1"><span class="rid">#RET-2199</span></div>
+                    <div class="reason">Late delivery — Trail Runners, 10</div>
+                    <div class="l3"><span class="tag refund">Refund</span><span class="conf"><span class="bar"><i style="width:88%"></i></span>88%</span></div>
+                  </div>
+                  <div><div class="amt">$110.00</div><div class="ago">52m</div></div>
+                </div>
+              </div>
+              <div class="ai-foot"><i class="iconify" data-icon="tabler:sparkles"></i><b>Auto-classified</b>&nbsp;· returns model v4</div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+<script>
+  function fit(){
+    const win=document.getElementById('win');
+    const pad=24;
+    const s=Math.min((window.innerWidth-pad)/1440,(window.innerHeight-pad)/win.offsetHeight);
+    win.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit);
+  window.addEventListener('load',fit);
+  fit();
+</script>
+</body>
+</html>
