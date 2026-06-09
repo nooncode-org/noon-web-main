@@ -77,7 +77,7 @@ function ScaledFrame({
 export function WorkShot({ frame }: { frame: WorkShotFrame }) {
   return (
     <Dialog>
-      <div className="group relative lg:left-1/2 lg:w-[min(94vw,1400px)] lg:-translate-x-1/2">
+      <div className="group relative">
         <div className="overflow-hidden rounded-[14px] border border-foreground/12 bg-card/30">
           <ScaledFrame frame={frame} interactive="lg" />
         </div>
