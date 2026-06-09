@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
+import { WorkShot } from "@/components/work/work-shot";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref } from "@/lib/site-config";
@@ -177,55 +177,47 @@ export default async function WorkPage({ params }: WorkPageProps) {
           </div>
         </div>
 
-        {/* case studies */}
-        <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-2">
-          {CASES.map((c) => (
-            <article
-              key={c.title}
-              className="flex flex-col overflow-hidden rounded-[12px] border border-foreground/12 bg-card/30 p-6 lg:p-7"
-            >
-              {/* product shot — real-browser capture of the delivered product's
-                 anonymized recreation (backdrop + window shadow baked in) */}
-              <div className="-mx-6 -mt-6 mb-5 border-b border-foreground/10 lg:-mx-7 lg:-mt-7">
-                <Image
-                  src={c.image.src}
-                  alt={c.image.alt}
-                  width={c.image.w}
-                  height={c.image.h}
-                  sizes="(min-width: 1024px) 490px, 100vw"
-                  className="h-auto w-full"
-                />
+        {/* case studies — showcase rows. A 2-col card grid rendered these
+           1440px-wide dashboards at ~490px (illegible); rows give the shot
+           ~640px inline and the WorkShot lightbox opens the full capture. */}
+        <div className="mx-auto max-w-6xl space-y-14 lg:space-y-24">
+          {CASES.map((c, i) => (
+            <article key={c.title} className="grid items-center gap-6 lg:grid-cols-12 lg:gap-12">
+              <div className={i % 2 === 1 ? "lg:order-2 lg:col-span-7" : "lg:col-span-7"}>
+                <WorkShot image={c.image} title={c.title} />
               </div>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
-                  {c.service} · {c.sector}
-                </span>
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/[0.06] px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wide text-primary">
-                  <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.25} /> Human-reviewed
-                </span>
-              </div>
-              <h2 className="text-[18px] font-semibold leading-snug tracking-[-0.015em] text-foreground lg:text-[20px]">
-                {c.title}
-              </h2>
-              <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{c.summary}</p>
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {c.metrics.map((m) => (
-                  <span
-                    key={m}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background px-2.5 py-1 text-[11.5px] font-medium text-foreground"
-                  >
-                    <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
-                    {m}
+              <div className={i % 2 === 1 ? "lg:order-1 lg:col-span-5" : "lg:col-span-5"}>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
+                    {c.service} · {c.sector}
                   </span>
-                ))}
-              </div>
-              <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4">
-                {c.stack.map((t, i) => (
-                  <span key={t} className="font-mono text-[10.5px] text-muted-foreground/60">
-                    {t}
-                    {i < c.stack.length - 1 && <span className="ml-3 text-muted-foreground/25">·</span>}
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/[0.06] px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wide text-primary">
+                    <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.25} /> Human-reviewed
                   </span>
-                ))}
+                </div>
+                <h2 className="mt-3 text-[20px] font-semibold leading-snug tracking-[-0.015em] text-foreground lg:text-[24px]">
+                  {c.title}
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{c.summary}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {c.metrics.map((m) => (
+                    <span
+                      key={m}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background px-2.5 py-1 text-[11.5px] font-medium text-foreground"
+                    >
+                      <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      {m}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {c.stack.map((t, j) => (
+                    <span key={t} className="font-mono text-[10.5px] text-muted-foreground/60">
+                      {t}
+                      {j < c.stack.length - 1 && <span className="ml-3 text-muted-foreground/25">·</span>}
+                    </span>
+                  ))}
+                </div>
               </div>
             </article>
           ))}
