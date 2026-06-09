@@ -40,7 +40,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs1-ordwell.html",
       w: 1440,
-      h: 953,
+      h: 951,
       desc: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue",
     },
   },
@@ -55,7 +55,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs2-crewfield.html",
       w: 1440,
-      h: 1020,
+      h: 1018,
       desc: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed",
     },
   },
@@ -70,7 +70,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs3-lotvane.html",
       w: 1440,
-      h: 977,
+      h: 975,
       desc: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables",
     },
   },
@@ -85,7 +85,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs4-stackbrief.html",
       w: 1440,
-      h: 1024,
+      h: 1022,
       desc: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap",
     },
   },
@@ -100,7 +100,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs5-visitra.html",
       w: 1584,
-      h: 756,
+      h: 754,
       desc: "Clinical scheduling app on desktop and mobile, with a weekly calendar, reminder timeline, and AI visit summary",
     },
   },
@@ -115,7 +115,7 @@ const CASES: CaseStudy[] = [
     mockup: {
       src: "/work/mockups/cs6-embertide.html",
       w: 1440,
-      h: 1024,
+      h: 1022,
       desc: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
     },
   },
