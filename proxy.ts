@@ -13,7 +13,9 @@ const bypassPatterns = [
   /^\/robots\.txt$/,
   /^\/sitemap\.xml$/,
   /^\/logo.*$/,
-  /^\/.*\.(png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$/,
+  // html → static showcase files in /public (e.g. /work/mockups/*.html) served
+  // as-is inside same-origin iframes; never locale-prefixed.
+  /^\/.*\.(png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|html)$/,
 ];
 
 export default function middleware(request: NextRequest) {

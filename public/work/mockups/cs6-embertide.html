@@ -1,0 +1,415 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embertide — Loyalty</title>
+
+
+
+<style>
+  :root{
+    --bg:#120e0c;
+    --app:#1a1512;
+    --panel:#211a16;
+    --panel-2:#2a211b;
+    --panel-3:#33281f;
+    --border:#352a22;
+    --border-2:#41342a;
+    --line:#2c231d;
+    --ink:#f5ede4;
+    --ink-2:#b6a899;
+    --ink-3:#7c6f62;
+    --gold:#e0a83e;
+    --gold-2:#c98f28;
+    --gold-bg:rgba(224,168,62,.14);
+    --gold-line:rgba(224,168,62,.3);
+    --coral:#e4795f;
+    --coral-bg:rgba(228,121,95,.14);
+    --green:#5cbf8a;
+    --green-bg:rgba(92,191,138,.15);
+    --rose:#dd6a78;
+    --plat:#d7dde4;--goldt:#e0a83e;--silv:#aab2bc;--bronze:#c08457;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 50px rgba(0,0,0,.5), 0 50px 120px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:radial-gradient(1200px 600px at 50% -10%, #1c1510, var(--bg));
+    font-family:"Outfit",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .iconify{font-size:18px;flex:none}
+  .num{font-variant-numeric:tabular-nums}
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .window{width:1440px;background:var(--app);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;
+    transform-origin:center center;border:1px solid #2a221c;display:flex;flex-direction:column}
+
+  .chrome{height:44px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;background:#16110e;border-bottom:1px solid #271f19}
+  .lights{display:flex;gap:8px}.lights span{width:12px;height:12px;border-radius:50%}
+  .lights span:nth-child(1){background:#f0605c}.lights span:nth-child(2){background:#f5bd4f}.lights span:nth-child(3){background:#61c454}
+  .url{flex:1;max-width:460px;height:27px;background:#221a15;border:1px solid #382c24;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-2);font-size:12px;white-space:nowrap;overflow:hidden}
+  .url svg{width:13px;height:13px;color:var(--green)}.url b{color:var(--ink);font-weight:600}
+  .chrome-right{margin-left:auto;display:flex;gap:14px;color:var(--ink-3)}.chrome-right svg{width:16px;height:16px}
+
+  .topbar{height:60px;flex:none;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:var(--panel)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(150deg,var(--gold),var(--coral));color:#2a1605;display:flex;align-items:center;justify-content:center}
+  .logo svg{width:18px;height:18px;stroke-width:2.4}
+  .brand .name{font-weight:800;font-size:18px;letter-spacing:-.4px}
+  .store{display:flex;align-items:center;gap:9px;margin-left:8px;padding:6px 11px;border:1px solid var(--border-2);border-radius:9px;font-size:13px;font-weight:600;white-space:nowrap}
+  .store .sa{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--coral),#b9524a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+  .store svg{width:13px;height:13px;color:var(--ink-3)}
+  .tsearch{margin-left:6px;width:240px;height:36px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:10px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--ink-3);font-size:13px}
+  .tsearch svg{width:15px;height:15px}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:11px}
+  .range{height:36px;border:1px solid var(--border-2);background:var(--panel-2);border-radius:10px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .range svg{width:15px;height:15px;color:var(--ink-3)}
+  .iconb{width:36px;height:36px;border-radius:10px;border:1px solid var(--border-2);background:var(--panel-2);display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative}
+  .iconb svg{width:17px;height:17px}.iconb .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--coral);border:2px solid var(--panel)}
+  .uava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--coral));color:#2a1605;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+
+  .app{flex:1;display:flex;min-height:0}
+  .sidebar{width:212px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 0}
+  .nav{display:flex;flex-direction:column;gap:2px;padding:4px 12px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--ink-2);font-size:13.5px;font-weight:600;text-decoration:none}
+  .nav a svg{width:18px;height:18px;color:var(--ink-3)}
+  .nav a .ct{margin-left:auto;font-size:11px;color:var(--gold);font-weight:700;background:var(--gold-bg);padding:1px 7px;border-radius:20px}
+  .nav a.active{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-line)}
+  .nav a.active svg{color:var(--gold)}
+  .nav .label{font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--ink-3);text-transform:uppercase;padding:14px 10px 6px}
+  .side-foot{margin-top:auto;padding:12px 14px 2px}
+  .upsell{padding:13px;border-radius:12px;background:linear-gradient(150deg,var(--gold-bg),var(--coral-bg));border:1px solid var(--border-2)}
+  .upsell .t{font-size:12.5px;font-weight:700}
+  .upsell .s{font-size:11px;color:var(--ink-2);margin-top:3px;line-height:1.35}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--app)}
+  .content{flex:1;padding:22px 24px 24px;overflow:hidden}
+  .phead{display:flex;align-items:flex-end;margin-bottom:18px}
+  .phead h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .phead .s{font-size:13px;color:var(--ink-2);margin-top:3px}
+  .phead .right{margin-left:auto;display:flex;gap:9px}
+  .pbtn{height:36px;border-radius:10px;border:1px solid var(--border-2);background:var(--panel-2);display:flex;align-items:center;gap:7px;padding:0 13px;font-size:12.5px;font-weight:600;color:var(--ink);font-family:inherit}
+  .pbtn svg{width:15px;height:15px;color:var(--ink-2)}
+  .pbtn.gold{background:linear-gradient(150deg,var(--gold),var(--gold-2));color:#2a1605;border:none;font-weight:700}.pbtn.gold svg{color:#2a1605}
+
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;position:relative;overflow:hidden}
+  .metric .cap{font-size:12px;color:var(--ink-2);font-weight:600;display:flex;align-items:center;gap:8px}
+  .metric .cap .mi{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .metric .cap .mi svg{width:14px;height:14px}
+  .mi.gold{background:var(--gold-bg);color:var(--gold)}.mi.coral{background:var(--coral-bg);color:var(--coral)}
+  .mi.green{background:var(--green-bg);color:var(--green)}.mi.plat{background:rgba(215,221,228,.13);color:var(--plat)}
+  .metric .val{font-size:27px;font-weight:800;letter-spacing:-.7px;margin-top:11px;display:flex;align-items:baseline;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px}
+  .chip svg{width:11px;height:11px;stroke-width:2.6}
+  .chip.up{color:var(--green);background:var(--green-bg)}
+  .chip.gold{color:var(--gold);background:var(--gold-bg)}
+  .metric .foot{margin-top:7px;font-size:11.5px;color:var(--ink-3)}
+  .spark{position:absolute;right:14px;top:15px;width:66px;height:28px}
+  /* KPI ribbon (distinct from CS1 cards) */
+  .kpibar{display:flex;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 6px;margin-bottom:16px}
+  .kpi{flex:1;display:flex;align-items:center;gap:13px;padding:0 20px}
+  .kpi .mi{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .kpi .mi svg{width:19px;height:19px}
+  .kdiv{width:1px;align-self:stretch;background:var(--border);margin:3px 0}
+  .kt .kl{font-size:11.5px;color:var(--ink-2);font-weight:600;white-space:nowrap}
+  .kt .kv{font-size:23px;font-weight:800;letter-spacing:-.6px;margin-top:4px;display:flex;align-items:baseline;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .cols{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .card + .card{margin-top:16px}
+  .ch{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .ch h2{font-size:14.5px;font-weight:700;letter-spacing:-.2px;white-space:nowrap}
+  .ch .meta{font-size:12px;color:var(--ink-3);font-weight:600;white-space:nowrap}
+  .ch .right{margin-left:auto}
+  .lk{font-size:12.5px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:4px;white-space:nowrap}.lk svg{width:14px;height:14px}
+
+  /* campaigns table */
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  thead th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);padding:10px 16px;border-bottom:1px solid var(--line)}
+  thead th.r,td.r{text-align:right}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  .cmp{display:flex;align-items:center;gap:11px}
+  .cmp .ci{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center}
+  .cmp .ci svg{width:17px;height:17px}
+  .cmp > div:last-child{min-width:0;flex:1}
+  .cmp .cn{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmp .cstat{font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px}
+  .cmp .cstat .d{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .tbadge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+  .tb-welcome{color:var(--green);background:var(--green-bg)}
+  .tb-winback{color:var(--coral);background:var(--coral-bg)}
+  .tb-vip{color:var(--gold);background:var(--gold-bg)}
+  .tb-life{color:var(--plat);background:rgba(215,221,228,.12)}
+  .rev{font-weight:800;font-variant-numeric:tabular-nums}
+  .conv{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .conv .bar{width:48px;height:6px;border-radius:4px;background:var(--panel-3);overflow:hidden}
+  .conv .bar i{display:block;height:100%;background:var(--gold);border-radius:4px}
+  .conv .pc{font-size:12px;font-weight:700;width:34px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* tiers */
+  .tiers{padding:8px 16px 14px}
+  .tier{padding:11px 0}
+  .tier + .tier{border-top:1px solid var(--line)}
+  .tier .tt{display:flex;align-items:center;gap:9px}
+  .tier .gem{width:11px;height:11px;border-radius:3px;transform:rotate(45deg)}
+  .tier .tn{font-size:13px;font-weight:700}
+  .tier .tm{margin-left:auto;font-size:12px;color:var(--ink-2);font-weight:600;font-variant-numeric:tabular-nums}
+  .tier .tbar{height:7px;border-radius:5px;background:var(--panel-3);margin-top:8px;overflow:hidden}
+  .tier .tbar i{display:block;height:100%;border-radius:5px}
+  .tier .tx{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:5px}
+
+  /* points feed */
+  .feed{padding:8px 8px}
+  .fr{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px}
+  .fr + .fr{border-top:1px solid var(--line)}
+  .fr .fa{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#241404}
+  .fr .ft{flex:1;min-width:0;font-size:12.5px;line-height:1.35}
+  .fr .ft b{font-weight:700}
+  .fr .ft .sub{font-size:11px;color:var(--ink-3)}
+  .fr .pts{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pts.earn{color:var(--green)}.pts.redeem{color:var(--coral)}.pts.tier{color:var(--gold)}
+  /* revenue chart */
+  .chartwrap{padding:18px 18px 14px}
+  .bars{display:flex;align-items:flex-end;gap:11px;height:150px}
+  .bars .b{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#cf952f,#7a5417)}
+  .bars .b.cur{background:linear-gradient(180deg,#f1c059,#e0a83e)}
+  .xlabels{display:flex;gap:11px;margin-top:9px}
+  .xlabels span{flex:1;text-align:center;font-size:10px;color:var(--ink-3);font-weight:600}
+</style>
+<style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/work/mockups/fonts/Outfit-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/work/mockups/fonts/Outfit-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/work/mockups/fonts/Outfit-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/work/mockups/fonts/Outfit-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/work/mockups/fonts/Outfit-800.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+</style></head>
+<body>
+<div class="stage">
+  <div class="window" id="win" data-screen-label="CS6 — Embertide Loyalty" style="transform: scale(0.930867);">
+    <div class="chrome">
+      <div class="lights"><span></span><span></span><span></span></div>
+      <div class="url"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:lock-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M6 8a6 6 0 1 1 12 0h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2zm6-4a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4m2 10a2 2 0 0 1-1 1.732V17a1 1 0 1 1-2 0v-1.268A2 2 0 0 1 12 12a2 2 0 0 1 2 2"></path></g></svg>app.embertide.io<b>/loyalty/overview</b></div>
+      <div class="chrome-right"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:add-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M10.5 20a1.5 1.5 0 0 0 3 0v-6.5H20a1.5 1.5 0 0 0 0-3h-6.5V4a1.5 1.5 0 0 0-3 0v6.5H4a1.5 1.5 0 0 0 0 3h6.5z"></path></g></svg><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:grid-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2zm10 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2zM9 3a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm10 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></g></svg></div>
+    </div>
+
+    <div class="topbar">
+      <div class="brand"><div class="logo"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:fire-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="m11.514 2.142l-1.26-.755l-.24 1.449C9.632 5.124 8.069 7.25 6.345 8.744C2.97 11.67 2.231 14.85 3.276 17.475c1 2.512 3.538 4.232 6.114 4.519l.596.066c-1.474-.901-2.42-3.006-2.09-4.579c.326-1.546 1.438-2.994 3.574-4.33l1.077-.672l.402 1.205c.237.712.647 1.284 1.064 1.865c.2.28.403.563.589.864c.643 1.045.813 2.207.398 3.36c-.378 1.048-1.001 1.872-1.86 2.329l.97-.108c2.418-.269 4.193-1.096 5.346-2.479C20.599 18.144 21 16.379 21 14.5c0-1.75-.719-3.554-1.567-5.055c-.994-1.758-2.291-3.218-3.707-4.633c-.245.49-.226.688-.73 1.475a8.15 8.15 0 0 0-3.482-4.145"></path></g></svg></div><div class="name">Embertide</div></div>
+      <div class="store"><div class="sa">LB</div>Lumière Beauty<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:down-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13.06 16.06a1.5 1.5 0 0 1-2.12 0l-5.658-5.656a1.5 1.5 0 1 1 2.122-2.121L12 12.879l4.596-4.596a1.5 1.5 0 0 1 2.122 2.12l-5.657 5.658Z"></path></g></svg></div>
+      <div class="tsearch"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:search-2-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M5.5 10a4.5 4.5 0 1 1 9 0a4.5 4.5 0 0 1-9 0M10 2.5a7.5 7.5 0 1 0 4.136 13.757l4.803 4.804a1.5 1.5 0 0 0 2.122-2.122l-4.804-4.803A7.5 7.5 0 0 0 10 2.5"></path></g></svg>Search campaigns, segments…</div>
+      <div class="top-right">
+        <div class="range"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:calendar-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7zm-5-9a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3H3V7a2 2 0 0 1 2-2h2V4a1 1 0 0 1 2 0v1h6V4a1 1 0 0 1 1-1"></path></g></svg>Last 90 days</div>
+        <div class="iconb"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:notification-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7v3.528a1 1 0 0 1-.105.447l-1.717 3.433A1.1 1.1 0 0 0 4.162 18h15.676a1.1 1.1 0 0 0 .984-1.592l-1.716-3.433a1 1 0 0 1-.106-.447V9a7 7 0 0 0-7-7m0 19a3 3 0 0 1-2.83-2h5.66A3 3 0 0 1 12 21"></path></g></svg><span class="dot"></span></div>
+        <div class="uava">MR</div>
+      </div>
+    </div>
+
+    <div class="app">
+      <aside class="sidebar">
+        <nav class="nav">
+          <a class="active" href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:dashboard-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13 2.05A10 10 0 0 1 21.95 11H20a1 1 0 0 0 0 2h1.95c-.501 5.053-4.765 9-9.95 9s-9.449-3.947-9.95-9H4a1 1 0 1 0 0-2H2.05A10 10 0 0 1 11 2.05V4a1 1 0 0 0 2 0zm4.78 4.17l-4.843 2.465l-.373.197l-.61.31c-.72.37-1.454.772-2.005 1.323c-.971.972-1.089 2.588-.07 3.606c1.018 1.019 2.634.901 3.606-.07c.472-.472.835-1.078 1.162-1.696l.471-.919l.362-.698zm-4.618 4.618l-.112.21l-.113.216c-.209.402-.426.822-.698 1.172l-.168.2c-.278.278-.625.224-.778.071c-.138-.138-.196-.432-.003-.692l.073-.085c.319-.294.724-.526 1.13-.74l.243-.127q.22-.113.426-.225"></path></g></svg>Overview</a>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:send-plane-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="m21.433 4.861l-6 15.5a1 1 0 0 1-1.624.362l-3.382-3.235l-2.074 2.073a.5.5 0 0 1-.853-.354v-4.519L2.309 9.723a1 1 0 0 1 .442-1.691l17.5-4.5a1 1 0 0 1 1.181 1.329ZM19 6.001L8.032 13.152l1.735 1.66L19 6Z"></path></g></svg>Campaigns<span class="ct">9</span></a>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:group-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13 13a4 4 0 0 1 4 4v1.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 2 18.5V17a4 4 0 0 1 4-4zm6 0a3 3 0 0 1 3 3v1.5a1.5 1.5 0 0 1-1.5 1.5H19v-2a5 5 0 0 0-2-4zM9.5 3a4.5 4.5 0 1 1 0 9a4.5 4.5 0 0 1 0-9M18 6a3 3 0 1 1 0 6a3 3 0 0 1 0-6"></path></g></svg>Segments</a>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:vip-2-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M12.987 5.74a2 2 0 1 0-1.97.002l-.01.018c-.655 1.367-1.565 3.325-2.97 4.06c-1.154.603-2.81.3-4.04.074a1.5 1.5 0 1 0-1.772 1.58l2.948 7.61A3 3 0 0 0 7.97 21h8.06a3 3 0 0 0 2.797-1.916l2.947-7.61a1.5 1.5 0 1 0-1.767-1.624c-1.259.163-2.882.371-4.044-.236c-1.377-.72-2.3-2.543-2.976-3.874"></path></g></svg>Loyalty tiers</a>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:gift-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M20 13v5a3 3 0 0 1-3 3h-4v-8zm-9 0v8H7a3 3 0 0 1-3-3v-5zM9 2a4 4 0 0 1 3 1.354A4 4 0 0 1 15 2h.5A1.5 1.5 0 0 1 17 3.5V4c0 .729-.195 1.412-.535 2H19a2 2 0 0 1 2 2v2c0 .364-.097.706-.268 1H13V8a1 1 0 1 0-2 0v3H3.268A2 2 0 0 1 3 10V8a2 2 0 0 1 2-2h2.535A4 4 0 0 1 7 4v-.5A1.5 1.5 0 0 1 8.5 2Zm0 2a2 2 0 0 0 2 2a2 2 0 0 0-2-2m6 0a2 2 0 0 0-2 2a2 2 0 0 0 2-2"></path></g></svg>Rewards</a>
+          <div class="label">Insights</div>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:chart-bar-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13 3a2 2 0 0 1 1.995 1.85L15 5v16H9V5a2 2 0 0 1 1.85-1.995L11 3zm7 5a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3V8zM7 11v10H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z"></path></g></svg>Analytics</a>
+          <a href="#"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:settings-3-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M9.965 2.809a1.51 1.51 0 0 0-1.401-.203a10 10 0 0 0-2.982 1.725a1.51 1.51 0 0 0-.524 1.313c.075.753-.058 1.48-.42 2.106c-.361.627-.925 1.106-1.615 1.417a1.51 1.51 0 0 0-.875 1.113a10 10 0 0 0 0 3.44c.093.537.46.926.875 1.114c.69.31 1.254.79 1.616 1.416c.361.627.494 1.353.419 2.106c-.045.452.107.964.524 1.313a10 10 0 0 0 2.982 1.725a1.51 1.51 0 0 0 1.4-.203c.615-.442 1.312-.691 2.036-.691s1.42.249 2.035.691c.37.266.89.39 1.401.203a10 10 0 0 0 2.982-1.725c.417-.349.57-.86.524-1.313c-.075-.753.057-1.48.42-2.106c.361-.627.925-1.105 1.615-1.416c.414-.187.782-.577.875-1.114a10 10 0 0 0 0-3.44a1.51 1.51 0 0 0-.875-1.113c-.69-.311-1.254-.79-1.616-1.417c-.362-.626-.494-1.353-.419-2.106a1.51 1.51 0 0 0-.524-1.313a10 10 0 0 0-2.982-1.725a1.51 1.51 0 0 0-1.4.203C13.42 3.25 12.723 3.5 12 3.5s-1.42-.249-2.035-.691M9 12a3 3 0 1 1 6 0a3 3 0 0 1-6 0"></path></g></svg>Settings</a>
+        </nav>
+        <div class="side-foot">
+          <div class="upsell">
+            <div class="t">Win back lapsed VIPs</div>
+            <div class="s">312 high-value members at risk. Launch a flow →</div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <div class="phead">
+            <div>
+              <h1>Loyalty &amp; lifecycle</h1>
+              <div class="s">Lumière Beauty · loyalty program performance · last 90 days</div>
+            </div>
+            <div class="right">
+              <button class="pbtn"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:download-2-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M20 14.5a1.5 1.5 0 0 1 1.5 1.5v4a2.5 2.5 0 0 1-2.5 2.5H5A2.5 2.5 0 0 1 2.5 20v-4a1.5 1.5 0 0 1 3 0v3.5h13V16a1.5 1.5 0 0 1 1.5-1.5m-8-13A1.5 1.5 0 0 1 13.5 3v9.036l1.682-1.682a1.5 1.5 0 0 1 2.121 2.12l-4.066 4.067a1.75 1.75 0 0 1-2.474 0l-4.066-4.066a1.5 1.5 0 0 1 2.121-2.121l1.682 1.682V3A1.5 1.5 0 0 1 12 1.5"></path></g></svg>Export</button>
+              <button class="pbtn gold"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:add-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M10.5 20a1.5 1.5 0 0 0 3 0v-6.5H20a1.5 1.5 0 0 0 0-3h-6.5V4a1.5 1.5 0 0 0-3 0v6.5H4a1.5 1.5 0 0 0 0 3h6.5z"></path></g></svg>New campaign</button>
+            </div>
+          </div>
+
+          <div class="kpibar">
+            <div class="kpi"><span class="mi gold"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:group-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13 13a4 4 0 0 1 4 4v1.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 2 18.5V17a4 4 0 0 1 4-4zm6 0a3 3 0 0 1 3 3v1.5a1.5 1.5 0 0 1-1.5 1.5H19v-2a5 5 0 0 0-2-4zM9.5 3a4.5 4.5 0 1 1 0 9a4.5 4.5 0 0 1 0-9M18 6a3 3 0 1 1 0 6a3 3 0 0 1 0-6"></path></g></svg></span><div class="kt"><div class="kl">Active members</div><div class="kv">48,240 <span class="chip up"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:arrow-up-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13.06 3.283a1.5 1.5 0 0 0-2.12 0L5.281 8.939a1.5 1.5 0 0 0 2.122 2.122L10.5 7.965V19.5a1.5 1.5 0 0 0 3 0V7.965l3.096 3.096a1.5 1.5 0 1 0 2.122-2.122z"></path></g></svg>6.2%</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi coral"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:repeat-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M0 0v24h24V0zm11.407 23.258l.011.002l.071.035l.02.004l.014-.004l.071-.036q.016-.004.024.006l.004.01l.017.428l-.005.02l-.01.013l-.104.074l-.015.004l-.012-.004l-.104-.074l-.012-.016l-.004-.017l.017-.427q.004-.016.016-.018Zm-.265-.113l.014.002l.184.093l.01.01l.003.011l-.018.43l-.005.012l-.008.008l-.201.092a.03.03 0 0 1-.029-.008l-.004-.014l.034-.614q.005-.018.02-.022m.715.002a.02.02 0 0 1 .027.006l.006.014l.034.614q-.001.018-.017.024l-.015-.002l-.201-.093l-.01-.008l-.003-.011l-.018-.43l.003-.012l.01-.01z"></path><path fill="currentColor" d="M20 9.5a1.5 1.5 0 0 1 1.493 1.356L21.5 11v4a4.5 4.5 0 0 1-4.288 4.495L17 19.5H8.56l-.02.312l-.011.14c-.056.719-.749 1.17-1.331.865l-.314-.168l-.368-.209l-.203-.119l-.439-.269a21 21 0 0 1-.922-.617l-.385-.28l-.323-.245l-.137-.107c-.489-.39-.47-1.195.05-1.606l.136-.107l.32-.242l.38-.275l.438-.301a22 22 0 0 1 .714-.457l.426-.255l.375-.211l.316-.17c.577-.3 1.207.085 1.262.756l.038.565H17a1.5 1.5 0 0 0 1.493-1.356L18.5 15v-4A1.5 1.5 0 0 1 20 9.5m-3.198-6.317l.314.168l.368.209q.1.056.203.119l.439.269a21 21 0 0 1 .922.617l.385.28l.323.245l.137.107c.489.39.47 1.195-.05 1.606l-.136.107l-.32.242l-.38.275a22 22 0 0 1-1.152.758l-.426.255l-.375.211l-.316.17c-.577.3-1.207-.085-1.261-.756l-.04-.565H7A1.5 1.5 0 0 0 5.5 9v4a1.5 1.5 0 0 1-3 0V9A4.5 4.5 0 0 1 7 4.5h8.44l.031-.452c.056-.719.749-1.17 1.331-.865"></path></g></svg></span><div class="kt"><div class="kl">Repeat purchase rate</div><div class="kv">38.4% <span class="chip up"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:arrow-up-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13.06 3.283a1.5 1.5 0 0 0-2.12 0L5.281 8.939a1.5 1.5 0 0 0 2.122 2.122L10.5 7.965V19.5a1.5 1.5 0 0 0 3 0V7.965l3.096 3.096a1.5 1.5 0 1 0 2.122-2.122z"></path></g></svg>4.1</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi green"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:coin-2-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M21 16.143V17.5c0 .814-.381 1.51-.91 2.057c-.523.542-1.233.984-2.032 1.334C16.456 21.591 14.314 22 12 22s-4.456-.408-6.058-1.109c-.799-.35-1.509-.792-2.032-1.334c-.485-.5-.845-1.128-.902-1.856L3 17.5v-1.357q.697.398 1.494.695c2.03.751 4.685 1.17 7.506 1.17s5.476-.419 7.506-1.17q.598-.222 1.139-.503zm-18-5.5q.697.398 1.494.695c2.03.751 4.685 1.17 7.506 1.17s5.476-.419 7.506-1.17A10 10 0 0 0 21 10.643v3.105a8.3 8.3 0 0 1-2.188 1.214c-1.755.65-4.164 1.047-6.812 1.047c-2.647 0-5.056-.397-6.812-1.047A8.3 8.3 0 0 1 3 13.748zM12 3c2.314 0 4.456.408 6.058 1.109c.799.35 1.509.792 2.032 1.334c.485.5.845 1.128.902 1.856L21 7.5v.748a8.3 8.3 0 0 1-2.188 1.214c-1.755.65-4.164 1.047-6.812 1.047c-2.647 0-5.056-.397-6.812-1.047a8.3 8.3 0 0 1-1.905-1.006L3 8.248V7.5c0-.814.381-1.51.91-2.057c.523-.542 1.233-.984 2.032-1.334C7.544 3.409 9.686 3 12 3"></path></g></svg></span><div class="kt"><div class="kl">Loyalty revenue</div><div class="kv">$284K <span class="chip up"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:arrow-up-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M13.06 3.283a1.5 1.5 0 0 0-2.12 0L5.281 8.939a1.5 1.5 0 0 0 2.122 2.122L10.5 7.965V19.5a1.5 1.5 0 0 0 3 0V7.965l3.096 3.096a1.5 1.5 0 1 0 2.122-2.122z"></path></g></svg>11%</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi plat"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:sparkles-2-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M14 6.24c.335 0 .588.141.777.342c.305.324.434.801.624 1.196a11.7 11.7 0 0 0 4.429 4.91l.434.257c.393.239.735.518.736 1.053c.001.732-.636.986-1.17 1.313a11.7 11.7 0 0 0-4.429 4.91c-.19.396-.32.873-.624 1.197c-.188.201-.442.342-.777.342s-.589-.141-.777-.342c-.176-.187-.292-.422-.395-.662l-.15-.36a4 4 0 0 0-.079-.174a11.7 11.7 0 0 0-4.429-4.91l-.321-.191c-.433-.26-.85-.556-.849-1.123c.002-.73.637-.982 1.17-1.309a11.7 11.7 0 0 0 4.429-4.91c.19-.396.32-.873.624-1.197c.188-.2.442-.342.777-.342m-7.253-.415c.149.183.238.39.34.601c.274.57.688 1.06 1.201 1.422l.198.13c.856.525.888 1.41.12 1.964l-.12.08a3.7 3.7 0 0 0-1.4 1.552l-.114.242c-.097.2-.21.391-.406.518c-.315.202-.817.202-1.132 0c-.265-.17-.39-.488-.52-.76a3.7 3.7 0 0 0-1.4-1.552c-.178-.11-.348-.213-.495-.367a1.08 1.08 0 0 1 .001-1.312c.15-.156.31-.252.495-.365a3.7 3.7 0 0 0 1.399-1.552c.104-.216.187-.414.34-.6a1.07 1.07 0 0 1 1.493 0ZM10 2a1 1 0 0 1 1 1a1 1 0 1 1 0 2a1 1 0 1 1-2 0a1 1 0 1 1 0-2a1 1 0 0 1 1-1"></path></g></svg></span><div class="kt"><div class="kl">Points redeemed</div><div class="kv">1.24M <span class="chip gold">68% rate</span></div></div></div>
+          </div>
+
+          <div class="cols">
+            <div>
+            <section class="card">
+              <div class="ch"><h2>Active campaigns</h2><span class="meta">· 5 automations running</span><div class="right"><a class="lk" href="#">All campaigns <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:arrow-right-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="m15.06 5.283l5.657 5.657a1.5 1.5 0 0 1 0 2.12l-5.656 5.658a1.5 1.5 0 0 1-2.122-2.122l3.096-3.096H4.5a1.5 1.5 0 0 1 0-3h11.535L12.94 7.404a1.5 1.5 0 0 1 2.122-2.121Z"></path></g></svg></a></div></div>
+              <table>
+                <colgroup><col style="width:34%"><col style="width:16%"><col style="width:15%"><col style="width:15%"><col style="width:20%"></colgroup>
+                <thead>
+                  <tr><th>Campaign</th><th>Type</th><th class="r">Audience</th><th class="r">Revenue</th><th class="r">Conversion</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--green-bg);color:var(--green)"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:heart-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M18.494 3.801c2.095 1.221 3.569 3.7 3.504 6.592C21.86 16.5 13.5 21 12 21s-9.861-4.5-9.998-10.607c-.065-2.892 1.409-5.37 3.504-6.592C7.466 2.66 9.928 2.653 12 4.338c2.072-1.685 4.534-1.679 6.494-.537"></path></g></svg></div><div><div class="cn">Welcome series</div><div class="cstat"><span class="d"></span>Active · 3-step flow</div></div></div></td>
+                    <td><span class="tbadge tb-welcome">Welcome</span></td>
+                    <td class="r num">12,400</td>
+                    <td class="r rev">$48.2K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:24%"></i></span><span class="pc">24%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--gold-bg);color:var(--gold)"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:vip-1-fill" class="iconify iconify--mingcute"><g fill="none" fill-rule="evenodd"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M17.42 3a2 2 0 0 1 1.649.868l.087.14L22.49 9.84a2 2 0 0 1-.208 2.283l-.114.123l-9.283 9.283a1.25 1.25 0 0 1-1.666.091l-.102-.09l-9.283-9.284a2 2 0 0 1-.4-2.257l.078-.15l3.333-5.832a2 2 0 0 1 1.572-1.001L6.58 3zM7.293 9.293a1 1 0 0 0 0 1.414l3.823 3.823a1.25 1.25 0 0 0 1.768 0l3.823-3.823a1 1 0 1 0-1.414-1.414L12 12.586L8.707 9.293a1 1 0 0 0-1.414 0"></path></g></svg></div><div><div class="cn">VIP early access</div><div class="cstat"><span class="d"></span>Active · evergreen</div></div></div></td>
+                    <td><span class="tbadge tb-vip">VIP</span></td>
+                    <td class="r num">3,200</td>
+                    <td class="r rev">$96.8K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:38%"></i></span><span class="pc">38%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--coral-bg);color:var(--coral)"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:back-2-fill" class="iconify iconify--mingcute"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M7.16 10.972A7 7 0 0 1 19.5 15.5a1.5 1.5 0 1 0 3 0c0-5.523-4.477-10-10-10a9.97 9.97 0 0 0-7.418 3.295L4.735 6.83a1.5 1.5 0 1 0-2.954.52l1.042 5.91c.069.391.29.74.617.968c.403.282.934.345 1.385.202l5.644-.996a1.5 1.5 0 1 0-.52-2.954l-2.788.491Z"></path></g></svg></div><div><div class="cn">Winback · 60-day</div><div class="cstat"><span class="d"></span>Active · triggered</div></div></div></td>
+                    <td><span class="tbadge tb-winback">Winback</span></td>
+                    <td class="r num">8,900</td>
+                    <td class="r rev">$31.4K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:11%"></i></span><span class="pc">11%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:rgba(215,221,228,.12);color:var(--plat)"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:cake-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="M17.707 15.707a.414.414 0 0 1 .586 0a2.415 2.415 0 0 0 2.707.491V20a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2v-3.802c.89.405 1.975.241 2.707-.49a.414.414 0 0 1 .586 0a2.414 2.414 0 0 0 3.414 0a.414.414 0 0 1 .586 0a2.414 2.414 0 0 0 3.414 0a.414.414 0 0 1 .586 0a2.414 2.414 0 0 0 3.414 0ZM16 6a1 1 0 0 1 1 1v2h1a3 3 0 0 1 3 3v1.586l-.707.707a.414.414 0 0 1-.586 0a2.414 2.414 0 0 0-3.414 0a.414.414 0 0 1-.586 0a2.414 2.414 0 0 0-3.414 0a.414.414 0 0 1-.586 0a2.414 2.414 0 0 0-3.414 0a.414.414 0 0 1-.586 0a2.414 2.414 0 0 0-3.414 0a.414.414 0 0 1-.586 0L3 13.586V12a3 3 0 0 1 3-3h1V7a1 1 0 0 1 2 0v2h2V7a1 1 0 1 1 2 0v2h2V7a1 1 0 0 1 1-1m-3.5-4c-.319.638-.028 1.05.225 1.41c.144.203.275.39.275.59a1 1 0 1 1-2 0c0-.552.5-1.5 1.5-2m-4 0c-.319.638-.028 1.05.225 1.41c.144.203.275.39.275.59a1 1 0 0 1-2 0c0-.552.5-1.5 1.5-2m8 0c-.319.638-.028 1.05.225 1.41c.144.203.275.39.275.59a1 1 0 1 1-2 0c0-.552.5-1.5 1.5-2"></path></g></svg></div><div><div class="cn">Birthday reward</div><div class="cstat"><span class="d"></span>Active · monthly</div></div></div></td>
+                    <td><span class="tbadge tb-life">Lifecycle</span></td>
+                    <td class="r num">1,150</td>
+                    <td class="r rev">$12.1K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:42%"></i></span><span class="pc">42%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--coral-bg);color:var(--coral)"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" data-icon="mingcute:box-3-fill" class="iconify iconify--mingcute"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"></path><path fill="currentColor" d="m20.765 7.982l.022.19l.007.194v7.268a2.5 2.5 0 0 1-1.099 2.07l-.15.095l-6.295 3.634l-.124.067l-.126.06v-8.99zm-17.53 0L11 12.571v8.988a3 3 0 0 1-.25-.126l-6.294-3.634a2.5 2.5 0 0 1-1.25-2.165V8.366q0-.195.03-.384ZM13.25 2.567l6.294 3.634q.076.045.148.092L12 10.84L4.308 6.292a3 3 0 0 1 .148-.092l6.294-3.634a2.5 2.5 0 0 1 2.5 0Z"></path></g></svg></div><div><div class="cn">Replenishment reminder</div><div class="cstat"><span class="d"></span>Active · triggered</div></div></div></td>
+                    <td><span class="tbadge tb-winback">Winback</span></td>
+                    <td class="r num">6,700</td>
+                    <td class="r rev">$22.9K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:18%"></i></span><span class="pc">18%</span></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section class="card">
+              <div class="ch"><h2>Loyalty revenue</h2><span class="meta">· last 8 weeks</span><div class="right"><span class="meta" style="color:var(--ink-2)">$284K total · +11%</span></div></div>
+              <div class="chartwrap">
+                <div class="bars">
+                  <div class="b" style="height:46%"></div>
+                  <div class="b" style="height:54%"></div>
+                  <div class="b" style="height:49%"></div>
+                  <div class="b" style="height:63%"></div>
+                  <div class="b" style="height:68%"></div>
+                  <div class="b" style="height:61%"></div>
+                  <div class="b" style="height:79%"></div>
+                  <div class="b cur" style="height:92%"></div>
+                </div>
+                <div class="xlabels"><span>Apr 14</span><span>Apr 21</span><span>Apr 28</span><span>May 5</span><span>May 12</span><span>May 19</span><span>May 26</span><span>Jun 2</span></div>
+              </div>
+            </section>
+            </div>
+
+            <div>
+              <section class="card">
+                <div class="ch"><h2>Membership tiers</h2><span class="meta">· 48.2K</span></div>
+                <div class="tiers">
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--plat)"></span><span class="tn">Platinum</span><span class="tm">1,240</span></div>
+                    <div class="tbar"><i style="width:6%;background:linear-gradient(90deg,#aeb6bf,#d7dde4)"></i></div>
+                    <div class="tx"><span>3% of members</span><span>avg $1,840 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--goldt)"></span><span class="tn">Gold</span><span class="tm">6,820</span></div>
+                    <div class="tbar"><i style="width:24%;background:linear-gradient(90deg,#c98f28,#e0a83e)"></i></div>
+                    <div class="tx"><span>14% of members</span><span>avg $720 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--silv)"></span><span class="tn">Silver</span><span class="tm">14,300</span></div>
+                    <div class="tbar"><i style="width:52%;background:linear-gradient(90deg,#8a929c,#aab2bc)"></i></div>
+                    <div class="tx"><span>30% of members</span><span>avg $310 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--bronze)"></span><span class="tn">Bronze</span><span class="tm">25,880</span></div>
+                    <div class="tbar"><i style="width:90%;background:linear-gradient(90deg,#9c6a3e,#c08457)"></i></div>
+                    <div class="tx"><span>53% of members</span><span>avg $90 / yr</span></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="ch"><h2>Points activity</h2><span class="meta">· live</span></div>
+                <div class="feed">
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e0a83e,#e4795f)">MR</div><div class="ft"><b>Maya R.</b> earned points<div class="sub">Order #LB-4821 · $128</div></div><span class="pts earn">+240</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#5cbf8a,#3f9e72)">SC</div><div class="ft"><b>Sam C.</b> redeemed reward<div class="sub">$15 off coupon</div></div><span class="pts redeem">−1,500</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e0a83e,#c98f28)">LM</div><div class="ft"><b>Lucia M.</b> reached <b>Gold</b><div class="sub">Lifetime 8,200 pts</div></div><span class="pts tier">Gold</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e4795f,#b9524a)">TN</div><div class="ft"><b>Theo N.</b> earned points<div class="sub">Product review · 5★</div></div><span class="pts earn">+80</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#aab2bc,#8a929c)">RB</div><div class="ft"><b>Renata B.</b> redeemed reward<div class="sub">Free shipping</div></div><span class="pts redeem">−800</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function fit(){
+    const win=document.getElementById('win');
+    const pad=24;
+    const s=Math.min((window.innerWidth-pad)/1440,(window.innerHeight-pad)/win.offsetHeight);
+    win.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit);window.addEventListener('load',fit);fit();
+</script>
+
+</body></html>
