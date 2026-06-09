@@ -177,48 +177,53 @@ export default async function WorkPage({ params }: WorkPageProps) {
           </div>
         </div>
 
-        {/* case studies — showcase rows. A 2-col card grid rendered these
-           1440px-wide dashboards at ~490px (illegible); rows give the shot
-           ~640px inline and the WorkShot lightbox opens the full capture. */}
-        <div className="mx-auto max-w-6xl space-y-14 lg:space-y-24">
-          {CASES.map((c, i) => (
-            <article key={c.title} className="grid items-center gap-6 lg:grid-cols-12 lg:gap-12">
-              <div className={i % 2 === 1 ? "lg:order-2 lg:col-span-7" : "lg:col-span-7"}>
-                <WorkShot image={c.image} title={c.title} />
-              </div>
-              <div className={i % 2 === 1 ? "lg:order-1 lg:col-span-5" : "lg:col-span-5"}>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
-                    {c.service} · {c.sector}
-                  </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/[0.06] px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wide text-primary">
-                    <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.25} /> Human-reviewed
-                  </span>
-                </div>
-                <h2 className="mt-3 text-[20px] font-semibold leading-snug tracking-[-0.015em] text-foreground lg:text-[24px]">
-                  {c.title}
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{c.summary}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {c.metrics.map((m) => (
-                    <span
-                      key={m}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background px-2.5 py-1 text-[11.5px] font-medium text-foreground"
-                    >
-                      <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
-                      {m}
+        {/* case studies — full-width stacked showcases (Cursor-style). A 1440px
+           dashboard needs ~1100px+ on screen for its detail to read; smaller
+           columns crushed it. Case header above, full-width shot below, and the
+           WorkShot lightbox opens the full-resolution capture. */}
+        <div className="mx-auto max-w-6xl space-y-16 lg:space-y-24">
+          {CASES.map((c) => (
+            <article key={c.title}>
+              <div className="mb-5 grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
+                <div className="lg:col-span-8">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
+                      {c.service} · {c.sector}
                     </span>
-                  ))}
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  {c.stack.map((t, j) => (
-                    <span key={t} className="font-mono text-[10.5px] text-muted-foreground/60">
-                      {t}
-                      {j < c.stack.length - 1 && <span className="ml-3 text-muted-foreground/25">·</span>}
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/[0.06] px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wide text-primary">
+                      <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.25} /> Human-reviewed
                     </span>
-                  ))}
+                  </div>
+                  <h2 className="mt-3 text-[20px] font-semibold leading-snug tracking-[-0.015em] text-foreground lg:text-[26px]">
+                    {c.title}
+                  </h2>
+                  <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {c.summary}
+                  </p>
+                </div>
+                <div className="lg:col-span-4 lg:justify-self-end">
+                  <div className="flex flex-wrap gap-1.5 lg:justify-end">
+                    {c.metrics.map((m) => (
+                      <span
+                        key={m}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background px-2.5 py-1 text-[11.5px] font-medium text-foreground"
+                      >
+                        <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 lg:justify-end">
+                    {c.stack.map((t, j) => (
+                      <span key={t} className="font-mono text-[10.5px] text-muted-foreground/60">
+                        {t}
+                        {j < c.stack.length - 1 && <span className="ml-3 text-muted-foreground/25">·</span>}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
+              <WorkShot image={c.image} title={c.title} />
             </article>
           ))}
         </div>

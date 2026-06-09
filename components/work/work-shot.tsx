@@ -25,7 +25,8 @@ export function WorkShot({ image, title }: { image: WorkShotImage; title: string
             alt={image.alt}
             width={image.w}
             height={image.h}
-            sizes="(min-width: 1024px) 640px, 100vw"
+            sizes="(min-width: 1280px) 1152px, 96vw"
+            quality={90}
             className="h-auto w-full"
           />
           <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-foreground/15 bg-background/85 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
@@ -45,6 +46,7 @@ export function WorkShot({ image, title }: { image: WorkShotImage; title: string
           width={image.w}
           height={image.h}
           sizes="96vw"
+          quality={90}
           className="max-h-[86vh] w-full rounded-[8px] object-contain"
         />
       </DialogContent>

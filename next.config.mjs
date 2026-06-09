@@ -11,6 +11,11 @@ const nextConfig = {
   turbopack: {
     root: rootDir,
   },
+  images: {
+    // 90 for dense UI-screenshot assets (/work product shots) where q75 WebP
+    // smears 1px hairlines and small text; 75 stays the general default.
+    qualities: [75, 90],
+  },
   async redirects() {
     return [
       // Consolidated pages redirects
