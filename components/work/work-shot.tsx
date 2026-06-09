@@ -4,27 +4,35 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-// WorkShot — a /work product mockup embedded as a LIVE, self-contained,
-// same-origin iframe (public/work/mockups/*.html).
+// WorkShot — a /work product mockup embedded as a LIVE, INTERACTIVE,
+// self-contained same-origin iframe (public/work/mockups/*.html). Owner wants
+// the real HTML in the section (hover states alive), not a screenshot.
 //
-// CRITICAL: the iframe keeps a CONSTANT internal viewport (the mockup's
-// authoring size, e.g. 1560×980) and the PARENT scales it with a CSS
-// transform. The mockups' .window is a flex item of a centering .stage —
-// at any narrower live viewport it flex-shrinks and the whole layout
-// REFLOWS (truncated names, colliding table headers — Playwright-diagnosed).
-// A fixed layout viewport makes that reflow impossible at every box size;
-// same-origin iframes re-rasterize under ancestor transforms, so text stays
-// vector-crisp at the composited scale.
+// Why an iframe and not the raw HTML inlined into the page DOM: each mockup
+// ships its own global <style>, @font-face and a fit() script — inlining would
+// leak those and wreck the site's CSS. The iframe IS "the HTML, directly,"
+// just style/script-isolated.
+//
+// Scaling: the iframe holds a CONSTANT internal viewport (authoring size, e.g.
+// 1560×980) and the parent scales it with a measured CSS transform. A fixed
+// inner viewport makes the fixed-width design's flex layout impossible to
+// reflow at any box size (Playwright-verified); same-origin iframes
+// re-rasterize under the transform, so text stays vector-crisp.
+//
+// Interactivity is responsive: live on desktop (lg+) with an explicit Expand
+// button; on touch the iframe stays pointer-events-none so a drag scrolls the
+// PAGE (no scroll-trap) and the whole surface taps open the lightbox — where
+// it becomes interactive and pannable.
 
 export type WorkShotFrame = { src: string; title: string; w: number; h: number };
 
 function ScaledFrame({
   frame,
-  interactive = false,
+  interactive,
   lazy = true,
 }: {
   frame: WorkShotFrame;
-  interactive?: boolean;
+  interactive: "lg" | "always";
   lazy?: boolean;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -51,7 +59,9 @@ function ScaledFrame({
         title={frame.title}
         loading={lazy ? "lazy" : "eager"}
         scrolling="no"
-        className={`absolute left-0 top-0 border-0 ${interactive ? "" : "pointer-events-none"}`}
+        className={`absolute left-0 top-0 border-0 ${
+          interactive === "always" ? "" : "pointer-events-none lg:pointer-events-auto"
+        }`}
         style={{
           width: frame.w,
           height: frame.h,
@@ -67,21 +77,33 @@ function ScaledFrame({
 export function WorkShot({ frame }: { frame: WorkShotFrame }) {
   return (
     <Dialog>
-      <div className="lg:relative lg:left-1/2 lg:w-[min(94vw,1400px)] lg:-translate-x-1/2">
+      <div className="group relative lg:left-1/2 lg:w-[min(94vw,1400px)] lg:-translate-x-1/2">
+        <div className="overflow-hidden rounded-[12px] border border-foreground/12 bg-card/30">
+          <ScaledFrame frame={frame} interactive="lg" />
+        </div>
+
+        {/* touch: the whole surface taps to expand (iframe is inert there) */}
         <DialogTrigger asChild>
           <button
             type="button"
             aria-label={`View full size — ${frame.title}`}
-            className="group relative block w-full cursor-zoom-in overflow-hidden rounded-[12px] border border-foreground/12 bg-card/30 outline-none transition-colors duration-200 hover:border-foreground/25 focus-visible:ring-2 focus-visible:ring-primary/45"
+            className="absolute inset-0 cursor-zoom-in rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:hidden"
+          />
+        </DialogTrigger>
+
+        {/* desktop: live & interactive — explicit Expand affordance only */}
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            aria-label={`View full size — ${frame.title}`}
+            className="absolute bottom-3 right-3 hidden items-center gap-1.5 rounded-full border border-foreground/15 bg-background/85 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted-foreground backdrop-blur-sm transition-colors duration-200 hover:border-foreground/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:inline-flex"
           >
-            <ScaledFrame frame={frame} />
-            <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-foreground/15 bg-background/85 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-              <Maximize2 className="h-3 w-3" strokeWidth={2} />
-              View detail
-            </span>
+            <Maximize2 className="h-3 w-3" strokeWidth={2} />
+            Expand
           </button>
         </DialogTrigger>
       </div>
+
       <DialogContent
         aria-describedby={undefined}
         className="block w-[min(96vw,1700px)] max-w-none gap-0 overflow-hidden border-foreground/15 bg-background p-2 sm:max-w-none"
@@ -89,7 +111,7 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
         <DialogTitle className="sr-only">{frame.title}</DialogTitle>
         <div className="max-h-[88vh] overflow-auto overscroll-contain rounded-[8px]">
           <div className="w-full min-w-[1100px]">
-            <ScaledFrame frame={frame} interactive lazy={false} />
+            <ScaledFrame frame={frame} interactive="always" lazy={false} />
           </div>
         </div>
       </DialogContent>
