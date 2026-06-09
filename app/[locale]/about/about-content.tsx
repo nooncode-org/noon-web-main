@@ -17,6 +17,7 @@ import { siteTones } from "@/lib/site-tones";
 import { FaqSection } from "@/components/landing/faq-section";
 import { MaxwellDemo } from "@/components/marketing/maxwell-demo/MaxwellDemo";
 import { HumanReviewProof } from "@/components/sections/human-review-proof";
+import { IndustryShift } from "@/components/sections/industry-shift";
 import { TechEcosystem } from "@/components/sections/tech-ecosystem";
 
 const LOCALES = ["en", "es", "fr", "de"];
@@ -627,6 +628,10 @@ export function AboutContent() {
           </RevealBlock>
         </div>
       </section>
+
+      {/* Industry context: the people building the models say AI now writes the
+         code — and a human still reviews & accepts it. Sets up the wedge. */}
+      <IndustryShift />
 
       {/* The wedge as a believable artifact: AI drafts → a senior engineer
          reviews & approves. The thing a code generator can't show. */}
