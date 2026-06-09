@@ -25,7 +25,7 @@ type CaseStudy = {
   stack: string[];
   // Anonymized product recreation (Claude Design handoff → self-contained live
   // HTML, public/work/mockups/). Fictional product identity; disclosed below.
-  mockup: { src: string; aspect: string; desc: string };
+  mockup: { src: string; w: number; h: number; desc: string };
 };
 
 const CASES: CaseStudy[] = [
@@ -39,7 +39,8 @@ const CASES: CaseStudy[] = [
     stack: ["Next.js", "Node.js", "Supabase", "Shopify API", "GPT-4o"],
     mockup: {
       src: "/work/mockups/cs1-ordwell.html",
-      aspect: "1560 / 980",
+      w: 1560,
+      h: 980,
       desc: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue",
     },
   },
@@ -53,7 +54,8 @@ const CASES: CaseStudy[] = [
     stack: ["React", "TypeScript", "Tailwind"],
     mockup: {
       src: "/work/mockups/cs2-crewfield.html",
-      aspect: "1560 / 980",
+      w: 1560,
+      h: 980,
       desc: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed",
     },
   },
@@ -67,7 +69,8 @@ const CASES: CaseStudy[] = [
     stack: ["Next.js", "Python", "Supabase", "Vercel", "Claude 3.7 Sonnet"],
     mockup: {
       src: "/work/mockups/cs3-lotvane.html",
-      aspect: "1560 / 980",
+      w: 1560,
+      h: 980,
       desc: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables",
     },
   },
@@ -81,7 +84,8 @@ const CASES: CaseStudy[] = [
     stack: ["Audit", "Roadmap"],
     mockup: {
       src: "/work/mockups/cs4-stackbrief.html",
-      aspect: "1560 / 980",
+      w: 1560,
+      h: 980,
       desc: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap",
     },
   },
@@ -95,7 +99,8 @@ const CASES: CaseStudy[] = [
     stack: ["Next.js", "Supabase", "Twilio", "Whisper", "Claude Opus 4.8"],
     mockup: {
       src: "/work/mockups/cs5-visitra.html",
-      aspect: "1760 / 1000",
+      w: 1760,
+      h: 1000,
       desc: "Clinical scheduling app on desktop and mobile, with a weekly calendar, reminder timeline, and AI visit summary",
     },
   },
@@ -109,7 +114,8 @@ const CASES: CaseStudy[] = [
     stack: ["Next.js", "Node.js", "Supabase", "Stripe", "Resend", "GPT-5.1"],
     mockup: {
       src: "/work/mockups/cs6-embertide.html",
-      aspect: "1560 / 980",
+      w: 1560,
+      h: 980,
       desc: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
     },
   },
@@ -217,7 +223,7 @@ export default async function WorkPage({ params }: WorkPageProps) {
                   </div>
                 </div>
               </div>
-              <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, aspect: c.mockup.aspect }} />
+              <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, w: c.mockup.w, h: c.mockup.h }} />
             </article>
           ))}
         </div>
