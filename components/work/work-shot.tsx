@@ -41,11 +41,12 @@ function ScaledFrame({
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
-    // +1px overscan: the scaled iframe otherwise lands ~0.2–0.4px short of its
-    // box (transform sub-pixel rounding), exposing the container bg as a hairline
-    // — invisible on light mockups, a white seam on the dark ones. Overscanning
-    // makes the iframe fully cover its box; overflow-hidden clips the sliver.
-    const measure = () => setScale((el.clientWidth + 1) / frame.w);
+    // Overscan in ALL FOUR directions: the iframe is scaled +2px and shifted
+    // -1px,-1px so it overhangs every edge by ~1px; overflow-hidden clips it.
+    // A bottom-right-only overscan left a hairline at the TOP edge, where the
+    // dialog's fractional translate(-50%) centering put the box on a sub-pixel
+    // row and the dimmed backdrop bled through against the dark mockups.
+    const measure = () => setScale((el.clientWidth + 2) / frame.w);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -69,7 +70,7 @@ function ScaledFrame({
         style={{
           width: frame.w,
           height: frame.h,
-          transform: `scale(${scale})`,
+          transform: `translate(-1px, -1px) scale(${scale})`,
           transformOrigin: "top left",
           visibility: scale > 0 ? "visible" : "hidden",
         }}
@@ -82,7 +83,7 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
   return (
     <Dialog>
       <div className="group relative">
-        <div className="overflow-hidden border border-foreground/12">
+        <div className="overflow-hidden rounded-[12px] border border-foreground/12">
           <ScaledFrame frame={frame} interactive="lg" />
         </div>
 
@@ -91,7 +92,7 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
           <button
             type="button"
             aria-label={`View full size — ${frame.title}`}
-            className="absolute inset-0 cursor-zoom-in outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:hidden"
+            className="absolute inset-0 cursor-zoom-in rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-primary/45 lg:hidden"
           />
         </DialogTrigger>
 
@@ -108,12 +109,13 @@ export function WorkShot({ frame }: { frame: WorkShotFrame }) {
         </DialogTrigger>
       </div>
 
-      {/* Frameless: no dialog border/padding/bg AND the mockup's own window
-         border + rounded corners are stripped at build time — so the lightbox
-         is purely the project, edge to edge, no background of any kind. */}
+      {/* Frameless but rounded: no dialog border/padding/bg, and the mockup's
+         own window border is stripped at build time — the rounded corners come
+         from this container clipping the (square) project, so there's no frame
+         or background, just softened corners (owner: don't leave it so square). */}
       <DialogContent
         aria-describedby={undefined}
-        className="block w-[min(96vw,1700px)] max-w-none gap-0 overflow-hidden rounded-none border-transparent bg-transparent p-0 shadow-2xl sm:max-w-none"
+        className="block w-[min(96vw,1700px)] max-w-none gap-0 overflow-hidden rounded-[12px] border-transparent bg-transparent p-0 shadow-2xl sm:max-w-none"
       >
         <DialogTitle className="sr-only">{frame.title}</DialogTitle>
         <div className="max-h-[88vh] overflow-auto overscroll-contain">
