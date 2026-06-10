@@ -15,13 +15,50 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { ContactIntakeForm } from "@/app/_components/site/contact-intake-form";
-import { FaqSection } from "@/components/landing/faq-section";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
 import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { ResponseTimeline } from "@/components/sections/premium";
 
 const LOCALES = ["en", "es", "fr", "de"];
+
+// Contact-specific FAQ (audit: per-page FAQ depth). Every answer is grounded
+// in copy that already ships elsewhere on the site — the Response Commitment
+// numbers above are the owner-supplied ones on this same page; nothing new is
+// promised here.
+const CONTACT_FAQS: Faq[] = [
+  {
+    question: "Should I start with Maxwell or this form?",
+    answer:
+      "Maxwell is the fastest route when you want to scope a new build — it turns your idea into a clear brief and a working prototype. This form is right for everything else: audits, engineering support, upgrading an existing product, or general questions. Either way, a person reads your request.",
+  },
+  {
+    question: "Do I need a full spec before reaching out?",
+    answer:
+      "No. Most projects start with a business problem, not a spec. Describe the problem in plain language and we'll turn it into a clear scope with you — what's in and out, agreed up front — before anything is built.",
+  },
+  {
+    question: "What happens after I send the form?",
+    answer:
+      "We confirm we've received your inquiry within 2 business hours, your request reaches the right specialist within 24, and you get a substantive reply — next steps, clarifying questions, or a first read on your project — within 48. For a strong fit, we set up a discovery call within the week.",
+  },
+  {
+    question: "Can you work on something that already exists?",
+    answer:
+      "Yes. Upgrade is our improvement path for products that already run, the Business Technology Audit maps what to cut, keep, or build across your stack, and Engineering Support embeds developers directly with your team.",
+  },
+  {
+    question: "Is what I share confidential?",
+    answer:
+      "Yes — client work is treated as confidential. Anything we showcase publicly is anonymized: names, brands, and data are changed, as on our Work page. Nothing identifiable is published without permission.",
+  },
+  {
+    question: "How is pricing handled?",
+    answer:
+      "Pricing depends on scope and complexity. You get a transparent quote after the scoping phase — no hidden fees, no hourly billing surprises. You know the full cost before we start building.",
+  },
+];
 
 // Real Noon social channels (mirrors footerSocialLinks in lib/site-config) —
 // TikTok / Facebook / Instagram only, per brand (no LinkedIn/GitHub/X).
@@ -294,7 +331,7 @@ export function ContactPageContent() {
         ]}
       />
 
-      <FaqSection />
+      <FaqSection items={CONTACT_FAQS} />
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"
