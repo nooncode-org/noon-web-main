@@ -15,11 +15,12 @@ import { EASE } from "@/lib/motion";
 // product. Each quote carries name, role, source + date so it's verifiable.
 
 const HERO = {
-  quote: "More than 75% of all new code at Google is now AI-generated — and ",
+  quote: "75% of all new code at Google is now AI-generated — and ",
   highlight: "approved by engineers.",
   name: "Sundar Pichai",
   role: "CEO, Alphabet",
   source: "Google Cloud Next 2026",
+  href: "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/cloud-next-2026-sundar-pichai/",
   avatar: "/work/voices/pichai.jpg",
 };
 
@@ -28,20 +29,24 @@ const VOICES: {
   name: string;
   role: string;
   source: string;
+  href: string;
   avatar: string;
 }[] = [
   {
-    quote: "Every engineer at NVIDIA is already using AI agents to write code.",
+    quote:
+      "…explaining to the AI what we want — our intent — and the AI generates the code.",
     name: "Jensen Huang",
     role: "CEO, NVIDIA",
-    source: "NVIDIA GTC 2026",
-    avatar: "/work/voices/huang.jpg",
+    source: "NVIDIA GTC Taipei 2026",
+    href: "https://blogs.nvidia.com/blog/nvidia-gtc-taipei-computex-2026-news/",
+    avatar: "/work/voices/jensen-huang.jpg",
   },
   {
     quote: "We're 3 to 6 months from a world where AI is writing 90% of the code.",
     name: "Dario Amodei",
     role: "CEO, Anthropic",
     source: "Council on Foreign Relations, 2025",
+    href: "https://finance.yahoo.com/news/anthropic-ceo-says-ai-could-193020957.html",
     avatar: "/work/voices/amodei.jpg",
   },
 ];
@@ -99,9 +104,14 @@ export function IndustryShift() {
                 <div className="text-sm font-semibold text-foreground">{HERO.name}</div>
                 <div className="text-[13px] text-muted-foreground">
                   {HERO.role} ·{" "}
-                  <span className="font-mono text-[11px] text-muted-foreground/60">
-                    {HERO.source}
-                  </span>
+                  <a
+                    href={HERO.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-[11px] text-muted-foreground/60 underline-offset-2 transition-colors hover:text-foreground hover:underline"
+                  >
+                    {HERO.source} ↗
+                  </a>
                 </div>
               </div>
             </figcaption>
@@ -126,9 +136,14 @@ export function IndustryShift() {
                     <div className="text-[13.5px] font-semibold text-foreground">{v.name}</div>
                     <div className="text-[12.5px] text-muted-foreground">
                       {v.role} ·{" "}
-                      <span className="font-mono text-[10.5px] text-muted-foreground/60">
-                        {v.source}
-                      </span>
+                      <a
+                        href={v.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-mono text-[10.5px] text-muted-foreground/60 underline-offset-2 transition-colors hover:text-foreground hover:underline"
+                      >
+                        {v.source} ↗
+                      </a>
                     </div>
                   </div>
                 </figcaption>
@@ -138,7 +153,7 @@ export function IndustryShift() {
 
           {/* attribution + bridge into the human-review proof that follows */}
           <p className="mt-5 font-mono text-[10.5px] leading-relaxed text-muted-foreground/50">
-            Portraits via Wikimedia Commons (CC BY). Public statements — shown as industry
+            Portraits via Wikimedia Commons (CC BY / GODL). Public statements — shown as industry
             context, not endorsements of Noon.
           </p>
           <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground lg:mt-8">
