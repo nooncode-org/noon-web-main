@@ -3,11 +3,16 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 
-const faqs = [
+export type Faq = { question: string; answer: string };
+
+// Default set (About). Pages can pass their own `items` — the audit asks for
+// per-page FAQ depth, and contact's set lives in contact-content.tsx.
+const DEFAULT_FAQS: Faq[] = [
   {
     question: "How does Noon work?",
     answer: "Start with your idea in Maxwell or Contact. Noon reviews the first direction, refines it when needed, and then moves into proposal, payment activation, and phased delivery when the scope calls for it.",
@@ -25,6 +30,10 @@ const faqs = [
     answer: "AI accelerates our workflow at every stage: Maxwell helps scope projects, AI-assisted coding speeds up development, and automated testing ensures quality. The result is faster delivery without compromising on code quality.",
   },
   {
+    question: "Who reviews the work?",
+    answer: "Every proposal is read, corrected, and approved by a PM before it reaches you, and every code change is signed off by a senior engineer before it ships. AI accelerates the work — a person owns the judgment.",
+  },
+  {
     question: "What types of projects do you build?",
     answer: "We specialize in custom software: client portals, internal dashboards, AI-powered tools, marketplaces, mobile apps, and workflow automation. We focus on software that solves real operational problems.",
   },
@@ -40,7 +49,7 @@ function FAQItem({
   isOpen,
   onToggle,
 }: {
-  faq: typeof faqs[0];
+  faq: Faq;
   index: number;
   isOpen: boolean;
   onToggle: () => void;
@@ -69,18 +78,27 @@ function FAQItem({
           className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-48" : "max-h-0"}`}>
-        <p className="site-card-copy px-5 pb-4 text-muted-foreground">
-          {faq.answer}
-        </p>
+      {/* grid-rows collapse (not max-h): a fixed max-height clips answers that
+         outgrow it — this animates to the content's real height, any length. */}
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ${
+          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <p className="site-card-copy px-5 pb-4 text-muted-foreground">{faq.answer}</p>
+        </div>
       </div>
     </div>
   );
 }
 
-export function FaqSection() {
+export function FaqSection({ items = DEFAULT_FAQS }: { items?: Faq[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const { ref: sectionRef, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
+  // Locale-prefixed Maxwell link — the bare route relied on a 307 redirect hop
+  // and dropped the active locale (audit 2026-06-01, faq-section.tsx:116).
+  const locale = useLocale();
 
   return (
     <section id="faq" ref={sectionRef} className="relative py-20 lg:py-28">
@@ -113,7 +131,7 @@ export function FaqSection() {
                 Can&apos;t find what you&apos;re looking for? Start a conversation with Maxwell.
               </p>
               <Link
-                href={siteRoutes.maxwellStudio}
+                href={`/${locale}${siteRoutes.maxwellStudio}`}
                 className={`inline-flex items-center gap-2.5 rounded-full border border-foreground/10 bg-secondary/50 px-4 py-2 text-sm font-medium transition-all duration-300 hover:border-foreground/20 hover:bg-secondary ${
                   isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
@@ -129,7 +147,7 @@ export function FaqSection() {
 
             {/* Right list */}
             <div className="flex flex-col gap-2 p-6 lg:p-8">
-              {faqs.map((faq, index) => (
+              {items.map((faq, index) => (
                 <FAQItem
                   key={faq.question}
                   faq={faq}
