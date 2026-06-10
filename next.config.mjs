@@ -136,12 +136,12 @@ const nextConfig = {
           { key: "Content-Security-Policy", value: csp },
         ],
       },
-      // /work live product mockups (static, self-contained HTML in /public)
-      // are embedded by our own /work page as same-origin iframes — they need
-      // frame-ancestors 'self' / SAMEORIGIN. Scoped override: later matching
+      // /work and /services live product mockups (static, self-contained HTML
+      // in /public) are embedded by our own pages as same-origin iframes — they
+      // need frame-ancestors 'self' / SAMEORIGIN. Scoped override: later matching
       // entries win per header key; everything else inherits the strict set.
       {
-        source: "/work/mockups/:path*",
+        source: "/:scope(work|services)/mockups/:path*",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           {

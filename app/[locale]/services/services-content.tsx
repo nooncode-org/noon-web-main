@@ -13,6 +13,9 @@ import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
 import { HowWeWork } from "@/components/sections/how-we-work";
 import { StackAuthority } from "@/components/sections/stack-authority";
+// Generic scaled-iframe product shot (built for /work, reused here): renders a
+// self-contained mockup at a constant viewport and scales it to the column.
+import { WorkShot } from "@/components/work/work-shot";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -23,7 +26,10 @@ type ServiceItem = {
   href: string;
   linkLabel: string;
   tone: typeof siteTones.brand;
-  illustration: string;
+  // Anonymized product mockup (Claude Design handoff → self-contained live HTML,
+  // public/services/mockups/). Fictional product; shown as an illustrative,
+  // representative example of the service, not a real client system.
+  mockup: { src: string; w: number; h: number; desc: string };
   imageSide: "left" | "right";
 };
 
@@ -115,7 +121,12 @@ export function ServicesContent() {
       href: lp(getContactHref({ inquiry: "new-project", source: "custom-development" })),
       linkLabel: "Discuss custom development",
       tone: siteTones.brand,
-      illustration: "/figma/card-custom-dev.svg",
+      mockup: {
+        src: "/services/mockups/sv1-harborline.html",
+        w: 1440,
+        h: 968,
+        desc: "Custom port-operations platform: live vessel KPIs, a shipments table with customs status, and a berth-occupancy timeline",
+      },
       imageSide: "right",
     },
     {
@@ -129,7 +140,12 @@ export function ServicesContent() {
       href: lp(siteRoutes.upgrade),
       linkLabel: "Open Upgrade",
       tone: siteTones.services,
-      illustration: "/figma/card-upgrade.svg",
+      mockup: {
+        src: "/services/mockups/sv2-quillshore.html",
+        w: 1440,
+        h: 980,
+        desc: "Before/after of a proposals product: the dated legacy UI beside the upgraded version with a clean analytics card and status chips",
+      },
       imageSide: "left",
     },
     {
@@ -143,7 +159,12 @@ export function ServicesContent() {
       href: lp(getContactHref({ inquiry: "general", source: "engineering-support" })),
       linkLabel: "Contact Noon",
       tone: siteTones.gateway,
-      illustration: "/figma/card-engineering-support.svg",
+      mockup: {
+        src: "/services/mockups/sv3-gantrey.html",
+        w: 1440,
+        h: 960,
+        desc: "A client engineering hub with two embedded Noon engineers: a sprint board, a pull-request review queue, and a deploy timeline",
+      },
       imageSide: "right",
     },
     {
@@ -157,7 +178,12 @@ export function ServicesContent() {
       href: lp(getContactHref({ inquiry: "general", source: "business-technology-audit" })),
       linkLabel: "Request an audit conversation",
       tone: siteTones.data,
-      illustration: "/figma/card-audit.svg",
+      mockup: {
+        src: "/services/mockups/sv4-ledgermark.html",
+        w: 1440,
+        h: 1000,
+        desc: "A technology-audit workspace: a stack inventory with keep/consolidate/cut/build verdicts, a spend-by-category donut, and a phased roadmap",
+      },
       imageSide: "left",
     },
   ];
@@ -324,43 +350,31 @@ export function ServicesContent() {
           </div>
         </div>
 
-        {/* Figma-style service blocks — connected with a divider only (no gap),
-            alternating illustration sides. */}
+        {/* Service blocks — each a side-by-side row inside the bordered
+            "architecture" card: a live, illustrative product mockup of the
+            service beside the copy, the mockup side alternating. The mockups are
+            embedded live (see WorkShot); the row gives them room to stay legible
+            rather than the prior 160×160 icon. */}
           {services.map((service) => {
             const imageFirst = service.imageSide === "left";
 
             return (
-              <article
-                key={service.name}
-                className="overflow-hidden"
-              >
-                {/* lg:min-h ensures all 4 cards have the same vertical extent
-                   regardless of bullet count or illustration aspect ratio. */}
-                <div className={`flex flex-col lg:min-h-[280px] ${imageFirst ? "lg:flex-row" : "lg:flex-row-reverse"}`}>
-                  {/* Illustration panel — fixed-width column with a uniform
-                     160×160 inner box. All 4 SVGs are object-contained inside
-                     that box so different aspect ratios (headphones wide,
-                     clipboard tall) render at the same visible size. The
-                     divider sits only on the side adjacent to the text panel. */}
-                  <div
-                    className={`relative flex shrink-0 items-center justify-center p-8 lg:w-[280px] border-foreground/10 ${
-                      imageFirst ? "lg:border-r" : "lg:border-l"
-                    }`}
-                  >
-                    <div className="relative h-[160px] w-[160px]">
-                      <Image
-                        src={service.illustration}
-                        alt=""
-                        fill
-                        sizes="160px"
-                        className="object-contain opacity-70 invert dark:invert-0"
-                        unoptimized
-                      />
-                    </div>
+              <article key={service.name} className="p-5 lg:p-7">
+                <div className="grid items-center gap-5 lg:grid-cols-12 lg:gap-9">
+                  <div className={`lg:col-span-7 ${imageFirst ? "lg:order-1" : "lg:order-2"}`}>
+                    <WorkShot
+                      frame={{
+                        src: service.mockup.src,
+                        title: service.mockup.desc,
+                        w: service.mockup.w,
+                        h: service.mockup.h,
+                      }}
+                    />
                   </div>
 
-                  {/* Text panel — Figma sandbox has NO icon badge; just the title. */}
-                  <div className="flex flex-1 flex-col gap-3 p-6 lg:p-8">
+                  <div
+                    className={`flex flex-col gap-3 lg:col-span-5 ${imageFirst ? "lg:order-2" : "lg:order-1"}`}
+                  >
                     <h3 className="site-card-title">{service.name}</h3>
                     <p className="site-card-copy text-muted-foreground">{service.summary}</p>
                     <ul className="space-y-2">
@@ -374,14 +388,9 @@ export function ServicesContent() {
                         </li>
                       ))}
                     </ul>
-                    {/* Figma /Services: outlined CTA anchored to the bottom-left
-                       corner of the text panel (mt-auto pushes it to the end of
-                       the flex column), with 10px border radius (not full pill).
-                       Color uniforme azul para los 4 cards (experimentando — se
-                       revierte cambiando siteTones.brand por service.tone). */}
                     <Link
                       href={service.href}
-                      className="group mt-auto inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                      className="group mt-1 inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {service.linkLabel}
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />

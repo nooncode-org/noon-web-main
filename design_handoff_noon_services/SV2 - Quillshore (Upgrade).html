@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quillshore — Upgrade (Before / After)</title>
+<!--
+  Quillshore — "Upgrade" service mockup · Before/After of the proposals module
+  Authoring viewport: 1440 × 980 (desktop only, edge-to-edge)
+  Fonts: Schibsted Grotesk (After UI) + Spline Sans Mono (mono) · Before = system stack
+  Accent: #5b5bd6 · Stage semantics: blue/amber/indigo/green/red
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#e9ebf0;font-family:'Schibsted Grotesk',sans-serif;color:#15171c;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  input::placeholder{color:#a3aab6;}
+  .arow:hover{background:#fafafe;}
+</style>
+</head>
+<body>
+
+<div style="width:1440px;height:980px;background:#e9ebf0;padding:22px 24px 24px;display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+
+  <!-- UPGRADE SUMMARY BAR -->
+  <div style="height:62px;flex:0 0 62px;background:#ffffff;border:1px solid #dfe2e8;border-radius:14px;box-shadow:0 1px 2px rgba(20,22,30,.04);display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 20px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,#6d5ae6,#5b5bd6);color:#fff;font-weight:800;font-size:17px;box-shadow:0 2px 6px rgba(91,91,214,.35);">Q</span>
+      <div style="display:flex;flex-direction:column;line-height:1.25;">
+        <span style="font-size:15px;font-weight:700;letter-spacing:-.01em;">Quillshore Upgrade</span>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8f98;">Proposals module · modernization</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;color:#9aa0aa;margin-right:2px;">UPGRADE&nbsp;SUMMARY</span>
+      <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 14px;border:1px solid #cfead9;background:#f1f9f4;border-radius:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#dcefe3;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1f7a47" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="6 13 12 19 18 13"/></svg></span>
+        <div style="display:flex;flex-direction:column;line-height:1.15;">
+          <span style="font-size:15px;font-weight:700;color:#1f7a47;letter-spacing:-.01em;">−38%</span>
+          <span style="font-size:10.5px;color:#5b8a6e;">task time</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 14px;border:1px solid #cfead9;background:#f1f9f4;border-radius:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#dcefe3;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1f7a47" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="6 13 12 19 18 13"/></svg></span>
+        <div style="display:flex;flex-direction:column;line-height:1.15;">
+          <span style="font-size:15px;font-weight:700;color:#1f7a47;letter-spacing:-.01em;">−22%</span>
+          <span style="font-size:10.5px;color:#5b8a6e;">support tickets</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;height:38px;padding:0 14px;border:1px solid #d6d5f6;background:#f3f3fd;border-radius:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:#e4e3fb;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4b45c4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <div style="display:flex;flex-direction:column;line-height:1.15;">
+          <span style="font-size:15px;font-weight:700;color:#4b45c4;letter-spacing:-.01em;">96</span>
+          <span style="font-size:10.5px;color:#6f6bb0;">UI consistency</span>
+        </div>
+      </div>
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.06em;color:#a7adb6;border:1px dashed #cdd2da;border-radius:6px;padding:4px 7px;margin-left:2px;">ILLUSTRATIVE</span>
+    </div>
+  </div>
+
+  <!-- PANELS ROW -->
+  <div style="flex:1;min-height:0;display:flex;gap:18px;">
+
+    <!-- BEFORE COLUMN -->
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;align-items:center;gap:9px;padding:0 2px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#a7adb6;"></span>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.1em;color:#7c828c;">BEFORE</span>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#aab0b9;">/ 2019 UI</span>
+      </div>
+
+      <div style="flex:1;min-height:0;background:#f1f1ef;border:1px solid #b6b6b2;border-radius:3px;display:flex;flex-direction:column;overflow:hidden;font-family:Tahoma,Geneva,Arial,sans-serif;">
+        <div style="height:27px;flex:0 0 27px;background:linear-gradient(#5a6b8c,#41506b);display:flex;align-items:center;justify-content:space-between;padding:0 9px;border-bottom:1px solid #2f3a50;">
+          <span style="font-size:11px;font-weight:700;color:#eef1f6;letter-spacing:.01em;">Quillshore Proposal Manager</span>
+          <span style="font-size:10px;color:#c3ccdb;">admin@acme · <span style="text-decoration:underline;cursor:pointer;">Logout</span></span>
+        </div>
+        <div style="height:24px;flex:0 0 24px;background:#dcdcd8;border-bottom:1px solid #b6b6b2;display:flex;align-items:stretch;font-size:11px;color:#2b2b2b;">
+          <span style="display:flex;align-items:center;padding:0 10px;border-right:1px solid #c6c6c2;">Dashboard</span>
+          <span style="display:flex;align-items:center;padding:0 10px;border-right:1px solid #c6c6c2;background:#f1f1ef;font-weight:700;border-top:2px solid #41506b;margin-top:-1px;">Proposals</span>
+          <span style="display:flex;align-items:center;padding:0 10px;border-right:1px solid #c6c6c2;">Clients</span>
+          <span style="display:flex;align-items:center;padding:0 10px;border-right:1px solid #c6c6c2;">Reports</span>
+          <span style="display:flex;align-items:center;padding:0 10px;border-right:1px solid #c6c6c2;">Admin</span>
+        </div>
+        <div style="background:#e7e7e3;border-bottom:1px solid #bdbdb9;padding:5px 7px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">New</button>
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Edit</button>
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Delete</button>
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Duplicate</button>
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Export.xls</button>
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 7px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Refresh</button>
+          <span style="width:1px;height:18px;background:#bdbdb9;margin:0 2px;"></span>
+          <span style="font-size:11px;color:#3a3a3a;">Stage:</span>
+          <select style="font-family:inherit;font-size:11px;padding:1px 3px;border:1px solid #8d8d8a;background:#fff;border-radius:2px;"><option>All stages</option></select>
+          <span style="font-size:11px;color:#3a3a3a;margin-left:4px;">Find:</span>
+          <input style="font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid #8d8d8a;background:#fff;width:96px;border-radius:2px;" value="" placeholder="client name" />
+          <button style="font-family:inherit;font-size:11px;color:#1a1a1a;padding:2px 8px;border-top:1px solid #ffffff;border-left:1px solid #ffffff;border-right:1px solid #8d8d8a;border-bottom:1px solid #8d8d8a;border-radius:2px;background:linear-gradient(#fafafa,#dadad6);cursor:pointer;">Go</button>
+        </div>
+
+        <div style="flex:1;min-height:0;background:#ffffff;overflow:hidden;padding:0;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;color:#1c1c1c;">
+            <thead>
+              <tr style="background:linear-gradient(#e3e3df,#cfcfca);">
+                <th style="text-align:left;padding:3px 7px;border:1px solid #b6b6b2;font-weight:700;">Client</th>
+                <th style="text-align:right;padding:3px 7px;border:1px solid #b6b6b2;font-weight:700;width:88px;">Value</th>
+                <th style="text-align:left;padding:3px 7px;border:1px solid #b6b6b2;font-weight:700;width:96px;">Stage</th>
+                <th style="text-align:left;padding:3px 7px;border:1px solid #b6b6b2;font-weight:700;width:62px;">Owner</th>
+                <th style="text-align:left;padding:3px 7px;border:1px solid #b6b6b2;font-weight:700;width:92px;">Last activity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:#ffffff;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Northwind Traders</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$48,200</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Negotiation</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">DK</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">2h ago</td>
+              </tr>
+              <tr style="background:#f4f4f2;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Meridian Health</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$124,000</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">In review</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">SL</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">09:14</td>
+              </tr>
+              <tr style="background:#ffffff;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Bluepeak Capital</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$215,000</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Negotiation</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">DK</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">4h ago</td>
+              </tr>
+              <tr style="background:#f4f4f2;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Atlas Logistics</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$32,750</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Sent</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">RP</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">Yesterday</td>
+              </tr>
+              <tr style="background:#ffffff;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Harbor Foods</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$67,900</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Won</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">SL</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">Jun 6</td>
+              </tr>
+              <tr style="background:#f4f4f2;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Vantage Group</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$88,500</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Sent</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">MA</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">1h ago</td>
+              </tr>
+              <tr style="background:#ffffff;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Cedar & Co</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$18,400</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Draft</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">MA</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">3d ago</td>
+              </tr>
+              <tr style="background:#f4f4f2;">
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;"><span style="color:#0a3abf;text-decoration:underline;cursor:pointer;">Orbit Media</span></td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;text-align:right;">$9,250</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">Lost</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;">RP</td>
+                <td style="padding:3px 7px;border:1px solid #dcdcd8;color:#444;">Jun 4</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="height:22px;flex:0 0 22px;background:#dcdcd8;border-top:1px solid #b6b6b2;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:10px;color:#4a4a4a;">
+          <span>8 record(s) found.</span>
+          <span>Loaded in 1.42s · server time 13:50:02 · v3.4.1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER COLUMN -->
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;align-items:center;gap:9px;padding:0 2px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#5b5bd6;box-shadow:0 0 0 3px rgba(91,91,214,.16);"></span>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.1em;color:#5b5bd6;">AFTER</span>
+        <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#9aa0c4;">/ upgraded</span>
+      </div>
+
+      <div style="flex:1;min-height:0;background:#ffffff;border:1px solid #e3e5ea;border-radius:14px;box-shadow:0 6px 20px rgba(20,22,40,.06);display:flex;flex-direction:column;overflow:hidden;">
+        <div style="height:54px;flex:0 0 54px;border-bottom:1px solid #eef0f3;display:flex;align-items:center;justify-content:space-between;padding:0 16px;">
+          <div style="display:flex;align-items:center;gap:18px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:linear-gradient(150deg,#6d5ae6,#5b5bd6);color:#fff;font-weight:800;font-size:14px;">Q</span>
+              <span style="font-size:14.5px;font-weight:700;letter-spacing:-.01em;">Quillshore</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:2px;">
+              <span style="font-size:12.5px;font-weight:500;color:#6a7280;padding:6px 11px;border-radius:8px;cursor:pointer;">Dashboard</span>
+              <span style="font-size:12.5px;font-weight:600;color:#4b45c4;background:#f1f1fd;padding:6px 11px;border-radius:8px;cursor:pointer;">Proposals</span>
+              <span style="font-size:12.5px;font-weight:500;color:#6a7280;padding:6px 11px;border-radius:8px;cursor:pointer;">Clients</span>
+              <span style="font-size:12.5px;font-weight:500;color:#6a7280;padding:6px 11px;border-radius:8px;cursor:pointer;">Reports</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:7px;width:172px;height:32px;padding:0 11px;border:1px solid #e7e9ee;border-radius:9px;background:#fafbfc;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa1ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+              <span style="font-size:12px;color:#a3aab6;">Search…</span>
+            </div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#ece8f6;color:#5a4a9c;font-size:11px;font-weight:600;">DK</span>
+          </div>
+        </div>
+
+        <div style="padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:baseline;gap:11px;">
+            <span style="font-size:18px;font-weight:700;letter-spacing:-.02em;">Proposals</span>
+            <span style="font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:#8a8f98;">8 open · Q2 pipeline</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;align-items:center;border:1px solid #e7e9ee;border-radius:9px;overflow:hidden;height:34px;">
+              <span style="font-size:12px;font-weight:600;color:#15171c;background:#f3f3fd;padding:0 12px;display:flex;align-items:center;height:100%;">All</span>
+              <span style="font-size:12px;font-weight:500;color:#6a7280;padding:0 12px;display:flex;align-items:center;height:100%;border-left:1px solid #eef0f3;cursor:pointer;">Active</span>
+              <span style="font-size:12px;font-weight:500;color:#6a7280;padding:0 12px;display:flex;align-items:center;height:100%;border-left:1px solid #eef0f3;cursor:pointer;">Won</span>
+            </div>
+            <button style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:1px solid #5b5bd6;background:#5b5bd6;border-radius:9px;font-family:inherit;font-size:12.5px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(91,91,214,.35);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New proposal
+            </button>
+          </div>
+        </div>
+
+        <div style="margin:0 18px 14px;border:1px solid #eceef2;background:#fbfbfe;border-radius:12px;padding:14px 16px;display:flex;align-items:stretch;gap:18px;">
+          <div style="display:flex;flex-direction:column;gap:2px;padding-right:18px;border-right:1px solid #eceef2;">
+            <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;color:#9aa0aa;">OPEN PIPELINE</span>
+            <span style="font-size:22px;font-weight:700;letter-spacing:-.02em;">$526.8K</span>
+            <span style="font-size:11px;color:#8a8f98;">across 7 active deals</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;padding-right:18px;border-right:1px solid #eceef2;">
+            <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;color:#9aa0aa;">WIN RATE</span>
+            <span style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:#1f7a47;">61%</span>
+            <span style="font-size:11px;color:#8a8f98;">last 30 days</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:7px;justify-content:center;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;color:#9aa0aa;">STAGE MIX</span>
+              <span style="font-size:10.5px;color:#a3aab6;">8 deals</span>
+            </div>
+            <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;">
+              <div style="flex:1;background:#98a0ac;border-radius:4px;"></div>
+              <div style="flex:2;background:#2563eb;border-radius:4px;"></div>
+              <div style="flex:1;background:#c2890b;border-radius:4px;"></div>
+              <div style="flex:2;background:#5b5bd6;border-radius:4px;"></div>
+              <div style="flex:1;background:#1f9d57;border-radius:4px;"></div>
+              <div style="flex:1;background:#cf4137;border-radius:4px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#6a7280;"><span style="width:7px;height:7px;border-radius:2px;background:#2563eb;"></span>Sent 2</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#6a7280;"><span style="width:7px;height:7px;border-radius:2px;background:#5b5bd6;"></span>Negotiation 2</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#6a7280;"><span style="width:7px;height:7px;border-radius:2px;background:#1f9d57;"></span>Won 1</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#6a7280;"><span style="width:7px;height:7px;border-radius:2px;background:#cf4137;"></span>Lost 1</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;min-height:0;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:7px 18px;border-bottom:1px solid #eceef2;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a3aab6;">CLIENT</th>
+                <th style="text-align:right;padding:7px 14px;border-bottom:1px solid #eceef2;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a3aab6;width:96px;">VALUE</th>
+                <th style="text-align:left;padding:7px 14px;border-bottom:1px solid #eceef2;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a3aab6;width:122px;">STAGE</th>
+                <th style="text-align:left;padding:7px 14px;border-bottom:1px solid #eceef2;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a3aab6;width:150px;">OWNER</th>
+                <th style="text-align:left;padding:7px 18px;border-bottom:1px solid #eceef2;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a3aab6;width:104px;">ACTIVITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Northwind Traders</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1042</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$48,200</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#ecebfb;color:#4b45c4;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#5b5bd6;"></span>Negotiation
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#e8edf8;color:#3a5694;font-size:10px;font-weight:600;flex:0 0 24px;">DK</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dana Kim</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">2h ago</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Meridian Health</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1041</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$124,000</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#fbf1da;color:#8a5e12;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#c2890b;"></span>In review
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#e3f3ec;color:#1f7a52;font-size:10px;font-weight:600;flex:0 0 24px;">SL</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Sam Lee</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">09:14</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Bluepeak Capital</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1039</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$215,000</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#ecebfb;color:#4b45c4;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#5b5bd6;"></span>Negotiation
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#e8edf8;color:#3a5694;font-size:10px;font-weight:600;flex:0 0 24px;">DK</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dana Kim</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">4h ago</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Atlas Logistics</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1036</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$32,750</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#e7eefc;color:#2456c8;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#2563eb;"></span>Sent
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f6e9e0;color:#9c5a30;font-size:10px;font-weight:600;flex:0 0 24px;">RP</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Rosa Pérez</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">Yesterday</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Harbor Foods</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1031</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$67,900</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#e6f5ec;color:#1f7a47;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#1f9d57;"></span>Won
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#e3f3ec;color:#1f7a52;font-size:10px;font-weight:600;flex:0 0 24px;">SL</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Sam Lee</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">Jun 6</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Vantage Group</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1043</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$88,500</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#e7eefc;color:#2456c8;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#2563eb;"></span>Sent
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#ece8f6;color:#5a4a9c;font-size:10px;font-weight:600;flex:0 0 24px;">MA</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mara Adeyemi</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">1h ago</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Cedar & Co</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1028</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$18,400</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#eef0f2;color:#5a626f;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#98a0ac;"></span>Draft
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#ece8f6;color:#5a4a9c;font-size:10px;font-weight:600;flex:0 0 24px;">MA</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mara Adeyemi</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">3d ago</td>
+              </tr>
+              <tr class="arow" style="cursor:pointer;border-bottom:1px solid #f3f4f7;">
+                <td style="padding:0 18px;height:40px;">
+                  <div style="display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:13px;font-weight:600;color:#15171c;">Orbit Media</span>
+                    <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a3aab6;">#PRO-1024</span>
+                  </div>
+                </td>
+                <td style="padding:0 14px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#15171c;">$9,250</td>
+                <td style="padding:0 14px;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 8px;border-radius:999px;background:#fae8e6;color:#9e352c;font-size:11.5px;font-weight:600;white-space:nowrap;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#cf4137;"></span>Lost
+                  </span>
+                </td>
+                <td style="padding:0 14px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f6e9e0;color:#9c5a30;font-size:10px;font-weight:600;flex:0 0 24px;">RP</span>
+                    <span style="font-size:12.5px;color:#3a414c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Rosa Pérez</span>
+                  </div>
+                </td>
+                <td style="padding:0 18px;font-size:12px;color:#8a8f98;">Jun 4</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
