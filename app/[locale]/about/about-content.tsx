@@ -438,8 +438,7 @@ export function AboutContent() {
 
   return (
     <>
-      {/* figma-canon: Instrument Sans (the Figma typeface) on headings. */}
-      <div className="figma-canon">
+      <div>
       {/* Hero — Figma open-grid treatment (consistent with /services & /opportunities) */}
       <section ref={headerRef} className="site-hero-section relative overflow-hidden">
         <div

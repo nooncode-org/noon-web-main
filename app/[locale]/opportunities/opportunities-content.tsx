@@ -73,7 +73,7 @@ export function OpportunitiesContent() {
 
   return (
     <>
-      <div className="figma-canon">
+      <div>
         {/* Hero — open grid, color-split headline (Figma frame 73:90) */}
         <section ref={headerRef} className="site-hero-section relative overflow-hidden">
           <div
