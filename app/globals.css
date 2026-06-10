@@ -12,7 +12,6 @@
 
 :root {
   --font-instrument: 'Instrument Sans', 'Aptos', 'Segoe UI', system-ui, sans-serif;
-  --font-instrument-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
   --font-jetbrains: 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
   --background: #ffffff;
   --foreground: #000000;
@@ -67,8 +66,8 @@
   --font-sans: var(--font-instrument), 'Instrument Sans', system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
   /* All-sans system (owner decision 2026-06-05): display = Instrument Sans, to
-     match Vercel/Linear + the Figma canon. The serif (--font-instrument-serif)
-     is now unused; remove it + its next/font load in a later cleanup. */
+     match Vercel/Linear + the Figma canon. (The unused Instrument Serif font +
+     its next/font load were removed 2026-06-10.) */
   --font-display: var(--font-instrument), 'Instrument Sans', system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
