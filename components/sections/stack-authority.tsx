@@ -5,6 +5,7 @@ import { ShieldCheck } from "lucide-react";
 import { EASE } from "@/lib/motion";
 import { MaskLogo } from "@/components/ui/mask-logo";
 import { useRevealMotion } from "@/hooks/use-reveal-motion";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 // StackAuthority — honest "built-on" authority play + the human-review wedge, in
 // one band. The credibility is a CAPABILITY claim (Noon builds on these tools),
@@ -32,10 +33,7 @@ export function StackAuthority() {
         >
           {/* Built-on a frontier stack (capability claim) */}
           <div className="border-b border-foreground/10 p-6 md:border-b-0 md:border-r lg:p-8">
-            <span className="site-meta-label inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              The stack
-            </span>
+            <Eyebrow>The stack</Eyebrow>
             <h2 className="site-section-title mt-4">Built on a frontier stack.</h2>
             <p className="site-section-copy mt-3 max-w-md text-muted-foreground">
               The same Anthropic, OpenAI, Vercel, Stripe, and Supabase that power today&apos;s best

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { EASE } from "@/lib/motion";
 import { useRevealMotion } from "@/hooks/use-reveal-motion";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 // IndustryShift — "The shift": real, verified public statements from the people
 // running the frontier labs (2026-weighted), framed as INDUSTRY CONTEXT, never
@@ -87,10 +88,7 @@ export function IndustryShift() {
         <div ref={ref} className="mx-auto max-w-5xl">
           {/* eyebrow + headline + lead */}
           <div className="max-w-2xl">
-            <span className="site-meta-label inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              The shift
-            </span>
+            <Eyebrow>The shift</Eyebrow>
             <h2 className="site-section-title mt-4">
               AI writes the code now. Someone still has to be sure.
             </h2>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { Boxes, GitBranch, LifeBuoy, ScanSearch, TrendingUp, User } from "lucide-react";
@@ -36,6 +36,14 @@ const ICONS = {
   audit: ScanSearch,
   upgrade: TrendingUp,
 } as const;
+
+// blueprint crop-mark corner positions (Vercel-style technical framing)
+const CORNERS = [
+  "left-3 top-3 border-l border-t",
+  "right-3 top-3 border-r border-t",
+  "left-3 bottom-3 border-l border-b",
+  "right-3 bottom-3 border-r border-b",
+] as const;
 
 export interface DecisionStep {
   name: string;
@@ -115,6 +123,10 @@ export function DecisionMap({
   const inView = useInView(containerRef, { once: true, margin: "-80px" });
   const play = mounted && inView;
 
+  // Per-instance SVG marker id: duplicate ids across two mounted maps would
+  // make every markerEnd resolve to the first marker in document order.
+  const arrowId = `dm-arrow-${useId().replace(/[^a-zA-Z0-9-]/g, "")}`;
+
   // node id → element, used as the single coordinate source of truth
   const nodeRefs = useRef<Map<string, Element>>(new Map());
   const setNodeRef = useCallback(
@@ -165,24 +177,19 @@ export function DecisionMap({
     measure();
     const c = containerRef.current;
     if (!c) return;
+    // The container observer covers viewport resizes too: any window resize
+    // that can move the nodes also changes the container box, so a separate
+    // window "resize" listener would just run the same measure twice.
     const ro = new ResizeObserver(() => measure());
     ro.observe(c);
-    window.addEventListener("resize", measure);
-    // Re-measure once web fonts settle (chip widths shift after FOUT).
+    // Re-measure once web fonts settle (chip widths shift after FOUT without
+    // necessarily resizing the container box — the observer can't see that).
     const t = window.setTimeout(measure, 300);
     return () => {
       ro.disconnect();
-      window.removeEventListener("resize", measure);
       window.clearTimeout(t);
     };
   }, [measure]);
-
-  const CORNERS = [
-    "left-3 top-3 border-l border-t",
-    "right-3 top-3 border-r border-t",
-    "left-3 bottom-3 border-l border-b",
-    "right-3 bottom-3 border-r border-b",
-  ] as const;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -227,7 +234,7 @@ export function DecisionMap({
             >
               <defs>
                 <marker
-                  id="dm-arrow"
+                  id={arrowId}
                   viewBox="0 0 10 10"
                   refX="7"
                   refY="5"
@@ -252,7 +259,7 @@ export function DecisionMap({
                           stroke="var(--color-primary)"
                           strokeWidth={2}
                           strokeLinecap="round"
-                          markerEnd={seg.order > 0 ? "url(#dm-arrow)" : undefined}
+                          markerEnd={seg.order > 0 ? `url(#${arrowId})` : undefined}
                         />
                       ) : (
                         <motion.path
@@ -261,7 +268,7 @@ export function DecisionMap({
                           stroke="var(--color-primary)"
                           strokeWidth={2}
                           strokeLinecap="round"
-                          markerEnd={seg.order > 0 ? "url(#dm-arrow)" : undefined}
+                          markerEnd={seg.order > 0 ? `url(#${arrowId})` : undefined}
                           initial={{ pathLength: 0, opacity: 0 }}
                           animate={play ? { pathLength: 1, opacity: 1 } : {}}
                           transition={{ duration: 0.55, delay: 0.15 + seg.order * 0.18, ease: EASE }}

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { EASE } from "@/lib/motion";
 import { useRevealMotion } from "@/hooks/use-reveal-motion";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 // HowWeWork — the process as Linear-style NUMBERED PILLARS (not a connector
 // diagram; the decision-map already owns that language on /services). Four
@@ -28,10 +29,7 @@ export function HowWeWork() {
         <div ref={ref} className="mx-auto max-w-5xl">
           {/* header */}
           <div className="mb-10 max-w-2xl lg:mb-12">
-            <span className="site-meta-label inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              How we work
-            </span>
+            <Eyebrow>How we work</Eyebrow>
             <h2 className="site-section-title mt-4">
               AI speed. <span className="text-muted-foreground">Human judgment.</span>
             </h2>
