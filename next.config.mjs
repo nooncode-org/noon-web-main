@@ -97,9 +97,14 @@ const nextConfig = {
     // blocks eval() → client JS fails → useRevealOnView leaves sections at
     // opacity-0 (page appears blank).
     const isDev = process.env.NODE_ENV !== "production";
+    // platform.twitter.com → the official X/Twitter embed (widgets.js) used by
+    // the About "The shift" section to render real tweets. The widget script
+    // comes from platform.twitter.com, the rendered tweet is an iframe from the
+    // same host, and createTweet fetches tweet data from cdn.syndication.twimg.com;
+    // tweet images load from pbs/abs.twimg.com (covered by img-src https:).
     const scriptSrc = isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-      : "script-src 'self' 'unsafe-inline'";
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://platform.twitter.com"
+      : "script-src 'self' 'unsafe-inline' https://platform.twitter.com";
 
     const csp = [
       "default-src 'self'",
@@ -107,10 +112,11 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      "connect-src 'self' https://cdn.syndication.twimg.com",
       // 'self' → the /work live product mockups (public/work/mockups/*.html)
-      // embedded as same-origin iframes; the rest are v0 preview hosts.
-      "frame-src 'self' https://*.vercel.app https://*.vusercontent.net",
+      // embedded as same-origin iframes; platform.twitter.com → X tweet embeds;
+      // the rest are v0 preview hosts.
+      "frame-src 'self' https://platform.twitter.com https://*.vercel.app https://*.vusercontent.net",
       "form-action 'self' https://checkout.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
