@@ -38,7 +38,9 @@ const VOICES: {
     name: "Jensen Huang",
     role: "CEO, NVIDIA",
     source: "NVIDIA GTC Taipei 2026",
-    href: "https://blogs.nvidia.com/blog/nvidia-gtc-taipei-computex-2026-news/",
+    // official keynote page (with replay video) where he said it — the recap
+    // article only paraphrases the line, so it links to the primary source.
+    href: "https://www.nvidia.com/en-tw/gtc/taipei/keynote/",
     avatar: "/work/voices/jensen-huang.jpg",
   },
   {
