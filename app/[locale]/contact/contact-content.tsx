@@ -142,8 +142,7 @@ export function ContactPageContent() {
 
   return (
     <>
-      {/* figma-canon: Instrument Sans (the Figma typeface) on headings. */}
-      <div className="figma-canon">
+      <div>
       <section ref={headerRef} className="site-hero-section pb-4 lg:pb-5">
         <div className="site-shell">
           <div className="grid w-full items-start gap-8 lg:grid-cols-[minmax(0,420px)_820px] lg:justify-between lg:gap-10">

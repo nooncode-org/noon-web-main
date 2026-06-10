@@ -279,18 +279,6 @@
     font-family: var(--font-display);
   }
 
-  /* All-sans system (2026-06-05): the whole site now uses Instrument Sans for
-     display, so this .figma-canon override is redundant (it just re-asserts
-     sans). Kept as a harmless no-op; safe to delete along with the .figma-canon
-     wrappers in a later cleanup. */
-  .figma-canon :is(h1, h2, h3, h4, h5, h6),
-  .figma-canon .site-hero-title,
-  .figma-canon .site-section-title,
-  .figma-canon .site-card-title,
-  .figma-canon .font-display {
-    font-family: var(--font-instrument) !important;
-  }
-
   .text-stroke {
     -webkit-text-stroke: 1.5px currentColor;
     -webkit-text-fill-color: transparent;

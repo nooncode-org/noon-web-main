@@ -217,9 +217,7 @@ export function ServicesContent() {
 
   return (
     <>
-      {/* figma-canon: forces Instrument Sans (the Figma typeface) on this page's
-          headings, overriding the site's default serif display face. */}
-      <div className="figma-canon">
+      <div>
       {/* Figma "open grid" hero rebuilt at web-main scale (site-hero-title / site-shell),
           light + dark via local --gl grid-line var. Replaces the prior card hero. */}
       <section ref={headerRef} className="site-hero-section relative overflow-hidden">
