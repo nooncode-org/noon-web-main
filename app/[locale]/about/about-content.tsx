@@ -648,7 +648,7 @@ export function AboutContent() {
       <section className="site-section">
         <div className="site-shell">
           <RevealBlock className="mb-10 max-w-2xl">
-            <h2 className="site-section-title">From idea to launch</h2>
+            <h2 className="site-section-title">From idea to launch. Reviewed the whole way.</h2>
             <p className="site-section-copy mt-3 text-muted-foreground">
               We combine advanced automated workflows and human expertise to build and deploy.
             </p>
