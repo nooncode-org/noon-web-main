@@ -18,6 +18,7 @@ import { FaqSection } from "@/components/landing/faq-section";
 import { MaxwellDemo } from "@/components/marketing/maxwell-demo/MaxwellDemo";
 import { HumanReviewProof } from "@/components/sections/human-review-proof";
 import { IndustryShift } from "@/components/sections/industry-shift";
+import { MaxwellProcess } from "@/components/sections/maxwell-process";
 import { TechEcosystem } from "@/components/sections/tech-ecosystem";
 
 const LOCALES = ["en", "es", "fr", "de"];
@@ -628,6 +629,11 @@ export function AboutContent() {
           </RevealBlock>
         </div>
       </section>
+
+      {/* The client's journey through Maxwell — stage rail with the explicit
+         human review GATE (P7) and the activation line. Content per the owner's
+         six framing decisions: specs/2026-06-10-maxwell-process-explainer.md */}
+      <MaxwellProcess />
 
       {/* Industry context: the people building the models say AI now writes the
          code — and a human still reviews & accepts it. Sets up the wedge. */}
