@@ -4,11 +4,6 @@ import Image from "next/image";
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { EASE } from "@/lib/motion";
-import { TweetEmbed } from "@/components/ui/tweet-embed";
-
-// Real, verified tweets (official X embed renders the authentic card). On-topic
-// posts from the people who defined "the shift" to AI-written code.
-const TWEETS = ["1617979122625712128", "1886192184808149383"];
 
 // IndustryShift — "The shift": real, verified public statements from the people
 // running the frontier labs (2026-weighted), framed as INDUSTRY CONTEXT, never
@@ -53,6 +48,15 @@ const VOICES: {
     source: "Council on Foreign Relations, 2025",
     href: "https://finance.yahoo.com/news/anthropic-ceo-says-ai-could-193020957.html",
     avatar: "/work/voices/amodei.jpg",
+  },
+  {
+    // his real post, quoted clean (not a literal embed) — the source links to it
+    quote: "The hottest new programming language is English.",
+    name: "Andrej Karpathy",
+    role: "Founding member, OpenAI",
+    source: "on X · 2023",
+    href: "https://x.com/karpathy/status/1617979122625712128",
+    avatar: "/work/voices/andrej-karpathy.jpg",
   },
 ];
 
@@ -123,7 +127,7 @@ export function IndustryShift() {
           </motion.figure>
 
           {/* supporting voices */}
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {VOICES.map((v, i) => (
               <motion.figure
                 key={v.name}
@@ -156,21 +160,8 @@ export function IndustryShift() {
             ))}
           </div>
 
-          {/* and on X — the same shift, in their own posts (real embeds) */}
-          <div className="mt-10 lg:mt-12">
-            <p className="site-meta-label mb-5 inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              On X, in their own posts
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {TWEETS.map((tid) => (
-                <TweetEmbed key={tid} id={tid} />
-              ))}
-            </div>
-          </div>
-
           {/* attribution + bridge into the human-review proof that follows */}
-          <p className="mt-8 font-mono text-[10.5px] leading-relaxed text-muted-foreground/50">
+          <p className="mt-5 font-mono text-[10.5px] leading-relaxed text-muted-foreground/50">
             Portraits via Wikimedia Commons (CC BY / GODL). Public statements — shown as industry
             context, not endorsements of Noon.
           </p>
