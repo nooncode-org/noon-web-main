@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embertide — Loyalty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120e0c;
+    --app:#1a1512;
+    --panel:#211a16;
+    --panel-2:#2a211b;
+    --panel-3:#33281f;
+    --border:#352a22;
+    --border-2:#41342a;
+    --line:#2c231d;
+    --ink:#f5ede4;
+    --ink-2:#b6a899;
+    --ink-3:#7c6f62;
+    --gold:#e0a83e;
+    --gold-2:#c98f28;
+    --gold-bg:rgba(224,168,62,.14);
+    --gold-line:rgba(224,168,62,.3);
+    --coral:#e4795f;
+    --coral-bg:rgba(228,121,95,.14);
+    --green:#5cbf8a;
+    --green-bg:rgba(92,191,138,.15);
+    --rose:#dd6a78;
+    --plat:#d7dde4;--goldt:#e0a83e;--silv:#aab2bc;--bronze:#c08457;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 50px rgba(0,0,0,.5), 0 50px 120px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:radial-gradient(1200px 600px at 50% -10%, #1c1510, var(--bg));
+    font-family:"Outfit",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .iconify{font-size:18px;flex:none}
+  .num{font-variant-numeric:tabular-nums}
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .window{width:1440px;background:var(--app);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;
+    transform-origin:center center;border:1px solid #2a221c;display:flex;flex-direction:column}
+
+  .chrome{height:44px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;background:#16110e;border-bottom:1px solid #271f19}
+  .lights{display:flex;gap:8px}.lights span{width:12px;height:12px;border-radius:50%}
+  .lights span:nth-child(1){background:#f0605c}.lights span:nth-child(2){background:#f5bd4f}.lights span:nth-child(3){background:#61c454}
+  .url{flex:1;max-width:460px;height:27px;background:#221a15;border:1px solid #382c24;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-2);font-size:12px;white-space:nowrap;overflow:hidden}
+  .url svg{width:13px;height:13px;color:var(--green)}.url b{color:var(--ink);font-weight:600}
+  .chrome-right{margin-left:auto;display:flex;gap:14px;color:var(--ink-3)}.chrome-right svg{width:16px;height:16px}
+
+  .topbar{height:60px;flex:none;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:var(--panel)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(150deg,var(--gold),var(--coral));color:#2a1605;display:flex;align-items:center;justify-content:center}
+  .logo svg{width:18px;height:18px;stroke-width:2.4}
+  .brand .name{font-weight:800;font-size:18px;letter-spacing:-.4px}
+  .store{display:flex;align-items:center;gap:9px;margin-left:8px;padding:6px 11px;border:1px solid var(--border-2);border-radius:9px;font-size:13px;font-weight:600;white-space:nowrap}
+  .store .sa{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--coral),#b9524a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+  .store svg{width:13px;height:13px;color:var(--ink-3)}
+  .tsearch{margin-left:6px;width:240px;height:36px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:10px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--ink-3);font-size:13px}
+  .tsearch svg{width:15px;height:15px}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:11px}
+  .range{height:36px;border:1px solid var(--border-2);background:var(--panel-2);border-radius:10px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .range svg{width:15px;height:15px;color:var(--ink-3)}
+  .iconb{width:36px;height:36px;border-radius:10px;border:1px solid var(--border-2);background:var(--panel-2);display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative}
+  .iconb svg{width:17px;height:17px}.iconb .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--coral);border:2px solid var(--panel)}
+  .uava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--coral));color:#2a1605;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+
+  .app{flex:1;display:flex;min-height:0}
+  .sidebar{width:212px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 0}
+  .nav{display:flex;flex-direction:column;gap:2px;padding:4px 12px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--ink-2);font-size:13.5px;font-weight:600;text-decoration:none}
+  .nav a svg{width:18px;height:18px;color:var(--ink-3)}
+  .nav a .ct{margin-left:auto;font-size:11px;color:var(--gold);font-weight:700;background:var(--gold-bg);padding:1px 7px;border-radius:20px}
+  .nav a.active{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-line)}
+  .nav a.active svg{color:var(--gold)}
+  .nav .label{font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--ink-3);text-transform:uppercase;padding:14px 10px 6px}
+  .side-foot{margin-top:auto;padding:12px 14px 2px}
+  .upsell{padding:13px;border-radius:12px;background:linear-gradient(150deg,var(--gold-bg),var(--coral-bg));border:1px solid var(--border-2)}
+  .upsell .t{font-size:12.5px;font-weight:700}
+  .upsell .s{font-size:11px;color:var(--ink-2);margin-top:3px;line-height:1.35}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--app)}
+  .content{flex:1;padding:22px 24px 24px;overflow:hidden}
+  .phead{display:flex;align-items:flex-end;margin-bottom:18px}
+  .phead h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .phead .s{font-size:13px;color:var(--ink-2);margin-top:3px}
+  .phead .right{margin-left:auto;display:flex;gap:9px}
+  .pbtn{height:36px;border-radius:10px;border:1px solid var(--border-2);background:var(--panel-2);display:flex;align-items:center;gap:7px;padding:0 13px;font-size:12.5px;font-weight:600;color:var(--ink);font-family:inherit}
+  .pbtn svg{width:15px;height:15px;color:var(--ink-2)}
+  .pbtn.gold{background:linear-gradient(150deg,var(--gold),var(--gold-2));color:#2a1605;border:none;font-weight:700}.pbtn.gold svg{color:#2a1605}
+
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;position:relative;overflow:hidden}
+  .metric .cap{font-size:12px;color:var(--ink-2);font-weight:600;display:flex;align-items:center;gap:8px}
+  .metric .cap .mi{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .metric .cap .mi svg{width:14px;height:14px}
+  .mi.gold{background:var(--gold-bg);color:var(--gold)}.mi.coral{background:var(--coral-bg);color:var(--coral)}
+  .mi.green{background:var(--green-bg);color:var(--green)}.mi.plat{background:rgba(215,221,228,.13);color:var(--plat)}
+  .metric .val{font-size:27px;font-weight:800;letter-spacing:-.7px;margin-top:11px;display:flex;align-items:baseline;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px}
+  .chip svg{width:11px;height:11px;stroke-width:2.6}
+  .chip.up{color:var(--green);background:var(--green-bg)}
+  .chip.gold{color:var(--gold);background:var(--gold-bg)}
+  .metric .foot{margin-top:7px;font-size:11.5px;color:var(--ink-3)}
+  .spark{position:absolute;right:14px;top:15px;width:66px;height:28px}
+  /* KPI ribbon (distinct from CS1 cards) */
+  .kpibar{display:flex;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 6px;margin-bottom:16px}
+  .kpi{flex:1;display:flex;align-items:center;gap:13px;padding:0 20px}
+  .kpi .mi{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .kpi .mi svg{width:19px;height:19px}
+  .kdiv{width:1px;align-self:stretch;background:var(--border);margin:3px 0}
+  .kt .kl{font-size:11.5px;color:var(--ink-2);font-weight:600;white-space:nowrap}
+  .kt .kv{font-size:23px;font-weight:800;letter-spacing:-.6px;margin-top:4px;display:flex;align-items:baseline;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .cols{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .card + .card{margin-top:16px}
+  .ch{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .ch h2{font-size:14.5px;font-weight:700;letter-spacing:-.2px;white-space:nowrap}
+  .ch .meta{font-size:12px;color:var(--ink-3);font-weight:600;white-space:nowrap}
+  .ch .right{margin-left:auto}
+  .lk{font-size:12.5px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:4px;white-space:nowrap}.lk svg{width:14px;height:14px}
+
+  /* campaigns table */
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  thead th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);padding:10px 16px;border-bottom:1px solid var(--line)}
+  thead th.r,td.r{text-align:right}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  .cmp{display:flex;align-items:center;gap:11px}
+  .cmp .ci{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center}
+  .cmp .ci svg{width:17px;height:17px}
+  .cmp > div:last-child{min-width:0;flex:1}
+  .cmp .cn{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmp .cstat{font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px}
+  .cmp .cstat .d{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .tbadge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+  .tb-welcome{color:var(--green);background:var(--green-bg)}
+  .tb-winback{color:var(--coral);background:var(--coral-bg)}
+  .tb-vip{color:var(--gold);background:var(--gold-bg)}
+  .tb-life{color:var(--plat);background:rgba(215,221,228,.12)}
+  .rev{font-weight:800;font-variant-numeric:tabular-nums}
+  .conv{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .conv .bar{width:48px;height:6px;border-radius:4px;background:var(--panel-3);overflow:hidden}
+  .conv .bar i{display:block;height:100%;background:var(--gold);border-radius:4px}
+  .conv .pc{font-size:12px;font-weight:700;width:34px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* tiers */
+  .tiers{padding:8px 16px 14px}
+  .tier{padding:11px 0}
+  .tier + .tier{border-top:1px solid var(--line)}
+  .tier .tt{display:flex;align-items:center;gap:9px}
+  .tier .gem{width:11px;height:11px;border-radius:3px;transform:rotate(45deg)}
+  .tier .tn{font-size:13px;font-weight:700}
+  .tier .tm{margin-left:auto;font-size:12px;color:var(--ink-2);font-weight:600;font-variant-numeric:tabular-nums}
+  .tier .tbar{height:7px;border-radius:5px;background:var(--panel-3);margin-top:8px;overflow:hidden}
+  .tier .tbar i{display:block;height:100%;border-radius:5px}
+  .tier .tx{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:5px}
+
+  /* points feed */
+  .feed{padding:8px 8px}
+  .fr{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px}
+  .fr + .fr{border-top:1px solid var(--line)}
+  .fr .fa{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#241404}
+  .fr .ft{flex:1;min-width:0;font-size:12.5px;line-height:1.35}
+  .fr .ft b{font-weight:700}
+  .fr .ft .sub{font-size:11px;color:var(--ink-3)}
+  .fr .pts{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pts.earn{color:var(--green)}.pts.redeem{color:var(--coral)}.pts.tier{color:var(--gold)}
+  /* revenue chart */
+  .chartwrap{padding:18px 18px 14px}
+  .bars{display:flex;align-items:flex-end;gap:11px;height:150px}
+  .bars .b{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#cf952f,#7a5417)}
+  .bars .b.cur{background:linear-gradient(180deg,#f1c059,#e0a83e)}
+  .xlabels{display:flex;gap:11px;margin-top:9px}
+  .xlabels span{flex:1;text-align:center;font-size:10px;color:var(--ink-3);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="window" id="win" data-screen-label="CS6 — Embertide Loyalty">
+    <div class="chrome">
+      <div class="lights"><span></span><span></span><span></span></div>
+      <div class="url"><i class="iconify" data-icon="mingcute:lock-fill"></i>app.embertide.io<b>/loyalty/overview</b></div>
+      <div class="chrome-right"><i class="iconify" data-icon="mingcute:add-fill"></i><i class="iconify" data-icon="mingcute:grid-fill"></i></div>
+    </div>
+
+    <div class="topbar">
+      <div class="brand"><div class="logo"><i class="iconify" data-icon="mingcute:fire-fill"></i></div><div class="name">Embertide</div></div>
+      <div class="store"><div class="sa">LB</div>Lumière Beauty<i class="iconify" data-icon="mingcute:down-fill"></i></div>
+      <div class="tsearch"><i class="iconify" data-icon="mingcute:search-2-fill"></i>Search campaigns, segments…</div>
+      <div class="top-right">
+        <div class="range"><i class="iconify" data-icon="mingcute:calendar-fill"></i>Last 90 days</div>
+        <div class="iconb"><i class="iconify" data-icon="mingcute:notification-fill"></i><span class="dot"></span></div>
+        <div class="uava">MR</div>
+      </div>
+    </div>
+
+    <div class="app">
+      <aside class="sidebar">
+        <nav class="nav">
+          <a class="active" href="#"><i class="iconify" data-icon="mingcute:dashboard-fill"></i>Overview</a>
+          <a href="#"><i class="iconify" data-icon="mingcute:send-plane-fill"></i>Campaigns<span class="ct">9</span></a>
+          <a href="#"><i class="iconify" data-icon="mingcute:group-fill"></i>Segments</a>
+          <a href="#"><i class="iconify" data-icon="mingcute:vip-2-fill"></i>Loyalty tiers</a>
+          <a href="#"><i class="iconify" data-icon="mingcute:gift-fill"></i>Rewards</a>
+          <div class="label">Insights</div>
+          <a href="#"><i class="iconify" data-icon="mingcute:chart-bar-fill"></i>Analytics</a>
+          <a href="#"><i class="iconify" data-icon="mingcute:settings-3-fill"></i>Settings</a>
+        </nav>
+        <div class="side-foot">
+          <div class="upsell">
+            <div class="t">Win back lapsed VIPs</div>
+            <div class="s">312 high-value members at risk. Launch a flow →</div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <div class="phead">
+            <div>
+              <h1>Loyalty &amp; lifecycle</h1>
+              <div class="s">Lumière Beauty · loyalty program performance · last 90 days</div>
+            </div>
+            <div class="right">
+              <button class="pbtn"><i class="iconify" data-icon="mingcute:download-2-fill"></i>Export</button>
+              <button class="pbtn gold"><i class="iconify" data-icon="mingcute:add-fill"></i>New campaign</button>
+            </div>
+          </div>
+
+          <div class="kpibar">
+            <div class="kpi"><span class="mi gold"><i class="iconify" data-icon="mingcute:group-fill"></i></span><div class="kt"><div class="kl">Active members</div><div class="kv">48,240 <span class="chip up"><i class="iconify" data-icon="mingcute:arrow-up-fill"></i>6.2%</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi coral"><i class="iconify" data-icon="mingcute:repeat-fill"></i></span><div class="kt"><div class="kl">Repeat purchase rate</div><div class="kv">38.4% <span class="chip up"><i class="iconify" data-icon="mingcute:arrow-up-fill"></i>4.1</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi green"><i class="iconify" data-icon="mingcute:coin-2-fill"></i></span><div class="kt"><div class="kl">Loyalty revenue</div><div class="kv">$284K <span class="chip up"><i class="iconify" data-icon="mingcute:arrow-up-fill"></i>11%</span></div></div></div>
+            <div class="kdiv"></div>
+            <div class="kpi"><span class="mi plat"><i class="iconify" data-icon="mingcute:sparkles-2-fill"></i></span><div class="kt"><div class="kl">Points redeemed</div><div class="kv">1.24M <span class="chip gold">68% rate</span></div></div></div>
+          </div>
+
+          <div class="cols">
+            <div>
+            <section class="card">
+              <div class="ch"><h2>Active campaigns</h2><span class="meta">· 5 automations running</span><div class="right"><a class="lk" href="#">All campaigns <i class="iconify" data-icon="mingcute:arrow-right-fill"></i></a></div></div>
+              <table>
+                <colgroup><col style="width:34%"><col style="width:16%"><col style="width:15%"><col style="width:15%"><col style="width:20%"></colgroup>
+                <thead>
+                  <tr><th>Campaign</th><th>Type</th><th class="r">Audience</th><th class="r">Revenue</th><th class="r">Conversion</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--green-bg);color:var(--green)"><i class="iconify" data-icon="mingcute:heart-fill"></i></div><div><div class="cn">Welcome series</div><div class="cstat"><span class="d"></span>Active · 3-step flow</div></div></div></td>
+                    <td><span class="tbadge tb-welcome">Welcome</span></td>
+                    <td class="r num">12,400</td>
+                    <td class="r rev">$48.2K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:24%"></i></span><span class="pc">24%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--gold-bg);color:var(--gold)"><i class="iconify" data-icon="mingcute:vip-1-fill"></i></div><div><div class="cn">VIP early access</div><div class="cstat"><span class="d"></span>Active · evergreen</div></div></div></td>
+                    <td><span class="tbadge tb-vip">VIP</span></td>
+                    <td class="r num">3,200</td>
+                    <td class="r rev">$96.8K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:38%"></i></span><span class="pc">38%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--coral-bg);color:var(--coral)"><i class="iconify" data-icon="mingcute:back-2-fill"></i></div><div><div class="cn">Winback · 60-day</div><div class="cstat"><span class="d"></span>Active · triggered</div></div></div></td>
+                    <td><span class="tbadge tb-winback">Winback</span></td>
+                    <td class="r num">8,900</td>
+                    <td class="r rev">$31.4K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:11%"></i></span><span class="pc">11%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:rgba(215,221,228,.12);color:var(--plat)"><i class="iconify" data-icon="mingcute:cake-fill"></i></div><div><div class="cn">Birthday reward</div><div class="cstat"><span class="d"></span>Active · monthly</div></div></div></td>
+                    <td><span class="tbadge tb-life">Lifecycle</span></td>
+                    <td class="r num">1,150</td>
+                    <td class="r rev">$12.1K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:42%"></i></span><span class="pc">42%</span></div></td>
+                  </tr>
+                  <tr>
+                    <td><div class="cmp"><div class="ci" style="background:var(--coral-bg);color:var(--coral)"><i class="iconify" data-icon="mingcute:box-3-fill"></i></div><div><div class="cn">Replenishment reminder</div><div class="cstat"><span class="d"></span>Active · triggered</div></div></div></td>
+                    <td><span class="tbadge tb-winback">Winback</span></td>
+                    <td class="r num">6,700</td>
+                    <td class="r rev">$22.9K</td>
+                    <td><div class="conv"><span class="bar"><i style="width:18%"></i></span><span class="pc">18%</span></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section class="card">
+              <div class="ch"><h2>Loyalty revenue</h2><span class="meta">· last 8 weeks</span><div class="right"><span class="meta" style="color:var(--ink-2)">$284K total · +11%</span></div></div>
+              <div class="chartwrap">
+                <div class="bars">
+                  <div class="b" style="height:46%"></div>
+                  <div class="b" style="height:54%"></div>
+                  <div class="b" style="height:49%"></div>
+                  <div class="b" style="height:63%"></div>
+                  <div class="b" style="height:68%"></div>
+                  <div class="b" style="height:61%"></div>
+                  <div class="b" style="height:79%"></div>
+                  <div class="b cur" style="height:92%"></div>
+                </div>
+                <div class="xlabels"><span>Apr 14</span><span>Apr 21</span><span>Apr 28</span><span>May 5</span><span>May 12</span><span>May 19</span><span>May 26</span><span>Jun 2</span></div>
+              </div>
+            </section>
+            </div>
+
+            <div>
+              <section class="card">
+                <div class="ch"><h2>Membership tiers</h2><span class="meta">· 48.2K</span></div>
+                <div class="tiers">
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--plat)"></span><span class="tn">Platinum</span><span class="tm">1,240</span></div>
+                    <div class="tbar"><i style="width:6%;background:linear-gradient(90deg,#aeb6bf,#d7dde4)"></i></div>
+                    <div class="tx"><span>3% of members</span><span>avg $1,840 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--goldt)"></span><span class="tn">Gold</span><span class="tm">6,820</span></div>
+                    <div class="tbar"><i style="width:24%;background:linear-gradient(90deg,#c98f28,#e0a83e)"></i></div>
+                    <div class="tx"><span>14% of members</span><span>avg $720 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--silv)"></span><span class="tn">Silver</span><span class="tm">14,300</span></div>
+                    <div class="tbar"><i style="width:52%;background:linear-gradient(90deg,#8a929c,#aab2bc)"></i></div>
+                    <div class="tx"><span>30% of members</span><span>avg $310 / yr</span></div>
+                  </div>
+                  <div class="tier">
+                    <div class="tt"><span class="gem" style="background:var(--bronze)"></span><span class="tn">Bronze</span><span class="tm">25,880</span></div>
+                    <div class="tbar"><i style="width:90%;background:linear-gradient(90deg,#9c6a3e,#c08457)"></i></div>
+                    <div class="tx"><span>53% of members</span><span>avg $90 / yr</span></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="ch"><h2>Points activity</h2><span class="meta">· live</span></div>
+                <div class="feed">
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e0a83e,#e4795f)">MR</div><div class="ft"><b>Maya R.</b> earned points<div class="sub">Order #LB-4821 · $128</div></div><span class="pts earn">+240</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#5cbf8a,#3f9e72)">SC</div><div class="ft"><b>Sam C.</b> redeemed reward<div class="sub">$15 off coupon</div></div><span class="pts redeem">−1,500</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e0a83e,#c98f28)">LM</div><div class="ft"><b>Lucia M.</b> reached <b>Gold</b><div class="sub">Lifetime 8,200 pts</div></div><span class="pts tier">Gold</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#e4795f,#b9524a)">TN</div><div class="ft"><b>Theo N.</b> earned points<div class="sub">Product review · 5★</div></div><span class="pts earn">+80</span></div>
+                  <div class="fr"><div class="fa" style="background:linear-gradient(135deg,#aab2bc,#8a929c)">RB</div><div class="ft"><b>Renata B.</b> redeemed reward<div class="sub">Free shipping</div></div><span class="pts redeem">−800</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+<script>
+  function fit(){
+    const win=document.getElementById('win');
+    const pad=24;
+    const s=Math.min((window.innerWidth-pad)/1440,(window.innerHeight-pad)/win.offsetHeight);
+    win.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit);window.addEventListener('load',fit);fit();
+</script>
+</body>
+</html>

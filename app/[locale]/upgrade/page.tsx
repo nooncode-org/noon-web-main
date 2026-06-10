@@ -39,22 +39,10 @@ async function UpgradePageContent({ params, searchParams }: Props) {
             <h1 id="upgrade-entry-title" className="site-hero-title mx-auto max-w-xl text-foreground">
               Upgrade a live website with Maxwell.
             </h1>
-            <p className="site-hero-copy mx-auto mt-4 max-w-xl text-muted-foreground">
-              Paste your website URL so we can analyze it, identify conversion, UI/UX, and other
-              key improvements, and generate an upgraded version with all those improvements
-              applied.
+            <p className="site-hero-copy mx-auto mt-5 max-w-lg text-muted-foreground">
+              Paste your URL — Maxwell audits it, prioritizes what matters, and rebuilds it as
+              real, maintainable code.
             </p>
-            <div className="site-meta-label mx-auto mt-4 grid max-w-xl grid-cols-3 gap-2 font-mono text-muted-foreground">
-              {["Scan", "Diagnose", "Generate"].map((item) => (
-                <span
-                  key={item}
-                  className="liquid-glass-pill inline-flex items-center justify-center gap-2 rounded-full px-2.5 py-1.5"
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  {item}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -67,8 +55,8 @@ async function UpgradePageContent({ params, searchParams }: Props) {
         {sessions.length > 0 && <UpgradeSessionList sessions={sessions} />}
       </div>
 
-      {/* Enhanced: Visual process explanation */}
-      <div className="mx-auto mt-16 max-w-4xl">
+      {/* How it works — process cards */}
+      <div className="mx-auto mt-24 max-w-4xl">
         <div className="mb-8 text-center">
           <p className="site-meta-label mb-3 text-muted-foreground">How it works</p>
           <h2 className="site-section-title">Three steps to a better website</h2>
@@ -77,7 +65,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
       </div>
 
       {/* What you get back — faithful representation of the real audit output */}
-      <div className="mx-auto mt-16 max-w-4xl">
+      <div className="mx-auto mt-24 max-w-4xl">
         <div className="mb-8 text-center">
           <p className="site-meta-label mb-3 text-muted-foreground">What you get back</p>
           <h2 className="site-section-title">A clear, scored audit of your site</h2>
@@ -86,7 +74,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
       </div>
 
       {/* Premium: Before/After Scan visualization */}
-      <BeforeAfterScan className="mt-20" />
+      <BeforeAfterScan className="mt-24" />
     </section>
   );
 }

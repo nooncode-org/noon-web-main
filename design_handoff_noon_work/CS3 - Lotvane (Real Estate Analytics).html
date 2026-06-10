@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotvane — Property Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --bg:#070a0d;
+    --map:#0d141b;
+    --panel:#11171f;
+    --panel-2:#161e28;
+    --panel-3:#1b242f;
+    --border:#222c38;
+    --border-2:#2c3845;
+    --ink:#eef3f8;
+    --ink-2:#9aa7b6;
+    --ink-3:#62707f;
+    --teal:#27c5b4;
+    --teal-2:#1ea394;
+    --teal-bg:rgba(39,197,180,.13);
+    --amber:#e7a948;
+    --amber-bg:rgba(231,169,72,.15);
+    --green:#46c489;
+    --green-bg:rgba(70,196,137,.14);
+    --rose:#e26d7a;
+    --radius:13px;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 50px rgba(0,0,0,.5), 0 50px 120px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:radial-gradient(1200px 600px at 50% -10%, #11161c, var(--bg));
+    font-family:"Manrope",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .mono{font-family:"Space Grotesk",monospace;font-variant-numeric:tabular-nums}
+  .iconify{font-size:18px;flex:none}
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .window{width:1440px;background:var(--map);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;
+    transform-origin:center center;border:1px solid #1a2230;display:flex;flex-direction:column}
+
+  /* chrome */
+  .chrome{height:44px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;background:#0b1016;border-bottom:1px solid #1a2230}
+  .lights{display:flex;gap:8px}
+  .lights span{width:12px;height:12px;border-radius:50%}
+  .lights span:nth-child(1){background:#f0605c}.lights span:nth-child(2){background:#f5bd4f}.lights span:nth-child(3){background:#61c454}
+  .url{flex:1;max-width:460px;height:27px;background:#141b23;border:1px solid #232d3a;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-2);font-size:12px;white-space:nowrap;overflow:hidden}
+  .url svg{width:13px;height:13px;color:var(--teal)}
+  .url b{color:var(--ink);font-weight:600}
+  .chrome-right{margin-left:auto;display:flex;gap:14px;color:var(--ink-3)}.chrome-right svg{width:16px;height:16px}
+
+  /* top bar */
+  .topbar{height:60px;flex:none;display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;padding-right:6px}
+  .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(150deg,var(--teal),var(--teal-2));color:#06201d;display:flex;align-items:center;justify-content:center}
+  .logo svg{width:18px;height:18px;stroke-width:2.4}
+  .brand .name{font-family:"Space Grotesk";font-weight:700;font-size:17px;letter-spacing:-.3px}
+  .addr{width:330px;height:38px;background:var(--panel-2);border:1px solid var(--border-2);border-radius:10px;display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--ink-2);font-size:13px}
+  .addr svg{width:16px;height:16px;color:var(--ink-3)}
+  .filters{display:flex;gap:8px}
+  .fpill{height:34px;border:1px solid var(--border-2);background:var(--panel-2);border-radius:9px;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .fpill svg{width:14px;height:14px;color:var(--ink-3)}
+  .fpill.on{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+  .top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .saved{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--ink);padding:7px 12px;border:1px solid var(--border-2);border-radius:9px}
+  .saved svg{width:15px;height:15px;color:var(--amber)}
+  .iconb{width:36px;height:36px;border-radius:9px;border:1px solid var(--border-2);background:var(--panel-2);display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+  .iconb svg{width:17px;height:17px}
+  .uava{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--amber),#c4792a);color:#241502;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+
+  .app{flex:1;display:flex;min-height:0}
+  /* icon rail */
+  .rail{width:60px;flex:none;background:#0c121a;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px}
+  .rail a{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+  .rail a svg{width:20px;height:20px}
+  .rail a.on{background:var(--teal-bg);color:var(--teal)}
+  .rail .sp{margin-top:auto}
+
+  /* map */
+  .map{flex:1;position:relative;overflow:hidden;background:#0d141b}
+  #lmap{position:absolute;inset:0;background:#0d141b;z-index:0}
+  .leaflet-container{background:#0d141b;font-family:inherit}
+  .leaflet-div-icon{background:none;border:none}
+  .leaflet-tile{filter:saturate(.92)}
+  .roads{position:absolute;inset:-12%;background-image:
+    repeating-linear-gradient(90deg, transparent 0 84px, #18212c 84px 88px),
+    repeating-linear-gradient(0deg, transparent 0 84px, #18212c 84px 88px);opacity:.9}
+  .avenues{position:absolute;inset:-12%;background-image:
+    repeating-linear-gradient(90deg, transparent 0 340px, #26323f 340px 348px),
+    repeating-linear-gradient(0deg, transparent 0 300px, #26323f 300px 308px)}
+  .water{position:absolute;width:170%;height:230px;left:-32%;top:58%;transform:rotate(-21deg);
+    background:linear-gradient(120deg,#0e2f37,#11414a);border-radius:60px;box-shadow:0 0 60px rgba(20,80,90,.3)}
+  .park{position:absolute;width:240px;height:180px;left:7%;top:11%;background:linear-gradient(#13271c,#16301f);border-radius:26px;border:1px solid #1c3526}
+  .diag{position:absolute;width:200%;height:9px;left:-50%;top:34%;background:#2a3744;transform:rotate(18deg)}
+  .mapvig{position:absolute;inset:0;box-shadow:inset 0 0 160px rgba(0,0,0,.55);pointer-events:none}
+  .block{position:absolute;background:#121b25;border:1px solid #1a2632;border-radius:3px}
+  .slabel{position:absolute;font-size:10px;color:#4b5a68;font-weight:600;letter-spacing:.4px;white-space:nowrap;transform-origin:left center}
+  .nbhd{position:absolute;font-family:"Space Grotesk",monospace;font-weight:700;font-size:27px;letter-spacing:3px;color:rgba(180,205,225,.055);text-transform:uppercase;white-space:nowrap}
+
+  .pin{display:flex;flex-direction:column;align-items:center;cursor:pointer}
+  .pin .tag{font-family:"Space Grotesk";font-weight:700;font-size:12px;color:#06201d;background:var(--teal);padding:4px 9px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.4);white-space:nowrap}
+  .pin .stem{width:2px;height:7px;background:var(--teal)}
+  .pin.dim .tag{background:#1f2a36;color:var(--ink-2);border:1px solid var(--border-2)}
+  .pin.dim .stem{background:#2c3845}
+  .pin.sel{z-index:5}
+  .pin.sel .tag{background:var(--amber);color:#241502;font-size:13px;padding:6px 12px;box-shadow:0 0 0 4px var(--amber-bg),0 8px 20px rgba(0,0,0,.5)}
+  .pin.sel .stem{background:var(--amber);height:9px}
+
+  .mapctrl{position:absolute;top:16px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:1000}
+  .mapctrl .grp{background:var(--panel);border:1px solid var(--border-2);border-radius:10px;overflow:hidden}
+  .mapctrl .grp button{display:block;width:38px;height:38px;background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .mapctrl .grp button + button{border-top:1px solid var(--border)}
+  .mapctrl .grp button svg{width:17px;height:17px}
+  .maplegend{position:absolute;left:16px;bottom:16px;display:flex;align-items:center;gap:10px;background:rgba(13,20,27,.82);border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:11px;color:var(--ink-2);backdrop-filter:blur(4px);z-index:1000}
+  .maplegend .sc{width:46px;height:4px;border-bottom:2px solid var(--ink-3);border-left:1px solid var(--ink-3);border-right:1px solid var(--ink-3)}
+  .mapsearch{position:absolute;left:16px;top:16px;display:flex;align-items:center;gap:8px;background:rgba(17,23,31,.9);border:1px solid var(--border-2);border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:600;color:var(--ink);backdrop-filter:blur(6px);white-space:nowrap;z-index:1000}
+  .mapsearch svg{width:15px;height:15px;color:var(--teal)}
+  .mapsearch .ct{color:var(--ink-3);font-weight:600;margin-left:4px}
+
+  /* side panel */
+  .side{width:404px;flex:none;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .ph{padding:16px 18px 0}
+  .ph .top{display:flex;align-items:flex-start;gap:10px}
+  .ph .badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--green);background:var(--green-bg);padding:3px 9px;border-radius:7px;text-transform:uppercase;letter-spacing:.3px}
+  .ph h1{font-family:"Space Grotesk";font-size:19px;font-weight:700;letter-spacing:-.3px;margin-top:9px}
+  .ph .loc{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+  .ph .x{margin-left:auto;color:var(--ink-3)}.ph .x svg{width:18px;height:18px}
+  .ph .price{font-family:"Space Grotesk";font-size:26px;font-weight:700;margin-top:12px;letter-spacing:-.5px}
+  .ph .price small{font-size:13px;color:var(--ink-3);font-weight:600;font-family:"Manrope"}
+
+  .photo{margin:14px 18px 0;height:144px;border-radius:11px;position:relative;overflow:hidden;
+    background:repeating-linear-gradient(135deg,#18212c 0 11px,#141b24 11px 22px);border:1px solid var(--border)}
+  .photo .lab{position:absolute;left:12px;bottom:11px;font-family:"Space Grotesk";font-size:11px;letter-spacing:1px;color:var(--ink-3);text-transform:uppercase}
+  .photo .cnt{position:absolute;right:11px;bottom:11px;font-size:11px;color:var(--ink-2);background:rgba(13,20,27,.8);padding:3px 8px;border-radius:7px;display:flex;align-items:center;gap:5px}
+  .photo .cnt svg{width:13px;height:13px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:14px 18px 0;background:var(--border);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+  .stat{background:var(--panel-2);padding:11px 12px;text-align:center}
+  .stat .v{font-family:"Space Grotesk";font-size:16px;font-weight:700}
+  .stat .k{font-size:10.5px;color:var(--ink-3);margin-top:2px}
+
+  .estv{margin:16px 18px 0}
+  .estv .hd{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--ink-2);font-weight:600}
+  .estv .hd b{font-family:"Space Grotesk";color:var(--ink);font-size:14px}
+  .estv .track{height:8px;border-radius:6px;margin-top:9px;background:linear-gradient(90deg,#1d3a44,var(--teal),#1d3a44);position:relative}
+  .estv .mk{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--amber);left:56%;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,.5)}
+  .estv .rng{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:7px;white-space:nowrap}
+
+  .tabs{display:flex;gap:4px;margin:18px 18px 0;border-bottom:1px solid var(--border)}
+  .tabs a{font-size:12.5px;font-weight:700;color:var(--ink-3);padding:9px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;text-decoration:none}
+  .tabs a.on{color:var(--teal);border-bottom-color:var(--teal)}
+
+  .comps{flex:1;overflow:hidden;padding:6px 10px}
+  .comph{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 6px;font-size:11px;color:var(--ink-3);font-weight:600}
+  .comp{display:flex;align-items:center;gap:11px;padding:10px 8px;border-radius:10px}
+  .comp:hover{background:var(--panel-2)}
+  .comp + .comp{border-top:1px solid var(--border)}
+  .comp .thumb{width:44px;height:44px;border-radius:9px;flex:none;background:repeating-linear-gradient(135deg,#1a2530 0 7px,#151d27 7px 14px);border:1px solid var(--border)}
+  .comp .info{flex:1;min-width:0}
+  .comp .ca{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .comp .cm{font-size:11px;color:var(--ink-3);margin-top:3px}
+  .comp .cr{text-align:right;flex:none}
+  .comp .cp{font-family:"Space Grotesk";font-size:13.5px;font-weight:700}
+  .comp .cd{font-size:10.5px;font-weight:700;margin-top:3px;display:inline-flex;align-items:center;gap:3px}
+  .cd.up{color:var(--green)}.cd.down{color:var(--rose)}
+  .cd svg{width:11px;height:11px;stroke-width:2.6}
+
+  .pfoot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;background:var(--panel)}
+  .gen{flex:1;height:42px;border-radius:11px;border:none;background:linear-gradient(150deg,var(--teal),var(--teal-2));color:#04201c;font-weight:800;font-size:13.5px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 18px rgba(39,197,180,.25)}
+  .gen svg{width:17px;height:17px}
+  .pdf{width:48px;height:42px;border-radius:11px;border:1px solid var(--border-2);background:var(--panel-2);color:var(--ink-2);display:flex;align-items:center;justify-content:center}
+  .pdf svg{width:18px;height:18px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="window" id="win" data-screen-label="CS3 — Lotvane Map">
+    <div class="chrome">
+      <div class="lights"><span></span><span></span><span></span></div>
+      <div class="url"><i class="iconify" data-icon="solar:lock-keyhole-bold-duotone"></i>lotvane.re<b>/map/austin-tx</b></div>
+      <div class="chrome-right"><i class="iconify" data-icon="solar:add-circle-bold-duotone"></i><i class="iconify" data-icon="solar:widget-bold-duotone"></i></div>
+    </div>
+
+    <!-- top bar -->
+    <div class="topbar">
+      <div class="brand"><div class="logo"><i class="iconify" data-icon="solar:compass-bold-duotone"></i></div><div class="name">Lotvane</div></div>
+      <div class="addr"><i class="iconify" data-icon="solar:magnifer-bold-duotone"></i>Search address, MLS#, or neighborhood…</div>
+      <div class="filters">
+        <div class="fpill on"><i class="iconify" data-icon="solar:dollar-bold-duotone"></i>$1M – $1.5M</div>
+        <div class="fpill"><i class="iconify" data-icon="solar:bed-bold-duotone"></i>4+ beds</div>
+        <div class="fpill"><i class="iconify" data-icon="solar:home-2-bold-duotone"></i>Single-family</div>
+        <div class="fpill"><i class="iconify" data-icon="solar:tuning-2-bold-duotone"></i>Filters</div>
+      </div>
+      <div class="top-right">
+        <div class="saved"><i class="iconify" data-icon="solar:bookmark-bold-duotone"></i>Saved · 12</div>
+        <div class="iconb"><i class="iconify" data-icon="solar:bell-bold-duotone"></i></div>
+        <div class="uava">JD</div>
+      </div>
+    </div>
+
+    <div class="app">
+      <!-- rail -->
+      <div class="rail">
+        <a class="on" href="#"><i class="iconify" data-icon="solar:map-bold-duotone"></i></a>
+        <a href="#"><i class="iconify" data-icon="solar:bookmark-bold-duotone"></i></a>
+        <a href="#"><i class="iconify" data-icon="solar:chart-2-bold-duotone"></i></a>
+        <a href="#"><i class="iconify" data-icon="solar:layers-minimalistic-bold-duotone"></i></a>
+        <a href="#"><i class="iconify" data-icon="solar:graph-up-bold-duotone"></i></a>
+        <a class="sp" href="#"><i class="iconify" data-icon="solar:settings-bold-duotone"></i></a>
+      </div>
+
+      <!-- map -->
+      <div class="map">
+        <div id="lmap"></div>
+        <div class="mapvig"></div>
+
+        <div class="mapsearch"><i class="iconify" data-icon="solar:map-point-bold-duotone"></i>Travis Heights, Austin TX<span class="ct">· 38 listings</span></div>
+
+        <div class="mapctrl">
+          <div class="grp"><button><i class="iconify" data-icon="solar:add-circle-bold-duotone"></i></button><button><i class="iconify" data-icon="solar:minus-circle-bold-duotone"></i></button></div>
+          <div class="grp"><button><i class="iconify" data-icon="solar:layers-minimalistic-bold-duotone"></i></button></div>
+          <div class="grp"><button><i class="iconify" data-icon="solar:gps-bold-duotone"></i></button></div>
+        </div>
+        <div class="maplegend"><div class="sc"></div>500 ft · © OpenStreetMap, © CARTO</div>
+      </div>
+
+      <!-- side panel -->
+      <aside class="side">
+        <div class="ph">
+          <div class="top">
+            <div>
+              <span class="badge"><span style="width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block"></span>Active listing</span>
+            </div>
+            <span class="x"><i class="iconify" data-icon="solar:close-circle-bold-duotone"></i></span>
+          </div>
+          <h1>123 Maple Crest Drive</h1>
+          <div class="loc">Travis Heights · Austin, TX 78704 · MLS# 4827193</div>
+          <div class="price">$1,245,000 <small>· $438 / sqft</small></div>
+        </div>
+
+        <div class="photo">
+          <span class="lab">Property photo</span>
+          <span class="cnt"><i class="iconify" data-icon="solar:gallery-bold-duotone"></i>1 / 24</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="v">4</div><div class="k">Beds</div></div>
+          <div class="stat"><div class="v">3.5</div><div class="k">Baths</div></div>
+          <div class="stat"><div class="v">2,840</div><div class="k">Sqft</div></div>
+          <div class="stat"><div class="v">0.34</div><div class="k">Acres</div></div>
+        </div>
+
+        <div class="estv">
+          <div class="hd"><span>Lotvane estimate</span><b>$1.25M</b></div>
+          <div class="track"><div class="mk"></div></div>
+          <div class="rng"><span>$1.18M</span><span class="mono" style="color:var(--green)">0.4% below est.</span><span>$1.31M</span></div>
+        </div>
+
+        <div class="tabs">
+          <a class="on" href="#">Comparables · 4</a>
+          <a href="#">Details</a>
+          <a href="#">Reports</a>
+        </div>
+
+        <div class="comps">
+          <div class="comph"><span>Recently sold nearby</span><span>vs. subject $/sqft</span></div>
+          <div class="comp">
+            <div class="thumb"></div>
+            <div class="info"><div class="ca">88 Brackenridge Ave</div><div class="cm">4 bd · 3 ba · 2,760 sqft · 0.2 mi</div></div>
+            <div class="cr"><div class="cp">$1.21M</div><div class="cd up"><i class="iconify" data-icon="solar:arrow-up-bold-duotone"></i>+2.8%</div></div>
+          </div>
+          <div class="comp">
+            <div class="thumb"></div>
+            <div class="info"><div class="ca">410 Alta Vista Rd</div><div class="cm">4 bd · 4 ba · 3,010 sqft · 0.3 mi</div></div>
+            <div class="cr"><div class="cp">$1.36M</div><div class="cd down"><i class="iconify" data-icon="solar:arrow-down-bold-duotone"></i>−1.5%</div></div>
+          </div>
+          <div class="comp">
+            <div class="thumb"></div>
+            <div class="info"><div class="ca">27 Kenwood Cove</div><div class="cm">3 bd · 3 ba · 2,540 sqft · 0.4 mi</div></div>
+            <div class="cr"><div class="cp">$1.09M</div><div class="cd up"><i class="iconify" data-icon="solar:arrow-up-bold-duotone"></i>+4.1%</div></div>
+          </div>
+          <div class="comp">
+            <div class="thumb"></div>
+            <div class="info"><div class="ca">915 Eastside Terrace</div><div class="cm">5 bd · 4 ba · 3,120 sqft · 0.6 mi</div></div>
+            <div class="cr"><div class="cp">$1.42M</div><div class="cd down"><i class="iconify" data-icon="solar:arrow-down-bold-duotone"></i>−3.2%</div></div>
+          </div>
+        </div>
+
+        <div class="pfoot">
+          <button class="gen"><i class="iconify" data-icon="solar:document-text-bold-duotone"></i>Generate buyer report</button>
+          <button class="pdf"><i class="iconify" data-icon="solar:download-bold-duotone"></i></button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+<script>
+  // Real dark basemap centered on Travis Heights, Austin TX
+  var map = L.map('lmap', {
+    zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false,
+    doubleClickZoom:false, boxZoom:false, keyboard:false, touchZoom:false, zoomSnap:0.25
+  }).setView([30.24370, -97.74280], 16);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains:'abcd', maxZoom:20, crossOrigin:true
+  }).addTo(map);
+
+  var listings = [
+    {ll:[30.24370,-97.74280], price:'$1.25M', cls:'sel'},
+    {ll:[30.24520,-97.74470], price:'$1.18M', cls:''},
+    {ll:[30.24470,-97.74070], price:'$1.31M', cls:''},
+    {ll:[30.24180,-97.74390], price:'$1.09M', cls:''},
+    {ll:[30.24300,-97.74460], price:'$1.15M', cls:''},
+    {ll:[30.24230,-97.74180], price:'$1.22M', cls:''},
+    {ll:[30.24140,-97.74130], price:'$1.42M', cls:'dim'},
+    {ll:[30.24420,-97.74620], price:'$985K', cls:'dim'},
+    {ll:[30.24640,-97.74230], price:'$1.36M', cls:'dim'},
+    {ll:[30.24560,-97.74030], price:'$1.48M', cls:'dim'},
+    {ll:[30.24050,-97.74380], price:'$1.04M', cls:'dim'},
+    {ll:[30.24390,-97.74560], price:'$1.05M', cls:'dim'},
+    {ll:[30.24090,-97.74240], price:'$1.12M', cls:'dim'}
+  ];
+  listings.forEach(function(p){
+    var icon = L.divIcon({
+      className:'',
+      html:'<div class="pin '+p.cls+'"><div class="tag">'+p.price+'</div><div class="stem"></div></div>',
+      iconSize:[92,38], iconAnchor:[46,38]
+    });
+    L.marker(p.ll, {icon:icon, zIndexOffset: p.cls==='sel'?1000:(p.cls==='dim'?0:200)}).addTo(map);
+  });
+  setTimeout(function(){ map.invalidateSize(); }, 60);
+
+  function fit(){
+    const win=document.getElementById('win');
+    const pad=24;
+    const s=Math.min((window.innerWidth-pad)/1440,(window.innerHeight-pad)/win.offsetHeight);
+    win.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit);window.addEventListener('load',function(){map.invalidateSize();fit();});fit();
+</script>
+</body>
+</html>

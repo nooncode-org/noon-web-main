@@ -61,7 +61,7 @@ export function TemplateHeroPreview({ className = "" }: TemplatePreviewProps) {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: EASE }}
           >
-            <span className="liquid-glass-pill mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-mono text-muted-foreground">
+            <span className="site-meta-label mb-4 inline-flex items-center gap-2 font-mono text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               Production-ready
             </span>

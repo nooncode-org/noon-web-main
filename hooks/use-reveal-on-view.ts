@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "./use-prefers-reduced-motion";
 
 type UseRevealOnViewOptions = {
   threshold?: number | number[];
@@ -9,6 +10,16 @@ type UseRevealOnViewOptions = {
   initialVisible?: boolean;
 };
 
+/**
+ * Scroll-reveal gate (IntersectionObserver). Shared by `FadeIn`, `StaggeredReveal`
+ * and other CSS-transition reveals.
+ *
+ * Accessibility: when the user prefers reduced motion, content is reported
+ * `isVisible` immediately — it never depends on a scroll to appear and never
+ * animates. (Pairs with the global reduced-motion rule in `globals.css`, which
+ * also zeroes the transition so the reveal is instant.) Motion users keep the
+ * original observer-driven, no-flash behavior (starts hidden, reveals on view).
+ */
 export function useRevealOnView<T extends Element = HTMLDivElement>({
   threshold = 0.1,
   rootMargin = "0px",
@@ -16,11 +27,17 @@ export function useRevealOnView<T extends Element = HTMLDivElement>({
   initialVisible = false,
 }: UseRevealOnViewOptions = {}) {
   const ref = useRef<T | null>(null);
-  const [isVisible, setIsVisible] = useState(initialVisible);
+  const reduce = usePrefersReducedMotion();
+  const [intersected, setIntersected] = useState(initialVisible);
 
   useEffect(() => {
-    const node = ref.current;
+    // Reduced motion: skip the observer entirely. `isVisible` is derived as
+    // `true` below, so content shows immediately with no animation.
+    if (reduce) {
+      return;
+    }
 
+    const node = ref.current;
     if (!node) {
       return;
     }
@@ -28,29 +45,25 @@ export function useRevealOnView<T extends Element = HTMLDivElement>({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-
+          setIntersected(true);
           if (once) {
             observer.disconnect();
           }
-
           return;
         }
-
         if (!once) {
-          setIsVisible(false);
+          setIntersected(false);
         }
       },
-      {
-        threshold,
-        rootMargin,
-      }
+      { threshold, rootMargin }
     );
 
     observer.observe(node);
 
     return () => observer.disconnect();
-  }, [once, rootMargin, threshold]);
+  }, [once, rootMargin, threshold, reduce]);
+
+  const isVisible = reduce ? true : intersected;
 
   return { ref, isVisible };
 }

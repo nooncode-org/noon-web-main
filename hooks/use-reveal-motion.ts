@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import { useInView, useReducedMotion } from "framer-motion";
+import { useInView } from "framer-motion";
 import { useHasMounted } from "./use-has-mounted";
+import { usePrefersReducedMotion } from "./use-prefers-reduced-motion";
 
 // Margin type, derived from framer's own useInView signature so we don't depend
 // on a named type export.
@@ -23,7 +24,7 @@ export function useRevealMotion<T extends Element = HTMLDivElement>(
 ) {
   const ref = useRef<T>(null);
   const inView = useInView(ref, { once: true, margin: options?.margin ?? "-60px" });
-  const reduce = useReducedMotion() ?? false;
+  const reduce = usePrefersReducedMotion();
   const mounted = useHasMounted();
   const show = !mounted || inView || reduce;
   return { ref, show };

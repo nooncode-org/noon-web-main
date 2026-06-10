@@ -112,6 +112,7 @@ export function FooterSection() {
 
   const mainLinks = [
     { name: t.links.services, href: lp(siteRoutes.services) },
+    { name: "Work", href: lp("/work") },
     { name: t.links.upgrade, href: lp(siteRoutes.upgrade) },
     { name: t.links.about, href: lp(siteRoutes.about) },
     { name: t.links.contact, href: lp(siteRoutes.contact) },
@@ -120,6 +121,7 @@ export function FooterSection() {
   const moreLinks = [
     { name: t.links.templates, href: lp(siteRoutes.templates) },
     { name: t.links.opportunities, href: lp(siteRoutes.opportunities) },
+    { name: "Security", href: lp("/security") },
   ];
 
   const legalLinks = [

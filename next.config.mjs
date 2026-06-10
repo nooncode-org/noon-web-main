@@ -103,7 +103,9 @@ const nextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self'",
-      "frame-src https://*.vercel.app https://*.vusercontent.net",
+      // 'self' → the /work live product mockups (public/work/mockups/*.html)
+      // embedded as same-origin iframes; the rest are v0 preview hosts.
+      "frame-src 'self' https://*.vercel.app https://*.vusercontent.net",
       "form-action 'self' https://checkout.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -132,6 +134,20 @@ const nextConfig = {
           // older browsers that do not parse CSP frame-ancestors.
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Content-Security-Policy", value: csp },
+        ],
+      },
+      // /work live product mockups (static, self-contained HTML in /public)
+      // are embedded by our own /work page as same-origin iframes — they need
+      // frame-ancestors 'self' / SAMEORIGIN. Scoped override: later matching
+      // entries win per header key; everything else inherits the strict set.
+      {
+        source: "/work/mockups/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Content-Security-Policy",
+            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+          },
         ],
       },
     ]
