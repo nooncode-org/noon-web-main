@@ -21,7 +21,7 @@ const HERO = {
   role: "CEO, Alphabet",
   source: "Google Cloud Next 2026",
   href: "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/cloud-next-2026-sundar-pichai/",
-  avatar: "/work/voices/pichai.jpg",
+  avatar: "/work/voices/sundar-pichai.jpg",
 };
 
 const VOICES: {

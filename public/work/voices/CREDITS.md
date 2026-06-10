@@ -9,7 +9,7 @@ context — not as endorsements of Noon.**
 
 | File | Title | Author | License |
 |------|-------|--------|---------|
-| `pichai.jpg` | [Sundar Pichai - 2023 (cropped).jpg](https://commons.wikimedia.org/wiki/File:Sundar_Pichai_-_2023_(cropped).jpg) | Lukasz Kobus (European Commission) | CC BY 4.0 |
+| `sundar-pichai.jpg` | [Sundar Pichai - 2023 (cropped).jpg](https://commons.wikimedia.org/wiki/File:Sundar_Pichai_-_2023_(cropped).jpg) | Lukasz Kobus (European Commission) | CC BY 4.0 |
 | `jensen-huang.jpg` | [Jensen Huang (cropped).jpg](https://commons.wikimedia.org/wiki/File:Jensen_Huang_(cropped).jpg) | Prime Minister's Office (Government of India) | GODL-India |
 | `amodei.jpg` | [Dario Amodei in 2023.jpg](https://commons.wikimedia.org/wiki/File:Dario_Amodei_in_2023.jpg) | Simon Walker / No 10 Downing Street | CC BY 2.0 |
 
