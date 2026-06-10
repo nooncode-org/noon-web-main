@@ -99,9 +99,9 @@ const CASES: CaseStudy[] = [
     stack: ["Next.js", "Supabase", "Twilio", "Whisper", "Claude Opus 4.8"],
     mockup: {
       src: "/work/mockups/cs5-visitra.html",
-      w: 1584,
+      w: 1240,
       h: 754,
-      desc: "Clinical scheduling app on desktop and mobile, with a weekly calendar, reminder timeline, and AI visit summary",
+      desc: "Clinical scheduling app with a weekly calendar, reminder timeline, and an AI visit summary",
     },
   },
   {
