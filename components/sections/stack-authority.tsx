@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { EASE } from "@/lib/motion";
 import { MaskLogo } from "@/components/ui/mask-logo";
+import { useRevealMotion } from "@/hooks/use-reveal-motion";
 
 // StackAuthority — honest "built-on" authority play + the human-review wedge, in
 // one band. The credibility is a CAPABILITY claim (Noon builds on these tools),
@@ -21,8 +21,7 @@ const STACK = [
 ];
 
 export function StackAuthority() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
     <section className="py-12 lg:py-16">
@@ -47,8 +46,8 @@ export function StackAuthority() {
                 <motion.span
                   key={l.alt}
                   className="inline-flex items-center gap-2"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  initial={false}
+                  animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
                   transition={{ duration: 0.4, delay: 0.1 + i * 0.06, ease: EASE }}
                 >
                   <MaskLogo src={l.src} alt={l.alt} className="h-4 w-4 opacity-55" />

@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { EASE } from "@/lib/motion";
+import { useRevealMotion } from "@/hooks/use-reveal-motion";
 
 // IndustryShift — "The shift": real, verified public statements from the people
 // running the frontier labs (2026-weighted), framed as INDUSTRY CONTEXT, never
@@ -75,8 +75,11 @@ function Avatar({ src, name }: { src: string; name: string }) {
 }
 
 export function IndustryShift() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  // Reveal-on-scroll that is reduced-motion- and SSR-safe: `show` is true during
+  // SSR + first paint (no hydration mismatch; content present without JS) and
+  // always for reduced-motion users (the quotes + source links never hide behind
+  // a scroll), then tracks scroll-into-view for everyone else.
+  const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
     <section className="site-section">
@@ -100,8 +103,8 @@ export function IndustryShift() {
 
           {/* hero — Pichai (the human-review clause is the whole point) */}
           <motion.figure
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={false}
+            animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.55, ease: EASE }}
             className="mt-9 rounded-[14px] border border-foreground/12 bg-card/30 p-6 lg:mt-12 lg:p-8"
           >
@@ -133,8 +136,8 @@ export function IndustryShift() {
             {VOICES.map((v, i) => (
               <motion.figure
                 key={v.name}
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
+                initial={false}
+                animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                 transition={{ duration: 0.5, ease: EASE, delay: 0.12 + i * 0.08 }}
                 className="flex flex-col rounded-[14px] border border-foreground/12 bg-card/30 p-6"
               >

@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { EASE } from "@/lib/motion";
+import { useRevealMotion } from "@/hooks/use-reveal-motion";
 import { siteChromeDots } from "@/lib/site-tones";
 
 // HumanReviewProof — the wedge rendered as a believable ARTIFACT (Cursor's
@@ -17,8 +17,7 @@ const SUCCESS = "#2cc49a";
 const REMOVED = "#e5484d";
 
 export function HumanReviewProof() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
     <section className="site-section">
@@ -54,8 +53,8 @@ export function HumanReviewProof() {
 
           {/* artifact — review card */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={false}
+            animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.55, ease: EASE }}
           >
             <div className="overflow-hidden rounded-[10px] border border-foreground/12 bg-card/40">

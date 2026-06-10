@@ -1,16 +1,16 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { EASE } from "@/lib/motion";
+import { useRevealMotion } from "@/hooks/use-reveal-motion";
 
 // HowWeWork — the process as Linear-style NUMBERED PILLARS (not a connector
 // diagram; the decision-map already owns that language on /services). Four
 // steps, with the "Human review" pillar visually emphasized because it's Noon's
 // differentiator (AI speed + human judgment). Reuses the hairline gap-px grid
 // the page already uses (ProblemAreas) so it reads native. Reveal-once with a
-// small stagger; reduced-motion-safe via the provider's MotionConfig (the y
-// transform is dropped, opacity kept).
+// small stagger via useRevealMotion (reduced-motion- and SSR-safe): the pillars
+// show immediately for reduced-motion users, never gated behind a scroll.
 
 const STEPS: { n: string; label: string; line: string; emphasis?: boolean }[] = [
   { n: "01", label: "Scope", line: "Maxwell scopes the real problem with you — before a line of code." },
@@ -20,8 +20,7 @@ const STEPS: { n: string; label: string; line: string; emphasis?: boolean }[] = 
 ];
 
 export function HowWeWork() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
     <section className="site-section">
@@ -49,8 +48,8 @@ export function HowWeWork() {
                 <motion.div
                   key={step.n}
                   className="relative flex flex-col bg-background p-6 lg:p-7"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  initial={false}
+                  animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.5, delay: i * 0.08, ease: EASE }}
                 >
                   {/* accent top-edge marks the differentiating step */}
