@@ -21,7 +21,7 @@ const HERO = {
   role: "CEO, Alphabet",
   source: "Google Cloud Next 2026",
   href: "https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/cloud-next-2026-sundar-pichai/",
-  avatar: "/work/voices/sundar-pichai.jpg",
+  avatar: "/work/voices/sundar-pichai-g.jpg",
 };
 
 const VOICES: {
@@ -162,8 +162,8 @@ export function IndustryShift() {
 
           {/* attribution + bridge into the human-review proof that follows */}
           <p className="mt-5 font-mono text-[10.5px] leading-relaxed text-muted-foreground/50">
-            Portraits via Wikimedia Commons (CC BY / GODL). Public statements — shown as industry
-            context, not endorsements of Noon.
+            Portraits via Wikimedia Commons (CC BY / GODL) and official author photos. Public
+            statements — shown as industry context, not endorsements of Noon.
           </p>
           <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground lg:mt-8">
             <span className="font-medium text-foreground">
