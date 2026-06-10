@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgermark — Technology Audit</title>
+<!--
+  Ledgermark — live Business Technology Audit workspace (cut/keep/consolidate/build)
+  Authoring viewport: 1440 × 1000 (desktop only, edge-to-edge, light warm-neutral)
+  Fonts: Newsreader (editorial) + Instrument Sans (UI) + Spline Sans Mono (data)
+  Accent: #0f766e teal · Keep #1f8a5b / Consolidate #b7791f / Cut #c4453a / Build #0f766e
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Instrument+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#f4f1ea;font-family:'Instrument Sans',sans-serif;color:#2a2620;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .invrow:hover{background:#faf6ee;}
+  .invrow.active{background:#faf6ee;}
+  .finding:hover{border-color:#d8d1c2;}
+  .expbtn:hover{background:#0c5f59;}
+</style>
+</head>
+<body>
+
+<div style="width:1440px;height:1000px;background:#f4f1ea;display:flex;flex-direction:column;overflow:hidden;">
+
+  <header style="height:56px;flex:0 0 56px;border-bottom:1px solid #e4ded2;background:#f8f6f0;display:flex;align-items:center;justify-content:space-between;padding:0 26px;">
+    <div style="display:flex;align-items:center;gap:13px;">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:8px;background:#0f766e;color:#f4f1ea;font-family:'Newsreader',serif;font-weight:600;font-size:18px;">L</span>
+      <div style="display:flex;align-items:baseline;gap:11px;">
+        <span style="font-size:16px;font-weight:700;letter-spacing:-.01em;">Ledgermark</span>
+        <span style="width:1px;height:14px;background:#d8d1c2;align-self:center;"></span>
+        <span style="font-size:13px;color:#6f6a5f;">Harwell &amp; Boyd CPAs · 2026 Technology Audit</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid #d9e8e3;background:#ecf5f2;border-radius:999px;"><span style="width:7px;height:7px;border-radius:50%;background:#0f9d76;box-shadow:0 0 0 3px rgba(15,157,118,.16);"></span><span style="font-size:12px;font-weight:600;color:#0f6b5c;">Live audit</span><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#5f8a7f;">synced 2h ago</span></span>
+      <button class="expbtn" style="display:inline-flex;align-items:center;gap:7px;height:33px;padding:0 14px;border:1px solid #0f766e;background:#0f766e;border-radius:9px;font-family:inherit;font-size:12.5px;font-weight:600;color:#f4f1ea;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export plan</button>
+    </div>
+  </header>
+
+  <section style="padding:18px 26px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+    <div style="background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;padding:15px 18px;">
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;color:#9a9384;">TOOLS INVENTORIED</span>
+      <div style="font-family:'Newsreader',serif;font-size:38px;font-weight:500;letter-spacing:-.01em;line-height:1;margin-top:9px;">14</div>
+      <div style="font-size:12px;color:#8a8378;margin-top:7px;">across 6 categories</div>
+    </div>
+    <div style="background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;padding:15px 18px;">
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;color:#9a9384;">MONTHLY SPEND</span>
+      <div style="font-family:'Newsreader',serif;font-size:38px;font-weight:500;letter-spacing:-.01em;line-height:1;margin-top:9px;">$7,120</div>
+      <div style="font-size:12px;color:#8a8378;margin-top:7px;">/mo · $85.4K annualized</div>
+    </div>
+    <div style="background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;padding:15px 18px;">
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;color:#9a9384;">OVERLAPS FOUND</span>
+      <div style="display:flex;align-items:baseline;gap:9px;margin-top:9px;"><span style="font-family:'Newsreader',serif;font-size:38px;font-weight:500;letter-spacing:-.01em;line-height:1;color:#b7791f;">3</span><span style="font-size:12px;font-weight:600;color:#b7791f;background:#fbf2dd;border:1px solid #f0e0b8;border-radius:6px;padding:2px 7px;">redundant spend</span></div>
+      <div style="font-size:12px;color:#8a8378;margin-top:7px;">CRM · billing · e-signature</div>
+    </div>
+    <div style="position:relative;background:linear-gradient(160deg,#ecf6ef,#e3f1e8);border:1px solid #c9e4d2;border-radius:14px;padding:15px 18px;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;color:#3f7a59;">SAVINGS IDENTIFIED</span><span style="display:inline-flex;align-items:center;gap:4px;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;color:#1f8a5b;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1f8a5b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>33%</span></div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-top:7px;"><span style="font-family:'Newsreader',serif;font-size:48px;font-weight:600;letter-spacing:-.02em;line-height:.95;color:#157a4e;">$2,340</span><span style="font-family:'Newsreader',serif;font-size:20px;font-weight:500;color:#3f7a59;">/mo</span></div>
+      <div style="font-size:12px;color:#4f7a63;margin-top:6px;">$28.1K/yr recoverable · cut + consolidate</div>
+    </div>
+  </section>
+
+  <div style="flex:1;min-height:0;display:flex;gap:16px;padding:0 26px;">
+
+    <section style="flex:1;min-width:0;display:flex;flex-direction:column;background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 18px 13px;">
+        <div style="display:flex;align-items:baseline;gap:11px;"><span style="font-family:'Newsreader',serif;font-size:18px;font-weight:600;letter-spacing:-.01em;">Stack inventory</span><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#9a9384;">top 11 by spend · 14 total</span></div>
+        <div style="display:flex;align-items:center;gap:13px;">
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#6f6a5f;"><span style="width:9px;height:9px;border-radius:3px;background:#1f8a5b;"></span>Keep 5</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#6f6a5f;"><span style="width:9px;height:9px;border-radius:3px;background:#b7791f;"></span>Consolidate 3</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#6f6a5f;"><span style="width:9px;height:9px;border-radius:3px;background:#c4453a;"></span>Cut 2</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#6f6a5f;"><span style="width:9px;height:9px;border-radius:3px;background:#0f766e;"></span>Build 1</span>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+        <thead>
+          <tr style="background:#faf8f2;">
+            <th style="text-align:left;padding:7px 18px;border-top:1px solid #ece7dc;border-bottom:1px solid #ece7dc;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a39c8c;">TOOL · CATEGORY</th>
+            <th style="text-align:right;padding:7px 12px;border-top:1px solid #ece7dc;border-bottom:1px solid #ece7dc;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a39c8c;width:96px;">COST/MO</th>
+            <th style="text-align:left;padding:7px 12px;border-top:1px solid #ece7dc;border-bottom:1px solid #ece7dc;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a39c8c;width:128px;">USAGE</th>
+            <th style="text-align:left;padding:7px 12px;border-top:1px solid #ece7dc;border-bottom:1px solid #ece7dc;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a39c8c;width:96px;">OVERLAP</th>
+            <th style="text-align:left;padding:7px 18px;border-top:1px solid #ece7dc;border-bottom:1px solid #ece7dc;font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.07em;color:#a39c8c;width:150px;">VERDICT</th>
+          </tr>
+        </thead>
+        <tbody>
+              <tr class="invrow" data-row="r-crm" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">Pipeline CRM</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">CRM & client mgmt</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$1,180</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:62%;background:#b7791f;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">62%</span></div></td>
+                <td style="padding:0 12px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#b7791f;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7a5 5 0 0 0 0 10"/><path d="M16 7a5 5 0 0 1 0 10"/></svg>shared</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#fbf2dd;color:#8a5e12;border:1px solid #f0e0b8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span>Consolidate</span><div class="tip" data-tip="r-crm" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#e6c272;">CONSOLIDATE · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">12 of 28 seats unused 60d+. Advisory & tax teams double-licensed — reclaim 700/mo.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-ledger" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">Ledgerly</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Bookkeeping & ledger</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$1,020</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:91%;background:#1f8a5b;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">91%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#eaf5ee;color:#157a4e;border:1px solid #cfe8d8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span>Keep</span><div class="tip" data-tip="r-ledger" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#7fd3a6;">KEEP · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Core system of record. High usage, clean data — keep and integrate.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-pm" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">WorkBench PM</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Practice management</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$940</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:88%;background:#1f8a5b;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">88%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#eaf5ee;color:#157a4e;border:1px solid #cfe8d8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span>Keep</span><div class="tip" data-tip="r-pm" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#7fd3a6;">KEEP · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Anchors workflow & deadlines. No viable replacement — keep.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-bi" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">InsightBI</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">BI & analytics</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$760</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:18%;background:#c4453a;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">18%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#fbeae7;color:#9e352c;border:1px solid #f3d2ce;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#c4453a;"></span>Cut</span><div class="tip" data-tip="r-bi" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#c4453a;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#f0a097;">CUT · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">18% usage · 9 of 12 dashboards stale 90d. Reporting overlaps WorkBench — cut entirely.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-payroll" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">PayCycle</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Payroll</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$720</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:70%;background:#1f8a5b;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">70%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#eaf5ee;color:#157a4e;border:1px solid #cfe8d8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span>Keep</span><div class="tip" data-tip="r-payroll" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#7fd3a6;">KEEP · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Compliant, well-adopted. Keep; revisit at renewal.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-tax" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">FormStack Tax</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Tax preparation</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$700</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:85%;background:#1f8a5b;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">85%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#eaf5ee;color:#157a4e;border:1px solid #cfe8d8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span>Keep</span><div class="tip" data-tip="r-tax" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#7fd3a6;">KEEP · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Seasonal-critical, deep adoption — keep.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-billing" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">BillFlow</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Billing & invoicing</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$640</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:74%;background:#1f8a5b;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">74%</span></div></td>
+                <td style="padding:0 12px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#b7791f;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7a5 5 0 0 0 0 10"/><path d="M16 7a5 5 0 0 1 0 10"/></svg>shared</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#fbf2dd;color:#8a5e12;border:1px solid #f0e0b8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span>Consolidate</span><div class="tip" data-tip="r-billing" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#e6c272;">CONSOLIDATE · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Invoices re-keyed into Ledgerly by hand. Auto-route to books — save 440/mo of effort.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-doc" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">DocVault</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Document management</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$420</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:55%;background:#b7791f;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">55%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#eaf5ee;color:#157a4e;border:1px solid #cfe8d8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span>Keep</span><div class="tip" data-tip="r-doc" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#1f8a5b;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#7fd3a6;">KEEP · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Keep as document hub; absorb e-signature into it (see SignPath).</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-expense" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">SpendTrack</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Expense management</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$260</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:30%;background:#c4453a;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">30%</span></div></td>
+                <td style="padding:0 12px;"><span style="color:#cfc8b8;font-size:13px;">—</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#fbeae7;color:#9e352c;border:1px solid #f3d2ce;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#c4453a;"></span>Cut</span><div class="tip" data-tip="r-expense" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#c4453a;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#f0a097;">CUT · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">30% usage · expenses already captured in Ledgerly. Cut — redundant.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-sign" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">SignPath</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">E-signature</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#2a2620;">$180</td>
+                <td style="padding:0 12px;"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:5px;border-radius:3px;background:#ece7dc;overflow:hidden;"><div style="height:100%;width:40%;background:#b7791f;border-radius:3px;"></div></div><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#6f6a5f;width:30px;text-align:right;">40%</span></div></td>
+                <td style="padding:0 12px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#b7791f;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7a5 5 0 0 0 0 10"/><path d="M16 7a5 5 0 0 1 0 10"/></svg>shared</span></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#fbf2dd;color:#8a5e12;border:1px solid #f0e0b8;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span>Consolidate</span><div class="tip" data-tip="r-sign" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#b7791f;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#e6c272;">CONSOLIDATE · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Overlaps DocVault native e-sign. Migrate & drop — save 180/mo.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+              <tr class="invrow" data-row="r-portal" style="cursor:default;border-bottom:1px solid #f2efe7;">
+                <td style="padding:0 18px;height:38px;"><div style="display:flex;flex-direction:column;gap:1px;"><span style="font-size:13px;font-weight:600;color:#2a2620;">Client portal</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">Proposed · custom</span></div></td>
+                <td style="padding:0 12px;text-align:right;font-family:'Spline Sans Mono',monospace;font-size:12.5px;font-weight:500;color:#bdb6a6;">—</td>
+                <td style="padding:0 12px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#bdb6a6;">proposed</span></td>
+                <td style="padding:0 12px;"></td>
+                <td style="padding:0 18px;position:relative;"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 9px;border-radius:7px;background:#e6f3f1;color:#0c5f59;border:1px solid #c5e3de;font-size:11.5px;font-weight:600;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:2px;background:#0f766e;"></span>Build</span><div class="tip" data-tip="r-portal" style="display:none;position:absolute;z-index:20;top:32px;left:18px;width:240px;background:#2a2620;color:#f4f1ea;border-radius:9px;padding:9px 11px;box-shadow:0 8px 24px rgba(42,38,32,.28);">
+                  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="width:6px;height:6px;border-radius:2px;background:#0f766e;"></span><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#6fc7bb;">BUILD · WHY</span></div>
+                  <div style="font-size:11.5px;line-height:1.4;color:#e7e0d2;">Unify intake, billing & document handoffs into one client portal — removes manual steps.</div>
+                  <div style="position:absolute;top:-5px;left:22px;width:10px;height:10px;background:#2a2620;transform:rotate(45deg);"></div>
+                </div></td>
+              </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <aside style="width:392px;flex:0 0 392px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+
+      <div style="background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;padding:16px 18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><span style="font-family:'Newsreader',serif;font-size:16px;font-weight:600;letter-spacing:-.01em;">Spend by category</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">/mo</span></div>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div style="position:relative;width:128px;height:128px;flex:0 0 128px;">
+            <svg width="128" height="128" viewBox="0 0 128 128" style="transform:rotate(-90deg);">
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#efeae0" stroke-width="18"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#0f766e" stroke-width="18" pathLength="100" stroke-dasharray="16.57 83.43" stroke-dashoffset="0"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#2f9e8c" stroke-width="18" pathLength="100" stroke-dasharray="14.33 85.67" stroke-dashoffset="-16.57"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#b7791f" stroke-width="18" pathLength="100" stroke-dasharray="13.20 86.80" stroke-dashoffset="-30.90"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#c4453a" stroke-width="18" pathLength="100" stroke-dasharray="10.67 89.33" stroke-dashoffset="-44.10"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#8a6db0" stroke-width="18" pathLength="100" stroke-dasharray="19.94 80.06" stroke-dashoffset="-54.77"/>
+              <circle cx="64" cy="64" r="52" fill="none" stroke="#c9b896" stroke-width="18" pathLength="100" stroke-dasharray="25.28 74.72" stroke-dashoffset="-74.71"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-family:'Newsreader',serif;font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1;">$7,120</span><span style="font-family:'Spline Sans Mono',monospace;font-size:9px;color:#a39c8c;margin-top:2px;">6 categories</span></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#0f766e;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Client & CRM</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$1,180</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#2f9e8c;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Bookkeeping</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$1,020</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#b7791f;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Practice mgmt</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$940</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#c4453a;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BI & analytics</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$760</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#8a6db0;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Payroll & tax</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$1,420</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:9px;height:9px;border-radius:3px;background:#c9b896;flex:0 0 9px;"></span><span style="flex:1;font-size:11.5px;color:#4a463e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Billing & other</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">$1,800</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:0;background:#fffefb;border:1px solid #e7e2d7;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;"><span style="font-family:'Newsreader',serif;font-size:16px;font-weight:600;letter-spacing:-.01em;">Prioritized roadmap</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a39c8c;">3 phases</span></div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 26px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fbeae7;color:#9e352c;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;border:1px solid #f3d2ce;">1</span>
+                <span style="flex:1;width:1.5px;background:#e7e2d7;margin:5px 0;min-height:18px;"></span>
+              </div>
+              <div style="flex:1;padding-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#9e352c;">PHASE 1 · QUICK WINS</span><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Cut the dead weight</span></div>
+                <div style="font-size:11.5px;color:#6f6a5f;line-height:1.4;margin-bottom:8px;">Drop InsightBI & SpendTrack, reclaim 12 idle CRM seats. No migration needed.</div>
+                <div style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#157a4e;background:#eaf5ee;border:1px solid #cfe8d8;border-radius:6px;padding:2px 8px;">Low effort · ~1 wk</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">−$1,280/mo</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 26px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fbf2dd;color:#8a5e12;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;border:1px solid #f0e0b8;">2</span>
+                <span style="flex:1;width:1.5px;background:#e7e2d7;margin:5px 0;min-height:18px;"></span>
+              </div>
+              <div style="flex:1;padding-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#8a5e12;">PHASE 2 · CONSOLIDATION</span><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Merge overlapping tools</span></div>
+                <div style="font-size:11.5px;color:#6f6a5f;line-height:1.4;margin-bottom:8px;">Fold SignPath into DocVault e-sign; auto-route BillFlow invoices into Ledgerly.</div>
+                <div style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8a5e12;background:#fbf2dd;border:1px solid #f0e0b8;border-radius:6px;padding:2px 8px;">Medium · 3–4 wks</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">−$1,060/mo</span></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;flex-direction:column;align-items:center;flex:0 0 26px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#e6f3f1;color:#0c5f59;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:600;border:1px solid #c5e3de;">3</span>
+                
+              </div>
+              <div style="flex:1;padding-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#0c5f59;">PHASE 3 · CUSTOM BUILD</span><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Client portal</span></div>
+                <div style="font-size:11.5px;color:#6f6a5f;line-height:1.4;margin-bottom:8px;">One portal unifying intake, billing & document handoffs — removes the manual close-week scramble.</div>
+                <div style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#0c5f59;background:#e6f3f1;border:1px solid #c5e3de;border-radius:6px;padding:2px 8px;">High · 8–10 wks</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#8a8378;">build phase</span></div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section style="padding:16px 26px 20px;">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;"><span style="font-family:'Newsreader',serif;font-size:16px;font-weight:600;letter-spacing:-.01em;">Key findings</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#a39c8c;">3 flagged this cycle</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div class="finding" style="background:#fffefb;border:1px solid #e7e2d7;border-radius:13px;padding:14px 16px;display:flex;gap:12px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#fbf2dd;flex:0 0 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;"><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Duplicate CRM seats</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;color:#8a5e12;background:#fbf2dd;border-radius:6px;padding:2px 7px;white-space:nowrap;">$700/mo</span></div>
+            <div style="font-size:11.5px;color:#6f6a5f;line-height:1.42;">12 of 28 Pipeline CRM seats idle 60d+. Advisory and tax teams are double-licensed across two records.</div>
+          </div>
+        </div>
+        <div class="finding" style="background:#fffefb;border:1px solid #e7e2d7;border-radius:13px;padding:14px 16px;display:flex;gap:12px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#fbeae7;flex:0 0 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4453a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="14" width="3" height="4"/></svg></span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;"><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Unused BI licenses</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;color:#9e352c;background:#fbeae7;border-radius:6px;padding:2px 7px;white-space:nowrap;">$760/mo</span></div>
+            <div style="font-size:11.5px;color:#6f6a5f;line-height:1.42;">InsightBI sits at 18% usage; 9 of 12 dashboards are stale and reporting overlaps WorkBench PM.</div>
+          </div>
+        </div>
+        <div class="finding" style="background:#fffefb;border:1px solid #e7e2d7;border-radius:13px;padding:14px 16px;display:flex;gap:12px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#e6f3f1;flex:0 0 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12"/><path d="m12 3 4 4-4 4"/><path d="M20 17H8"/><path d="m12 21-4-4 4-4"/></svg></span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;"><span style="font-size:13px;font-weight:700;letter-spacing:-.01em;">Manual billing → books</span><span style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;color:#0c5f59;background:#e6f3f1;border-radius:6px;padding:2px 7px;white-space:nowrap;">~6h/wk</span></div>
+            <div style="font-size:11.5px;color:#6f6a5f;line-height:1.42;">BillFlow invoices are re-keyed into Ledgerly by hand — about 6h/week, error-prone at month close.</div>
+          </div>
+        </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function(){
+    var DEFAULT='r-bi';
+    function show(id){
+      document.querySelectorAll('.tip').forEach(function(t){ t.style.display = (t.dataset.tip===id)?'block':'none'; });
+      document.querySelectorAll('.invrow').forEach(function(r){ r.classList.toggle('active', r.dataset.row===id); });
+    }
+    document.querySelectorAll('.invrow').forEach(function(row){
+      var id=row.dataset.row;
+      var hasTip=!!row.querySelector('.tip');
+      row.addEventListener('mouseenter', function(){ if(hasTip) show(id); });
+      row.addEventListener('mouseleave', function(){ show(DEFAULT); });
+    });
+    show(DEFAULT);
+  })();
+</script>
+
+</body>
+</html>
