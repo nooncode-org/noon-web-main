@@ -122,17 +122,20 @@ const CASES: CaseStudy[] = [
 ];
 
 const STATS: { value: string; label: string }[] = [
-  { value: "10", label: "sectors shipped" },
+  { value: "11", label: "sectors shipped" },
   { value: "100%", label: "human-reviewed" },
   { value: "Yours", label: "code & IP ownership" },
 ];
 
+// One row per shipped project — the six detailed cases above lead the list (in
+// order), then the rest of the track record. The hero stat mirrors this count.
 const TRACK: { sector: string; project: string }[] = [
   { sector: "E-commerce", project: "Internal operations platform" },
   { sector: "B2B SaaS", project: "Product rebuild & UX overhaul" },
   { sector: "Real estate tech", project: "Embedded engineering team" },
   { sector: "Professional services", project: "Technology audit" },
   { sector: "Healthcare", project: "Scheduling & clinical transcription" },
+  { sector: "Retail", project: "Loyalty & automated marketing system" },
   { sector: "Fintech", project: "Reporting dashboard with automated alerts" },
   { sector: "Restaurant group", project: "Online ordering & POS integration" },
   { sector: "EdTech", project: "LMS with conversational AI tutor" },
