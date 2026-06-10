@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { EASE } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 interface TimelineStep {
   time: string;
@@ -40,10 +41,7 @@ export function ResponseTimeline({
         <div ref={ref} className="mx-auto max-w-3xl">
           {/* header */}
           <div className="mb-10 lg:mb-12 max-w-2xl">
-            <span className="site-meta-label inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              What to expect
-            </span>
+            <Eyebrow>What to expect</Eyebrow>
             <h2 className="site-section-title mt-4">{title}</h2>
             {subtitle && <p className="site-section-copy mt-3 text-muted-foreground">{subtitle}</p>}
           </div>

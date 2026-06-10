@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { EASE } from "@/lib/motion";
 import { useRevealMotion } from "@/hooks/use-reveal-motion";
-import { siteChromeDots } from "@/lib/site-tones";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { siteChromeDots, siteStatusTones } from "@/lib/site-tones";
 
 // HumanReviewProof — the wedge rendered as a believable ARTIFACT (Cursor's
 // annotated-PR pattern, adapted): AI drafts a change, a senior engineer reviews
@@ -13,7 +14,9 @@ import { siteChromeDots } from "@/lib/site-tones";
 // single accent + success token, reduced-motion-safe. No vendor names, generic
 // (non-client) example.
 
-const SUCCESS = "#2cc49a";
+// Success accent comes from the shared tone system (same value the rest of the
+// site uses); the diff-removed red is local — site-tones has no danger tone.
+const SUCCESS = siteStatusTones.success.accent;
 const REMOVED = "#e5484d";
 
 export function HumanReviewProof() {
@@ -25,10 +28,7 @@ export function HumanReviewProof() {
         <div ref={ref} className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* narrative */}
           <div>
-            <span className="site-meta-label inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              The difference
-            </span>
+            <Eyebrow>The difference</Eyebrow>
             <h2 className="site-section-title mt-4">Nothing ships without a human.</h2>
             <p className="site-section-copy mt-3 max-w-md text-muted-foreground">
               AI drafts fast — then a senior engineer reads every change, checks the edge cases,
