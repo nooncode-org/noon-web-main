@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRight, Boxes, LayoutDashboard, LifeBuoy, Puzzle, Rocket, ScanSearch, TrendingUp, Workflow } from "lucide-react";
+import { ArrowRight, Boxes, LayoutDashboard, LifeBuoy, Puzzle, Rocket, ScanSearch, TrendingUp, Users, Workflow } from "lucide-react";
 import { PageSection } from "@/app/_components/site/page-section";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
@@ -14,6 +14,7 @@ import { DecisionMap, type DecisionPath } from "@/components/sections/decision-m
 import { HowWeWork } from "@/components/sections/how-we-work";
 import { StackAuthority } from "@/components/sections/stack-authority";
 import { FaqSection, type Faq } from "@/components/landing/faq-section";
+import { BuildOptionsCompare } from "@/components/sections/build-options-compare";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -510,10 +511,120 @@ export function ServicesContent() {
         </div>
       </PageSection>
 
+      {/* Delivery numbers — derived strictly from the published /work data
+         (11 track-record sectors, 6 cases with outcomes, the human-review and
+         ownership claims), linking to the evidence. No invented metrics. */}
+      <section className="site-section !pt-0">
+        <div className="site-shell">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-[12px] border border-foreground/12">
+            <div className="grid grid-cols-2 gap-px bg-foreground/10 lg:grid-cols-4">
+              {[
+                { value: "11", label: "sectors shipped" },
+                { value: "6", label: "published case studies" },
+                { value: "100%", label: "human-reviewed" },
+                { value: "Yours", label: "code & IP ownership" },
+              ].map((s) => (
+                <div key={s.label} className="bg-background px-3 py-5 text-center lg:py-6">
+                  <div className="text-[22px] font-semibold tracking-[-0.02em] text-foreground lg:text-[26px]">
+                    {s.value}
+                  </div>
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/70">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mx-auto mt-3 max-w-5xl text-right">
+            <Link
+              href={lp("/work")}
+              className="group inline-flex items-center gap-1.5 text-sm font-medium text-primary"
+            >
+              See the work
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Enrichment — "Common problems we solve" diagnostic band (real
          services.problemAreas content) so a business owner self-recognizes
          their pain before choosing a service. */}
       <ProblemAreas />
+
+      {/* Personas — "Built for how you work": the same four services framed by
+         buyer situation (founders / operations / product teams / agencies).
+         Lines derive from problemAreas + service copy; no new claims. */}
+      <PageSection
+        eyebrow="Who it's for"
+        title="Built for how you work."
+        description="Same four services, framed by the situation you're actually in."
+      >
+        <div className="grid gap-px overflow-hidden rounded-[12px] border border-foreground/10 bg-foreground/10 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              icon: Rocket,
+              who: "Founders",
+              line: "A validated customer problem, with execution as the bottleneck — launch it as real software you own.",
+              fits: ["Custom Development", "Templates"],
+              href: lp(siteRoutes.maxwellStudio),
+              cta: "Start with Maxwell",
+            },
+            {
+              icon: Workflow,
+              who: "Operations leaders",
+              line: "Manual work across disconnected tools — one central system, with automation where it counts.",
+              fits: ["Custom Development", "Technology Audit"],
+              href: lp(getContactHref({ inquiry: "new-project", source: "persona-operations" })),
+              cta: "Tell us your workflow",
+            },
+            {
+              icon: TrendingUp,
+              who: "Product teams",
+              line: "A live product that's underperforming or grew without structure — ship a stronger version of it.",
+              fits: ["Upgrade", "Engineering Support"],
+              href: lp(siteRoutes.upgrade),
+              cta: "Open Upgrade",
+            },
+            {
+              icon: Users,
+              who: "Agencies & consultancies",
+              line: "More delivery than your bench can take — senior capacity that embeds with your team.",
+              fits: ["Engineering Support"],
+              href: lp(getContactHref({ inquiry: "general", source: "persona-agencies" })),
+              cta: "Talk capacity",
+            },
+          ].map((p) => {
+            const Icon = p.icon;
+            return (
+              <div key={p.who} className="flex flex-col gap-3 bg-background p-6">
+                <span className="flex h-9 w-9 items-center justify-center rounded-[9px] bg-primary/10 text-primary">
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </span>
+                <h3 className="text-[15px] font-semibold leading-snug text-foreground">{p.who}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{p.line}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {p.fits.map((f) => (
+                    <span
+                      key={f}
+                      className="rounded-full border border-foreground/10 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+                <Link
+                  href={p.href}
+                  className="group mt-auto inline-flex w-fit items-center gap-1.5 pt-1 text-sm font-medium text-primary"
+                >
+                  {p.cta}
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      </PageSection>
 
       {/* Figma /Services frame 189:795 — large 3-line statement between the
          service cards and the decision guide. Mirrors sandbox home/Statement.tsx
@@ -525,6 +636,10 @@ export function ServicesContent() {
       {/* How we work — the process as Linear-style numbered pillars with the
          human-review step emphasized; visualizes the statement above. */}
       <HowWeWork />
+
+      {/* The honest 4-way comparison (no-code / freelancers / in-house / Noon) —
+         qualitative, fair to the alternatives, every Noon cell an approved claim. */}
+      <BuildOptionsCompare />
 
       <PageSection
         id="which-service"
