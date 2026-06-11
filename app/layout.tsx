@@ -36,14 +36,14 @@ export const metadata: Metadata = {
     title: "Noon - The code-first software company",
     description:
       "Noon turns ideas into real, scalable software built in code and accelerated by AI.",
-    images: [{ url: "/logo-icon.png", width: 512, height: 512, alt: "Noon" }],
+    // og:image comes from the file-based opengraph-image.tsx per route
+    // (app/[locale]/** ) — branded 1200×630 cards, one per page.
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Noon - The code-first software company",
     description:
       "Noon turns ideas into real, scalable software built in code and accelerated by AI.",
-    images: ["/logo-icon.png"],
   },
   icons: {
     icon: '/logo-icon.png',
