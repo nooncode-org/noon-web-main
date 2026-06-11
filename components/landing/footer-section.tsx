@@ -122,6 +122,7 @@ export function FooterSection() {
     { name: t.links.templates, href: lp(siteRoutes.templates) },
     { name: t.links.opportunities, href: lp(siteRoutes.opportunities) },
     { name: "Security", href: lp("/security") },
+    { name: "Approach", href: lp("/approach") },
   ];
 
   const legalLinks = [

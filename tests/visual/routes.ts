@@ -4,6 +4,7 @@ export const ROUTES = [
   { path: "", name: "home" },
   { path: "/about", name: "about" },
   { path: "/services", name: "services" },
+  { path: "/approach", name: "approach" },
   { path: "/templates", name: "templates" },
   { path: "/templates/client-portal-saas", name: "template-detail" },
   { path: "/contact", name: "contact" },
