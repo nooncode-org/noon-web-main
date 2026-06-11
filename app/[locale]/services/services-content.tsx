@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowRight, LayoutDashboard, Puzzle, Rocket, Workflow } from "lucide-react";
+import { ArrowRight, Boxes, LayoutDashboard, LifeBuoy, Puzzle, Rocket, ScanSearch, TrendingUp, Workflow } from "lucide-react";
 import { PageSection } from "@/app/_components/site/page-section";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
@@ -25,6 +25,11 @@ type ServiceItem = {
   tone: typeof siteTones.brand;
   illustration: string;
   imageSide: "left" | "right";
+  // "Which service do you need?" self-diagnosis: the situation that points to
+  // this service ("You need this if …") + a matching icon (mirrors the
+  // decision-map iconography).
+  fitWhen: string;
+  fitIcon: typeof ArrowRight;
 };
 
 // ── "Common problems we solve" — buyer-language diagnostic band. Real content
@@ -117,6 +122,9 @@ export function ServicesContent() {
       tone: siteTones.brand,
       illustration: "/figma/card-custom-dev.svg",
       imageSide: "right",
+      fitIcon: Boxes,
+      fitWhen:
+        "you're building something new from scratch — an internal tool, portal, platform, or product that needs a real codebase.",
     },
     {
       name: "Upgrade",
@@ -131,6 +139,9 @@ export function ServicesContent() {
       tone: siteTones.services,
       illustration: "/figma/card-upgrade.svg",
       imageSide: "left",
+      fitIcon: TrendingUp,
+      fitWhen:
+        "you already have something live that's underperforming, unclear, or dated, and want a stronger version — not a vague redesign.",
     },
     {
       name: "Engineering Support",
@@ -145,6 +156,9 @@ export function ServicesContent() {
       tone: siteTones.gateway,
       illustration: "/figma/card-engineering-support.svg",
       imageSide: "right",
+      fitIcon: LifeBuoy,
+      fitWhen:
+        "you need extra senior capacity to keep software, infrastructure, or operations running and evolving.",
     },
     {
       name: "Business Technology Audit",
@@ -159,6 +173,9 @@ export function ServicesContent() {
       tone: siteTones.data,
       illustration: "/figma/card-audit.svg",
       imageSide: "left",
+      fitIcon: ScanSearch,
+      fitWhen:
+        "the problem is real but the right technical move isn't clear yet — you need a diagnosis before committing.",
     },
   ];
 
@@ -389,6 +406,45 @@ export function ServicesContent() {
                   </div>
                 </div>
               </article>
+            );
+          })}
+        </div>
+      </PageSection>
+
+      {/* Self-diagnosis — "Which service do you need?": the explicit
+         situation→service map (owner asked to bring this back, alongside the
+         decision diagram further down). One card per service: name + an icon +
+         "You need this if …" + its CTA. Complements the visual decision-map. */}
+      <PageSection
+        eyebrow="Find your fit"
+        title="Which service do you need?"
+        description="A quick read on which of the four fits your situation. Not sure which applies? The audit is built for exactly that."
+      >
+        <div className="grid gap-px overflow-hidden rounded-[12px] border border-foreground/10 bg-foreground/10 sm:grid-cols-2">
+          {services.map((service) => {
+            const Icon = service.fitIcon;
+            return (
+              <div key={service.name} className="flex flex-col gap-3 bg-background p-6 lg:p-7">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px]"
+                    style={{ backgroundColor: `${service.tone.accent}14`, color: service.tone.accent }}
+                  >
+                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                  </span>
+                  <h3 className="site-card-title">{service.name}</h3>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  <span className="font-medium text-foreground">You need this if</span> {service.fitWhen}
+                </p>
+                <Link
+                  href={service.href}
+                  className="group mt-auto inline-flex w-fit items-center gap-1.5 pt-1 text-sm font-medium text-primary"
+                >
+                  {service.linkLabel}
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                </Link>
+              </div>
             );
           })}
         </div>
