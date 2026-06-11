@@ -1,4 +1,5 @@
 import { Blocks, UserRound, Building2, ShieldCheck } from "lucide-react";
+import { FadeIn } from "@/components/ui/fade-in";
 
 // BuildOptionsCompare — the honest 4-way comparison (audit §3.1: "Noon vs
 // traditional dev vs no-code vs in-house — honest, outcome-framed"). Strictly
@@ -87,6 +88,7 @@ export function BuildOptionsCompare() {
         </div>
 
         {/* desktop: hairline matrix (dimension rows × option columns) */}
+        <FadeIn>
         <div className="hidden overflow-hidden rounded-[12px] border border-foreground/10 lg:block">
           <div className="grid grid-cols-[170px_repeat(4,1fr)] gap-px bg-foreground/10 text-sm">
             <div className="bg-background p-4" />
@@ -132,8 +134,10 @@ export function BuildOptionsCompare() {
             ))}
           </div>
         </div>
+        </FadeIn>
 
         {/* mobile: one card per option */}
+        <FadeIn>
         <div className="grid gap-4 sm:grid-cols-2 lg:hidden">
           {OPTIONS.map((o) => {
             const Icon = o.icon;
@@ -170,6 +174,7 @@ export function BuildOptionsCompare() {
             );
           })}
         </div>
+        </FadeIn>
       </div>
     </section>
   );

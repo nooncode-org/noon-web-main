@@ -15,6 +15,7 @@ import { HowWeWork } from "@/components/sections/how-we-work";
 import { StackAuthority } from "@/components/sections/stack-authority";
 import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { BuildOptionsCompare } from "@/components/sections/build-options-compare";
+import { FadeIn } from "@/components/ui/fade-in";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -481,6 +482,7 @@ export function ServicesContent() {
         title="Which service do you need?"
         description="A quick read on which of the four fits your situation. Not sure which applies? The audit is built for exactly that."
       >
+        <FadeIn>
         <div className="grid gap-px overflow-hidden rounded-[12px] border border-foreground/10 bg-foreground/10 sm:grid-cols-2">
           {services.map((service) => {
             const Icon = service.fitIcon;
@@ -509,6 +511,7 @@ export function ServicesContent() {
             );
           })}
         </div>
+        </FadeIn>
       </PageSection>
 
       {/* Delivery numbers — derived strictly from the published /work data
@@ -516,6 +519,7 @@ export function ServicesContent() {
          ownership claims), linking to the evidence. No invented metrics. */}
       <section className="site-section !pt-0">
         <div className="site-shell">
+          <FadeIn>
           <div className="mx-auto max-w-5xl overflow-hidden rounded-[12px] border border-foreground/12">
             <div className="grid grid-cols-2 gap-px bg-foreground/10 lg:grid-cols-4">
               {[
@@ -544,6 +548,7 @@ export function ServicesContent() {
               <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
             </Link>
           </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -560,6 +565,7 @@ export function ServicesContent() {
         title="Built for how you work."
         description="Same four services, framed by the situation you're actually in."
       >
+        <FadeIn>
         <div className="grid gap-px overflow-hidden rounded-[12px] border border-foreground/10 bg-foreground/10 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
@@ -624,6 +630,7 @@ export function ServicesContent() {
             );
           })}
         </div>
+        </FadeIn>
       </PageSection>
 
       {/* Figma /Services frame 189:795 — large 3-line statement between the
