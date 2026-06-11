@@ -6,6 +6,7 @@ import { ArrowRight, Check, Filter, Gauge, LayoutGrid, LayoutTemplate, Minus, Sh
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { templates, templateCategories, templatePrinciples, templateSelectionGuides } from "@/data/templates";
 import { siteRoutes } from "@/lib/site-config";
@@ -14,6 +15,32 @@ import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explo
 import { TemplateHeroPreview } from "@/components/sections/premium";
 
 const templateBrandTone = siteTones.brand;
+
+// Templates-specific FAQ — every answer mirrors copy already on this page
+// (pre-defined scopes, "structured starting points, not boxed products",
+// production-ready codebase) or the established Maxwell/service routes.
+const TEMPLATES_FAQS: Faq[] = [
+  {
+    question: "Are these finished products I just buy?",
+    answer:
+      "No — they're structured starting points, not boxed products. Each template is a pre-defined scope for a common software type, adapted to your business before anything ships.",
+  },
+  {
+    question: "What exactly do I get?",
+    answer:
+      "A complete, production-ready codebase — real software you can deploy and customize, with foundations like auth and database already in place, delivered as code you own.",
+  },
+  {
+    question: "How do I start from a template?",
+    answer:
+      "Start with Maxwell: pick the closest template, describe your business, and Maxwell turns that starting point into a clear scope — what's in and out, agreed up front — before the build.",
+  },
+  {
+    question: "What if none of them fits?",
+    answer:
+      "That's normal — templates cover common shapes. Anything non-standard is exactly what Custom Development is for: tell us what you need and we'll route it correctly.",
+  },
+];
 
 // Icons for the 3 "how templates work" principles (structured start / faster /
 // shaped to the real problem) so the cards aren't text-only.
@@ -221,6 +248,9 @@ export function TemplatesContent() {
           </div>
         </div>
       </section>
+
+      {/* Templates-specific FAQ (per-page depth — see TEMPLATES_FAQS) */}
+      <FaqSection items={TEMPLATES_FAQS} />
 
       <SiteCtaBlock
         title={t("cta.headline")}
