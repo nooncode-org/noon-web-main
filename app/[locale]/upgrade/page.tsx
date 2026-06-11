@@ -6,7 +6,33 @@ import { listUserSessions } from "@/lib/upgrade/repositories";
 import { BeforeAfterScan } from "@/components/sections/premium";
 import { UpgradeDemo } from "@/components/marketing/upgrade-demo/UpgradeDemo";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import type { Metadata } from "next";
+
+// Upgrade-specific FAQ — every answer mirrors copy already on this page (the
+// hero, the scored-audit section) or the Upgrade service block on /services.
+const UPGRADE_FAQS: Faq[] = [
+  {
+    question: "What do I get from the scan?",
+    answer:
+      "A clear, scored audit of your site — what's working, critical issues, and prioritized improvements — plus an upgraded version of it generated as real, maintainable code.",
+  },
+  {
+    question: "Do I have to rebuild my whole site?",
+    answer:
+      "No. Upgrade targets what's underperforming, unclear, or dated and ships a stronger version of what you already run — it's the opposite of a from-scratch rebuild or a vague redesign.",
+  },
+  {
+    question: "Is the upgraded version ready for production?",
+    answer:
+      "The scan produces the upgraded version and the audit; bringing it live runs through the same process as every Noon build — read and signed off by a person before it ships.",
+  },
+  {
+    question: "What happens after the audit?",
+    answer:
+      "You decide. Take the prioritized plan and run with it, or have Noon ship the upgrade — the audit is the structured starting point for the Upgrade service.",
+  },
+];
 
 export const metadata: Metadata = {
   title: "Upgrade Your Website | Noon",
@@ -75,6 +101,9 @@ async function UpgradePageContent({ params, searchParams }: Props) {
 
       {/* Premium: Before/After Scan visualization */}
       <BeforeAfterScan className="mt-24" />
+
+      {/* Upgrade-specific FAQ (per-page depth — see UPGRADE_FAQS) */}
+      <FaqSection items={UPGRADE_FAQS} />
     </section>
   );
 }
