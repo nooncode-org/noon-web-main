@@ -6,6 +6,7 @@ import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref } from "@/lib/site-config";
 import { BuildReceipt } from "@/components/sections/build-receipt";
 import { HumanReviewProof } from "@/components/sections/human-review-proof";
+import { FadeIn } from "@/components/ui/fade-in";
 
 export const metadata: Metadata = {
   title: "The Noon approach | Noon",
@@ -78,6 +79,7 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
         </div>
 
         {/* numbered principles — hairline grid */}
+        <FadeIn>
         <div className="mx-auto max-w-5xl overflow-hidden rounded-[12px] border border-foreground/12">
           <div className="grid gap-px bg-foreground/10 sm:grid-cols-2 lg:grid-cols-3">
             {PRINCIPLES.map((p) => (
@@ -91,6 +93,7 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
             ))}
           </div>
         </div>
+        </FadeIn>
 
         {/* the artifact: what a delivery actually looks like */}
         <div className="mx-auto mt-16 max-w-3xl text-center lg:mt-24">
@@ -105,7 +108,9 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
             an explicit gate that waits for you.
           </p>
         </div>
-        <BuildReceipt />
+        <FadeIn>
+          <BuildReceipt />
+        </FadeIn>
       </div>
 
       {/* the code-review artifact (shared section) — the wedge, shown not told */}
@@ -114,6 +119,7 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
       {/* connective statement — the approach, proven elsewhere on the site */}
       <section className="site-section !pt-0">
         <div className="site-shell">
+          <FadeIn>
           <p className="mx-auto max-w-2xl text-center text-[17px] leading-relaxed text-muted-foreground lg:text-[19px]">
             This page is the theory. See it proven in{" "}
             <Link href={lp("/work")} className={chip}>
@@ -129,6 +135,7 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
             </Link>
             .
           </p>
+          </FadeIn>
         </div>
       </section>
 
