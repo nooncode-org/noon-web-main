@@ -5,6 +5,28 @@ import { useParams } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, DollarSign, Layers, Settings, ShoppingCart } from "lucide-react";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
+
+// Opportunities-specific FAQ — answers restate this page's own routing copy
+// (same contact route for every path; the category just routes the
+// conversation; misfits go as a general question and still get reviewed).
+const OPPORTUNITIES_FAQS: Faq[] = [
+  {
+    question: "Which category should I pick?",
+    answer:
+      "The closest one — it just tells Noon which conversation to start. A wrong guess is fine: every path uses the same contact route, and the routing simply takes one extra step.",
+  },
+  {
+    question: "I don't fit any of the four tracks — can I still reach out?",
+    answer:
+      "Yes. Send it as a general question. The review still happens — a person reads it and routes it to the right conversation.",
+  },
+  {
+    question: "Do all paths get the same attention?",
+    answer:
+      "Yes — investors, sellers, developers, and partners all go through the same route: a person reads the request and starts the right conversation. The category only changes who picks it up.",
+  },
+];
 import { ContactRouteDiagram } from "@/components/sections/contact-route-diagram";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
@@ -219,6 +241,9 @@ export function OpportunitiesContent() {
             </div>
           </div>
         </section>
+
+        {/* Opportunities-specific FAQ (per-page depth — see OPPORTUNITIES_FAQS) */}
+        <FaqSection items={OPPORTUNITIES_FAQS} />
 
         <SiteCtaBlock
           title="Ready to build?"
