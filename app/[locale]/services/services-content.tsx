@@ -13,6 +13,7 @@ import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
 import { HowWeWork } from "@/components/sections/how-we-work";
 import { StackAuthority } from "@/components/sections/stack-authority";
+import { ChatFlowPlayer } from "@/components/sections/chat-flow-player";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -31,6 +32,35 @@ type ServiceItem = {
   fitWhen: string;
   fitIcon: typeof ArrowRight;
 };
+
+// Shared copy block for a service block (title + summary + bullets + CTA), used
+// by both the featured row and the compact icon rows.
+function ServiceCopy({ service }: { service: ServiceItem }) {
+  return (
+    <>
+      <h3 className="site-card-title">{service.name}</h3>
+      <p className="site-card-copy text-muted-foreground">{service.summary}</p>
+      <ul className="space-y-2">
+        {service.details.map((detail) => (
+          <li key={detail} className="flex gap-2.5 text-sm leading-6 text-muted-foreground">
+            <span
+              className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: siteTones.brand.accent }}
+            />
+            <span>{detail}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={service.href}
+        className="group mt-auto inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        {service.linkLabel}
+        <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+      </Link>
+    </>
+  );
+}
 
 // ── "Common problems we solve" — buyer-language diagnostic band. Real content
 // (services.problemAreas in messages/en.json, previously unrendered): lets a
@@ -341,24 +371,38 @@ export function ServicesContent() {
           </div>
         </div>
 
-        {/* Figma-style service blocks — connected with a divider only (no gap),
-            alternating illustration sides. */}
+        {/* Service blocks — connected by a divider only. Custom Development is
+            FEATURED with a live Remotion animation of the request→delivery flow
+            (owner: it's the visual for that service); the other three keep the
+            compact 160×160 icon panel until their own visuals land. */}
           {services.map((service) => {
             const imageFirst = service.imageSide === "left";
 
+            // Featured row: the ChatFlow animation beside the copy (the animation
+            // needs width to stay legible, so this row is a wide side-by-side).
+            if (service.name === "Custom Development") {
+              return (
+                <article key={service.name} className="p-5 lg:p-7">
+                  <div className="grid items-center gap-5 lg:grid-cols-12 lg:gap-9">
+                    <div className={`lg:col-span-7 ${imageFirst ? "lg:order-1" : "lg:order-2"}`}>
+                      <ChatFlowPlayer />
+                    </div>
+                    <div className={`flex flex-col gap-3 lg:col-span-5 ${imageFirst ? "lg:order-2" : "lg:order-1"}`}>
+                      <ServiceCopy service={service} />
+                    </div>
+                  </div>
+                </article>
+              );
+            }
+
             return (
-              <article
-                key={service.name}
-                className="overflow-hidden"
-              >
-                {/* lg:min-h ensures all 4 cards have the same vertical extent
+              <article key={service.name} className="overflow-hidden">
+                {/* lg:min-h ensures these cards share the same vertical extent
                    regardless of bullet count or illustration aspect ratio. */}
                 <div className={`flex flex-col lg:min-h-[280px] ${imageFirst ? "lg:flex-row" : "lg:flex-row-reverse"}`}>
                   {/* Illustration panel — fixed-width column with a uniform
-                     160×160 inner box. All 4 SVGs are object-contained inside
-                     that box so different aspect ratios (headphones wide,
-                     clipboard tall) render at the same visible size. The
-                     divider sits only on the side adjacent to the text panel. */}
+                     160×160 inner box; SVGs are object-contained so different
+                     aspect ratios render at the same visible size. */}
                   <div
                     className={`relative flex shrink-0 items-center justify-center p-8 lg:w-[280px] border-foreground/10 ${
                       imageFirst ? "lg:border-r" : "lg:border-l"
@@ -376,33 +420,8 @@ export function ServicesContent() {
                     </div>
                   </div>
 
-                  {/* Text panel — Figma sandbox has NO icon badge; just the title. */}
                   <div className="flex flex-1 flex-col gap-3 p-6 lg:p-8">
-                    <h3 className="site-card-title">{service.name}</h3>
-                    <p className="site-card-copy text-muted-foreground">{service.summary}</p>
-                    <ul className="space-y-2">
-                      {service.details.map((detail) => (
-                        <li key={detail} className="flex gap-2.5 text-sm leading-6 text-muted-foreground">
-                          <span
-                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: siteTones.brand.accent }}
-                          />
-                          <span>{detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    {/* Figma /Services: outlined CTA anchored to the bottom-left
-                       corner of the text panel (mt-auto pushes it to the end of
-                       the flex column), with 10px border radius (not full pill).
-                       Color uniforme azul para los 4 cards (experimentando — se
-                       revierte cambiando siteTones.brand por service.tone). */}
-                    <Link
-                      href={service.href}
-                      className="group mt-auto inline-flex w-fit items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      {service.linkLabel}
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
-                    </Link>
+                    <ServiceCopy service={service} />
                   </div>
                 </div>
               </article>
