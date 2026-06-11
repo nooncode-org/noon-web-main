@@ -251,7 +251,6 @@
         }
       ]
     },
-    "fitLabels": ["Best fit", "Strong fit", "Likely fit", "Custom fit"],
     "cta": {
       "headline": "Ready to scope your project?",
       "description": "Start with Maxwell to clarify the problem, or reach out directly.",

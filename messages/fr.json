@@ -250,7 +250,6 @@
         }
       ]
     },
-    "fitLabels": ["Meilleur choix", "Fort potentiel", "Choix probable", "Ajustement personnalisé"],
     "cta": {
       "headline": "Prêt à définir votre projet ?",
       "description": "Commencez avec Maxwell pour clarifier le problème, ou contactez-nous directement.",
