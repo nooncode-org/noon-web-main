@@ -188,7 +188,10 @@ export default async function WorkPage({ params }: WorkPageProps) {
           {CASES.map((c, i) => (
             <article
               key={c.title}
-              className="grid items-center gap-5 lg:grid-cols-12 lg:gap-10"
+              // anchor (e.g. /work#cs2-crewfield) so service blocks can link
+              // straight to their proof case; scroll-mt clears the sticky nav.
+              id={c.mockup.src.split("/").pop()!.replace(".html", "")}
+              className="grid scroll-mt-24 items-center gap-5 lg:grid-cols-12 lg:gap-10"
             >
               <div className={`lg:col-span-7 ${i % 2 === 1 ? "lg:order-2" : ""}`}>
                 <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, w: c.mockup.w, h: c.mockup.h }} />
