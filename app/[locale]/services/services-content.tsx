@@ -13,8 +13,46 @@ import { siteTones } from "@/lib/site-tones";
 import { DecisionMap, type DecisionPath } from "@/components/sections/decision-map";
 import { HowWeWork } from "@/components/sections/how-we-work";
 import { StackAuthority } from "@/components/sections/stack-authority";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 
 const LOCALES = ["en", "es", "fr", "de"];
+
+// Services-specific FAQ (per-page depth). Every answer is grounded in copy that
+// already ships on this site — service summaries, the framing decisions (PM
+// reviews proposals / senior engineers sign code), the approved pricing
+// language, and the real service routes. Nothing new is promised.
+const SERVICES_FAQS: Faq[] = [
+  {
+    question: "Which service do I actually need?",
+    answer:
+      "Start from your situation: building something new from scratch points to Custom Development; improving something already live points to Upgrade; needing extra senior capacity points to Engineering Support. And if the problem is real but the right technical move isn't clear yet, that's exactly what the Business Technology Audit is for.",
+  },
+  {
+    question: "How does a project actually start?",
+    answer:
+      "You describe what you want to build — in Maxwell or through Contact. That becomes a clear brief and, for new builds, a working prototype you can react to. A PM reads, corrects, and approves your proposal before it reaches you, and the project activates on payment.",
+  },
+  {
+    question: "Who does the work — AI or people?",
+    answer:
+      "Both, with a clear line: AI accelerates scoping, code, and testing, and a person owns the judgment. Every proposal is approved by a PM and every change is signed off by a senior engineer before it ships.",
+  },
+  {
+    question: "How is pricing handled?",
+    answer:
+      "Pricing depends on scope and complexity. You get a transparent quote after the scoping phase — no hidden fees, no hourly billing surprises. You know the full cost before we start building.",
+  },
+  {
+    question: "Do I own what you build?",
+    answer:
+      "Everything ships as real, production-ready code — no low-code lock-in. Ownership follows the engagement model and what has been paid for and delivered, and your data remains yours throughout.",
+  },
+  {
+    question: "Can you work on something that already exists?",
+    answer:
+      "Yes — that's half the offer. Upgrade improves a live product, the Business Technology Audit maps what to cut, keep, or build across your stack, and Engineering Support embeds senior capacity with your existing team and codebase.",
+  },
+];
 
 type ServiceItem = {
   name: string;
@@ -30,6 +68,9 @@ type ServiceItem = {
   // decision-map iconography).
   fitWhen: string;
   fitIcon: typeof ArrowRight;
+  // Real outcome from /work that evidences this service (metric headline +
+  // case anchor) — connects the promise to proof the site already publishes.
+  proof: { metric: string; anchor: string };
 };
 
 // ── "Common problems we solve" — buyer-language diagnostic band. Real content
@@ -125,6 +166,7 @@ export function ServicesContent() {
       fitIcon: Boxes,
       fitWhen:
         "you're building something new from scratch — an internal tool, portal, platform, or product that needs a real codebase.",
+      proof: { metric: "Manual ops, from 20 h/week to under 3", anchor: "/work#cs1-ordwell" },
     },
     {
       name: "Upgrade",
@@ -142,6 +184,7 @@ export function ServicesContent() {
       fitIcon: TrendingUp,
       fitWhen:
         "you already have something live that's underperforming, unclear, or dated, and want a stronger version — not a vague redesign.",
+      proof: { metric: "22% fewer support tickets after a UX rebuild", anchor: "/work#cs2-crewfield" },
     },
     {
       name: "Engineering Support",
@@ -159,6 +202,7 @@ export function ServicesContent() {
       fitIcon: LifeBuoy,
       fitWhen:
         "you need extra senior capacity to keep software, infrastructure, or operations running and evolving.",
+      proof: { metric: "4 investor-committed features shipped in 90 days", anchor: "/work#cs3-lotvane" },
     },
     {
       name: "Business Technology Audit",
@@ -176,6 +220,7 @@ export function ServicesContent() {
       fitIcon: ScanSearch,
       fitWhen:
         "the problem is real but the right technical move isn't clear yet — you need a diagnosis before committing.",
+      proof: { metric: "$4,200/month in redundant software, found in two weeks", anchor: "/work#cs4-stackbrief" },
     },
   ];
 
@@ -391,6 +436,21 @@ export function ServicesContent() {
                         </li>
                       ))}
                     </ul>
+                    {/* proof — a real outcome from /work evidencing this service,
+                       linking straight to the case (promise → published evidence) */}
+                    <Link
+                      href={lp(service.proof.anchor)}
+                      className="group/proof mt-1 inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]"
+                    >
+                      <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/60">
+                        Proof
+                      </span>
+                      <span className="text-muted-foreground">{service.proof.metric}</span>
+                      <span className="inline-flex items-center gap-1 font-medium text-primary">
+                        See the case
+                        <ArrowRight className="h-3 w-3 transition-transform duration-200 ease-out group-hover/proof:translate-x-0.5" />
+                      </span>
+                    </Link>
                     {/* Figma /Services: outlined CTA anchored to the bottom-left
                        corner of the text panel (mt-auto pushes it to the end of
                        the flex column), with 10px border radius (not full pill).
@@ -480,6 +540,9 @@ export function ServicesContent() {
           paths={decisionPaths}
         />
       </PageSection>
+
+      {/* Services-specific FAQ (per-page depth — see SERVICES_FAQS) */}
+      <FaqSection items={SERVICES_FAQS} />
 
       <SiteCtaBlock
         title="Start building your idea with Maxwell here"

@@ -5,6 +5,7 @@ import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref } from "@/lib/site-config";
 import { MaskLogo } from "@/components/ui/mask-logo";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 
 export const metadata: Metadata = {
   title: "Security & ownership | Noon",
@@ -36,6 +37,32 @@ const PILLARS = [
     icon: ScanLine,
     title: "Security reviewed, not bolted on",
     body: "Dependencies, access, and data handling are considered as part of the human review — not an afterthought once the code is already written.",
+  },
+];
+
+// Security-specific FAQ — every answer mirrors a claim already on this page
+// (the pillars / infra notes) or the site's published confidentiality practice.
+// Specifics we can't claim yet (Noon's own SOC 2, DPAs) route to a conversation.
+const SECURITY_FAQS: Faq[] = [
+  {
+    question: "Who can see my code and my data?",
+    answer:
+      "The senior engineers reviewing your build — that's the point of human review — and nobody else. Client work is treated as confidential, your data remains yours, and anything we showcase publicly is anonymized, as on our Work page.",
+  },
+  {
+    question: "Do I own the code and the IP?",
+    answer:
+      "Yes. You get the code, the repository, and full ownership of the IP for what has been delivered. No lock-in, no black box — what we build is yours to run, change, and take anywhere.",
+  },
+  {
+    question: "Is Noon SOC 2 certified?",
+    answer:
+      "Your build runs on infrastructure that is — Vercel, Stripe, and Supabase are independently certified to SOC 2, PCI-DSS, and ISO standards. For Noon's own controls, a DPA, or your procurement team's security review, talk to us and we'll walk through exactly how we handle it.",
+  },
+  {
+    question: "How is security handled during the build?",
+    answer:
+      "As part of the same human review that gates every change: dependencies, access, and data handling are considered while the code is written — not bolted on after. Nothing reaches production unreviewed.",
   },
 ];
 
@@ -102,8 +129,14 @@ export default async function SecurityPage({ params }: SecurityPageProps) {
           </div>
         </div>
 
+      </div>
+
+      {/* Security-specific FAQ (per-page depth — see SECURITY_FAQS) */}
+      <FaqSection items={SECURITY_FAQS} />
+
+      <div className="site-shell pb-12 lg:pb-16">
         {/* consultative CTA — specifics route to a conversation, no fabricated certs */}
-        <div className="mx-auto mt-12 max-w-3xl rounded-[12px] border border-foreground/10 bg-card/40 p-8 text-center lg:mt-16">
+        <div className="mx-auto max-w-3xl rounded-[12px] border border-foreground/10 bg-card/40 p-8 text-center">
           <h2 className="site-section-title mb-3">Specific compliance requirements?</h2>
           <p className="site-section-copy mx-auto mb-5 max-w-xl text-muted-foreground">
             SOC 2, a DPA, data residency, or a security review for your procurement team — tell us
