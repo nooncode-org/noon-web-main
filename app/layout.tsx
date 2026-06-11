@@ -93,6 +93,27 @@ export default function RootLayout({
             });
           `}
         </Script>
+        {/* Organization structured data — name/logo/socials, sitewide. The
+            socials mirror lib/site-config footerSocialLinks. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Noon",
+              url: `${siteUrl.origin}/en`,
+              logo: `${siteUrl.origin}/logo-icon.png`,
+              description:
+                "Noon turns ideas into real, scalable software built in code and accelerated by AI — every build human-reviewed.",
+              sameAs: [
+                "https://www.tiktok.com/@nooncode.dev",
+                "https://www.facebook.com/people/Noon-Development-Agency/61571938881520/",
+                "https://www.instagram.com/nooncode.dev",
+              ],
+            }),
+          }}
+        />
         <MotionProvider>{children}</MotionProvider>
         {/* Vercel Analytics + Speed Insights — chosen observability path,
             see roadmap §10.8.3. No third-party error tracker (e.g. Sentry)

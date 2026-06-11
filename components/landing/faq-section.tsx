@@ -100,8 +100,22 @@ export function FaqSection({ items = DEFAULT_FAQS }: { items?: Faq[] }) {
   // and dropped the active locale (audit 2026-06-01, faq-section.tsx:116).
   const locale = useLocale();
 
+  // FAQPage structured data, generated from the same items the section renders
+  // (so search engines read exactly what users see). Client components are
+  // SSR'd, so this lands in the initial HTML.
+  const faqJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  });
+
   return (
     <section id="faq" ref={sectionRef} className="relative py-20 lg:py-28">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJsonLd }} />
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Figma /about + /contact FAQ — one large bordered card with a
            vertical divider between the left aside (Pill + heading + Ask Maxwell
