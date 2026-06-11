@@ -250,7 +250,6 @@
         }
       ]
     },
-    "fitLabels": ["Mejor encaje", "Buen encaje", "Probable encaje", "Encaje personalizado"],
     "cta": {
       "headline": "¿Listo para definir tu proyecto?",
       "description": "Empieza con Maxwell para clarificar el problema, o contáctanos directamente.",

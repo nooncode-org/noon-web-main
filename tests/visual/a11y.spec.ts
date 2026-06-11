@@ -14,6 +14,14 @@ for (const route of ROUTES) {
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      // The /work (and any future) product mockups are self-contained,
+      // illustrative recreations embedded as same-origin iframes — each carries
+      // a descriptive `title` as its accessible name. Their INTERNAL demo
+      // controls (e.g. the Leaflet zoom buttons inside cs3) are not real page
+      // functionality, so we audit our own page chrome, not the illustration
+      // inside the frame. (Originally added with the /services wiring, lost in
+      // its revert — restored when /work joined ROUTES.)
+      .exclude('iframe[src*="/mockups/"]')
       .analyze();
 
     if (results.violations.length > 0) {
