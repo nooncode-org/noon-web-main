@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { WorkShot } from "@/components/work/work-shot";
+import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref } from "@/lib/site-config";
@@ -118,6 +119,32 @@ const CASES: CaseStudy[] = [
       h: 1022,
       desc: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
     },
+  },
+];
+
+// Work-specific FAQ — every answer restates what this page already discloses
+// (real engagements, anonymized recreations, per-case stacks) or routes to the
+// established contact paths. No new claims.
+const WORK_FAQS: Faq[] = [
+  {
+    question: "Are these real projects?",
+    answer:
+      "Yes — every case is real, delivered work, and the outcomes shown are from those engagements. The interfaces are anonymized recreations: names, brands, and data are changed to protect client confidentiality, exactly as noted under the cases.",
+  },
+  {
+    question: "Why don't you name the clients?",
+    answer:
+      "Confidentiality is part of the engagement. Cases are published by sector instead, and nothing identifiable goes public without permission.",
+  },
+  {
+    question: "My industry isn't on the list — can you still help?",
+    answer:
+      "Almost certainly. Eleven sectors so far, and the approach — scope the real problem, build it, review it line by line — carries across industries. Tell us the problem and you'll get a straight read on whether we're the right fit.",
+  },
+  {
+    question: "What do you build with?",
+    answer:
+      "Each case lists its stack — typically Next.js or React on the front, Node and Postgres behind it, and AI where it earns its place. Whatever the stack, the code and IP are yours.",
   },
 ];
 
@@ -277,6 +304,9 @@ export default async function WorkPage({ params }: WorkPageProps) {
           </Link>
         </div>
       </div>
+
+      {/* Work-specific FAQ (per-page depth — see WORK_FAQS) */}
+      <FaqSection items={WORK_FAQS} />
     </SitePageFrame>
   );
 }
