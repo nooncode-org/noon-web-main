@@ -66,6 +66,45 @@ const SECURITY_FAQS: Faq[] = [
   },
 ];
 
+// Sub-processors / data-handling table — DRAFT FOR OWNER REVIEW. Grounded in
+// the providers this codebase actually uses (auth, payments, db, email, AI)
+// and the vendors already named on this page. Card data never touches Noon's
+// servers (Stripe Checkout). Naming OpenAI/v0 here follows
+// disclosure-over-abstraction: a security page is where vendor accuracy
+// matters more than marketing abstraction — owner to confirm.
+const SUBPROCESSORS: { provider: string; purpose: string; data: string }[] = [
+  {
+    provider: "Vercel",
+    purpose: "Hosting & delivery of the site and client builds",
+    data: "Request data, server logs",
+  },
+  {
+    provider: "Supabase",
+    purpose: "Application database (encrypted Postgres)",
+    data: "Project and workspace data",
+  },
+  {
+    provider: "Stripe",
+    purpose: "Payments",
+    data: "Billing details — card data is handled by Stripe and never touches Noon's servers",
+  },
+  {
+    provider: "Resend",
+    purpose: "Transactional email",
+    data: "Email address, message content",
+  },
+  {
+    provider: "OpenAI · Vercel v0",
+    purpose: "AI assistance inside Maxwell (scoping, prototype generation)",
+    data: "The briefs and conversation content you provide",
+  },
+  {
+    provider: "Google",
+    purpose: "Sign-in (OAuth)",
+    data: "Account email and basic profile",
+  },
+];
+
 const INFRA: { src: string; alt: string; note: string }[] = [
   { src: "/figma/logos/logo-vercel.svg", alt: "Vercel", note: "SOC 2 Type 2" },
   { src: "/figma/logos/logo-stripe.svg", alt: "Stripe", note: "PCI-DSS Level 1" },
@@ -129,6 +168,46 @@ export default async function SecurityPage({ params }: SecurityPageProps) {
           </div>
         </div>
 
+        {/* sub-processors / where your data lives */}
+        <div className="mx-auto mt-12 max-w-4xl lg:mt-16">
+          <div className="mb-5 max-w-2xl">
+            <h2 className="site-section-title mb-2">Where your data lives.</h2>
+            <p className="site-section-copy text-muted-foreground">
+              The services a Noon build runs on — the same stack named across this page. Need the
+              full DPA picture? That&apos;s the conversation below.
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-[12px] border border-foreground/10">
+            <div className="hidden grid-cols-[150px_1.1fr_1.3fr] gap-px bg-foreground/10 text-sm sm:grid">
+              <div className="bg-background p-3.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60">
+                Provider
+              </div>
+              <div className="bg-background p-3.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60">
+                Purpose
+              </div>
+              <div className="bg-background p-3.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60">
+                Data involved
+              </div>
+              {SUBPROCESSORS.map((s) => (
+                <div key={s.provider} className="contents">
+                  <div className="bg-background p-3.5 font-medium text-foreground">{s.provider}</div>
+                  <div className="bg-background p-3.5 text-muted-foreground">{s.purpose}</div>
+                  <div className="bg-background p-3.5 text-muted-foreground">{s.data}</div>
+                </div>
+              ))}
+            </div>
+            {/* mobile: stacked */}
+            <div className="divide-y divide-foreground/10 sm:hidden">
+              {SUBPROCESSORS.map((s) => (
+                <div key={s.provider} className="bg-background p-4">
+                  <div className="text-sm font-medium text-foreground">{s.provider}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{s.purpose}</div>
+                  <div className="mt-1 text-[13px] text-muted-foreground/80">{s.data}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Security-specific FAQ (per-page depth — see SECURITY_FAQS) */}
