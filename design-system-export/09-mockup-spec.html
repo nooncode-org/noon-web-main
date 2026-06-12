@@ -1,0 +1,43 @@
+<!-- @dsCard group="Brand" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Noon — Mockup generation spec</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#fff;color:#000;padding:28px;font-size:14px;line-height:1.65}
+h1{font-size:18px;letter-spacing:-.015em;margin:0 0 4px}
+.sub{color:#66738b;font-size:12.5px;margin:0 0 16px}
+.h{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#66738b;margin:18px 0 8px}
+ul{margin:0;padding-left:18px}
+li{margin-bottom:7px;font-size:13.5px}
+code{font-family:'JetBrains Mono',monospace;font-size:12px;background:#f2f5fb;border-radius:4px;padding:1px 5px}
+</style></head><body>
+<h1>Mockup generation spec</h1>
+<p class="sub">Rules for any product mockup generated for Noon (Claude Design or elsewhere). This is the distilled GLOBAL BLOCK that produced Harborline, Quillshore, Gantrey, Ledgermark and the six /work cases.</p>
+
+<div class="h">Deliverable</div>
+<ul>
+  <li><b>ONE self-contained HTML file.</b> Inline CSS/JS/SVG; the only external reference allowed is the Google Fonts <code>&lt;link&gt;</code> (declare every family + weight). Icons as inline SVG; avatars as initials circles; charts drawn in CSS/SVG. No external images, no icon CDNs.</li>
+  <li>Authoring viewport <b>exactly 1440px wide</b>, natural height 900–1050px. Desktop only — no phone/tablet variants.</li>
+  <li><b>Edge to edge:</b> <code>body{margin:0}</code>, NO browser chrome, NO window frame, NO drop shadow, NO rounded outer corners, NO backdrop. The app's own background is the outermost surface.</li>
+</ul>
+
+<div class="h">Quality bar</div>
+<ul>
+  <li>Linear/Vercel-grade density: a real product screenshot, not a marketing illustration — status chips, hairline table rules, mono micro-labels, toolbars, filters, pagination, timestamps, one active nav item.</li>
+  <li>Believable data everywhere — never “Lorem”, never “Item 1/2/3”.</li>
+  <li>One identity per product: one accent + semantic green/amber/red, one distinctive Google Font pairing (UI + mono). Must not look like a Tailwind default.</li>
+  <li>Live <code>:hover</code> states; tiny vanilla JS for hover/tab states only; <b>no looping/autoplay animations</b>.</li>
+</ul>
+
+<div class="h">Legibility floor (it displays scaled to ~50–60%)</div>
+<ul><li>Body/table text ≥ 12.5px at authoring size · micro-labels ≥ 10px · WCAG-AA-ish contrast · no ultra-light weights under 13px.</li></ul>
+
+<div class="h">Content rules</div>
+<ul>
+  <li>ALL UI copy in English. Fictional product + people names only; <b>verify product names don't collide with real software companies</b> (Ordwell, Crewfield, Lotvane, Stackbrief, Visitra, Embertide, Harborline, Quillshore, Gantrey, Ledgermark are taken &amp; verified).</li>
+  <li>No real brands/logos inside the UI (generic phrases like “ERP sync” are fine). Realistic-but-fictional metrics are fine INSIDE the fictional UI.</li>
+  <li>Top-of-file manifest comment: product name, authoring viewport (1440×H), fonts, accent hex.</li>
+</ul>
+
+<div class="h">Handoff</div>
+<ul><li>If the tool produces a <code>.dc.html</code> + runtime, always request: “bundle it into ONE standalone, fully self-contained HTML file”. Delivery pipeline self-hosts the fonts and embeds it as a constant-viewport iframe.</li></ul>
+</body></html>

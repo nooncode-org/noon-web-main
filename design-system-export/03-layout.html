@@ -1,0 +1,46 @@
+<!-- @dsCard group="Spacing" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Noon — Layout & spacing</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#fff;color:#000;padding:28px;font-size:14px}
+.lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#66738b;margin:20px 0 8px}
+.spec{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3b5}
+.demo{border:1px solid #dbe3ef;border-radius:12px;padding:14px;margin-top:6px}
+.hair{height:1px;background:rgba(0,0,0,.12)}
+</style></head><body>
+<div class="lbl" style="margin-top:0">Shell</div>
+<div class="spec">site-shell: max-width 1400px · px 24 → 48 (lg). Content blocks usually cap at max-w-3xl/4xl/5xl/6xl inside.</div>
+
+<div class="lbl">Vertical rhythm</div>
+<div class="spec">site-hero-section: pt 24/32 · pb 40/56 — site-section: py 64 → 96 (lg) — site-section-lg: py 80 → 112</div>
+
+<div class="lbl">Radius scale</div>
+<div style="display:flex;gap:10px;margin-top:6px">
+  <div class="demo" style="border-radius:8px;width:110px"><div class="spec">8px — icon tiles</div></div>
+  <div class="demo" style="border-radius:10px;width:110px"><div class="spec">10px — chips, inner cards</div></div>
+  <div class="demo" style="border-radius:12px;width:110px"><div class="spec">12px — cards, frames</div></div>
+  <div class="demo" style="border-radius:14px;width:110px"><div class="spec">14px — feature cards</div></div>
+  <div class="demo" style="border-radius:999px;width:110px"><div class="spec">pill — CTAs, badges</div></div>
+</div>
+
+<div class="lbl">Hairlines, not boxes</div>
+<div class="demo">
+  <div class="spec" style="margin-bottom:8px">Borders are foreground at low alpha — never gray boxes or shadows for structure:</div>
+  <div class="hair" style="opacity:.83"></div><div class="spec" style="margin:4px 0 10px">border-foreground/10 — default grid/dividers</div>
+  <div class="hair"></div><div class="spec" style="margin:4px 0 10px">border-foreground/12 — card frames</div>
+  <div class="hair" style="opacity:1.25"></div><div class="spec" style="margin-top:4px">border-foreground/15 — emphasis · /25–30 — eyebrow dash, crop marks</div>
+</div>
+
+<div class="lbl">The signature grid</div>
+<div style="border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;margin-top:6px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(0,0,0,.10)">
+    <div style="background:#fff;padding:14px"><b style="font-size:13px">Cell</b><div class="spec">bg-background</div></div>
+    <div style="background:#fff;padding:14px"><b style="font-size:13px">Cell</b><div class="spec">gap-px does the lines</div></div>
+    <div style="background:#fff;padding:14px"><b style="font-size:13px">Cell</b><div class="spec">no inner borders</div></div>
+  </div>
+</div>
+<div class="spec" style="margin-top:6px">Pattern: wrapper rounded-[12px] border-foreground/10 overflow-hidden → grid gap-px bg-foreground/10 → cells bg-background. Used for pillars, FAQs, comparisons, stats.</div>
+
+<div class="lbl">Shadows & decoration</div>
+<div class="spec">No drop shadows, no gradients, no glows, no decorative backgrounds. Flat surfaces + hairlines + one accent. (Lightbox shadow-2xl is the one sanctioned exception.)</div>
+</body></html>
