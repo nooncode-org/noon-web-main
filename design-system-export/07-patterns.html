@@ -1,0 +1,52 @@
+<!-- @dsCard group="Patterns" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Noon — Signature patterns</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#fff;color:#000;padding:28px;font-size:14px}
+.lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9aa3b5;margin:22px 0 10px}
+.spec{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3b5;margin-top:6px}
+.mono{font-family:'JetBrains Mono',monospace}
+.lane{display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(0,0,0,.1);border-radius:10px;background:#fff;padding:10px 12px;width:200px}
+.gate{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid rgba(18,0,197,.3);background:rgba(18,0,197,.05);border-radius:10px;padding:12px 16px;text-align:center}
+.appr{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#0f6e56;background:rgba(44,196,154,.08);border:1px solid rgba(44,196,154,.2)}
+.num{font-family:'JetBrains Mono',monospace;font-size:11px;color:#1200c5}
+</style></head><body>
+<div class="lbl" style="margin-top:0">Review gate (P7 — THE trust artifact)</div>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="lane"><b style="font-size:12.5px">Maxwell drafts it</b><span class="mono" style="font-size:9.5px;color:#9aa3b5">scope · timeline</span></div>
+    <div class="lane"><b style="font-size:12.5px">A PM reads it</b><span class="mono" style="font-size:9.5px;color:#9aa3b5">corrects · verifies</span></div>
+  </div>
+  <svg width="40" height="84" viewBox="0 0 44 96" fill="none" style="color:rgba(0,0,0,.25)"><path d="M0 26 H14 Q22 26 22 34 V40 Q22 48 30 48 H44" stroke="currentColor"/><path d="M0 70 H14 Q22 70 22 62 V56 Q22 48 30 48 H44" stroke="currentColor"/></svg>
+  <div class="gate"><b style="font-size:12.5px">Human sign-off</b><span class="mono" style="font-size:9px;letter-spacing:.08em;color:#66738b">EVERY PROPOSAL · NO EXCEPTIONS</span></div>
+  <svg width="20" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  <div class="lane" style="width:auto;flex-direction:column;gap:4px"><b style="font-size:12.5px">Your proposal</b><span class="appr">✓ Approved</span></div>
+</div>
+<div class="spec">two lanes converge into a primary-tinted gate · fixed-geometry SVG elbows (never measured-DOM)</div>
+
+<div class="lbl">Numbered principles (manifesto grid)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,0,0,.1);border:1px solid rgba(0,0,0,.1);border-radius:12px;overflow:hidden;max-width:560px">
+  <div style="background:#fff;padding:16px"><div class="num">01</div><b style="font-size:14px">Start from the problem</b><div style="font-size:13px;color:#66738b;margin-top:4px;line-height:1.55">Operational friction, not a stack wishlist.</div></div>
+  <div style="background:#fff;padding:16px"><div class="num">04</div><b style="font-size:14px">Nothing ships without a person</b><div style="font-size:13px;color:#66738b;margin-top:4px;line-height:1.55">A senior engineer signs every change.</div></div>
+</div>
+<div class="spec">mono primary number → semibold title → muted body · 2–3 cols</div>
+
+<div class="lbl">Proof line (promise → evidence)</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px">
+  <span class="mono" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9aa3b5">Proof</span>
+  <span style="color:#66738b">22% fewer support tickets after a UX rebuild</span>
+  <span style="color:#1200c5;font-weight:500">See the case →</span>
+</div>
+<div class="spec">every service/claim links its published case — claims never float alone</div>
+
+<div class="lbl">Build receipt (delivery update artifact)</div>
+<div style="border:1px solid rgba(0,0,0,.12);border-radius:12px;overflow:hidden;max-width:430px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.1)"><b style="font-size:12.5px">Build update — billing portal</b><span class="mono" style="font-size:8.5px;border:1px solid rgba(0,0,0,.12);border-radius:99px;padding:2px 7px;color:#66738b">ILLUSTRATIVE</span></div>
+  <div style="padding:6px 14px;font-size:12.5px;color:#444">✓ 2 senior review passes&nbsp;&nbsp;·&nbsp;&nbsp;✓ 14 tests added</div>
+  <div style="background:rgba(18,0,197,.04);border-top:1px solid rgba(0,0,0,.1);padding:9px 14px;font-size:12px"><b>Approved by senior engineering</b> — awaiting your sign-off.</div>
+</div>
+<div class="spec">what was built → what humans checked → an explicit gate waiting on the client</div>
+
+<div class="lbl">Live mockup frame</div>
+<div class="spec" style="margin-top:0">Self-contained HTML at a constant 1440px viewport, embedded as a same-origin iframe scaled by the parent (WorkShot). Rounded-[12px] clip, hairline border, Expand→lightbox on desktop, tap-to-expand on touch. Always disclosed as an anonymized recreation.</div>
+</body></html>

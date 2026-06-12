@@ -1,0 +1,36 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Noon — Eyebrow & meta</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Instrument Sans',sans-serif;background:#fff;color:#000;padding:28px;font-size:14px}
+.lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9aa3b5;margin:20px 0 10px}
+.meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#66738b;display:inline-flex;align-items:center;gap:12px}
+.dash{display:inline-block;width:32px;height:1px;background:rgba(0,0,0,.3)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:99px;background:#1200c5}
+.spec{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3b5;margin-top:6px}
+.badge{display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(18,0,197,.25);background:rgba(18,0,197,.06);border-radius:999px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:#1200c5}
+.tag{display:inline-flex;border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#66738b}
+</style></head><body>
+<div class="lbl" style="margin-top:0">Eyebrow — the section opener (components/ui/eyebrow.tsx)</div>
+<span class="meta"><span class="dash"></span>The shift</span>
+<div class="spec">hairline dash 32×1px @ fg/30 + mono uppercase label · 12px gap · ALWAYS opens a section, left-aligned</div>
+
+<div class="lbl">Centered variant (PageSection align="center")</div>
+<div style="text-align:center"><span class="meta"><span class="dot"></span>Find your fit</span></div>
+<div class="spec">primary dot 6px replaces the dash when centered</div>
+
+<div class="lbl">Double-dash centered (artifact intros)</div>
+<div style="text-align:center"><span class="meta"><span class="dash"></span>In practice<span class="dash"></span></span></div>
+
+<div class="lbl">Wedge badge</div>
+<span class="badge"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Human-reviewed</span>
+<div class="spec">primary @ 6% bg + 25% border · the differentiator chip, welded next to claims</div>
+
+<div class="lbl">State tags</div>
+<span class="tag">Illustrative</span>&nbsp; <span class="tag">After activation</span>&nbsp; <span class="tag" style="border-style:dashed">ILLUSTRATIVE</span>
+<div class="spec">mono 9–9.5px uppercase · honest-disclosure tags on artifacts/mockups (never hide them)</div>
+
+<div class="lbl">Timestamps & meta lines</div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#9aa3b5">delivery 3 of 5 · today 16:40&nbsp;&nbsp;|&nbsp;&nbsp;Jun 2 – Jun 13 · day 7 of 10 · 11 issues</div>
+<div class="spec">middots as separators · mono · muted/45–70</div>
+</body></html>
