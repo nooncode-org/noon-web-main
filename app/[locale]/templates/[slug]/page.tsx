@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TemplateMockup } from "@/components/landing/explore-builds-section";
+import { WorkShot } from "@/components/work/work-shot";
+import templateMockups from "@/data/template-mockups.json";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check, X } from "lucide-react";
@@ -50,6 +52,13 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
   const t = await getTranslations({ locale, namespace: "templates.detail.cta" });
   const viewer = await getAuthenticatedViewer();
 
+  // Live product mockup for this template, if one has been built
+  // (data/template-mockups.json, generated from the Claude Design handoffs).
+  // When present, the hero shows the real, interactive product preview; when
+  // not, it falls back to the faithful per-category code mockup.
+  const mockups = templateMockups as Record<string, { src: string; w: number; h: number }>;
+  const mockup = mockups[template.slug];
+
   return (
     <SitePageFrame viewer={viewer}>
       <div className="mx-auto w-full max-w-5xl px-6 py-12 lg:py-20">
@@ -62,52 +71,97 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
           All templates
         </Link>
 
-        {/* Hero */}
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 mb-16">
-          {/* Preview — the same faithful product mockup shown on the card grid */}
-          <div className="relative aspect-video overflow-hidden rounded-[10px] border border-border bg-secondary/40">
-            <TemplateMockup category={template.category} />
-          </div>
+        {/* Hero — with a live mockup, a compact info header sits above the
+           full-width interactive product preview; without one, the original
+           two-column layout (info beside the per-category code mockup). */}
+        {mockup ? (
+          <div className="mb-16">
+            <div className="mb-8 max-w-3xl">
+              <span className="mb-3 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                {template.category}
+              </span>
+              <h1 className="mb-4 text-3xl font-medium tracking-tight text-foreground lg:text-4xl">
+                {template.name}
+              </h1>
+              <p className="site-hero-copy mb-6 text-muted-foreground">{template.summary}</p>
+              <div className="mb-8 flex flex-wrap gap-2">
+                {template.bestFit.map((fit) => (
+                  <span
+                    key={fit}
+                    className="rounded-full border border-border bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground"
+                  >
+                    {fit}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="h-11 rounded-full px-6 text-sm">
+                  <Link href={getStartWithMaxwellHref(template.prompt)}>Use this template</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6 text-sm">
+                  <Link href={getContactHref({ inquiry: "templates", source: `template-${template.slug}` })}>
+                    Contact Noon
+                  </Link>
+                </Button>
+              </div>
+            </div>
 
-          {/* Info */}
-          <div className="flex flex-col justify-center">
-            <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
-              {template.category}
-            </span>
-            <h1 className="text-3xl font-medium tracking-tight text-foreground lg:text-4xl mb-4">
-              {template.name}
-            </h1>
-            <p className="site-hero-copy mb-6 text-muted-foreground">
-              {template.summary}
+            {/* Live, interactive product preview (real mockup, Expand to 1:1) */}
+            <WorkShot
+              frame={{ src: mockup.src, title: `${template.name} — live product preview`, w: mockup.w, h: mockup.h }}
+            />
+            <p className="mt-3 text-xs text-muted-foreground/70">
+              Illustrative preview of a build from this baseline — fictional data. Hover to interact; expand for full
+              size.
             </p>
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {template.bestFit.map((fit) => (
-                <span
-                  key={fit}
-                  className="text-xs px-3 py-1.5 rounded-full border border-border bg-secondary/40 text-muted-foreground"
-                >
-                  {fit}
-                </span>
-              ))}
+          </div>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 mb-16">
+            {/* Preview — the same faithful product mockup shown on the card grid */}
+            <div className="relative aspect-video overflow-hidden rounded-[10px] border border-border bg-secondary/40">
+              <TemplateMockup category={template.category} />
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-11 rounded-full px-6 text-sm">
-                <Link href={getStartWithMaxwellHref(template.prompt)}>
-                  Use this template
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6 text-sm">
-                <Link href={getContactHref({ inquiry: "templates", source: `template-${template.slug}` })}>
-                  Contact Noon
-                </Link>
-              </Button>
+            {/* Info */}
+            <div className="flex flex-col justify-center">
+              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
+                {template.category}
+              </span>
+              <h1 className="text-3xl font-medium tracking-tight text-foreground lg:text-4xl mb-4">
+                {template.name}
+              </h1>
+              <p className="site-hero-copy mb-6 text-muted-foreground">
+                {template.summary}
+              </p>
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {template.bestFit.map((fit) => (
+                  <span
+                    key={fit}
+                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-secondary/40 text-muted-foreground"
+                  >
+                    {fit}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="h-11 rounded-full px-6 text-sm">
+                  <Link href={getStartWithMaxwellHref(template.prompt)}>
+                    Use this template
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6 text-sm">
+                  <Link href={getContactHref({ inquiry: "templates", source: `template-${template.slug}` })}>
+                    Contact Noon
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Details Grid */}
         <div className="grid gap-6 lg:grid-cols-3 mb-16">
