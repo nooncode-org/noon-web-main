@@ -6,7 +6,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { ArrowRight } from "lucide-react";
 import { getTemplateHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { templates } from "@/data/templates";
+import { templates, type TemplateCatalogItem } from "@/data/templates";
 
 // ============================================================================
 // Category tone map
@@ -367,7 +367,7 @@ export function TemplateMockup({ category, enhanced = false }: { category: strin
 // Template Card
 // ============================================================================
 
-export function TemplateCard({ template, index }: { template: typeof templates[number]; index: number }) {
+export function TemplateCard({ template, index }: { template: TemplateCatalogItem; index: number }) {
   const [hovered, setHovered] = useState(false);
   const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.15 });
   const tone = categoryTone(template.category);

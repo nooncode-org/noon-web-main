@@ -3,13 +3,13 @@ import Link from "next/link";
 import { TemplateMockup } from "@/components/landing/explore-builds-section";
 import { WorkShot } from "@/components/work/work-shot";
 import templateMockups from "@/data/template-mockups.json";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
-import { templates } from "@/data/templates";
+import { templatesCatalog, RETIRED_TEMPLATE_SLUGS } from "@/data/templates";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 
@@ -21,13 +21,13 @@ type TemplateDetailPageProps = {
 
 export async function generateStaticParams() {
   return routing.locales.flatMap((locale) =>
-    templates.map((template) => ({ locale, slug: template.slug }))
+    templatesCatalog.map((template) => ({ locale, slug: template.slug }))
   );
 }
 
 export async function generateMetadata({ params }: TemplateDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const template = templates.find((item) => item.slug === slug);
+  const template = templatesCatalog.find((item) => item.slug === slug);
 
   if (!template) {
     return {
@@ -43,7 +43,15 @@ export async function generateMetadata({ params }: TemplateDetailPageProps): Pro
 
 export default async function TemplateDetailPage({ params }: TemplateDetailPageProps) {
   const { locale, slug } = await params;
-  const template = templates.find((item) => item.slug === slug);
+
+  // Retired slug (e.g. approval-workflow-tool, merged into the operations
+  // command center) → redirect, so the frozen Home carousel's link resolves.
+  const redirectTo = RETIRED_TEMPLATE_SLUGS[slug];
+  if (redirectTo) {
+    redirect(`/${locale}/templates/${redirectTo}`);
+  }
+
+  const template = templatesCatalog.find((item) => item.slug === slug);
 
   if (!template) {
     notFound();
