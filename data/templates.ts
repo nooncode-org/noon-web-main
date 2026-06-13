@@ -208,7 +208,7 @@ export type TemplateItem = (typeof templates)[number];
 
 export type TemplateCatalogItem = {
   slug: string;
-  image: string;
+  image?: string;
   name: string;
   category: string;
   summary: string;
@@ -253,9 +253,41 @@ export const RETIRED_TEMPLATE_SLUGS: Record<string, string> = {
   "approval-workflow-tool": "operations-command-center",
 };
 
-export const templatesCatalog: TemplateCatalogItem[] = templates
-  .filter((t) => t.slug !== "approval-workflow-tool")
-  .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t));
+// New category (taxonomy expansion 2026-06-12): a pipeline-first CRM. Distinct
+// from Dashboards (this is where a sales team ACTS on deals, not a metrics view).
+const SALES_CRM: TemplateCatalogItem = {
+  slug: "sales-crm",
+  name: "Sales CRM",
+  category: "CRM & sales",
+  summary:
+    "A pipeline-first CRM for teams that need to track contacts, deals, and follow-ups — without drowning in a bloated enterprise tool.",
+  bestFit: ["B2B sales teams", "Agencies & services", "Founder-led sales"],
+  includes: [
+    "Contact & company records",
+    "Deal pipeline — stages, drag-and-drop",
+    "Activity timeline & follow-ups",
+    "Role-based access",
+  ],
+  extensions: ["Email & calendar sync", "Lead scoring", "Quotes & invoicing", "Reporting & forecasts"],
+  useWhen:
+    "You're outgrowing spreadsheets and want a pipeline your team actually updates — shaped around how you sell, not a generic enterprise CRM config.",
+  notIdealWhen:
+    "You need a full marketing-automation suite or a heavily regulated system of record; that's a broader, more specialized build.",
+  baselinePromise:
+    "Gives you a working pipeline, contact model, and activity tracking so the custom work can focus on your sales process and the integrations that matter.",
+  prompt: "Use the Sales CRM template as a starting point for our sales software.",
+};
 
-// Filter chips for the curated catalog (drops the now-unused "Internal tools").
-export const templateCatalogCategories = templateCategories.filter((c) => c !== "Internal tools");
+export const templatesCatalog: TemplateCatalogItem[] = [
+  ...templates
+    .filter((t) => t.slug !== "approval-workflow-tool")
+    .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t)),
+  SALES_CRM,
+];
+
+// Filter chips for the curated catalog (drops the now-unused "Internal tools",
+// adds new taxonomy categories as their templates land).
+export const templateCatalogCategories: string[] = [
+  ...templateCategories.filter((c) => c !== "Internal tools"),
+  "CRM & sales",
+];
