@@ -6,6 +6,7 @@ import { buildSignInHref } from "@/lib/auth/redirect";
 import {
   getStudioSession,
   getClientWorkspaceBySession,
+  getClientCommentsByWorkspace,
   getWorkspaceUpdates,
   getLatestProposalRequest,
   getAiMvpMilestonesByProjectId,
@@ -25,6 +26,7 @@ import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
 import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/project-status-labels";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
+import { CommentBox } from "./_components/comment-box";
 
 export const dynamic = "force-dynamic";
 
@@ -278,6 +280,11 @@ export default async function WorkspacePage({ params }: Props) {
     : localStatusCfg;
   const appProposal = appStatusData?.proposal ?? null;
   const appLatestUpdate = appStatusData?.latestUpdate ?? null;
+
+  // Slice 1b: the client's message log lives in the local outbox (source of
+  // truth — the status read does not return comments).
+  const comments = await getClientCommentsByWorkspace(workspace.id);
+
   const contactHref = getContactHref({
     inquiry: "project-update",
     source: "workspace",
@@ -377,6 +384,8 @@ export default async function WorkspacePage({ params }: Props) {
             </div>
           )}
         </section>
+
+        <CommentBox sessionId={sessionId} comments={comments} />
 
         <section className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-1 text-sm font-medium">Need to reach us?</h2>

@@ -1613,6 +1613,98 @@ export async function getWorkspaceUpdates(
 }
 
 // ============================================================================
+// client_comment (v3 client-portal Slice 1b — comment outbox)
+// ============================================================================
+
+export type ClientComment = {
+  id: string;
+  clientWorkspaceId: string;
+  body: string;
+  /** Stable idempotency key sent to App; == `id`, reused verbatim on retry. */
+  externalCommentId: string;
+  /** App's comment id from the receiver reply; null until a forward succeeds. */
+  noonAppCommentId: string | null;
+  /** Set when the forward to App succeeded; null = dead-letter (not delivered). */
+  forwardedAt: string | null;
+  createdAt: string;
+};
+
+type ClientCommentRow = {
+  id: string;
+  client_workspace_id: string;
+  body: string;
+  external_comment_id: string;
+  noon_app_comment_id: string | null;
+  forwarded_at: string | null;
+  created_at: string;
+};
+
+function mapClientComment(r: ClientCommentRow): ClientComment {
+  return {
+    id: r.id,
+    clientWorkspaceId: r.client_workspace_id,
+    body: r.body,
+    externalCommentId: r.external_comment_id,
+    noonAppCommentId: r.noon_app_comment_id ?? null,
+    forwardedAt: r.forwarded_at ?? null,
+    createdAt: r.created_at,
+  };
+}
+
+/**
+ * Persist a client comment in the local outbox (the source of truth for the
+ * client's message log). `external_comment_id` is set to the row id — one stable
+ * key generated once and reused verbatim on every forward retry so App de-dupes
+ * cleanly. The forward itself happens in the server action (best-effort).
+ */
+export async function createClientComment(input: {
+  clientWorkspaceId: string;
+  body: string;
+}): Promise<ClientComment> {
+  const sql = getDb();
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const rows = await sql<ClientCommentRow[]>`
+    INSERT INTO client_comment (
+      id, client_workspace_id, body, external_comment_id,
+      noon_app_comment_id, forwarded_at, created_at
+    ) VALUES (
+      ${id}, ${input.clientWorkspaceId}, ${input.body}, ${id},
+      NULL, NULL, ${now}
+    )
+    RETURNING *
+  `;
+  return mapClientComment(rows[0]!);
+}
+
+/** Mark a comment as delivered, persisting App's returned comment id (may be null). */
+export async function markClientCommentForwarded(
+  id: string,
+  noonAppCommentId: string | null,
+): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE client_comment
+    SET forwarded_at = ${now}, noon_app_comment_id = ${noonAppCommentId}
+    WHERE id = ${id}
+  `;
+}
+
+/** The client's message log for a workspace, oldest-first (chat order). */
+export async function getClientCommentsByWorkspace(
+  clientWorkspaceId: string,
+): Promise<ClientComment[]> {
+  const sql = getDb();
+  const rows = await sql<ClientCommentRow[]>`
+    SELECT * FROM client_comment
+    WHERE client_workspace_id = ${clientWorkspaceId}
+    ORDER BY created_at ASC
+  `;
+  return rows.map(mapClientComment);
+}
+
+// ============================================================================
 // payment_event
 // ============================================================================
 
