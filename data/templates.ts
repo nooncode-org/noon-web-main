@@ -193,3 +193,101 @@ export const templates = [
 ] as const;
 
 export type TemplateItem = (typeof templates)[number];
+
+// ============================================================================
+// CURATED CATALOG (the /templates page) — 7 sharply-distinct baselines.
+//
+// `templates` (above, 8 entries) is the source the FROZEN Home hero carousel
+// reads (hero-templates-panel.tsx) and MUST stay untouched. The /templates page
+// instead renders this curated catalog, where "Operations Command Center" and
+// the old standalone "Approval Workflow Tool" are merged into one operations
+// surface (monitor + act). The retired `approval-workflow-tool` slug redirects
+// to `operations-command-center` (see [slug]/page.tsx), so the Home link still
+// resolves. Owner decision 2026-06-12: keep Home at 8, sharpen /templates to 7.
+// ============================================================================
+
+export type TemplateCatalogItem = {
+  slug: string;
+  image?: string;
+  name: string;
+  category: string;
+  summary: string;
+  bestFit: readonly string[];
+  includes: readonly string[];
+  extensions: readonly string[];
+  useWhen: string;
+  notIdealWhen: string;
+  baselinePromise: string;
+  prompt: string;
+};
+
+// Operations Command Center + Approval Workflow Tool, merged: one operational
+// surface that pairs live visibility (orders/tasks/KPIs) with the approval
+// queues, assignments, and escalations a team acts on.
+const MERGED_OPERATIONS: TemplateCatalogItem = {
+  slug: "operations-command-center",
+  image: "/templates/operations-command-center.jpg",
+  name: "Operations Command Center",
+  category: "Dashboards",
+  summary:
+    "A central operations surface that pairs live visibility — orders, tasks, KPIs — with the approval queues, assignments, and escalations your team acts on, in one place.",
+  bestFit: ["Ops reporting & visibility", "Internal approvals & routing", "Team & exec dashboards"],
+  includes: [
+    "Dashboard & KPI modules",
+    "Operational lists & queues",
+    "Approval flows — assign, escalate, decide",
+    "Role-based views & an audit-friendly trail",
+  ],
+  extensions: ["Custom reports & alerts", "SLA & escalation logic", "AI routing", "Automation triggers & connectors"],
+  useWhen:
+    "The team needs one operational surface to both see what's happening across the business and act on it — moving fragmented tools and informal approvals into a single control layer.",
+  notIdealWhen:
+    "The real need is a narrow single-purpose tool, or there's no agreed source of truth yet behind the dashboard and the approval steps are still entirely informal.",
+  baselinePromise:
+    "Provides a fast baseline for operational visibility, KPI layout, role-based structure, and approval workflows — assignments, escalation paths, decision states — so the scope can focus on the real data and business rules.",
+  prompt: "Use the Operations Command Center template as a starting point for our operations and approvals software.",
+};
+
+// Retired in the curated catalog → redirects to operations-command-center.
+export const RETIRED_TEMPLATE_SLUGS: Record<string, string> = {
+  "approval-workflow-tool": "operations-command-center",
+};
+
+// New category (taxonomy expansion 2026-06-12): a pipeline-first CRM. Distinct
+// from Dashboards (this is where a sales team ACTS on deals, not a metrics view).
+const SALES_CRM: TemplateCatalogItem = {
+  slug: "sales-crm",
+  name: "Sales CRM",
+  category: "CRM & sales",
+  summary:
+    "A pipeline-first CRM for teams that need to track contacts, deals, and follow-ups — without drowning in a bloated enterprise tool.",
+  bestFit: ["B2B sales teams", "Agencies & services", "Founder-led sales"],
+  includes: [
+    "Contact & company records",
+    "Deal pipeline — stages, drag-and-drop",
+    "Activity timeline & follow-ups",
+    "Role-based access",
+  ],
+  extensions: ["Email & calendar sync", "Lead scoring", "Quotes & invoicing", "Reporting & forecasts"],
+  useWhen:
+    "You're outgrowing spreadsheets and want a pipeline your team actually updates — shaped around how you sell, not a generic enterprise CRM config.",
+  notIdealWhen:
+    "You need a full marketing-automation suite or a heavily regulated system of record; that's a broader, more specialized build.",
+  baselinePromise:
+    "Gives you a working pipeline, contact model, and activity tracking so the custom work can focus on your sales process and the integrations that matter.",
+  prompt: "Use the Sales CRM template as a starting point for our sales software.",
+};
+
+export const templatesCatalog: TemplateCatalogItem[] = [
+  ...templates
+    .filter((t) => t.slug !== "approval-workflow-tool")
+    .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t)),
+  SALES_CRM,
+];
+
+// Filter chips for the curated catalog (drops the now-unused "Internal tools",
+// adds new taxonomy categories as their templates land).
+export const templateCatalogCategories: string[] = [
+  ...templateCategories.filter((c) => c !== "Internal tools"),
+  "CRM & sales",
+];

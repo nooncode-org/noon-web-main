@@ -1,0 +1,673 @@
+<!DOCTYPE html><html><head><style>
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes sc-veil-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine .73s ease infinite}
+    html.sc-dc-streaming::after{content:'';position:fixed;inset:0;
+      z-index:2147483646;pointer-events:none;
+      box-shadow:inset 0 0 90px rgba(217,119,87,.16),inset 0 0 22px rgba(217,119,87,.1);
+      animation:sc-veil-pulse 1.36s ease-in-out infinite}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      section, article, figure, table { break-inside: avoid; }
+      *, *::before, *::after {
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style data-dc-tpl="4">
+body{margin:0;background:#f5f4f1}
+*,*::before,*::after{box-sizing:border-box}
+button{font:inherit}
+@keyframes uslRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.usl-rise{animation:uslRise .55s cubic-bezier(.22,.61,.36,1) both}
+@media (prefers-reduced-motion: reduce){.usl-rise{animation:none}}
+</style><style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl1-client-portal-usherline"><div data-dc-tpl="5" style="width: 1440px; min-height: 1100px; display: flex; align-items: stretch; background: rgb(245, 244, 241); color: rgb(32, 32, 29); font-family: Poppins, sans-serif; -webkit-font-smoothing: antialiased;">
+
+  
+  <div data-dc-tpl="6" style="width: 242px; flex: 0 0 auto; display: flex; flex-direction: column; padding: 16px 14px 14px;">
+    <div data-dc-tpl="7" style="display: flex; align-items: center; gap: 10px; padding: 4px 6px 14px;">
+      <span data-dc-tpl="8" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(29, 28, 26); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+        <svg data-dc-tpl="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path data-dc-tpl="10" d="M12 2 2 7l10 5 10-5-10-5z"></path><path data-dc-tpl="11" d="m2 17 10 5 10-5"></path><path data-dc-tpl="12" d="m2 12 10 5 10-5"></path></svg>
+      </span>
+      <span data-dc-tpl="13" style="display: flex; flex-direction: column; gap: 1px; flex: 1 1 0%;">
+        <span data-dc-tpl="14" style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Usherline</span>
+        <span data-dc-tpl="15" style="font-family: Poppins, sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.01em; color: rgb(160, 158, 150);">Fernwell Studio</span>
+      </span>
+      <svg data-dc-tpl="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; color: rgb(179, 177, 168); cursor: pointer;"><rect data-dc-tpl="17" x="3" y="3" width="18" height="18" rx="2"></rect><path data-dc-tpl="18" d="M9 3v18"></path><path data-dc-tpl="19" d="m14 9-2 3 2 3"></path></svg>
+    </div>
+
+    <div data-dc-tpl="20" class="scp0" style="display: flex; align-items: center; gap: 8px; height: 33px; border: 1px solid rgb(231, 229, 223); border-radius: 9px; background: rgb(255, 255, 255); padding: 0px 10px; cursor: text; margin-bottom: 16px;">
+      <svg data-dc-tpl="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168); flex: 0 0 auto;"><circle data-dc-tpl="22" cx="11" cy="11" r="8"></circle><path data-dc-tpl="23" d="m21 21-4.3-4.3"></path></svg>
+      <span data-dc-tpl="24" style="font-size: 12.5px; color: rgb(160, 158, 150); flex: 1 1 0%;">Search</span>
+    </div>
+
+    <div data-dc-tpl="25" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168); padding: 2px 10px 6px;">Essentials</div>
+    <div data-dc-tpl="26" style="display: flex; flex-direction: column; gap: 1px;">
+      <div data-dc-tpl="27" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; background: rgb(255, 255, 255); border: 1px solid rgb(231, 229, 223); color: rgb(32, 32, 29); font-size: 13px; font-weight: 600; cursor: pointer;">
+        <svg data-dc-tpl="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(32, 32, 29);"><path data-dc-tpl="29" d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path data-dc-tpl="30" d="M9 22V12h6v10"></path></svg>
+        <span data-dc-tpl="31" style="flex: 1 1 0%;">Overview</span>
+      </div>
+      <div data-dc-tpl="32" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="33" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><path data-dc-tpl="34" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><path data-dc-tpl="35" d="M3.3 7 12 12l8.7-5"></path><path data-dc-tpl="36" d="M12 22V12"></path></svg>
+        <span data-dc-tpl="37" style="flex: 1 1 0%;">Deliveries</span>
+      </div>
+      <div data-dc-tpl="38" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="39" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><circle data-dc-tpl="40" cx="12" cy="12" r="10"></circle><path data-dc-tpl="41" d="m9 12 2 2 4-4"></path></svg>
+        <span data-dc-tpl="42" style="flex: 1 1 0%;">Approvals</span>
+        <span data-dc-tpl="43" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(25, 114, 74); background: rgb(231, 243, 236); border-radius: 999px; padding: 1.5px 7px; font-weight: 600;">1</span>
+      </div>
+      <div data-dc-tpl="44" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><path data-dc-tpl="46" d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"></path></svg>
+        <span data-dc-tpl="47" style="flex: 1 1 0%;">Files</span>
+      </div>
+      <div data-dc-tpl="48" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="49" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><path data-dc-tpl="50" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span data-dc-tpl="51" style="flex: 1 1 0%;">Messages</span>
+        <span data-dc-tpl="52" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(107, 106, 100); background: rgb(239, 238, 234); border-radius: 999px; padding: 1.5px 7px; font-weight: 600;">2</span>
+      </div>
+    </div>
+
+    <div data-dc-tpl="53" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 10px 6px;">
+      <span data-dc-tpl="54" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Deliveries</span>
+      <svg data-dc-tpl="55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 12px; height: 12px; color: rgb(179, 177, 168); cursor: pointer;"><path data-dc-tpl="56" d="M12 5v14M5 12h14"></path></svg>
+    </div>
+    <div data-dc-tpl="57" style="display: flex; flex-direction: column; gap: 1px;">
+      <div data-dc-tpl="58" class="scp1" style="display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 8px; color: rgb(77, 76, 71); font-size: 12.5px; font-weight: 500; cursor: pointer;"><span data-dc-tpl="59" style="width: 7px; height: 7px; border-radius: 2.5px; background: rgb(31, 138, 91); flex: 0 0 auto;"></span><span data-dc-tpl="60" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Packaging system — retail</span></div>
+      <div data-dc-tpl="61" class="scp1" style="display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 8px; color: rgb(77, 76, 71); font-size: 12.5px; font-weight: 500; cursor: pointer;"><span data-dc-tpl="62" style="width: 7px; height: 7px; border-radius: 2.5px; background: rgb(155, 153, 146); flex: 0 0 auto;"></span><span data-dc-tpl="63" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E-commerce landing refresh</span></div>
+      <div data-dc-tpl="64" class="scp1" style="display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 8px; color: rgb(77, 76, 71); font-size: 12.5px; font-weight: 500; cursor: pointer;"><span data-dc-tpl="65" style="width: 7px; height: 7px; border-radius: 2.5px; background: rgb(217, 175, 85); flex: 0 0 auto;"></span><span data-dc-tpl="66" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Brand guidelines v2.1</span></div>
+      <div data-dc-tpl="67" class="scp1" style="display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 8px; color: rgb(77, 76, 71); font-size: 12.5px; font-weight: 500; cursor: pointer;"><span data-dc-tpl="68" style="width: 7px; height: 7px; border-radius: 2.5px; border: 1.5px dashed rgb(179, 177, 168); background: transparent; flex: 0 0 auto;"></span><span data-dc-tpl="69" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Wholesale catalog Q3</span></div>
+    </div>
+
+    <div data-dc-tpl="70" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168); padding: 16px 10px 6px;">Account</div>
+    <div data-dc-tpl="71" style="display: flex; flex-direction: column; gap: 1px;">
+      <div data-dc-tpl="72" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="73" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><rect data-dc-tpl="74" x="2" y="5" width="20" height="14" rx="2"></rect><path data-dc-tpl="75" d="M2 10h20"></path></svg>
+        <span data-dc-tpl="76" style="flex: 1 1 0%;">Billing</span>
+      </div>
+      <div data-dc-tpl="77" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="78" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><path data-dc-tpl="79" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle data-dc-tpl="80" cx="9" cy="7" r="4"></circle><path data-dc-tpl="81" d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path data-dc-tpl="82" d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span data-dc-tpl="83" style="flex: 1 1 0%;">Team</span>
+      </div>
+      <div data-dc-tpl="84" class="scp1" style="display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; border: 1px solid transparent; color: rgb(77, 76, 71); font-size: 13px; font-weight: 500; cursor: pointer;">
+        <svg data-dc-tpl="85" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; flex: 0 0 auto; color: rgb(139, 138, 131);"><line data-dc-tpl="86" x1="4" y1="21" x2="4" y2="14"></line><line data-dc-tpl="87" x1="4" y1="10" x2="4" y2="3"></line><line data-dc-tpl="88" x1="12" y1="21" x2="12" y2="12"></line><line data-dc-tpl="89" x1="12" y1="8" x2="12" y2="3"></line><line data-dc-tpl="90" x1="20" y1="21" x2="20" y2="16"></line><line data-dc-tpl="91" x1="20" y1="12" x2="20" y2="3"></line><line data-dc-tpl="92" x1="1" y1="14" x2="7" y2="14"></line><line data-dc-tpl="93" x1="9" y1="8" x2="15" y2="8"></line><line data-dc-tpl="94" x1="17" y1="16" x2="23" y2="16"></line></svg>
+        <span data-dc-tpl="95" style="flex: 1 1 0%;">Settings</span>
+      </div>
+    </div>
+
+    <div data-dc-tpl="96" style="flex: 1 1 0%;"></div>
+
+    <div data-dc-tpl="97" class="scp0" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgb(255, 255, 255); border: 1px solid rgb(231, 229, 223); cursor: pointer;">
+      <span data-dc-tpl="98" style="width: 30px; height: 30px; border-radius: 999px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 10.5px; font-weight: 600; flex: 0 0 auto;">PR</span>
+      <span data-dc-tpl="99" style="display: flex; flex-direction: column; gap: 1px; flex: 1 1 0%; min-width: 0px;">
+        <span data-dc-tpl="100" style="font-size: 12.5px; font-weight: 600; line-height: 1.2;">Priya Raghavan</span>
+        <span data-dc-tpl="101" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marlow Coffee Roasters</span>
+      </span>
+      <svg data-dc-tpl="102" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; color: rgb(179, 177, 168); flex: 0 0 auto;"><path data-dc-tpl="103" d="m7 15 5 5 5-5"></path><path data-dc-tpl="104" d="m7 9 5-5 5 5"></path></svg>
+    </div>
+  </div>
+
+  
+  <div data-dc-tpl="105" style="flex: 1 1 0%; min-width: 0px; margin: 10px 10px 10px 0px; background: rgb(255, 255, 255); border: 1px solid rgb(233, 231, 226); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;">
+
+    
+    <div data-dc-tpl="106" style="height: 52px; flex: 0 0 auto; border-bottom: 1px solid rgb(239, 238, 234); display: flex; align-items: center; gap: 14px; padding: 0px 30px;">
+      <div data-dc-tpl="107" style="display: flex; align-items: center; gap: 8px; font-size: 12.5px;">
+        <span data-dc-tpl="108" style="color: rgb(139, 138, 131); font-weight: 500;">Marlow Coffee Roasters</span>
+        <span data-dc-tpl="109" style="color: rgb(212, 210, 202);">/</span>
+        <span data-dc-tpl="110" style="font-weight: 600;">Overview</span>
+      </div>
+      <div data-dc-tpl="111" style="flex: 1 1 0%;"></div>
+      <span data-dc-tpl="112" style="font-family: Poppins, sans-serif; font-size: 10.5px; font-weight: 500; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Thu · Jun 12, 2026</span>
+      <div data-dc-tpl="113" class="scp2" style="position: relative; width: 31px; height: 31px; border: 1px solid rgb(231, 229, 223); border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg data-dc-tpl="114" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; color: rgb(77, 76, 71);"><path data-dc-tpl="115" d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path data-dc-tpl="116" d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+        <span data-dc-tpl="117" style="position: absolute; top: 5px; right: 6px; width: 6px; height: 6px; border-radius: 99px; background: rgb(31, 138, 91); border: 1.5px solid rgb(255, 255, 255);"></span>
+      </div>
+      <span data-dc-tpl="118" style="width: 31px; height: 31px; border-radius: 999px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 10px; font-weight: 600; cursor: pointer;">PR</span>
+    </div>
+
+    
+    <div data-dc-tpl="119" style="flex: 1 1 0%; padding: 24px 30px 30px; display: flex; flex-direction: column;">
+
+      
+      <div data-dc-tpl="120" class="usl-rise" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; animation-delay: 0.04s;">
+        <div data-dc-tpl="121">
+          <div data-dc-tpl="122" style="font-size: 30px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1;">Good afternoon, Priya.</div>
+          <div data-dc-tpl="123" style="font-size: 13.5px; color: rgb(139, 138, 131); margin-top: 7px;">Everything Fernwell Studio is delivering for Marlow, in one place.</div>
+        </div>
+        <div data-dc-tpl="124" style="display: flex; align-items: center; gap: 10px;">
+          <button data-dc-tpl="125" class="scp3" style="display: inline-flex; align-items: center; gap: 7px; padding: 9px 17px; border-radius: 999px; border: 1px solid rgb(226, 224, 218); background: rgb(255, 255, 255); color: rgb(32, 32, 29); font-size: 13px; font-weight: 600; cursor: pointer;">
+            <svg data-dc-tpl="126" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(139, 138, 131);"><path data-dc-tpl="127" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Message Fernwell
+          </button>
+          <button data-dc-tpl="128" class="scp4" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 19px; border-radius: 999px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: rgb(29, 28, 26); color: rgb(255, 255, 255); font-size: 13px; font-weight: 600; cursor: pointer;">
+            <svg data-dc-tpl="129" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 13px; height: 13px;"><path data-dc-tpl="130" d="M12 5v14M5 12h14"></path></svg>
+            New request
+          </button>
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="131" class="usl-rise" style="display: flex; align-items: center; gap: 24px; margin-top: 20px; border-bottom: 1px solid rgb(235, 234, 229); animation-delay: 0.09s;">
+        <div data-dc-tpl="132" style="display: flex; align-items: center; gap: 7px; padding: 0px 2px 10px; margin-bottom: -1px; border-bottom: 2px solid rgb(29, 28, 26); font-size: 13px; font-weight: 600; color: rgb(32, 32, 29); cursor: pointer;">
+          <span data-dc-tpl="133" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(31, 138, 91);"></span>
+          Overview
+        </div>
+        <div data-dc-tpl="134" class="scp5" style="display: flex; align-items: center; gap: 7px; padding: 0px 2px 10px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; color: rgb(139, 138, 131); cursor: pointer;">
+          <svg data-dc-tpl="135" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;"><path data-dc-tpl="136" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          Deliveries
+        </div>
+        <div data-dc-tpl="137" class="scp5" style="display: flex; align-items: center; gap: 7px; padding: 0px 2px 10px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; color: rgb(139, 138, 131); cursor: pointer;">
+          <svg data-dc-tpl="138" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;"><circle data-dc-tpl="139" cx="12" cy="12" r="10"></circle><path data-dc-tpl="140" d="m9 12 2 2 4-4"></path></svg>
+          Approvals
+          <span data-dc-tpl="141" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(25, 114, 74); background: rgb(231, 243, 236); border-radius: 999px; padding: 1px 6px; font-weight: 600;">1</span>
+        </div>
+        <div data-dc-tpl="142" class="scp5" style="display: flex; align-items: center; gap: 7px; padding: 0px 2px 10px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; color: rgb(139, 138, 131); cursor: pointer;">
+          <svg data-dc-tpl="143" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;"><rect data-dc-tpl="144" x="2" y="5" width="20" height="14" rx="2"></rect><path data-dc-tpl="145" d="M2 10h20"></path></svg>
+          Billing
+        </div>
+        <div data-dc-tpl="146" class="scp5" style="display: flex; align-items: center; gap: 7px; padding: 0px 2px 10px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; color: rgb(139, 138, 131); cursor: pointer;">
+          <svg data-dc-tpl="147" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;"><path data-dc-tpl="148" d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"></path></svg>
+          Files
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="149" class="usl-rise" style="margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; animation-delay: 0.14s;">
+        <div data-dc-tpl="150" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px;">
+          <div data-dc-tpl="151" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 5px;">
+            <span data-dc-tpl="152" style="font-size: 12.5px; font-weight: 600; color: rgb(77, 76, 71);">Current deliveries</span>
+            <svg data-dc-tpl="153" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="154" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          </div>
+          <div data-dc-tpl="155" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin: 0px 4px 4px; padding: 26px 18px 28px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="156">
+              <div data-dc-tpl="157" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1;">4</div>
+              <div data-dc-tpl="158" style="margin-top: 7px; font-size: 11px;"><span data-dc-tpl="159" style="color: rgb(25, 114, 74); font-weight: 600;">+1</span><span data-dc-tpl="160" style="color: rgb(160, 158, 150);"> vs May</span></div>
+            </div>
+            <svg data-dc-tpl="161" viewBox="0 0 64 30" style="width: 64px; height: 30px; flex: 0 0 auto;">
+              <rect data-dc-tpl="162" x="0" y="18" width="6" height="12" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="163" x="10" y="12" width="6" height="18" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="164" x="20" y="16" width="6" height="14" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="165" x="30" y="8" width="6" height="22" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="166" x="40" y="13" width="6" height="17" rx="1.5" fill="#d8d6cf"></rect>
+              <rect data-dc-tpl="167" x="50" y="3" width="6" height="27" rx="1.5" fill="#1f8a5b"></rect>
+            </svg>
+          </div>
+        </div>
+        <div data-dc-tpl="168" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px;">
+          <div data-dc-tpl="169" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 5px;">
+            <span data-dc-tpl="170" style="font-size: 12.5px; font-weight: 600; color: rgb(77, 76, 71);">Awaiting your sign-off</span>
+            <svg data-dc-tpl="171" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><circle data-dc-tpl="172" cx="12" cy="12" r="10"></circle><path data-dc-tpl="173" d="m9 12 2 2 4-4"></path></svg>
+          </div>
+          <div data-dc-tpl="174" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin: 0px 4px 4px; padding: 26px 18px 28px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="175">
+              <div data-dc-tpl="176" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: rgb(25, 114, 74);">1</div>
+              <div data-dc-tpl="177" style="margin-top: 7px; font-size: 11px;"><span data-dc-tpl="178" style="color: rgb(25, 114, 74); font-weight: 600;">Action needed</span><span data-dc-tpl="179" style="color: rgb(160, 158, 150);"> · since 14:05</span></div>
+            </div>
+            <span data-dc-tpl="180" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 9px; font-size: 10.5px; font-weight: 600; background: rgb(231, 243, 236); color: rgb(25, 114, 74); white-space: nowrap;"><span data-dc-tpl="181" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(31, 138, 91);"></span>3 of 5</span>
+          </div>
+        </div>
+        <div data-dc-tpl="182" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px;">
+          <div data-dc-tpl="183" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 5px;">
+            <span data-dc-tpl="184" style="font-size: 12.5px; font-weight: 600; color: rgb(77, 76, 71);">Next invoice</span>
+            <svg data-dc-tpl="185" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><rect data-dc-tpl="186" x="2" y="5" width="20" height="14" rx="2"></rect><path data-dc-tpl="187" d="M2 10h20"></path></svg>
+          </div>
+          <div data-dc-tpl="188" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin: 0px 4px 4px; padding: 26px 18px 28px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="189">
+              <div data-dc-tpl="190" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1;">$8,400</div>
+              <div data-dc-tpl="191" style="margin-top: 7px; font-size: 11px;"><span data-dc-tpl="192" style="color: rgb(77, 76, 71); font-weight: 600;">Due Jun 30</span><span data-dc-tpl="193" style="color: rgb(160, 158, 150);"> · auto-pay on</span></div>
+            </div>
+            <span data-dc-tpl="194" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150); white-space: nowrap;">···· 4421</span>
+          </div>
+        </div>
+        <div data-dc-tpl="195" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px;">
+          <div data-dc-tpl="196" style="display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 5px;">
+            <span data-dc-tpl="197" style="font-size: 12.5px; font-weight: 600; color: rgb(77, 76, 71);">Retainer hours</span>
+            <svg data-dc-tpl="198" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><circle data-dc-tpl="199" cx="12" cy="12" r="10"></circle><path data-dc-tpl="200" d="M12 6v6l4 2"></path></svg>
+          </div>
+          <div data-dc-tpl="201" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin: 0px 4px 4px; padding: 26px 18px 28px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="202">
+              <div data-dc-tpl="203" style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1;">31<span data-dc-tpl="204" style="font-size: 14px; font-weight: 500; color: rgb(179, 177, 168);"> / 40</span></div>
+              <div data-dc-tpl="205" style="margin-top: 7px; font-size: 11px;"><span data-dc-tpl="206" style="color: rgb(25, 114, 74); font-weight: 600;">+6.5h</span><span data-dc-tpl="207" style="color: rgb(160, 158, 150);"> this week</span></div>
+            </div>
+            <svg data-dc-tpl="208" viewBox="0 0 64 30" style="width: 64px; height: 30px; flex: 0 0 auto;">
+              <rect data-dc-tpl="209" x="0" y="20" width="6" height="10" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="210" x="10" y="14" width="6" height="16" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="211" x="20" y="17" width="6" height="13" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="212" x="30" y="10" width="6" height="20" rx="1.5" fill="#eceae5"></rect>
+              <rect data-dc-tpl="213" x="40" y="15" width="6" height="15" rx="1.5" fill="#d8d6cf"></rect>
+              <rect data-dc-tpl="214" x="50" y="5" width="6" height="25" rx="1.5" fill="#1f8a5b"></rect>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="215" class="usl-rise" style="margin-top: 14px; border: 1px solid rgba(31, 138, 91, 0.22); background: rgba(31, 138, 91, 0.03); border-radius: 10px; padding: 13px 18px; display: flex; align-items: center; gap: 20px; animation-delay: 0.19s;">
+        <div data-dc-tpl="216" style="flex: 1 1 0%; min-width: 0px;">
+          <div data-dc-tpl="217" style="display: inline-flex; align-items: center; gap: 6px; background: rgb(231, 243, 236); color: rgb(25, 114, 74); border-radius: 999px; padding: 3px 10px 3px 8px; font-size: 11px; font-weight: 600; letter-spacing: 0px;"><span data-dc-tpl="218" style="width: 6px; height: 6px; border-radius: 99px; background: rgb(31, 138, 91);"></span>Awaiting your sign-off</div>
+          <div data-dc-tpl="219" style="font-size: 15px; font-weight: 600; letter-spacing: -0.005em; margin-top: 5px;">Packaging system — retail line · delivery 3 of 5</div>
+          <div data-dc-tpl="220" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgb(77, 76, 71); margin-top: 6px;">
+            <svg data-dc-tpl="221" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(25, 114, 74); flex: 0 0 auto;"><path data-dc-tpl="222" d="M20 6 9 17l-5-5"></path></svg>
+            Reviewed and approved by Fernwell's creative director before release · submitted today 14:05 · 24 files
+          </div>
+        </div>
+        <div data-dc-tpl="223" style="display: flex; align-items: center; gap: 10px; flex: 0 0 auto;">
+          <button data-dc-tpl="224" class="scp3" style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; border-radius: 999px; border: 1px solid rgb(226, 224, 218); background: rgb(255, 255, 255); color: rgb(32, 32, 29); font-size: 12.5px; font-weight: 600; cursor: pointer;">Request changes</button>
+          <button data-dc-tpl="225" class="scp6" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 17px; border-radius: 999px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: rgb(31, 138, 91); color: rgb(255, 255, 255); font-size: 12.5px; font-weight: 600; cursor: pointer;">
+            Review &amp; approve
+            <svg data-dc-tpl="226" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;"><path data-dc-tpl="227" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="228" class="usl-rise" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 22px; animation-delay: 0.24s;">
+        <div data-dc-tpl="229" style="display: flex; align-items: baseline; gap: 9px;">
+          <span data-dc-tpl="230" style="font-size: 16px; font-weight: 600; letter-spacing: -0.01em;">Deliveries</span>
+          <span data-dc-tpl="231" style="font-family: Poppins, sans-serif; font-size: 11.5px; font-weight: 500; color: rgb(160, 158, 150);">5 this quarter</span>
+        </div>
+        <div data-dc-tpl="232" style="display: flex; align-items: center; gap: 8px;">
+          <div data-dc-tpl="233" class="scp0" style="display: flex; align-items: center; gap: 7px; height: 31px; border: 1px solid rgb(231, 229, 223); border-radius: 999px; background: rgb(255, 255, 255); padding: 0px 12px; cursor: text; width: 190px;">
+            <svg data-dc-tpl="234" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 12px; height: 12px; color: rgb(179, 177, 168); flex: 0 0 auto;"><circle data-dc-tpl="235" cx="11" cy="11" r="8"></circle><path data-dc-tpl="236" d="m21 21-4.3-4.3"></path></svg>
+            <span data-dc-tpl="237" style="font-size: 12px; color: rgb(160, 158, 150);">Search</span>
+          </div>
+          <button data-dc-tpl="238" class="scp3" style="display: inline-flex; align-items: center; gap: 6px; height: 31px; padding: 0px 13px; border-radius: 999px; border: 1px solid rgb(231, 229, 223); background: rgb(255, 255, 255); color: rgb(77, 76, 71); font-size: 12px; font-weight: 600; cursor: pointer;">
+            <svg data-dc-tpl="239" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; color: rgb(139, 138, 131);"><path data-dc-tpl="240" d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+            Filter
+          </button>
+          <div data-dc-tpl="241" style="display: flex; align-items: center; border: 1px solid rgb(231, 229, 223); border-radius: 999px; overflow: hidden;">
+            <span data-dc-tpl="242" style="display: inline-flex; align-items: center; justify-content: center; width: 31px; height: 29px; background: rgb(239, 238, 234); cursor: pointer;"><svg data-dc-tpl="243" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" style="width: 13px; height: 13px; color: rgb(32, 32, 29);"><rect data-dc-tpl="244" x="3" y="3" width="7" height="7" rx="1"></rect><rect data-dc-tpl="245" x="14" y="3" width="7" height="7" rx="1"></rect><rect data-dc-tpl="246" x="3" y="14" width="7" height="7" rx="1"></rect><rect data-dc-tpl="247" x="14" y="14" width="7" height="7" rx="1"></rect></svg></span>
+            <span data-dc-tpl="248" class="scp2" style="display: inline-flex; align-items: center; justify-content: center; width: 31px; height: 29px; background: rgb(255, 255, 255); cursor: pointer;"><svg data-dc-tpl="249" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" style="width: 13px; height: 13px; color: rgb(139, 138, 131);"><path data-dc-tpl="250" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div data-dc-tpl="251" class="usl-rise" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; animation-delay: 0.29s;">
+        
+          <div data-dc-tpl="253" class="scp0" style="border: 1px solid rgb(233, 231, 226); border-radius: 10px; background: rgb(255, 255, 255); padding: 14px 16px; cursor: pointer; position: relative;">
+            <div data-dc-tpl="254" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+              <span data-dc-tpl="255" style="width: 34px; height: 34px; border-radius: 999px; background: rgb(227, 235, 227); color: rgb(79, 102, 82); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; flex: 0 0 auto;"><span class="sc-interp">JO</span></span>
+              <span data-dc-tpl="256" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2.5px 9px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: rgb(231, 243, 236); color: rgb(25, 114, 74); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial;"><span data-dc-tpl="257" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(31, 138, 91); display: inline-block; flex: 0 0 auto;"></span><span class="sc-interp">Awaiting sign-off</span></span>
+            </div>
+            <div data-dc-tpl="258" style="font-size: 14px; font-weight: 600; letter-spacing: -0.005em; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Packaging system — retail line</span></div>
+            <div data-dc-tpl="259" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); margin-top: 3px;"><span class="sc-interp">24 files · print-ready + sources</span></div>
+            <div data-dc-tpl="260" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div data-dc-tpl="261">
+                <div data-dc-tpl="262" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Owner</div>
+                <div data-dc-tpl="263" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Jonah Okafor</span></div>
+              </div>
+              <div data-dc-tpl="264">
+                <div data-dc-tpl="265" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Updated</div>
+                <div data-dc-tpl="266" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px;"><span class="sc-interp">today 14:05</span></div>
+              </div>
+            </div>
+            <div data-dc-tpl="267" style="display: flex; align-items: center; gap: 8px; margin-top: 13px;">
+              <span data-dc-tpl="268" style="display: inline-flex; gap: 3px;">
+                <span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(236, 234, 229); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(236, 234, 229); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span>
+              </span>
+              <span data-dc-tpl="271" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150);"><span class="sc-interp">3 of 5</span></span>
+              <span data-dc-tpl="272" style="flex: 1 1 0%;"></span>
+              <svg data-dc-tpl="273" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="274" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        
+          <div data-dc-tpl="253" class="scp0" style="border: 1px solid rgb(233, 231, 226); border-radius: 10px; background: rgb(255, 255, 255); padding: 14px 16px; cursor: pointer; position: relative;">
+            <div data-dc-tpl="254" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+              <span data-dc-tpl="255" style="width: 34px; height: 34px; border-radius: 999px; background: rgb(240, 228, 224); color: rgb(125, 83, 72); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; flex: 0 0 auto;"><span class="sc-interp">AS</span></span>
+              <span data-dc-tpl="256" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2.5px 9px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: rgb(239, 238, 234); color: rgb(107, 106, 100); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial;"><span data-dc-tpl="257" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(155, 153, 146); display: inline-block; flex: 0 0 auto;"></span><span class="sc-interp">In production</span></span>
+            </div>
+            <div data-dc-tpl="258" style="font-size: 14px; font-weight: 600; letter-spacing: -0.005em; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">E-commerce landing refresh</span></div>
+            <div data-dc-tpl="259" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); margin-top: 3px;"><span class="sc-interp">staging ready · 3 deliverables</span></div>
+            <div data-dc-tpl="260" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div data-dc-tpl="261">
+                <div data-dc-tpl="262" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Owner</div>
+                <div data-dc-tpl="263" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Anya Sokolova</span></div>
+              </div>
+              <div data-dc-tpl="264">
+                <div data-dc-tpl="265" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Updated</div>
+                <div data-dc-tpl="266" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px;"><span class="sc-interp">today 09:18</span></div>
+              </div>
+            </div>
+            <div data-dc-tpl="267" style="display: flex; align-items: center; gap: 8px; margin-top: 13px;">
+              <span data-dc-tpl="268" style="display: inline-flex; gap: 3px;">
+                <span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(155, 153, 146); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(236, 234, 229); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(236, 234, 229); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span>
+              </span>
+              <span data-dc-tpl="271" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150);"><span class="sc-interp">1 of 3</span></span>
+              <span data-dc-tpl="272" style="flex: 1 1 0%;"></span>
+              <svg data-dc-tpl="273" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="274" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        
+          <div data-dc-tpl="253" class="scp0" style="border: 1px solid rgb(233, 231, 226); border-radius: 10px; background: rgb(255, 255, 255); padding: 14px 16px; cursor: pointer; position: relative;">
+            <div data-dc-tpl="254" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+              <span data-dc-tpl="255" style="width: 34px; height: 34px; border-radius: 999px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; flex: 0 0 auto;"><span class="sc-interp">TL</span></span>
+              <span data-dc-tpl="256" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2.5px 9px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: rgb(250, 240, 220); color: rgb(154, 107, 26); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial;"><span data-dc-tpl="257" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(194, 137, 11); display: inline-block; flex: 0 0 auto;"></span><span class="sc-interp">In review</span></span>
+            </div>
+            <div data-dc-tpl="258" style="font-size: 14px; font-weight: 600; letter-spacing: -0.005em; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Brand guidelines v2.1</span></div>
+            <div data-dc-tpl="259" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); margin-top: 3px;"><span class="sc-interp">96 pages · with creative director</span></div>
+            <div data-dc-tpl="260" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div data-dc-tpl="261">
+                <div data-dc-tpl="262" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Owner</div>
+                <div data-dc-tpl="263" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Tove Lindqvist</span></div>
+              </div>
+              <div data-dc-tpl="264">
+                <div data-dc-tpl="265" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Updated</div>
+                <div data-dc-tpl="266" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px;"><span class="sc-interp">Jun 11</span></div>
+              </div>
+            </div>
+            <div data-dc-tpl="267" style="display: flex; align-items: center; gap: 8px; margin-top: 13px;">
+              <span data-dc-tpl="268" style="display: inline-flex; gap: 3px;">
+                <span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(217, 175, 85); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(236, 234, 229); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span>
+              </span>
+              <span data-dc-tpl="271" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150);"><span class="sc-interp">1 of 2</span></span>
+              <span data-dc-tpl="272" style="flex: 1 1 0%;"></span>
+              <svg data-dc-tpl="273" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="274" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        
+          <div data-dc-tpl="253" class="scp0" style="border: 1px solid rgb(233, 231, 226); border-radius: 10px; background: rgb(255, 255, 255); padding: 14px 16px; cursor: pointer; position: relative;">
+            <div data-dc-tpl="254" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+              <span data-dc-tpl="255" style="width: 34px; height: 34px; border-radius: 999px; background: rgb(227, 235, 227); color: rgb(79, 102, 82); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; flex: 0 0 auto;"><span class="sc-interp">JO</span></span>
+              <span data-dc-tpl="256" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2.5px 9px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: rgb(255, 255, 255); color: rgb(139, 138, 131); border: 1px solid rgb(226, 224, 218);"><span data-dc-tpl="257" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(199, 197, 189); display: inline-block; flex: 0 0 auto;"></span><span class="sc-interp">Scheduled</span></span>
+            </div>
+            <div data-dc-tpl="258" style="font-size: 14px; font-weight: 600; letter-spacing: -0.005em; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Wholesale catalog Q3</span></div>
+            <div data-dc-tpl="259" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); margin-top: 3px;"><span class="sc-interp">scoped · kickoff Jun 23</span></div>
+            <div data-dc-tpl="260" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div data-dc-tpl="261">
+                <div data-dc-tpl="262" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Owner</div>
+                <div data-dc-tpl="263" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Jonah Okafor</span></div>
+              </div>
+              <div data-dc-tpl="264">
+                <div data-dc-tpl="265" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Updated</div>
+                <div data-dc-tpl="266" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px;"><span class="sc-interp">Jun 9</span></div>
+              </div>
+            </div>
+            <div data-dc-tpl="267" style="display: flex; align-items: center; gap: 8px; margin-top: 13px;">
+              <span data-dc-tpl="268" style="display: inline-flex; gap: 3px;">
+                <span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: transparent; border: 1px dashed rgb(199, 197, 189); display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: transparent; border: 1px dashed rgb(199, 197, 189); display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: transparent; border: 1px dashed rgb(199, 197, 189); display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: transparent; border: 1px dashed rgb(199, 197, 189); display: inline-block;"></span>
+              </span>
+              <span data-dc-tpl="271" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150);"><span class="sc-interp">0 of 4</span></span>
+              <span data-dc-tpl="272" style="flex: 1 1 0%;"></span>
+              <svg data-dc-tpl="273" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="274" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        
+          <div data-dc-tpl="253" class="scp0" style="border: 1px solid rgb(233, 231, 226); border-radius: 10px; background: rgb(255, 255, 255); padding: 14px 16px; cursor: pointer; position: relative;">
+            <div data-dc-tpl="254" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+              <span data-dc-tpl="255" style="width: 34px; height: 34px; border-radius: 999px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; flex: 0 0 auto;"><span class="sc-interp">TL</span></span>
+              <span data-dc-tpl="256" style="display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2.5px 9px; font-size: 10.5px; font-weight: 600; white-space: nowrap; background: rgb(231, 243, 236); color: rgb(25, 114, 74); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial;"><span data-dc-tpl="257" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(31, 138, 91); display: inline-block; flex: 0 0 auto;"></span><span class="sc-interp">Delivered</span></span>
+            </div>
+            <div data-dc-tpl="258" style="font-size: 14px; font-weight: 600; letter-spacing: -0.005em; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Spring campaign assets</span></div>
+            <div data-dc-tpl="259" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); margin-top: 3px;"><span class="sc-interp">approved Jun 3 · archived</span></div>
+            <div data-dc-tpl="260" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+              <div data-dc-tpl="261">
+                <div data-dc-tpl="262" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Owner</div>
+                <div data-dc-tpl="263" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="sc-interp">Tove Lindqvist</span></div>
+              </div>
+              <div data-dc-tpl="264">
+                <div data-dc-tpl="265" style="font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Updated</div>
+                <div data-dc-tpl="266" style="font-size: 12px; font-weight: 500; color: rgb(77, 76, 71); margin-top: 3px;"><span class="sc-interp">Jun 2</span></div>
+              </div>
+            </div>
+            <div data-dc-tpl="267" style="display: flex; align-items: center; gap: 8px; margin-top: 13px;">
+              <span data-dc-tpl="268" style="display: inline-flex; gap: 3px;">
+                <span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span><span data-dc-tpl="270" style="width: 14px; height: 4px; border-radius: 99px; background: rgb(31, 138, 91); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; display: inline-block;"></span>
+              </span>
+              <span data-dc-tpl="271" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150);"><span class="sc-interp">4 of 4</span></span>
+              <span data-dc-tpl="272" style="flex: 1 1 0%;"></span>
+              <svg data-dc-tpl="273" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168);"><path data-dc-tpl="274" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        
+        <div data-dc-tpl="275" class="scp7" style="border: 1.5px dashed rgb(216, 214, 207); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 150px; cursor: pointer; color: rgb(160, 158, 150);">
+          <span data-dc-tpl="276" style="width: 30px; height: 30px; border-radius: 999px; border: 1px solid rgb(226, 224, 218); display: inline-flex; align-items: center; justify-content: center; background: rgb(255, 255, 255);">
+            <svg data-dc-tpl="277" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 14px; height: 14px;"><path data-dc-tpl="278" d="M12 5v14M5 12h14"></path></svg>
+          </span>
+          <span data-dc-tpl="279" style="font-size: 12.5px; font-weight: 600;">New request</span>
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="280" class="usl-rise" style="margin-top: 14px; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; align-items: stretch; animation-delay: 0.34s;">
+        <div data-dc-tpl="281" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px; display: flex; flex-direction: column;">
+          <div data-dc-tpl="282" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px;">
+            <span data-dc-tpl="283" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(160, 158, 150);">Next invoice</span>
+            <span data-dc-tpl="284" style="display: inline-flex; align-items: center; gap: 5px; font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(25, 114, 74);"><span data-dc-tpl="285" style="width: 5px; height: 5px; border-radius: 99px; background: rgb(25, 114, 74);"></span>auto-pay</span>
+          </div>
+          <div data-dc-tpl="286" style="flex: 1 1 0%; margin: 0px 4px 4px; padding: 14px 15px 15px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="287" style="display: flex; align-items: center; gap: 9px;">
+              <span data-dc-tpl="288" style="font-size: 22px; font-weight: 600; letter-spacing: -0.02em;">$8,400</span>
+              <span data-dc-tpl="289" style="display: inline-flex; border-radius: 999px; padding: 2px 9px; font-size: 10.5px; font-weight: 600; background: rgb(255, 255, 255); color: rgb(107, 106, 100); border: 1px solid rgb(226, 224, 218);">Due Jun 30</span>
+            </div>
+            <div data-dc-tpl="290" style="font-size: 12px; color: rgb(139, 138, 131); margin-top: 7px;">Quarterly retainer — final Q2 installment</div>
+            <div data-dc-tpl="291" class="scp8" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: rgb(25, 114, 74); cursor: pointer; margin-top: 11px;">View invoice
+              <svg data-dc-tpl="292" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 11px; height: 11px;"><path data-dc-tpl="293" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        </div>
+        <div data-dc-tpl="294" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px; display: flex; flex-direction: column;">
+          <div data-dc-tpl="295" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px;">
+            <span data-dc-tpl="296" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(160, 158, 150);">Recent invoices</span>
+            <span data-dc-tpl="297" class="scp9" style="font-family: Poppins, sans-serif; font-size: 9.5px; color: rgb(160, 158, 150); cursor: pointer;">View all</span>
+          </div>
+          <div data-dc-tpl="298" style="flex: 1 1 0%; margin: 0px 4px 4px; padding: 4px 14px 5px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px; display: flex; flex-direction: column; justify-content: center;">
+            <div data-dc-tpl="299" style="display: flex; align-items: center; gap: 10px; padding: 7px 0px; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="300" style="font-size: 12px; font-weight: 600; width: 70px;">INV-0142</span>
+              <span data-dc-tpl="301" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); flex: 1 1 0%;">May 31 · retainer</span>
+              <span data-dc-tpl="302" style="font-family: Poppins, sans-serif; font-size: 11px; color: rgb(77, 76, 71);">$8,400</span>
+              <span data-dc-tpl="303" style="display: inline-flex; align-items: center; border-radius: 999px; padding: 1.5px 8px; font-size: 10px; font-weight: 600; background: rgb(231, 243, 236); color: rgb(25, 114, 74);">Paid</span>
+            </div>
+            <div data-dc-tpl="304" style="display: flex; align-items: center; gap: 10px; padding: 7px 0px; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="305" style="font-size: 12px; font-weight: 600; width: 70px;">INV-0141</span>
+              <span data-dc-tpl="306" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); flex: 1 1 0%;">Apr 30 · retainer</span>
+              <span data-dc-tpl="307" style="font-family: Poppins, sans-serif; font-size: 11px; color: rgb(77, 76, 71);">$8,400</span>
+              <span data-dc-tpl="308" style="display: inline-flex; align-items: center; border-radius: 999px; padding: 1.5px 8px; font-size: 10px; font-weight: 600; background: rgb(231, 243, 236); color: rgb(25, 114, 74);">Paid</span>
+            </div>
+            <div data-dc-tpl="309" style="display: flex; align-items: center; gap: 10px; padding: 7px 0px;">
+              <span data-dc-tpl="310" style="font-size: 12px; font-weight: 600; width: 70px;">INV-0140</span>
+              <span data-dc-tpl="311" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150); flex: 1 1 0%;">Apr 12 · photography</span>
+              <span data-dc-tpl="312" style="font-family: Poppins, sans-serif; font-size: 11px; color: rgb(77, 76, 71);">$1,950</span>
+              <span data-dc-tpl="313" style="display: inline-flex; align-items: center; border-radius: 999px; padding: 1.5px 8px; font-size: 10px; font-weight: 600; background: rgb(231, 243, 236); color: rgb(25, 114, 74);">Paid</span>
+            </div>
+          </div>
+        </div>
+        <div data-dc-tpl="314" style="border: 1px solid rgb(231, 229, 223); border-radius: 10px; overflow: hidden; background: rgb(247, 246, 243); box-shadow: rgba(32, 32, 29, 0.04) 0px 1px 2px; display: flex; flex-direction: column;">
+          <div data-dc-tpl="315" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px;">
+            <span data-dc-tpl="316" style="font-family: Poppins, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; color: rgb(160, 158, 150);">Account</span>
+            <span data-dc-tpl="317" style="display: inline-flex; border-radius: 999px; padding: 1.5px 8px; font-size: 10px; font-weight: 600; background: rgb(239, 238, 234); color: rgb(107, 106, 100);">Owner</span>
+          </div>
+          <div data-dc-tpl="318" style="flex: 1 1 0%; margin: 0px 4px 4px; padding: 12px 15px 13px; border: 1px solid rgb(235, 233, 227); border-radius: 10px; background: rgb(255, 255, 255); box-shadow: rgba(32, 32, 29, 0.03) 0px 1px 2px;">
+            <div data-dc-tpl="319" style="display: flex; align-items: center; justify-content: space-between;">
+              <span data-dc-tpl="320" style="font-size: 12px; color: rgb(139, 138, 131);">Plan</span>
+              <span data-dc-tpl="321" style="font-size: 12px; font-weight: 600;">Quarterly retainer</span>
+            </div>
+            <div data-dc-tpl="322" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span data-dc-tpl="323" style="font-size: 12px; color: rgb(139, 138, 131);">Seats</span>
+              <span data-dc-tpl="324" style="display: flex; align-items: center;">
+                <span data-dc-tpl="325" style="width: 20px; height: 20px; border-radius: 999px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 8.5px; font-weight: 600; border: 2px solid rgb(255, 255, 255);">PR</span>
+                <span data-dc-tpl="326" style="width: 20px; height: 20px; border-radius: 999px; background: rgb(227, 235, 227); color: rgb(79, 102, 82); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 8.5px; font-weight: 600; border: 2px solid rgb(255, 255, 255); margin-left: -6px;">DM</span>
+                <span data-dc-tpl="327" style="width: 20px; height: 20px; border-radius: 999px; background: rgb(240, 228, 224); color: rgb(125, 83, 72); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 8.5px; font-weight: 600; border: 2px solid rgb(255, 255, 255); margin-left: -6px;">SL</span>
+                <span data-dc-tpl="328" style="font-size: 12px; font-weight: 600; margin-left: 7px;">3 of 5</span>
+              </span>
+            </div>
+            <div data-dc-tpl="329" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span data-dc-tpl="330" style="font-size: 12px; color: rgb(139, 138, 131);">Producer</span>
+              <span data-dc-tpl="331" style="display: flex; align-items: center; gap: 6px;">
+                <span data-dc-tpl="332" style="position: relative; display: inline-flex;">
+                  <span data-dc-tpl="333" style="width: 20px; height: 20px; border-radius: 999px; background: rgb(227, 235, 227); color: rgb(79, 102, 82); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 8.5px; font-weight: 600;">JO</span>
+                  <span data-dc-tpl="334" style="position: absolute; bottom: -1px; right: -1px; width: 7px; height: 7px; border-radius: 99px; background: rgb(25, 114, 74); border: 1.5px solid rgb(255, 255, 255);"></span>
+                </span>
+                <span data-dc-tpl="335" style="font-size: 12px; font-weight: 600;">Jonah Okafor</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div data-dc-tpl="336" class="usl-rise" style="margin-top: 14px; border: 1px solid rgb(233, 231, 226); border-radius: 10px; overflow: hidden; background: rgb(255, 255, 255); animation-delay: 0.39s;">
+        <div data-dc-tpl="337" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 16px; border-bottom: 1px solid rgb(239, 238, 234);">
+          <div data-dc-tpl="338" style="display: flex; align-items: center; gap: 10px;">
+            <span data-dc-tpl="339" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.005em;">Q2 schedule</span>
+            <span data-dc-tpl="340" style="display: inline-flex; align-items: center; gap: 2px;">
+              <svg data-dc-tpl="341" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168); cursor: pointer;"><path data-dc-tpl="342" d="m15 18-6-6 6-6"></path></svg>
+              <span data-dc-tpl="343" style="font-family: Poppins, sans-serif; font-size: 10px; color: rgb(139, 138, 131);">Apr 1 – Jun 30</span>
+              <svg data-dc-tpl="344" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px; color: rgb(179, 177, 168); cursor: pointer;"><path data-dc-tpl="345" d="m9 18 6-6-6-6"></path></svg>
+            </span>
+          </div>
+          <div data-dc-tpl="346" style="display: flex; align-items: center; gap: 2px; font-family: Poppins, sans-serif; font-size: 10px; color: rgb(160, 158, 150);">
+            <span data-dc-tpl="347" class="scp5" style="padding: 3px 9px; border-radius: 999px; cursor: pointer;">Day</span>
+            <span data-dc-tpl="348" class="scp5" style="padding: 3px 9px; border-radius: 999px; cursor: pointer;">Week</span>
+            <span data-dc-tpl="349" style="padding: 3px 9px; border-radius: 999px; background: rgb(255, 255, 255); border: 1px solid rgb(226, 224, 218); color: rgb(32, 32, 29); font-weight: 600; cursor: pointer;">Month</span>
+            <span data-dc-tpl="350" class="scp5" style="padding: 3px 9px; border-radius: 999px; cursor: pointer;">Quarter</span>
+          </div>
+        </div>
+        <div data-dc-tpl="351" style="display: grid; grid-template-columns: 220px 1fr;">
+          <div data-dc-tpl="352" style="border-right: 1px solid rgb(239, 238, 234);">
+            <div data-dc-tpl="353" style="height: 28px; display: flex; align-items: center; padding: 0px 16px; font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168); border-bottom: 1px solid rgb(241, 240, 236);">Delivery</div>
+            <div data-dc-tpl="354" style="height: 33px; display: flex; align-items: center; padding: 0px 16px; font-size: 12px; font-weight: 600; border-bottom: 1px solid rgb(241, 240, 236); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Packaging system — retail</div>
+            <div data-dc-tpl="355" style="height: 33px; display: flex; align-items: center; padding: 0px 16px; font-size: 12px; font-weight: 600; border-bottom: 1px solid rgb(241, 240, 236); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">E-commerce landing refresh</div>
+            <div data-dc-tpl="356" style="height: 33px; display: flex; align-items: center; padding: 0px 16px; font-size: 12px; font-weight: 600; border-bottom: 1px solid rgb(241, 240, 236); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Brand guidelines v2.1</div>
+            <div data-dc-tpl="357" style="height: 33px; display: flex; align-items: center; padding: 0px 16px; font-size: 12px; font-weight: 600; border-bottom: 1px solid rgb(241, 240, 236); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Wholesale catalog Q3</div>
+            <div data-dc-tpl="358" style="height: 33px; display: flex; align-items: center; padding: 0px 16px; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Spring campaign assets</div>
+          </div>
+          <div data-dc-tpl="359" style="position: relative;">
+            <div data-dc-tpl="360" style="position: absolute; top: 0px; bottom: 0px; left: 33.33%; width: 1px; background: rgb(241, 240, 236);"></div>
+            <div data-dc-tpl="361" style="position: absolute; top: 0px; bottom: 0px; left: 66.66%; width: 1px; background: rgb(241, 240, 236);"></div>
+            <div data-dc-tpl="362" style="position: absolute; top: 28px; bottom: 0px; left: 79.1%; width: 1px; border-left: 1.5px dashed rgba(31, 138, 91, 0.5);"></div>
+            <div data-dc-tpl="363" style="height: 28px; position: relative; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="364" style="position: absolute; left: 8px; top: 8px; font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Apr</span>
+              <span data-dc-tpl="365" style="position: absolute; left: calc(33.33% + 8px); top: 8px; font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">May</span>
+              <span data-dc-tpl="366" style="position: absolute; left: calc(66.66% + 8px); top: 8px; font-family: Poppins, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; color: rgb(179, 177, 168);">Jun</span>
+              <span data-dc-tpl="367" style="position: absolute; left: 79.1%; top: 4px; transform: translateX(-50%); background: rgb(29, 28, 26); color: rgb(255, 255, 255); font-family: Poppins, sans-serif; font-size: 9.5px; border-radius: 999px; padding: 2px 9px; white-space: nowrap;">Today · Jun 12</span>
+            </div>
+            <div data-dc-tpl="368" style="height: 33px; position: relative; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="369" style="position: absolute; left: 24%; width: 55%; top: 12px; height: 9px; border-radius: 99px; background: rgb(31, 138, 91);"></span>
+              <span data-dc-tpl="370" style="position: absolute; left: 79%; top: 8px; width: 17px; height: 17px; border-radius: 99px; background: rgb(227, 235, 227); color: rgb(79, 102, 82); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 7.5px; font-weight: 600; border: 1.5px solid rgb(255, 255, 255);">JO</span>
+              <span data-dc-tpl="371" style="position: absolute; left: 82%; top: 10px; font-family: Poppins, sans-serif; font-size: 9px; color: rgb(25, 114, 74); white-space: nowrap;">sign-off pending</span>
+            </div>
+            <div data-dc-tpl="372" style="height: 33px; position: relative; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="373" style="position: absolute; left: 61%; width: 36%; top: 12px; height: 9px; border-radius: 99px; background: rgb(155, 153, 146);"></span>
+              <span data-dc-tpl="374" style="position: absolute; left: 59%; top: 10px; transform: translateX(-100%); font-family: Poppins, sans-serif; font-size: 9px; color: rgb(139, 138, 131); white-space: nowrap;">in production</span>
+              <span data-dc-tpl="375" style="position: absolute; left: 95.5%; top: 8px; width: 17px; height: 17px; border-radius: 99px; background: rgb(240, 228, 224); color: rgb(125, 83, 72); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 7.5px; font-weight: 600; border: 1.5px solid rgb(255, 255, 255);">AS</span>
+            </div>
+            <div data-dc-tpl="376" style="height: 33px; position: relative; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="377" style="position: absolute; left: 8%; width: 62%; top: 12px; height: 9px; border-radius: 99px; background: rgb(217, 175, 85);"></span>
+              <span data-dc-tpl="378" style="position: absolute; left: 68%; top: 8px; width: 17px; height: 17px; border-radius: 99px; background: rgb(236, 229, 216); color: rgb(107, 91, 62); display: inline-flex; align-items: center; justify-content: center; font-family: Poppins, sans-serif; font-size: 7.5px; font-weight: 600; border: 1.5px solid rgb(255, 255, 255);">TL</span>
+              <span data-dc-tpl="379" style="position: absolute; left: 71.5%; top: 10px; font-family: Poppins, sans-serif; font-size: 9px; color: rgb(154, 107, 26); white-space: nowrap;">in review</span>
+            </div>
+            <div data-dc-tpl="380" style="height: 33px; position: relative; border-bottom: 1px solid rgb(241, 240, 236);">
+              <span data-dc-tpl="381" style="position: absolute; left: 91%; width: 8%; top: 12px; height: 9px; border-radius: 99px; border: 1.5px dashed rgb(179, 177, 168); background: transparent;"></span>
+              <span data-dc-tpl="382" style="position: absolute; left: 89.5%; top: 10px; transform: translateX(-100%); font-family: Poppins, sans-serif; font-size: 9px; color: rgb(160, 158, 150); white-space: nowrap;">kickoff Jun 23</span>
+            </div>
+            <div data-dc-tpl="383" style="height: 33px; position: relative;">
+              <span data-dc-tpl="384" style="position: absolute; left: 0%; width: 69%; top: 12px; height: 9px; border-radius: 99px; background: rgb(31, 138, 91);"></span>
+              <span data-dc-tpl="385" style="position: absolute; left: 70.5%; top: 10px; font-family: Poppins, sans-serif; font-size: 9px; color: rgb(25, 114, 74); white-space: nowrap;">delivered Jun 3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div></div></div></div>
+
+
+
+</body></html>

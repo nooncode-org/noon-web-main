@@ -8,7 +8,12 @@ import { useTranslations } from "next-intl";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { useRevealOnView } from "@/hooks/use-reveal-on-view";
-import { templates, templateCategories, templatePrinciples, templateSelectionGuides } from "@/data/templates";
+import {
+  templatesCatalog,
+  templateCatalogCategories,
+  templatePrinciples,
+  templateSelectionGuides,
+} from "@/data/templates";
 import { siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explore-builds-section";
@@ -63,8 +68,8 @@ export function TemplatesContent() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   const filteredTemplates = useMemo(() => {
-    if (!activeFilter) return templates;
-    return templates.filter((t) => t.category === activeFilter);
+    if (!activeFilter) return templatesCatalog;
+    return templatesCatalog.filter((t) => t.category === activeFilter);
   }, [activeFilter]);
 
   const { ref: headerRef, isVisible: headerVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
@@ -202,7 +207,7 @@ export function TemplatesContent() {
                 <LayoutGrid className="h-3.5 w-3.5" />
                 All
               </button>
-              {templateCategories.map((category, index) => (
+              {templateCatalogCategories.map((category, index) => (
                 <button
                   key={category}
                   onClick={() => setActiveFilter(category)}

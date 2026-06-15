@@ -6,7 +6,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { ArrowRight } from "lucide-react";
 import { getTemplateHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { templates } from "@/data/templates";
+import { templates, type TemplateCatalogItem } from "@/data/templates";
 
 // ============================================================================
 // Category tone map
@@ -344,9 +344,51 @@ function MobileMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function CrmMockup({ enhanced }: { enhanced: boolean }) {
+  const cols = ["Lead", "Proposal", "Won"];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30">
+        <span className="text-[10px] font-mono text-muted-foreground">pipeline</span>
+        <span
+          className="text-[9px] transition-all duration-300"
+          style={{ color: enhanced ? siteTones.brand.accent : "var(--muted-foreground)" }}
+        >
+          12 deals · $84k
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 p-3">
+        {cols.map((c, ci) => (
+          <div key={c} className="space-y-1.5">
+            <div className="text-[8px] font-mono uppercase tracking-wide text-muted-foreground/70">{c}</div>
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="rounded-md border bg-secondary/40 p-1.5 transition-all duration-300"
+                style={{
+                  transform: enhanced && ci === 2 && i === 0 ? "translateY(-2px)" : "none",
+                  borderColor: enhanced && ci === 2 ? siteTones.brand.border : "var(--border)",
+                  transitionDelay: `${ci * 40}ms`,
+                }}
+              >
+                <div className="mb-1 h-1.5 w-3/4 rounded bg-foreground/20" />
+                <div className="flex items-center justify-between">
+                  <div className="h-1 w-1/3 rounded bg-foreground/10" />
+                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: siteTones.brand.surface }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
+  "CRM & sales": CrmMockup,
   "Dashboards": DashboardMockup,
   "Internal tools": WorkflowMockup,
   "AI assistants": AIMockup,
@@ -367,7 +409,7 @@ export function TemplateMockup({ category, enhanced = false }: { category: strin
 // Template Card
 // ============================================================================
 
-export function TemplateCard({ template, index }: { template: typeof templates[number]; index: number }) {
+export function TemplateCard({ template, index }: { template: TemplateCatalogItem; index: number }) {
   const [hovered, setHovered] = useState(false);
   const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.15 });
   const tone = categoryTone(template.category);
