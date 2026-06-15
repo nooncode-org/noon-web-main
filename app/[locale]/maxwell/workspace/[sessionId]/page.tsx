@@ -21,6 +21,8 @@ import {
   pickCurrentMilestone,
 } from "@/lib/maxwell/ai-mvp-milestone-copy";
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
+import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
+import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/project-status-labels";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 
@@ -259,7 +261,23 @@ export default async function WorkspacePage({ params }: Props) {
       )
     : null;
 
-  const statusCfg = WORKSPACE_STATUS_META[workspace.workspaceStatus as WorkspaceStatus];
+  // Slice 1a (v3 client portal): pull the App's authoritative project status
+  // when the workspace is mapped to an App project. The HMAC signature is the
+  // auth; `noonAppProjectId` (== App `projects.id`) selects the resource. We
+  // fall back to the local `workspace_status` whenever the App read errors /
+  // 404s / is unconfigured, so the workspace never regresses on a transient.
+  const appProjectStatus = workspace.noonAppProjectId
+    ? await fetchNoonAppProjectStatus(workspace.noonAppProjectId)
+    : null;
+  const appStatusData = appProjectStatus?.status === "ok" ? appProjectStatus.data : null;
+
+  const localStatusCfg = WORKSPACE_STATUS_META[workspace.workspaceStatus as WorkspaceStatus];
+  // NoonWeb owns the client-facing label (§8.1); map the raw App enum here.
+  const statusCfg = appStatusData
+    ? mapProjectStatusToMeta(appStatusData.project.status)
+    : localStatusCfg;
+  const appProposal = appStatusData?.proposal ?? null;
+  const appLatestUpdate = appStatusData?.latestUpdate ?? null;
   const contactHref = getContactHref({
     inquiry: "project-update",
     source: "workspace",
@@ -288,7 +306,26 @@ export default async function WorkspacePage({ params }: Props) {
             <p className="text-sm text-muted-foreground">
               {workspace.latestUpdateSummary ?? statusCfg.description}
             </p>
+            {appLatestUpdate && (
+              <p className="mt-1.5 text-[11px] font-mono text-muted-foreground/60">
+                Status updated {formatDate(appLatestUpdate.at)}
+              </p>
+            )}
           </div>
+
+          {appProposal && (
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Proposal
+                </p>
+                <p className="truncate text-sm font-medium">{appProposal.title}</p>
+              </div>
+              <span className="shrink-0 text-sm font-medium">
+                {formatProposalAmount(appProposal.amount, appProposal.currency)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
