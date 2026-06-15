@@ -446,6 +446,65 @@ export async function sendPaymentConfirmedToNoonApp(input: {
   });
 }
 
+/**
+ * Client-comment write-back (v3 client portal, Slice 1b). Forwards a client's
+ * workspace comment to App's interim receiver
+ * (`POST /api/integrations/website/client-comment`).
+ *
+ * camelCase wire — the v3 family, NOT the legacy snake_case POST webhooks (see
+ * the co-signed casing rule in docs/v3-client-portal-plan.md §3.1). App de-dupes
+ * on `externalCommentId` and replies `{ idempotent, commentId, requestId }` with
+ * HTTP 200 on both first-write and replay.
+ *
+ * Contract: App-nooncode specs/v3-client-portal-comment-receiver.md §A.
+ */
+export function buildClientCommentPayload(input: {
+  projectId: string;
+  externalCommentId: string;
+  body: string;
+  at?: string;
+}) {
+  return {
+    projectId: input.projectId,
+    externalCommentId: input.externalCommentId,
+    author: "client" as const,
+    body: input.body,
+    at: input.at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Best-effort extraction of App's `{ idempotent, commentId }` from the receiver
+ * reply. Returns nulls/false for any shape we don't recognise so a contract
+ * drift degrades the audit trail gracefully instead of throwing in the action.
+ */
+export function extractNoonAppCommentId(response: unknown): {
+  commentId: string | null;
+  idempotent: boolean;
+} {
+  if (!response || typeof response !== "object") {
+    return { commentId: null, idempotent: false };
+  }
+  const obj = response as { commentId?: unknown; idempotent?: unknown };
+  return {
+    commentId:
+      typeof obj.commentId === "string" && obj.commentId.trim() ? obj.commentId : null,
+    idempotent: obj.idempotent === true,
+  };
+}
+
+export async function sendClientCommentToNoonApp(input: {
+  projectId: string;
+  externalCommentId: string;
+  body: string;
+  at?: string;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/client-comment",
+    buildClientCommentPayload(input),
+  );
+}
+
 export const noonAppProposalReviewDecisionPayloadSchema = z.object({
   event: z.literal("proposal_review_decision"),
   decision: z.enum(["approved", "changes_requested", "rejected", "cancelled"]),
