@@ -8,5 +8,10 @@
     "src": "/templates/mockups/sales-crm.html",
     "w": 1440,
     "h": 1024
+  },
+  "reservation-platform": {
+    "src": "/templates/mockups/reservation-platform.html",
+    "w": 1440,
+    "h": 1341
   }
 }

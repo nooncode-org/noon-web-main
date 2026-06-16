@@ -1,0 +1,391 @@
+<!DOCTYPE html><html><head><style>
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      section, article, figure, table { break-inside: avoid; }
+      *, *::before, *::after {
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek-ext */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek-ext */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek-ext */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* greek-ext */
+
+/* greek */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style data-dc-tpl="4">
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#f4f4f1;font-family:'Inter',system-ui,sans-serif;color:#1c1c1a;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+.sw-scroll::-webkit-scrollbar{width:9px;height:9px}
+.sw-scroll::-webkit-scrollbar-thumb{background:rgba(28,28,26,.15);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+.sw-scroll::-webkit-scrollbar-track{background:transparent}
+</style><style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Inter-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Inter-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Inter-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Inter-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl6-reservation-platform"><div data-dc-tpl="5" data-screen-label="Slatewell · Week schedule" style="width: 1440px; min-height: 912px; display: flex; align-items: stretch; background: rgb(244, 244, 241); color: rgb(28, 28, 26);">
+
+  
+  <nav data-dc-tpl="6" style="width: 88px; flex: 0 0 auto; background: rgb(255, 255, 255); border-right: 1px solid rgb(233, 232, 228); display: flex; flex-direction: column; align-items: center; padding: 16px 0px 14px;">
+    <div data-dc-tpl="7" style="width: 34px; height: 34px; border-radius: 10px; background: rgb(109, 40, 217); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; box-shadow: rgba(109, 40, 217, 0.35) 0px 2px 5px;">
+      <svg data-dc-tpl="8" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="9" x="3" y="4.5" width="18" height="16.5" rx="3"></rect><path data-dc-tpl="10" d="M3 9h18M8 2.5v4M16 2.5v4"></path><circle data-dc-tpl="11" cx="8.5" cy="14" r="1.1" fill="#fff" stroke="none"></circle><circle data-dc-tpl="12" cx="12" cy="14" r="1.1" fill="#fff" stroke="none"></circle><circle data-dc-tpl="13" cx="15.5" cy="14" r="1.1" fill="#fff" stroke="none"></circle></svg>
+    </div>
+    <div data-dc-tpl="14" style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 18px; width: 100%;"><div data-dc-tpl="15" style="font-family: Inter, sans-serif; font-size: 8.5px; letter-spacing: 0.12em; color: rgb(187, 185, 177); margin-bottom: 5px;">MAIN</div>
+      <button data-dc-tpl="16" title="Home" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="17" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="18" d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path></svg></button>
+      <button data-dc-tpl="19" title="Calendar" style="position: relative; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(109, 40, 217);">
+        <span data-dc-tpl="20" style="position: absolute; left: -12px; top: 9px; width: 3px; height: 22px; border-radius: 0px 3px 3px 0px; background: rgb(109, 40, 217);"></span>
+        <svg data-dc-tpl="21" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="22" x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><path data-dc-tpl="23" d="M3 9h18M8 2.5v4M16 2.5v4"></path></svg></button>
+      <button data-dc-tpl="24" title="Clients" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="25" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="26" cx="9" cy="8" r="3.4"></circle><path data-dc-tpl="27" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 6.5a3 3 0 0 1 0 5.6M18.5 20a4.5 4.5 0 0 0-3-4.2"></path></svg></button>
+      <button data-dc-tpl="28" title="Services" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="29" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="30" d="m12 2 2.4 5 5.6.5-4.2 3.7 1.3 5.5L12 19l-5.1 2.7 1.3-5.5L4 12.5l5.6-.5z"></path></svg></button>
+      <button data-dc-tpl="31" title="Reports" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="32" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="33" d="M3 3v18h18"></path><rect data-dc-tpl="34" x="7" y="11" width="3" height="6" rx="1"></rect><rect data-dc-tpl="35" x="13" y="7" width="3" height="10" rx="1"></rect></svg></button>
+      <button data-dc-tpl="36" title="Messages" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="37" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="38" d="M21 11.5a8 8 0 0 1-11.5 7.2L4 20l1.3-5A8 8 0 1 1 21 11.5z"></path></svg></button>
+    </div>
+    <div data-dc-tpl="39" style="font-family: Inter, sans-serif; font-size: 8.5px; letter-spacing: 0.12em; color: rgb(187, 185, 177); margin: 20px 0px 9px;">FAVS</div>
+    <div data-dc-tpl="40" style="display: flex; flex-direction: column; align-items: center; gap: 11px;">
+      <span data-dc-tpl="41" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(109, 40, 217);"></span><span data-dc-tpl="42" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(225, 29, 72);"></span><span data-dc-tpl="43" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(217, 119, 6);"></span>
+    </div>
+    <div data-dc-tpl="44" style="margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <button data-dc-tpl="45" title="Settings" class="scp0" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="46" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="47" cx="12" cy="12" r="3.2"></circle><path data-dc-tpl="48" d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1A2 2 0 1 1 7.1 4.9l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z"></path></svg></button>
+      <span data-dc-tpl="49" style="width: 32px; height: 32px; border-radius: 50%; background: rgb(109, 40, 217); color: rgb(255, 255, 255); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">AM</span>
+    </div>
+  </nav>
+
+  
+  <div data-dc-tpl="50" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; background: rgb(255, 255, 255);">
+
+    
+    <div data-dc-tpl="51" style="display: flex; align-items: center; gap: 13px; flex: 0 0 auto; padding: 20px; background: rgb(255, 255, 255); border-bottom: 1px solid rgb(233, 232, 228);">
+      <span data-dc-tpl="52" style="width: 44px; height: 44px; border-radius: 50%; background: rgb(255, 255, 255); border: 1px solid rgb(236, 234, 229); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="53" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6d28d9" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="54" x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><path data-dc-tpl="55" d="M3 9h18M8 2.5v4M16 2.5v4"></path></svg></span>
+      <div data-dc-tpl="56" style="display: flex; flex-direction: column; line-height: 1.2;">
+        <span data-dc-tpl="57" style="font-size: 22px; font-weight: 600; letter-spacing: -0.02em;">Wednesday, March 12, 2025</span>
+        <span data-dc-tpl="58" style="font-size: 13px; color: rgb(154, 152, 143); margin-top: 1px;">You have <b data-dc-tpl="59" style="color: rgb(109, 40, 217); font-weight: 600;">5 appointments</b> today · 1 pending confirmation</span>
+      </div>
+      <div data-dc-tpl="60" style="flex: 1 1 0%;"></div>
+      <div data-dc-tpl="61" class="scp1" style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0px 12px; border: 1px solid rgb(230, 229, 224); border-radius: 10px; background: rgb(255, 255, 255); width: 190px; flex: 0 0 auto;">
+        <svg data-dc-tpl="62" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b3b1a7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><circle data-dc-tpl="63" cx="11" cy="11" r="7"></circle><path data-dc-tpl="64" d="m21 21-4.3-4.3"></path></svg>
+        <span data-dc-tpl="65" style="font-size: 12.5px; color: rgb(168, 166, 157); white-space: nowrap;">Search clients…</span>
+      </div>
+      <button data-dc-tpl="66" class="scp2" style="display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0px 15px; border-radius: 10px; background: rgb(109, 40, 217); color: rgb(255, 255, 255); font-size: 12.5px; font-weight: 600; white-space: nowrap; flex: 0 0 auto; box-shadow: rgba(109, 40, 217, 0.35) 0px 1px 2px;"><svg data-dc-tpl="67" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="68" d="M12 5v14M5 12h14"></path></svg>New booking</button>
+      <button data-dc-tpl="69" class="scp3" style="position: relative; width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgb(230, 229, 224); background: rgb(255, 255, 255); display: flex; align-items: center; justify-content: center; color: rgb(107, 106, 102);"><svg data-dc-tpl="70" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="71" d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"></path></svg><span data-dc-tpl="72" style="position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: rgb(225, 29, 72); border: 1.5px solid rgb(255, 255, 255);"></span></button>
+    </div>
+
+    
+    <div data-dc-tpl="73" style="flex: 1 1 0%; display: flex; min-height: 0px; position: relative; overflow: hidden;">
+
+      
+      <div data-dc-tpl="74" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; background: rgb(255, 255, 255);">
+
+        
+        <div data-dc-tpl="75" style="display: flex; align-items: center; gap: 9px; height: 58px; flex: 0 0 auto; padding: 0px 18px; border-bottom: 1px solid rgb(239, 238, 234);">
+          <button data-dc-tpl="76" class="scp3" style="height: 36px; padding: 0px 14px; border-radius: 10px; border: 1px solid rgb(230, 229, 224); background: rgb(255, 255, 255); font-size: 12.5px; font-weight: 600; color: rgb(84, 82, 76);">Today</button>
+          <div data-dc-tpl="77" style="display: inline-flex; align-items: center; height: 36px; border: 1px solid rgb(230, 229, 224); border-radius: 10px; background: rgb(255, 255, 255); overflow: hidden; flex: 0 0 auto;"><button data-dc-tpl="78" class="scp3" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0px 13px; font-size: 12.5px; font-weight: 600; color: rgb(84, 82, 76); white-space: nowrap; flex: 0 0 auto;">This week<svg data-dc-tpl="79" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="80" d="m6 9 6 6 6-6"></path></svg></button><span data-dc-tpl="81" style="width: 1px; align-self: stretch; background: rgb(230, 229, 224); flex: 0 0 auto;"></span><div data-dc-tpl="82" class="scp3" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0px 13px; flex: 0 0 auto;"><svg data-dc-tpl="83" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9a988f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="84" x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><path data-dc-tpl="85" d="M3 9h18M8 2.5v4M16 2.5v4"></path></svg><span data-dc-tpl="86" style="font-family: Inter, sans-serif; font-size: 11.5px; font-weight: 500; color: rgb(84, 82, 76); letter-spacing: -0.02em; white-space: nowrap;">Mar 10 – Mar 14, 2025</span></div></div>
+          <div data-dc-tpl="87" style="flex: 1 1 0%;"></div>
+          <div data-dc-tpl="88" style="display: flex; align-items: center; gap: 2px; background: rgb(239, 238, 234); border-radius: 10px; padding: 3px;">
+            <button data-dc-tpl="89" data-seg="" style="height: 26px; padding: 0px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; color: rgb(107, 106, 102);">Day</button>
+            <button data-dc-tpl="90" data-seg="" style="height: 26px; padding: 0px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; background: rgb(255, 255, 255); color: rgb(28, 28, 26); box-shadow: rgba(0, 0, 0, 0.06) 0px 1px 2px;">Week</button>
+            <button data-dc-tpl="91" data-seg="" style="height: 26px; padding: 0px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; color: rgb(107, 106, 102);">Month</button>
+          </div>
+        </div>
+
+        
+        <div data-dc-tpl="92" style="display: flex; align-items: center; gap: 26px; height: 54px; flex: 0 0 auto; padding: 0px 18px; border-bottom: 1px solid rgb(233, 232, 228); background: rgb(255, 255, 255);">
+          <button data-dc-tpl="93" style="display: inline-flex; align-items: center; gap: 7px; height: 54px; color: rgb(28, 28, 26); font-size: 14px; font-weight: 600; border-bottom: 2px solid rgb(109, 40, 217);"><svg data-dc-tpl="94" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6d28d9" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="95" x="3" y="3" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="96" x="14" y="3" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="97" x="3" y="14" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="98" x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>All Scheduled<span data-dc-tpl="99" style="font-size: 13px; font-weight: 500; color: rgb(109, 40, 217); margin-left: 1px;">(23)</span></button>
+          <button data-dc-tpl="100" class="scp4" style="display: inline-flex; align-items: center; gap: 7px; height: 54px; color: rgb(154, 152, 143); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent;"><svg data-dc-tpl="101" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="102" cx="12" cy="12" r="9"></circle><path data-dc-tpl="103" d="m8.5 12 2.5 2.5 4.5-5"></path></svg>Confirmed<span data-dc-tpl="104" style="font-size: 13px; font-weight: 500; color: rgb(154, 152, 143); margin-left: 1px;">(17)</span></button>
+          <button data-dc-tpl="105" class="scp4" style="display: inline-flex; align-items: center; gap: 7px; height: 54px; color: rgb(154, 152, 143); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent;"><svg data-dc-tpl="106" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="107" cx="12" cy="12" r="9"></circle><path data-dc-tpl="108" d="M12 7v5l3 2"></path></svg>Pending<span data-dc-tpl="109" style="font-size: 13px; font-weight: 500; color: rgb(180, 83, 9); margin-left: 1px;">(5)</span></button>
+          <button data-dc-tpl="110" class="scp4" style="display: inline-flex; align-items: center; gap: 7px; height: 54px; color: rgb(154, 152, 143); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent;"><svg data-dc-tpl="111" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="112" d="M12 3 2 20h20z"></path><path data-dc-tpl="113" d="M12 10v4M12 17h.01"></path></svg>Conflicts<span data-dc-tpl="114" style="font-size: 13px; font-weight: 500; color: rgb(154, 152, 143); margin-left: 1px;">(1)</span></button>
+          <button data-dc-tpl="115" class="scp4" style="display: inline-flex; align-items: center; gap: 7px; height: 54px; color: rgb(154, 152, 143); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent;"><svg data-dc-tpl="116" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="117" cx="12" cy="12" r="9"></circle><path data-dc-tpl="118" d="m15 9-6 6M9 9l6 6"></path></svg>Canceled<span data-dc-tpl="119" style="font-size: 13px; font-weight: 500; color: rgb(154, 152, 143); margin-left: 1px;">(1)</span></button>
+        </div>
+
+        
+        <div data-dc-tpl="120" style="display: flex; gap: 11px; flex: 0 0 auto; padding: 13px 18px; overflow: hidden;">
+          <button data-dc-tpl="121" data-appt="wed-hannah" class="scp5" style="width: 316px; flex: 0 0 auto; text-align: left; background: rgb(255, 255, 255); border: 1px solid rgb(236, 234, 229); border-radius: 14px; overflow: hidden; padding: 14px 15px;">
+            <div data-dc-tpl="122" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="123" style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%;">Deep tissue massage</span><span data-dc-tpl="124" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgb(230, 229, 224); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="125" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a988f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="126" d="m6 9 6 6 6-6"></path></svg></span></div>
+            <div data-dc-tpl="127" style="font-size: 12px; color: rgb(154, 152, 143); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">11:00–12:00 · Hannah Brooks · Maya Ortiz</div>
+            <div data-dc-tpl="128" style="margin: 12px -7px -6px; padding: 8px 12px; border-radius: 10px; background: rgb(237, 233, 251); display: flex; align-items: center;"><span data-dc-tpl="129" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 12px; font-weight: 600; color: rgb(109, 40, 217);"><svg data-dc-tpl="130" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="131" cx="12" cy="12" r="9"></circle><path data-dc-tpl="132" d="m8.5 12 2.5 2.5 4.5-5"></path></svg>Up next</span><span data-dc-tpl="133" style="flex: 1 1 0%;"></span><span data-dc-tpl="134" style="font-size: 12px; font-weight: 600; color: rgb(136, 131, 122); text-decoration: underline rgb(168, 163, 155); text-underline-offset: 2px; cursor: pointer;">Check in</span></div>
+          </button>
+          <button data-dc-tpl="135" data-appt="wed-liam" class="scp6" style="width: 316px; flex: 0 0 auto; text-align: left; background: rgb(255, 255, 255); border: 1px solid rgb(236, 234, 229); border-radius: 14px; overflow: hidden; padding: 14px 15px;">
+            <div data-dc-tpl="136" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="137" style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%;">Chiro adjustment</span><span data-dc-tpl="138" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgb(230, 229, 224); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="139" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a988f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="140" d="m6 9 6 6 6-6"></path></svg></span></div>
+            <div data-dc-tpl="141" style="font-size: 12px; color: rgb(154, 152, 143); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">12:30–1:15 · Liam Foster · Nadia Khan</div>
+            <div data-dc-tpl="142" style="margin: 12px -7px -6px; padding: 8px 12px; border-radius: 10px; background: rgb(251, 240, 224); display: flex; align-items: center;"><span data-dc-tpl="143" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 12px; font-weight: 600; color: rgb(180, 83, 9);"><svg data-dc-tpl="144" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="145" cx="12" cy="12" r="9"></circle><path data-dc-tpl="146" d="M12 7.5v5l3 1.5"></path></svg>Pending</span><span data-dc-tpl="147" style="flex: 1 1 0%;"></span><span data-dc-tpl="148" style="font-size: 12px; font-weight: 600; color: rgb(136, 131, 122); text-decoration: underline rgb(168, 163, 155); text-underline-offset: 2px; cursor: pointer;">Confirm</span></div>
+          </button>
+          <div data-dc-tpl="149" style="width: 316px; flex: 0 0 auto; background: rgb(255, 255, 255); border: 1px solid rgb(236, 234, 229); border-radius: 14px; overflow: hidden; padding: 14px 15px;">
+            <div data-dc-tpl="150" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="151" style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%; color: rgb(107, 106, 102); text-decoration: line-through rgb(216, 197, 194);">Express facial</span><span data-dc-tpl="152" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgb(230, 229, 224); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="153" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a988f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="154" d="m6 9 6 6 6-6"></path></svg></span></div>
+            <div data-dc-tpl="155" style="font-size: 12px; color: rgb(154, 152, 143); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">1:30–2:15 · Dana Walsh · Sofia Reyes</div>
+            <div data-dc-tpl="156" style="margin: 12px -7px -6px; padding: 8px 12px; border-radius: 10px; background: rgb(253, 236, 236); display: flex; align-items: center;"><span data-dc-tpl="157" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 12px; font-weight: 600; color: rgb(192, 57, 43);"><svg data-dc-tpl="158" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="159" cx="12" cy="12" r="9"></circle><path data-dc-tpl="160" d="m15 9-6 6M9 9l6 6"></path></svg>Canceled</span><span data-dc-tpl="161" style="flex: 1 1 0%;"></span><span data-dc-tpl="162" style="font-size: 12px; font-weight: 600; color: rgb(136, 131, 122); text-decoration: underline rgb(168, 163, 155); text-underline-offset: 2px; cursor: pointer;">Rebook</span></div>
+          </div>
+          <button data-dc-tpl="163" data-appt="wed-elena" class="scp5" style="width: 316px; flex: 0 0 auto; text-align: left; background: rgb(255, 255, 255); border: 1px solid rgb(236, 234, 229); border-radius: 14px; overflow: hidden; padding: 14px 15px;">
+            <div data-dc-tpl="164" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="165" style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0%;">Acupuncture</span><span data-dc-tpl="166" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgb(230, 229, 224); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="167" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a988f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="168" d="m6 9 6 6 6-6"></path></svg></span></div>
+            <div data-dc-tpl="169" style="font-size: 12px; color: rgb(154, 152, 143); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">3:30–4:30 · Elena Marsh · Daniel Cole</div>
+            <div data-dc-tpl="170" style="margin: 12px -7px -6px; padding: 8px 12px; border-radius: 10px; background: rgb(231, 244, 236); display: flex; align-items: center;"><span data-dc-tpl="171" style="display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 12px; font-weight: 600; color: rgb(21, 128, 61);"><svg data-dc-tpl="172" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="173" cx="12" cy="12" r="9"></circle><path data-dc-tpl="174" d="m8.5 12 2.5 2.5 4.5-5"></path></svg>Confirmed</span><span data-dc-tpl="175" style="flex: 1 1 0%;"></span><span data-dc-tpl="176" style="font-size: 12px; font-weight: 600; color: rgb(136, 131, 122); text-decoration: underline rgb(168, 163, 155); text-underline-offset: 2px; cursor: pointer;">Details</span></div>
+          </button>
+        </div>
+
+        <div data-dc-tpl="177" style="flex: 1 1 0%; display: flex; flex-direction: column; min-height: 0px; margin: 0px 18px 18px; border: 1px solid rgb(230, 229, 224); border-radius: 14px; overflow: hidden; background: rgb(255, 255, 255); box-shadow: rgba(0, 0, 0, 0.03) 0px 1px 2px;">
+        
+        <div data-dc-tpl="178" style="display: flex; flex: 0 0 auto; background: rgb(250, 250, 250); border-bottom: 1px solid rgb(237, 237, 236); padding-right: 9px;">
+          <div data-dc-tpl="179" style="width: 58px; flex: 0 0 auto; display: flex; background: rgb(255, 255, 255); border-right: 1px solid rgb(239, 238, 234);"><button data-dc-tpl="180" class="scp3" style="flex: 1 1 0%; display: flex; align-items: center; justify-content: center; color: rgb(134, 132, 126); border-right: 1px solid rgb(237, 237, 236);"><svg data-dc-tpl="181" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="182" d="m15 18-6-6 6-6"></path></svg></button><button data-dc-tpl="183" class="scp7" style="flex: 1 1 0%; display: flex; align-items: center; justify-content: center; color: rgb(134, 132, 126);"><svg data-dc-tpl="184" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="185" d="m9 18 6-6-6-6"></path></svg></button></div>
+          <div data-dc-tpl="186" style="flex: 1 1 0%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border-left: 1px solid rgb(239, 238, 234);"><span data-dc-tpl="187" style="font-size: 12.5px; font-weight: 600; color: rgb(163, 161, 153);">10</span><span data-dc-tpl="188" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; color: rgb(163, 161, 153);">MON</span></div>
+          <div data-dc-tpl="189" style="flex: 1 1 0%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border-left: 1px solid rgb(239, 238, 234);"><span data-dc-tpl="190" style="font-size: 12.5px; font-weight: 600; color: rgb(163, 161, 153);">11</span><span data-dc-tpl="191" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; color: rgb(163, 161, 153);">TUE</span></div>
+          <div data-dc-tpl="192" style="flex: 1 1 0%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border-left: 1px solid rgb(239, 238, 234);"><span data-dc-tpl="193" style="font-size: 12.5px; font-weight: 600; color: rgb(109, 40, 217);">12</span><span data-dc-tpl="194" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; color: rgb(109, 40, 217);">WED</span></div>
+          <div data-dc-tpl="195" style="flex: 1 1 0%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border-left: 1px solid rgb(239, 238, 234);"><span data-dc-tpl="196" style="font-size: 12.5px; font-weight: 600; color: rgb(163, 161, 153);">13</span><span data-dc-tpl="197" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; color: rgb(163, 161, 153);">THU</span></div>
+          <div data-dc-tpl="198" style="flex: 1 1 0%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 6px; border-left: 1px solid rgb(239, 238, 234);"><span data-dc-tpl="199" style="font-size: 12.5px; font-weight: 600; color: rgb(163, 161, 153);">14</span><span data-dc-tpl="200" style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.05em; color: rgb(163, 161, 153);">FRI</span></div>
+        </div>
+
+        
+        <div data-dc-tpl="201" class="sw-scroll" style="flex: 1 1 0%; overflow: auto; background: rgb(255, 255, 255); scrollbar-gutter: stable;">
+          <div data-dc-tpl="202" style="display: flex; min-height: 950px;">
+            
+            <div data-dc-tpl="203" style="width: 58px; flex: 0 0 auto; position: relative; height: 950px;">
+              <div data-dc-tpl="204" style="position: absolute; top: 5px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">8 AM</div>
+              <div data-dc-tpl="205" style="position: absolute; top: 91px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">9 AM</div>
+              <div data-dc-tpl="206" style="position: absolute; top: 186px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">10 AM</div>
+              <div data-dc-tpl="207" style="position: absolute; top: 281px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">11 AM</div>
+              <div data-dc-tpl="208" style="position: absolute; top: 376px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">12 PM</div>
+              <div data-dc-tpl="209" style="position: absolute; top: 471px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">1 PM</div>
+              <div data-dc-tpl="210" style="position: absolute; top: 566px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">2 PM</div>
+              <div data-dc-tpl="211" style="position: absolute; top: 661px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">3 PM</div>
+              <div data-dc-tpl="212" style="position: absolute; top: 756px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">4 PM</div>
+              <div data-dc-tpl="213" style="position: absolute; top: 851px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">5 PM</div>
+              <div data-dc-tpl="214" style="position: absolute; top: 946px; left: 0px; right: 0px; text-align: center; font-size: 12.5px; font-weight: 600; color: rgb(154, 152, 143);">6 PM</div>
+            </div>
+
+            
+            <div data-dc-tpl="215" style="flex: 1 1 0%; position: relative; height: 950px; border-left: 1px solid rgb(239, 238, 234); background: linear-gradient(rgb(239, 238, 234) 1px, transparent 1px) 0% 0% / 100% 95px;">
+              <div data-dc-tpl="216" data-appt="mon-camille" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 95px; height: 89px; background: rgb(253, 240, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="217" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Camille Dubois</div><div data-dc-tpl="218" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Signature facial</div><div data-dc-tpl="219" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">9:00–10:00</div></div>
+              <div data-dc-tpl="220" data-appt="mon-owen" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 238px; height: 89px; background: rgb(240, 240, 252); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="221" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Owen Park</div><div data-dc-tpl="222" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Sports physio</div><div data-dc-tpl="223" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">10:30–11:30</div></div>
+              <div data-dc-tpl="224" data-appt="mon-sara" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 380px; height: 89px; background: rgb(237, 245, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><span data-dc-tpl="225" style="position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgb(217, 119, 6);"></span><div data-dc-tpl="226" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sara Lindqvist</div><div data-dc-tpl="227" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Deep tissue massage</div><div data-dc-tpl="228" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">12:00–1:00</div></div>
+              <div data-dc-tpl="229" data-appt="mon-ruben" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 570px; height: 66px; background: rgb(246, 241, 252); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="230" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ruben Ortiz</div><div data-dc-tpl="231" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">2:00–2:45 · Chiro</div></div>
+              <div data-dc-tpl="232" data-appt="mon-ava" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 760px; height: 89px; background: rgb(253, 245, 235); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="233" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ava Romano</div><div data-dc-tpl="234" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Acupuncture</div><div data-dc-tpl="235" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">4:00–5:00</div></div>
+            </div>
+
+            
+            <div data-dc-tpl="236" style="flex: 1 1 0%; position: relative; height: 950px; border-left: 1px solid rgb(239, 238, 234); background: linear-gradient(rgb(239, 238, 234) 1px, transparent 1px) 0% 0% / 100% 95px;">
+              <div data-dc-tpl="237" data-appt="tue-theo" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 143px; height: 89px; background: rgb(237, 245, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="238" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Theo Maddox</div><div data-dc-tpl="239" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Prenatal massage</div><div data-dc-tpl="240" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">9:30–10:30</div></div>
+              <div data-dc-tpl="241" data-appt="tue-isla" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 285px; height: 137px; background: rgb(240, 240, 252); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="242" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Isla Bennett</div><div data-dc-tpl="243" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Initial physio consult</div><div data-dc-tpl="244" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">11:00–12:30</div><div data-dc-tpl="245" style="font-size: 10.5px; color: rgb(140, 139, 131); opacity: 0.95; margin-top: 5px;">with Joel · Room 2</div></div>
+              <div data-dc-tpl="246" data-appt="tue-noah" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 475px; height: 66px; background: rgb(253, 240, 243); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><span data-dc-tpl="247" style="position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgb(217, 119, 6);"></span><div data-dc-tpl="248" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Noah Schmidt</div><div data-dc-tpl="249" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">1:00–1:45 · Facial</div></div>
+              <div data-dc-tpl="250" data-appt="tue-grace" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 665px; height: 89px; background: rgb(253, 245, 235); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="251" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Grace Okonkwo</div><div data-dc-tpl="252" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Acupuncture</div><div data-dc-tpl="253" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">3:00–4:00</div></div>
+            </div>
+
+            
+            <div data-dc-tpl="254" style="flex: 1 1 0%; position: relative; height: 950px; border-left: 1px solid rgb(239, 238, 234); background: linear-gradient(rgb(239, 238, 234) 1px, transparent 1px) 0% 0% / 100% 95px;">
+              <div data-dc-tpl="255" data-appt="wed-marcus" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 95px; height: 66px; background: rgb(240, 240, 252); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="256" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marcus Bell</div><div data-dc-tpl="257" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">9:00–9:45 · Dry needling</div></div>
+              <div data-dc-tpl="258" data-appt="wed-hannah" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 285px; height: 89px; background: rgb(237, 245, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgb(109, 40, 217) 0px 0px 0px 2px, rgba(0, 0, 0, 0.14) 0px 8px 18px; transition: box-shadow 0.15s; z-index: 7;"><div data-dc-tpl="259" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hannah Brooks</div><div data-dc-tpl="260" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Deep tissue massage</div><div data-dc-tpl="261" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">11:00–12:00</div></div>
+              <div data-dc-tpl="262" data-appt="wed-liam" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 428px; height: 66px; background: rgb(246, 241, 252); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><span data-dc-tpl="263" style="position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgb(217, 119, 6);"></span><div data-dc-tpl="264" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Liam Foster</div><div data-dc-tpl="265" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">12:30–1:15 · Chiro</div></div>
+              <div data-dc-tpl="266" data-appt="wed-grace" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 570px; height: 89px; background: rgb(253, 240, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="267" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Grace Okonkwo</div><div data-dc-tpl="268" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Signature facial</div><div data-dc-tpl="269" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">2:00–3:00</div></div>
+              <div data-dc-tpl="270" data-appt="wed-elena" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 713px; height: 89px; background: rgb(253, 245, 235); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="271" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Elena Marsh</div><div data-dc-tpl="272" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Acupuncture</div><div data-dc-tpl="273" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">3:30–4:30</div></div>
+              
+              <div data-dc-tpl="274" style="position: absolute; left: 0px; right: 0px; top: 443px; height: 2px; background: rgb(109, 40, 217); z-index: 6;"><span data-dc-tpl="275" style="position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: rgb(109, 40, 217);"></span></div>
+            </div>
+
+            
+            <div data-dc-tpl="276" style="flex: 1 1 0%; position: relative; height: 950px; border-left: 1px solid rgb(239, 238, 234); background: linear-gradient(rgb(239, 238, 234) 1px, transparent 1px) 0% 0% / 100% 95px;">
+              <div data-dc-tpl="277" data-appt="thu-camille" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 95px; height: 137px; background: rgb(240, 240, 252); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="278" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Camille Dubois</div><div data-dc-tpl="279" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Sports physio assessment</div><div data-dc-tpl="280" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">9:00–10:30</div><div data-dc-tpl="281" style="font-size: 10.5px; color: rgb(140, 139, 131); opacity: 0.95; margin-top: 5px;">with Joel · Room 2</div></div>
+              <div data-dc-tpl="282" data-appt="thu-ava" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 285px; height: 89px; background: rgb(237, 245, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="283" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ava Romano</div><div data-dc-tpl="284" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Deep tissue massage</div><div data-dc-tpl="285" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">11:00–12:00</div></div>
+              <div data-dc-tpl="286" data-appt="thu-owen" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 523px; height: 66px; background: rgb(253, 240, 243); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><span data-dc-tpl="287" style="position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgb(217, 119, 6);"></span><div data-dc-tpl="288" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Owen Park</div><div data-dc-tpl="289" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">1:30–2:15 · Facial</div></div>
+              <div data-dc-tpl="290" data-appt="thu-theo" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 665px; height: 89px; background: rgb(253, 245, 235); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="291" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Theo Maddox</div><div data-dc-tpl="292" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Acupuncture</div><div data-dc-tpl="293" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">3:00–4:00</div></div>
+              <div data-dc-tpl="294" data-appt="thu-ruben" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 808px; height: 89px; background: rgb(246, 241, 252); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="295" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ruben Ortiz</div><div data-dc-tpl="296" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Chiro follow-up</div><div data-dc-tpl="297" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">4:30–5:30</div></div>
+            </div>
+
+            
+            <div data-dc-tpl="298" style="flex: 1 1 0%; position: relative; height: 950px; border-left: 1px solid rgb(239, 238, 234); border-right: 1px solid rgb(239, 238, 234); background: linear-gradient(rgb(239, 238, 234) 1px, transparent 1px) 0% 0% / 100% 95px;">
+              <div data-dc-tpl="299" data-appt="fri-isla" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 143px; height: 89px; background: rgb(237, 245, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="300" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Isla Bennett</div><div data-dc-tpl="301" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Prenatal massage</div><div data-dc-tpl="302" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">9:30–10:30</div></div>
+              <div data-dc-tpl="303" data-appt="fri-noah" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 285px; height: 137px; background: rgb(240, 240, 252); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="304" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Noah Schmidt</div><div data-dc-tpl="305" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Initial physio consult</div><div data-dc-tpl="306" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">11:00–12:30</div><div data-dc-tpl="307" style="font-size: 10.5px; color: rgb(140, 139, 131); opacity: 0.95; margin-top: 5px;">with Joel · Room 2</div></div>
+              <div data-dc-tpl="308" data-appt="fri-sara" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 475px; height: 89px; background: rgb(253, 240, 243); border-radius: 10px; padding: 8px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><div data-dc-tpl="309" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sara Lindqvist</div><div data-dc-tpl="310" style="font-size: 12px; color: rgb(140, 139, 131); opacity: 0.95; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Signature facial</div><div data-dc-tpl="311" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">1:00–2:00</div></div>
+              <div data-dc-tpl="312" data-appt="fri-hannah" class="scp8" style="position: absolute; left: 5px; right: 5px; top: 618px; height: 66px; background: rgb(253, 245, 235); border-radius: 10px; padding: 7px 11px; overflow: hidden; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px; transition: box-shadow 0.15s; z-index: 1;"><span data-dc-tpl="313" style="position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgb(217, 119, 6);"></span><div data-dc-tpl="314" style="font-size: 13px; font-weight: 600; color: rgb(47, 46, 43); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hannah Brooks</div><div data-dc-tpl="315" style="font-size: 12px; color: rgb(156, 155, 146); opacity: 0.95; margin-top: 3px; letter-spacing: -0.02em;">2:30–3:15 · Acupuncture</div></div>
+            </div>
+
+          </div>
+        </div>
+        </div>
+      </div>
+
+      
+      <aside data-dc-tpl="316" data-drawer="" style="position: absolute; top: 0px; right: 0px; bottom: 0px; width: 340px; background: rgb(255, 255, 255); border-left: 1px solid rgb(233, 232, 228); display: flex; flex-direction: column; box-shadow: rgba(0, 0, 0, 0.13) -12px 0px 34px; transform: translateX(112%); transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1); z-index: 20;">
+        <div data-dc-tpl="317" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 14px; border-bottom: 1px solid rgb(240, 239, 234);">
+          <span data-dc-tpl="318" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em;">Appointment details</span>
+          <button data-dc-tpl="319" data-close="" class="scp0" style="width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: rgb(154, 152, 143);"><svg data-dc-tpl="320" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="321" d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </div>
+
+        <div data-dc-tpl="322" class="sw-scroll" style="flex: 1 1 0%; overflow: auto; padding: 18px;">
+          
+          <div data-dc-tpl="323" style="display: flex; align-items: center; gap: 12px;">
+            <span data-dc-tpl="324" id="rp-avatar" style="width: 46px; height: 46px; border-radius: 50%; background: rgb(237, 245, 243); color: rgb(91, 33, 182); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; flex: 0 0 auto;"><span data-dc-tpl="325" id="rp-initials">HB</span></span>
+            <div data-dc-tpl="326" style="min-width: 0px; flex: 1 1 0%;">
+              <div data-dc-tpl="327" id="rp-client" style="font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hannah Brooks</div>
+              <div data-dc-tpl="328" id="rp-meta" style="font-size: 12px; color: rgb(154, 152, 143); margin-top: 1px;">Returning client · 4 visits</div>
+            </div>
+            <span data-dc-tpl="329" id="rp-status" style="flex: 0 0 auto; font-size: 10.5px; font-weight: 600; border-radius: 99px; padding: 3px 9px; background: rgb(231, 244, 236); color: rgb(21, 128, 61);">Confirmed</span>
+          </div>
+
+          <div data-dc-tpl="330" style="display: flex; gap: 8px; margin-top: 14px;">
+            <button data-dc-tpl="331" class="scp3" style="flex: 1 1 0%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; border-radius: 8px; border: 1px solid rgb(230, 229, 224); background: rgb(255, 255, 255); font-size: 12px; font-weight: 600; color: rgb(84, 82, 76);"><svg data-dc-tpl="332" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="333" d="M21 11.5a8 8 0 0 1-11.5 7.2L4 20l1.3-5A8 8 0 1 1 21 11.5z"></path></svg>Message</button>
+            <button data-dc-tpl="334" class="scp3" style="flex: 1 1 0%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; border-radius: 8px; border: 1px solid rgb(230, 229, 224); background: rgb(255, 255, 255); font-size: 12px; font-weight: 600; color: rgb(84, 82, 76);"><svg data-dc-tpl="335" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="336" d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path data-dc-tpl="337" d="M8 3v4M16 3v4M3 11h18"></path><path data-dc-tpl="338" d="m9.5 15 2 2 3.5-4"></path></svg>Reschedule</button>
+          </div>
+
+          <div data-dc-tpl="339" style="height: 1px; background: rgb(240, 239, 234); margin: 18px 0px;"></div>
+
+          
+          <div data-dc-tpl="340" style="display: flex; flex-direction: column; gap: 14px;">
+            <div data-dc-tpl="341" style="display: flex; gap: 11px;">
+              <svg data-dc-tpl="342" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b1a7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 1px;"><path data-dc-tpl="343" d="m12 2 2.4 5 5.6.5-4.2 3.7 1.3 5.5L12 19l-5.1 2.7 1.3-5.5L4 12.5l5.6-.5z"></path></svg>
+              <div data-dc-tpl="344" style="min-width: 0px;"><div data-dc-tpl="345" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157);">Service</div><div data-dc-tpl="346" style="font-size: 13px; font-weight: 600; margin-top: 2px;"><span data-dc-tpl="347" id="rp-service">Deep tissue massage</span> <span data-dc-tpl="348" style="color: rgb(154, 152, 143); font-weight: 500;">· <span data-dc-tpl="349" id="rp-dur">60 min</span></span></div></div>
+            </div>
+            <div data-dc-tpl="350" style="display: flex; gap: 11px;">
+              <span data-dc-tpl="351" style="flex: 0 0 auto; margin-top: 3px; width: 16px; display: flex; justify-content: center;"><span data-dc-tpl="352" id="rp-pracdot" style="width: 9px; height: 9px; border-radius: 50%; background: rgb(109, 40, 217);"></span></span>
+              <div data-dc-tpl="353" style="min-width: 0px;"><div data-dc-tpl="354" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157);">Practitioner</div><div data-dc-tpl="355" id="rp-prac" style="font-size: 13px; font-weight: 600; margin-top: 2px;">Maya Ortiz</div><div data-dc-tpl="356" id="rp-pracrole" style="font-size: 11px; color: rgb(154, 152, 143);">Massage therapy</div></div>
+            </div>
+            <div data-dc-tpl="357" style="display: flex; gap: 11px;">
+              <svg data-dc-tpl="358" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b1a7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 1px;"><rect data-dc-tpl="359" x="3" y="4.5" width="18" height="16.5" rx="2.5"></rect><path data-dc-tpl="360" d="M3 9h18M8 2.5v4M16 2.5v4"></path></svg>
+              <div data-dc-tpl="361" style="min-width: 0px;"><div data-dc-tpl="362" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157);">When</div><div data-dc-tpl="363" id="rp-when" style="font-size: 13px; font-weight: 600; margin-top: 2px;">Wed, Mar 12 · 11:00 AM – 12:00 PM</div></div>
+            </div>
+            <div data-dc-tpl="364" style="display: flex; gap: 11px;">
+              <svg data-dc-tpl="365" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3b1a7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto; margin-top: 1px;"><path data-dc-tpl="366" d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-5h6v5"></path></svg>
+              <div data-dc-tpl="367" style="min-width: 0px; flex: 1 1 0%; display: flex; justify-content: space-between;"><div data-dc-tpl="368"><div data-dc-tpl="369" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157);">Room</div><div data-dc-tpl="370" id="rp-room" style="font-size: 13px; font-weight: 600; margin-top: 2px;">Room 3</div></div><div data-dc-tpl="371" style="text-align: right;"><div data-dc-tpl="372" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157);">Price</div><div data-dc-tpl="373" id="rp-price" style="font-size: 13px; font-weight: 600; margin-top: 2px;">$120</div></div></div>
+            </div>
+          </div>
+
+          
+          <div data-dc-tpl="374" style="margin-top: 18px; background: rgb(250, 249, 246); border: 1px solid rgb(239, 238, 234); border-radius: 10px; padding: 11px 12px;">
+            <div data-dc-tpl="375" style="font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgb(168, 166, 157); margin-bottom: 5px;">Client note</div>
+            <div data-dc-tpl="376" id="rp-note" style="font-size: 12px; line-height: 1.5; color: rgb(84, 82, 76);">Focus on lower back and shoulders. Prefers firm pressure.</div>
+          </div>
+        </div>
+
+        
+        <div data-dc-tpl="377" style="flex: 0 0 auto; border-top: 1px solid rgb(240, 239, 234); padding: 14px 18px; display: flex; gap: 9px;">
+          <button data-dc-tpl="378" class="scp9" style="flex: 0 0 auto; width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgb(240, 217, 217); background: rgb(255, 255, 255); color: rgb(192, 57, 43); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="379" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="380" d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+          <button data-dc-tpl="381" class="scp2" style="flex: 1 1 0%; display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; border-radius: 10px; background: rgb(109, 40, 217); color: rgb(255, 255, 255); font-size: 13px; font-weight: 600; box-shadow: rgba(109, 40, 217, 0.35) 0px 1px 2px;"><svg data-dc-tpl="382" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="383" d="M20 6 9 17l-5-5"></path></svg>Check in client</button>
+        </div>
+      </aside>
+
+    </div>
+  </div></div></div></div>
+
+
+
+</body></html>
