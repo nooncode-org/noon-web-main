@@ -143,6 +143,9 @@ export type StudioDraftSession = {
   id: string;
   title: string;
   updatedAt: string;
+  // Slice 1d (A) — set when the session has a provisioned client workspace;
+  // renders an "Open workspace" link on the row. Null/undefined → no link.
+  workspaceHref?: string | null;
 };
 
 type StudioHeaderProps = {
@@ -265,6 +268,20 @@ export function StudioHeader({
                           {row.updatedAt.slice(0, 10)}
                         </span>
                       </button>
+                      {row.workspaceHref && (
+                        // Slice 1d (A) — re-entry to the client workspace. A
+                        // <Link> (navigates) separate from the select button
+                        // (loads the chat); closes the popover on click.
+                        <Link
+                          href={row.workspaceHref}
+                          aria-label="Open workspace"
+                          title="Open workspace"
+                          onClick={() => setDraftsOpen(false)}
+                          className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        >
+                          <Monitor className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
                       {onDeleteDraftSession && (
                         // B31 — Stage the row for a confirm-dialog instead of
                         // firing the destructive action on the first click.

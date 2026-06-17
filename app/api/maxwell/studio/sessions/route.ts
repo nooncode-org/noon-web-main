@@ -20,6 +20,7 @@ export async function GET() {
       status: s.status,
       goal_summary: s.goalSummary,
       updated_at: s.updatedAt,
+      has_client_workspace: s.hasClientWorkspace,
     })),
   };
 
