@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { z, ZodError, type ZodTypeAny } from "zod";
 import type { StudioSession, ProposalRequest, StudioVersion } from "@/lib/maxwell/repositories";
+import type { ClientRequestType, ClientRequestPriority } from "@/lib/maxwell/client-requests";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 
 const SIGNATURE_HEADER = "x-noon-signature";
@@ -502,6 +503,91 @@ export async function sendClientCommentToNoonApp(input: {
   return postNoonAppWebhook(
     "/api/integrations/website/client-comment",
     buildClientCommentPayload(input),
+  );
+}
+
+/**
+ * Client-request submission (v3 client-request system §9, Slice A). Forwards a
+ * payment-activated client's typed request to App's receiver
+ * (`POST /api/integrations/website/client-request`). camelCase wire (v3 family).
+ * App de-dupes on `externalRequestId`.
+ *
+ * Contract: docs/v3-client-requests-noonweb-design.md §1 + the co-design handoffs.
+ */
+
+/**
+ * Derive the opaque `submittedBy` id for a client request.
+ *
+ * NoonWeb's JWT auth carries only the client's email (no stable user id). The
+ * frozen contract requires an OPAQUE id, NOT the email (data minimization — the
+ * App must not duplicate the client's email in its request store). We derive a
+ * stable, non-reversible id as `HMAC-SHA256(normalized email, shared secret)`:
+ * the pepper (the shared webhook secret) defeats the dictionary attack a bare
+ * `sha256(email)` would allow on low-entropy emails. Same email -> same id, so a
+ * shared account still distinguishes which human submitted.
+ *
+ * Throws (503) when the secret is unset — callers gate on
+ * `isNoonAppProposalHandoffConfigured()` first, so this only runs when configured.
+ */
+export function deriveSubmitterId(email: string): string {
+  const normalized = email.trim().toLowerCase();
+  return crypto.createHmac("sha256", readNoonAppSecret()).update(normalized).digest("hex");
+}
+
+export function buildClientRequestPayload(input: {
+  projectId: string;
+  externalRequestId: string;
+  submittedBy: string;
+  type: ClientRequestType;
+  clientPriority: ClientRequestPriority;
+  body: string;
+  at?: string;
+}) {
+  return {
+    externalRequestId: input.externalRequestId,
+    projectId: input.projectId,
+    submittedBy: input.submittedBy,
+    type: input.type,
+    clientPriority: input.clientPriority,
+    body: input.body,
+    at: input.at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Best-effort extraction of App's create-reply for audit logging. Returns
+ * nulls/false for any shape we don't recognise so a contract drift degrades the
+ * log gracefully instead of throwing. NoonWeb keys the outbound state receiver
+ * on `externalRequestId` (not App's internal id), so App's request id is
+ * logged, never persisted.
+ */
+export function extractNoonAppRequestAck(response: unknown): {
+  requestId: string | null;
+  idempotent: boolean;
+} {
+  if (!response || typeof response !== "object") {
+    return { requestId: null, idempotent: false };
+  }
+  const obj = response as { requestId?: unknown; idempotent?: unknown };
+  return {
+    requestId:
+      typeof obj.requestId === "string" && obj.requestId.trim() ? obj.requestId : null,
+    idempotent: obj.idempotent === true,
+  };
+}
+
+export async function sendClientRequestToNoonApp(input: {
+  projectId: string;
+  externalRequestId: string;
+  submittedBy: string;
+  type: ClientRequestType;
+  clientPriority: ClientRequestPriority;
+  body: string;
+  at?: string;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/client-request",
+    buildClientRequestPayload(input),
   );
 }
 
