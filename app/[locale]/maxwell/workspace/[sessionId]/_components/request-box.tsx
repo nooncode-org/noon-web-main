@@ -19,7 +19,7 @@ import {
   CLIENT_REQUEST_PRIORITY_LABELS,
   CLIENT_REQUEST_TYPES,
   CLIENT_REQUEST_TYPE_LABELS,
-  clientVisibleStateLabel,
+  clientVisibleStateMeta,
   DEFAULT_CLIENT_REQUEST_PRIORITY,
   type ClientRequestPriority,
   type ClientRequestType,
@@ -77,22 +77,27 @@ export function RequestBox({
 
       {requests.length > 0 && (
         <div className="mb-4 space-y-3">
-          {requests.map((request) => (
-            <div key={request.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="mb-1.5 flex items-center gap-2.5">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  {CLIENT_REQUEST_TYPE_LABELS[request.type]}
-                </span>
-                <span className="text-[10px] text-muted-foreground/50">
-                  {formatStamp(request.createdAt)}
-                </span>
-                <span className="ml-auto shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  {clientVisibleStateLabel(request.clientVisibleState)}
-                </span>
+          {requests.map((request) => {
+            const stateMeta = clientVisibleStateMeta(request.clientVisibleState);
+            return (
+              <div key={request.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="mb-1.5 flex items-center gap-2.5">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {CLIENT_REQUEST_TYPE_LABELS[request.type]}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/50">
+                    {formatStamp(request.createdAt)}
+                  </span>
+                  <span
+                    className={`ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${stateMeta.tone}`}
+                  >
+                    {stateMeta.label}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{request.body}</p>
               </div>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{request.body}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

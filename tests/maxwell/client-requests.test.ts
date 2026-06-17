@@ -15,9 +15,11 @@ import {
   CLIENT_REQUEST_TYPE_LABELS,
   CLIENT_VISIBLE_STATES,
   CLIENT_VISIBLE_STATE_LABELS,
+  CLIENT_VISIBLE_STATE_TONE,
   clientRequestPrioritySchema,
   clientRequestTypeSchema,
   clientVisibleStateLabel,
+  clientVisibleStateMeta,
   clientVisibleStateSchema,
   isClientRequestPriority,
   isClientRequestType,
@@ -82,5 +84,21 @@ describe("clientVisibleStateLabel", () => {
   it("maps a stored state to its label", () => {
     expect(clientVisibleStateLabel("completed")).toBe("Completed");
     expect(clientVisibleStateLabel("under_internal_review")).toBe("Under internal review");
+  });
+});
+
+describe("clientVisibleStateMeta (Slice B display)", () => {
+  it("has a tone for every client-visible state", () => {
+    for (const s of CLIENT_VISIBLE_STATES) expect(CLIENT_VISIBLE_STATE_TONE[s]).toBeTruthy();
+  });
+
+  it("returns label + tone, falling back to received for null", () => {
+    const nullMeta = clientVisibleStateMeta(null);
+    expect(nullMeta.label).toBe("Received");
+    expect(nullMeta.tone).toBe(CLIENT_VISIBLE_STATE_TONE.received);
+
+    const done = clientVisibleStateMeta("completed");
+    expect(done.label).toBe("Completed");
+    expect(done.tone).toBe(CLIENT_VISIBLE_STATE_TONE.completed);
   });
 });
