@@ -6,6 +6,7 @@ import { StudioHeader } from "./studio-header";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
 import { PrototypeQuotaStrip } from "./prototype-quota-strip";
+import { WorkspaceReentryBanner } from "./workspace-reentry-banner";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
@@ -148,6 +149,8 @@ type SessionSummary = {
   status: StudioPhase;
   goal_summary: string | null;
   updated_at: string;
+  // Slice 1d — session has a provisioned client workspace (post-payment portal).
+  has_client_workspace: boolean;
 };
 
 type StudioShellProps = {
@@ -1247,7 +1250,15 @@ export function StudioShell({
     title:
       (s.goal_summary || s.initial_prompt).replace(/\s+/g, " ").trim().slice(0, 88) || "Conversation",
     updatedAt: s.updated_at,
+    // Slice 1d (A) — re-entry link to the client workspace, only when one exists.
+    workspaceHref: s.has_client_workspace
+      ? `/${locale}/maxwell/workspace/${s.id}`
+      : null,
   }));
+
+  // Slice 1d (B) — the active session's workspace, for the in-chat banner.
+  const currentSessionHasClientWorkspace =
+    sessionSummaries.find((s) => s.id === sessionId)?.has_client_workspace ?? false;
 
   if (isRehydrating) {
     return (
@@ -1340,34 +1351,44 @@ export function StudioShell({
             ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden lg:flex") : "flex"}
           `}
         >
-          <StudioChatPane
-            messages={messages}
-            isThinking={isThinking}
-            input={input}
-            onInputChange={setInput}
-            onSend={handleSend}
-            onStop={handleStopThinking}
-            inputRef={inputRef}
-            canSend={canSendMessage}
-            phase={phase}
-            correctionsUsed={correctionsUsed}
-            maxCorrections={maxCorrections}
-            prototypeVersionNumber={currentVersion?.versionNumber ?? 0}
-            onApprove={handleApprove}
-            onRequestCorrection={handleRequestCorrection}
-            onRequestProposal={handleRequestProposal}
-            agentHref={agentHref}
-            isWorkspaceVisible={shouldShowWorkspace}
-            replyTarget={replyTarget}
-            onReplyToMessage={handleReplyToMessage}
-            onClearReply={() => setReplyTarget(null)}
-            onRegenerateLatest={handleRegenerateLatest}
-            stopNotice={stopNotice}
-            shareEnabled={shareEnabled}
-            shareUrl={shareUrl}
-            shareUxState={shareUxState}
-            onShare={() => void handleShare()}
-          />
+          {/* Slice 1d (B) — re-entry to the client workspace from the active
+              chat. Sits above the chat pane (shrink-0); the pane is wrapped in
+              a flex-1 frame so its own `h-full` keeps filling the rest. */}
+          {currentSessionHasClientWorkspace && sessionId && (
+            <WorkspaceReentryBanner
+              href={`/${locale}/maxwell/workspace/${sessionId}`}
+            />
+          )}
+          <div className="min-h-0 flex-1">
+            <StudioChatPane
+              messages={messages}
+              isThinking={isThinking}
+              input={input}
+              onInputChange={setInput}
+              onSend={handleSend}
+              onStop={handleStopThinking}
+              inputRef={inputRef}
+              canSend={canSendMessage}
+              phase={phase}
+              correctionsUsed={correctionsUsed}
+              maxCorrections={maxCorrections}
+              prototypeVersionNumber={currentVersion?.versionNumber ?? 0}
+              onApprove={handleApprove}
+              onRequestCorrection={handleRequestCorrection}
+              onRequestProposal={handleRequestProposal}
+              agentHref={agentHref}
+              isWorkspaceVisible={shouldShowWorkspace}
+              replyTarget={replyTarget}
+              onReplyToMessage={handleReplyToMessage}
+              onClearReply={() => setReplyTarget(null)}
+              onRegenerateLatest={handleRegenerateLatest}
+              stopNotice={stopNotice}
+              shareEnabled={shareEnabled}
+              shareUrl={shareUrl}
+              shareUxState={shareUxState}
+              onShare={() => void handleShare()}
+            />
+          </div>
         </aside>
 
         {shouldShowWorkspace && (

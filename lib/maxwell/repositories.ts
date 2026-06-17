@@ -115,6 +115,14 @@ export type StudioSessionListItem = {
   status: StudioStatus;
   goalSummary: string | null;
   updatedAt: string;
+  /**
+   * v3 client portal (Slice 1d) — true when this session has a provisioned
+   * client workspace (a `client_workspace` row exists). Drives the
+   * "Open workspace" re-entry affordance in Studio. NOTE: this is the
+   * post-payment client portal, NOT the Studio prototype-preview pane that the
+   * shell/header also call "workspace".
+   */
+  hasClientWorkspace: boolean;
 };
 
 export type StudioMessage = {
@@ -637,9 +645,18 @@ export async function listStudioSessionsForOwner(
     status: string;
     goal_summary: string | null;
     updated_at: string | Date;
+    has_client_workspace: boolean;
   };
+  // EXISTS (not a JOIN): a session can have more than one `client_workspace`
+  // row (see getClientWorkspaceBySession's `ORDER BY created_at DESC LIMIT 1`),
+  // so a JOIN would fan the session row out into duplicates. EXISTS yields one
+  // boolean per session.
   const rows = await sql<ListRow[]>`
-    SELECT id, initial_prompt, status, goal_summary, updated_at
+    SELECT id, initial_prompt, status, goal_summary, updated_at,
+           EXISTS (
+             SELECT 1 FROM client_workspace cw
+             WHERE cw.studio_session_id = studio_session.id
+           ) AS has_client_workspace
     FROM studio_session
     WHERE lower(owner_email) = ${email}
       AND deleted_at IS NULL
@@ -652,6 +669,7 @@ export async function listStudioSessionsForOwner(
     status: r.status as StudioStatus,
     goalSummary: r.goal_summary,
     updatedAt: toIsoTimestamp(r.updated_at)!,
+    hasClientWorkspace: r.has_client_workspace,
   }));
 }
 

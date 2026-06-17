@@ -163,6 +163,7 @@ function listItem(id: string): StudioSessionListItem {
     status: "prototype_ready",
     goalSummary: `Goal ${id}`,
     updatedAt: new Date().toISOString(),
+    hasClientWorkspace: true,
   };
 }
 
@@ -255,10 +256,12 @@ describe("GET /api/maxwell/studio/sessions — v3 isolation guard", () => {
       initial_prompt: "Build thing a",
       status: "prototype_ready",
       goal_summary: "Goal a",
+      has_client_workspace: true,
     });
-    // The list item shape only has these 5 keys — no internal fields
-    // could leak — but the guard still runs (defense-in-depth) so a
-    // future PR adding `reviewer_id: s.reviewerId` would fail loud.
+    // The list item shape only has these 6 keys (Slice 1d added
+    // `has_client_workspace`) — no internal fields could leak — but the guard
+    // still runs (defense-in-depth) so a future PR adding
+    // `reviewer_id: s.reviewerId` would fail loud.
   });
 
   it("returns 401 when unauthenticated (guard never runs)", async () => {
