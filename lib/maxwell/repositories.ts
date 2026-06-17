@@ -10,6 +10,11 @@ import { assertValidTransition } from "./state-machine";
 import { buildProposalReviewTimeline, deriveProposalExpiry } from "./proposal-lifecycle";
 import type { WorkspaceStatus } from "./workspace-status";
 export type { WorkspaceStatus } from "./workspace-status";
+import type {
+  ClientRequestType,
+  ClientRequestPriority,
+  ClientVisibleState,
+} from "./client-requests";
 
 // ============================================================================
 // Types
@@ -1702,6 +1707,125 @@ export async function getClientCommentsByWorkspace(
     ORDER BY created_at ASC
   `;
   return rows.map(mapClientComment);
+}
+
+// ============================================================================
+// client_request (v3 client-request system §9, Slice A — request outbox +
+// App-owned client-visible state projection)
+// ============================================================================
+
+export type ClientRequest = {
+  id: string;
+  clientWorkspaceId: string;
+  type: ClientRequestType;
+  clientPriority: ClientRequestPriority;
+  body: string;
+  /** Opaque submitter id (HMAC of the client email) — never the raw email. */
+  submittedBy: string;
+  /** Stable idempotency key sent to App; == `id`, reused verbatim on retry. */
+  externalRequestId: string;
+  /** Set when the create forward to App succeeded; null = dead-letter. */
+  forwardedAt: string | null;
+  /**
+   * App-owned client-visible projection. null until the App pushes the first
+   * state (the UI renders null as "Received" copy). NoonWeb NEVER writes this
+   * except from the outbound state receiver (Slice B).
+   */
+  clientVisibleState: ClientVisibleState | null;
+  /** Monotonicity guard for the projection; 0 = no App push yet. */
+  stateRevision: number;
+  stateUpdatedAt: string | null;
+  createdAt: string;
+};
+
+type ClientRequestRow = {
+  id: string;
+  client_workspace_id: string;
+  type: string;
+  client_priority: string;
+  body: string;
+  submitted_by: string;
+  external_request_id: string;
+  forwarded_at: string | null;
+  client_visible_state: string | null;
+  state_revision: number;
+  state_updated_at: string | null;
+  created_at: string;
+};
+
+function mapClientRequest(r: ClientRequestRow): ClientRequest {
+  return {
+    id: r.id,
+    clientWorkspaceId: r.client_workspace_id,
+    type: r.type as ClientRequestType,
+    clientPriority: r.client_priority as ClientRequestPriority,
+    body: r.body,
+    submittedBy: r.submitted_by,
+    externalRequestId: r.external_request_id,
+    forwardedAt: r.forwarded_at ?? null,
+    clientVisibleState: (r.client_visible_state as ClientVisibleState | null) ?? null,
+    stateRevision: Number(r.state_revision),
+    stateUpdatedAt: r.state_updated_at ?? null,
+    createdAt: r.created_at,
+  };
+}
+
+/**
+ * Persist a client request in the local outbox (the source of truth for the
+ * client's request log AND the anchor the App-owned client-visible state
+ * projects back onto). `external_request_id` is set to the row id — one stable
+ * key generated once and reused verbatim on every forward retry so App de-dupes
+ * cleanly. The forward itself happens in the server action (best-effort). The
+ * projection columns start unset: client_visible_state NULL, state_revision 0.
+ */
+export async function createClientRequest(input: {
+  clientWorkspaceId: string;
+  type: ClientRequestType;
+  clientPriority: ClientRequestPriority;
+  body: string;
+  submittedBy: string;
+}): Promise<ClientRequest> {
+  const sql = getDb();
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const rows = await sql<ClientRequestRow[]>`
+    INSERT INTO client_request (
+      id, client_workspace_id, type, client_priority, body, submitted_by,
+      external_request_id, forwarded_at,
+      client_visible_state, state_revision, state_updated_at, created_at
+    ) VALUES (
+      ${id}, ${input.clientWorkspaceId}, ${input.type}, ${input.clientPriority},
+      ${input.body}, ${input.submittedBy},
+      ${id}, NULL,
+      NULL, 0, NULL, ${now}
+    )
+    RETURNING *
+  `;
+  return mapClientRequest(rows[0]!);
+}
+
+/** Mark a request's create-forward as delivered. */
+export async function markClientRequestForwarded(id: string): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE client_request
+    SET forwarded_at = ${now}
+    WHERE id = ${id}
+  `;
+}
+
+/** The client's request log for a workspace, oldest-first. */
+export async function getClientRequestsByWorkspace(
+  clientWorkspaceId: string,
+): Promise<ClientRequest[]> {
+  const sql = getDb();
+  const rows = await sql<ClientRequestRow[]>`
+    SELECT * FROM client_request
+    WHERE client_workspace_id = ${clientWorkspaceId}
+    ORDER BY created_at ASC
+  `;
+  return rows.map(mapClientRequest);
 }
 
 // ============================================================================

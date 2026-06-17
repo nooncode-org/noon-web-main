@@ -7,6 +7,7 @@ import {
   getStudioSession,
   getClientWorkspaceBySession,
   getClientCommentsByWorkspace,
+  getClientRequestsByWorkspace,
   getWorkspaceUpdates,
   getLatestProposalRequest,
   getAiMvpMilestonesByProjectId,
@@ -27,6 +28,7 @@ import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/proj
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { CommentBox } from "./_components/comment-box";
+import { RequestBox } from "./_components/request-box";
 
 export const dynamic = "force-dynamic";
 
@@ -285,6 +287,13 @@ export default async function WorkspacePage({ params }: Props) {
   // truth — the status read does not return comments).
   const comments = await getClientCommentsByWorkspace(workspace.id);
 
+  // §9 Slice A: typed client requests. Gated on a payment-activated project
+  // (mapped to an App project id, Q-10) — the same gate the server action
+  // enforces. When unmapped we skip the fetch and don't render the form.
+  const requests = workspace.noonAppProjectId
+    ? await getClientRequestsByWorkspace(workspace.id)
+    : [];
+
   const contactHref = getContactHref({
     inquiry: "project-update",
     source: "workspace",
@@ -384,6 +393,10 @@ export default async function WorkspacePage({ params }: Props) {
             </div>
           )}
         </section>
+
+        {workspace.noonAppProjectId && (
+          <RequestBox sessionId={sessionId} requests={requests} />
+        )}
 
         <CommentBox sessionId={sessionId} comments={comments} />
 
