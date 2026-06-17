@@ -1828,6 +1828,43 @@ export async function getClientRequestsByWorkspace(
   return rows.map(mapClientRequest);
 }
 
+export type ApplyClientRequestStateOutcome = "applied" | "stale" | "not_found";
+
+/**
+ * Apply an App-pushed client-visible state to a request (§9 Slice B outbound
+ * receiver). Monotonic by `revision`: the guarded UPDATE only advances when the
+ * incoming revision strictly exceeds the stored `state_revision`, so a late
+ * re-delivery of an older state (durable-queue retry, ADR-027) can never regress
+ * what the client sees. This is the ONLY writer of the projection columns —
+ * NoonWeb never derives the client-visible state itself.
+ *
+ * Returns:
+ *   - "applied"   — the state advanced,
+ *   - "stale"     — the request exists but the revision did not advance (no-op),
+ *   - "not_found" — no request with that external id.
+ */
+export async function applyClientRequestState(
+  externalRequestId: string,
+  input: { clientVisibleState: ClientVisibleState; revision: number; at: string },
+): Promise<ApplyClientRequestStateOutcome> {
+  const sql = getDb();
+  const updated = await sql<{ id: string }[]>`
+    UPDATE client_request
+    SET client_visible_state = ${input.clientVisibleState},
+        state_revision = ${input.revision},
+        state_updated_at = ${input.at}
+    WHERE external_request_id = ${externalRequestId}
+      AND state_revision < ${input.revision}
+    RETURNING id
+  `;
+  if (updated.length > 0) return "applied";
+
+  const existing = await sql<{ id: string }[]>`
+    SELECT id FROM client_request WHERE external_request_id = ${externalRequestId}
+  `;
+  return existing.length > 0 ? "stale" : "not_found";
+}
+
 // ============================================================================
 // payment_event
 // ============================================================================

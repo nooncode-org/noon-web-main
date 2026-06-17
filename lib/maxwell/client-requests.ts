@@ -86,9 +86,8 @@ export const CLIENT_REQUEST_PRIORITY_LABELS: Record<ClientRequestPriority, strin
 };
 
 /**
- * Client-visible state -> short label. Slice A uses this for a minimal status
- * badge; Slice B refines the full mapping (label + description) when it wires the
- * outbound state receiver. NULL (no App push yet) renders as "Received".
+ * Client-visible state -> short label. The portal owns the client-facing copy
+ * (§8.1). NULL (no App push yet) renders as "Received".
  */
 export const CLIENT_VISIBLE_STATE_LABELS: Record<ClientVisibleState, string> = {
   received: "Received",
@@ -96,6 +95,19 @@ export const CLIENT_VISIBLE_STATE_LABELS: Record<ClientVisibleState, string> = {
   in_progress: "In progress",
   completed: "Completed",
   under_internal_review: "Under internal review",
+};
+
+/**
+ * Client-visible state -> badge tone (Tailwind classes), mirroring the
+ * workspace status badge palette. Slice B uses this to colour the request
+ * status badge; combine with the label via {@link clientVisibleStateMeta}.
+ */
+export const CLIENT_VISIBLE_STATE_TONE: Record<ClientVisibleState, string> = {
+  received: "border-border text-muted-foreground",
+  in_review: "border-amber-500/25 bg-amber-500/10 text-amber-700",
+  in_progress: "border-blue-500/25 bg-blue-500/10 text-blue-700",
+  completed: "border-emerald-500/25 bg-emerald-500/10 text-emerald-700",
+  under_internal_review: "border-amber-500/25 bg-amber-500/10 text-amber-700",
 };
 
 export const DEFAULT_CLIENT_REQUEST_PRIORITY: ClientRequestPriority = "normal";
@@ -111,4 +123,12 @@ export function isClientRequestPriority(value: string): value is ClientRequestPr
 /** Label for a stored client-visible state; NULL (no App push yet) -> "Received". */
 export function clientVisibleStateLabel(state: ClientVisibleState | null): string {
   return CLIENT_VISIBLE_STATE_LABELS[state ?? "received"];
+}
+
+/** Label + badge tone for a stored client-visible state; NULL -> "Received". */
+export function clientVisibleStateMeta(
+  state: ClientVisibleState | null,
+): { label: string; tone: string } {
+  const resolved = state ?? "received";
+  return { label: CLIENT_VISIBLE_STATE_LABELS[resolved], tone: CLIENT_VISIBLE_STATE_TONE[resolved] };
 }

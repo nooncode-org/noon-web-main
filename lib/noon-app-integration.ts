@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { z, ZodError, type ZodTypeAny } from "zod";
 import type { StudioSession, ProposalRequest, StudioVersion } from "@/lib/maxwell/repositories";
 import type { ClientRequestType, ClientRequestPriority } from "@/lib/maxwell/client-requests";
+import { clientVisibleStateSchema } from "@/lib/maxwell/client-requests";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 
 const SIGNATURE_HEADER = "x-noon-signature";
@@ -138,6 +139,27 @@ export async function readSignedNoonAppJson<TSchema extends ZodTypeAny>(
     }
     if (error instanceof ZodError) {
       throw new NoonAppIntegrationError(error.issues[0]?.message ?? "Invalid payload.", 400);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Verify the HMAC envelope and return the RAW parsed JSON (no schema applied),
+ * so a receiver can run an `assertNoInternalFields` tripwire on the raw body
+ * BEFORE its own allowlist parse — the §8.3 defensive pattern the project-status
+ * read uses. Reuses the exact signature scheme as `readSignedNoonAppJson`
+ * (`${ts}.${rawBody}`, ±5min skew, missing-timestamp rejected per F-1).
+ */
+export async function readSignedNoonAppRawJson(request: Request): Promise<unknown> {
+  const bodyText = await request.text();
+  verifyNoonAppSignature(request.headers, bodyText);
+
+  try {
+    return JSON.parse(bodyText);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new NoonAppIntegrationError("Invalid JSON payload.", 400);
     }
     throw error;
   }
@@ -631,3 +653,21 @@ export const noonAppAiMvpMilestonePayloadSchema = z.object({
   project_id: z.string().min(1),
   version_url: z.string().url().optional(),
 });
+
+/**
+ * §9 client-request client-visible STATE push (App -> NoonWeb, Slice B). The App
+ * collapses its 8 operational states to the 5 client-safe ones server-side; ONLY
+ * those 5 cross the wire (§8.3). `.strict()` makes this an allowlist that REJECTS
+ * any unmodeled key — so a leaked classification reason / operational priority /
+ * escalation note is a 400, not a silently-stripped field. `revision` is the
+ * App-authoritative monotonic guard (positive int); the receiver discards a push
+ * whose revision does not advance. `at` is informational (ISO 8601).
+ */
+export const noonAppClientRequestStatePayloadSchema = z
+  .object({
+    externalRequestId: z.string().min(1),
+    clientVisibleState: clientVisibleStateSchema,
+    revision: z.number().int().positive(),
+    at: z.string().min(1),
+  })
+  .strict();
