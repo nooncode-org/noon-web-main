@@ -12,6 +12,12 @@ import {
   formatElapsed,
   pollingStatusText,
 } from "@/lib/maxwell/polling-progress";
+import {
+  PREVIEW_LOAD_TIMEOUT_MS,
+  derivePreviewOverlay,
+  shouldAutoReloadPreview,
+  type PreviewLoadStatus,
+} from "@/lib/maxwell/preview-load-state";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
 /**
@@ -414,6 +420,53 @@ export function StudioPreviewPane({
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
   const selectedVersion = prototypeVersions[selectedVersionIndex] ?? currentVersion;
 
+  // Preview iframe load tracking + recovery. v0 preview URLs are often cold
+  // right after generation, so a first load can land on a blank page; the
+  // iframe alone has no way to recover. See lib/maxwell/preview-load-state.ts.
+  const previewUrl = selectedVersion?.demoUrl ?? null;
+  const [loadStatus, setLoadStatus] = useState<PreviewLoadStatus>("loading");
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const [autoReloadsUsed, setAutoReloadsUsed] = useState(0);
+  const [slowHintShown, setSlowHintShown] = useState(false);
+
+  // Reset tracking when the previewed URL changes (new / switched version).
+  // Done DURING RENDER (React's "adjust state when a prop changes" pattern)
+  // rather than in an effect — a synchronous setState inside an effect body
+  // triggers a cascading re-render (react-hooks/set-state-in-effect).
+  const [trackedPreviewUrl, setTrackedPreviewUrl] = useState(previewUrl);
+  if (previewUrl !== trackedPreviewUrl) {
+    setTrackedPreviewUrl(previewUrl);
+    setLoadStatus("loading");
+    setReloadNonce(0);
+    setAutoReloadsUsed(0);
+    setSlowHintShown(false);
+  }
+
+  // Per-attempt watchdog: if `onLoad` has not fired in time, silently
+  // auto-reload (bounded) or surface the manual-reload hint.
+  useEffect(() => {
+    if (!previewUrl || loadStatus !== "loading") return;
+    const timer = setTimeout(() => {
+      if (shouldAutoReloadPreview(autoReloadsUsed)) {
+        setAutoReloadsUsed((n) => n + 1);
+        setReloadNonce((n) => n + 1);
+      } else {
+        setSlowHintShown(true);
+      }
+    }, PREVIEW_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [previewUrl, loadStatus, reloadNonce, autoReloadsUsed]);
+
+  // Manual reload — remounts the iframe (fresh fetch). Unbounded: this is the
+  // only recovery for a blank-but-loaded preview (cross-origin → undetectable).
+  const reloadPreview = () => {
+    setLoadStatus("loading");
+    setSlowHintShown(false);
+    setReloadNonce((n) => n + 1);
+  };
+
+  const overlayState = derivePreviewOverlay(loadStatus, slowHintShown);
+
   const canCorrect =
     phase === "prototype_ready" && correctionsUsed < maxCorrections;
   const canApprove = phase === "prototype_ready";
@@ -471,16 +524,27 @@ export function StudioPreviewPane({
           )}
         </div>
 
-        {/* Right: open full screen */}
-        <a
-          href={selectedVersion.demoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          Open full screen
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        {/* Right: reload + open full screen */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={reloadPreview}
+            title="Reload the preview (use this if it looks blank)"
+            className="hidden items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:flex"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reload
+          </button>
+          <a
+            href={selectedVersion.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Open full screen
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
       </div>
 
       {/* Corrections exhausted banner */}
@@ -501,11 +565,60 @@ export function StudioPreviewPane({
             </div>
           </div>
         )}
+        {/* Preview load overlay (desktop). Covers a cold/slow/errored iframe
+            load with feedback + manual recovery. `loading` is quiet (no buttons)
+            for the first few seconds; `slow`/`error` surface the reload + tab
+            escape hatches. */}
+        {!isRevising && overlayState !== "hidden" && (
+          <div className="absolute inset-0 z-10 hidden items-center justify-center bg-background/80 backdrop-blur-sm lg:flex">
+            <div className="flex flex-col items-center gap-3 px-6 text-center">
+              {overlayState === "error" ? (
+                <>
+                  <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">We couldn&apos;t load the preview.</p>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    {overlayState === "slow"
+                      ? "This is taking longer than usual."
+                      : "Loading preview…"}
+                  </p>
+                </>
+              )}
+              {overlayState !== "loading" && (
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={reloadPreview}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Reload preview
+                  </button>
+                  <a
+                    href={selectedVersion.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Open in new tab
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {/* Desktop: sandboxed preview on a separate origin (vusercontent.net).
             allow-same-origin is required so v0's app can use sessionStorage and
             service workers on its own origin — it does not grant access to Noon. */}
         <iframe
+          key={`${selectedVersion.demoUrl}#${reloadNonce}`}
           src={selectedVersion.demoUrl}
+          onLoad={() => setLoadStatus("loaded")}
+          onError={() => setLoadStatus("error")}
           className="hidden lg:block w-full h-full border-0"
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
