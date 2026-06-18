@@ -268,7 +268,22 @@ del label (§8.1) y cualquier estado interno/no mapeado degrada a neutral, nunca
   "Published"/"Previous published"/"Rolled back" usando el `state` por versión, sobre el
   `versions[]` del pull. **0 dependencia del App** — construible ya; thin hasta que el App
   emita >1 versión / publique.
-- **Slice 2b — Publish:** UI de acción gateada (solo web/web-app) + server action outbox
-  (molde `submit-request.ts`) → receptor §9.1 Q-F; consume `publishedUrl`/`publishedSequence`
+- **Slice 2b — Publish** (CONSTRUIDO 2026-06-18): UI de acción gateada por estado publicable
+  (botón "Publish this version" con confirmación de dos pasos en `VersionsSection`) + server
+  action `submit-version-action.ts` → receptor §9.1 Q-F; consume `publishedUrl`/`publishedSequence`
   del pull. Contra stubs firmados hasta que el App despliegue.
+  - **Decisión de diseño (owner, 2026-06-18): forward SÍNCRONO, sin outbox local ni migración**
+    (diverge del bosquejo §4.1 que copiaba el outbox de §9 Slice A). Razón: el App es el único
+    SoT del **estado** publicado (lo vemos por el pull) **y** del **audit** "quién publicó cuándo"
+    (`project_activities`, Q-D) — un outbox en NoonWeb duplicaría estado App-owned; y publish es
+    una acción interactiva donde un reintento durable en background sería incorrecto (el cliente
+    re-hace click si falla). La server action genera un `externalActionId` (UUID) por intento
+    —reusado en los reintentos internos de `postNoonAppWebhook` para que el App de-dup— reenvía
+    firmado y ESPERA el `200 { idempotent, publishedSequence, publishedUrl }`; en fallo devuelve
+    error legible (no persiste nada).
+  - **Gate de project type (solo web/web-app, Q-C):** lo aplica el **receptor del App** (el pull
+    no expone `project.type`); un target no publicable se rechaza server-side y se surface como
+    error limpio. NoonWeb gatea el botón por **estado publicable** conocido
+    (`ready_for_client_preview`/`previous_published`/`rolled_back`; nunca `published` ni
+    desconocido) vía `isPublishableVersionState`.
 - **Sin Slice 2c** (rollback) en el MVP (Q-A).

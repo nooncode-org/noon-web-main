@@ -64,3 +64,22 @@ export function mapVersionStateToMeta(state: string): VersionStateMeta {
 export function isPublishedVersion(version: { state: string; published?: boolean }): boolean {
   return version.state === "published" || version.published === true;
 }
+
+/**
+ * Client-visible states from which a version may be (re)published (Slice 2b). Per
+ * the frozen contract (Q-E): only validation-passed versions are publishable; a
+ * `rolled_back` version may be re-published (it stays in history). The currently
+ * `published` one is excluded (no self-publish), and any internal/unknown state
+ * is excluded so we never offer Publish on something we can't reason about — the
+ * App stays the final authority and rejects a non-publishable target server-side.
+ */
+const PUBLISHABLE_VERSION_STATES: ReadonlySet<string> = new Set([
+  "ready_for_client_preview",
+  "previous_published",
+  "rolled_back",
+]);
+
+/** Whether NoonWeb should surface a Publish action for a version in this state. */
+export function isPublishableVersionState(state: string): boolean {
+  return PUBLISHABLE_VERSION_STATES.has(state);
+}
