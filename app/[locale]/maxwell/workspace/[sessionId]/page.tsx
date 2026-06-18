@@ -25,12 +25,17 @@ import {
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
 import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
 import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/project-status-labels";
-import { mapVersionStateToMeta } from "@/lib/maxwell/version-status-labels";
+import {
+  isPublishableVersionState,
+  isPublishedVersion,
+  mapVersionStateToMeta,
+} from "@/lib/maxwell/version-status-labels";
 import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { CommentBox } from "./_components/comment-box";
 import { RequestBox } from "./_components/request-box";
+import { VersionPublishButton } from "./_components/version-publish-button";
 
 export const dynamic = "force-dynamic";
 
@@ -189,9 +194,11 @@ function MilestoneBanner({ milestone }: { milestone: AiMvpMilestone }) {
 // `publishedUrl`). NoonWeb owns the client-facing copy (§8.1) via
 // `mapVersionStateToMeta`; an unmapped/internal state degrades to a neutral chip.
 function VersionsSection({
+  sessionId,
   versions,
   publishedUrl,
 }: {
+  sessionId: string;
   versions: ProjectStatusVersion[];
   publishedUrl: string | null;
 }) {
@@ -251,6 +258,15 @@ function VersionsSection({
                 >
                   Open preview {"->"}
                 </a>
+              )}
+              {/* Publish (Slice 2b): client self-service on a publishable, not-yet-live
+                  version. The App is the final authority — it rejects a non-web /
+                  non-publishable target server-side. */}
+              {!isPublishedVersion(version) && isPublishableVersionState(version.state) && (
+                <VersionPublishButton
+                  sessionId={sessionId}
+                  versionSequenceNumber={version.sequence}
+                />
               )}
             </div>
           );
@@ -430,7 +446,11 @@ export default async function WorkspacePage({ params }: Props) {
       <div className="mx-auto max-w-3xl space-y-10 px-6 py-8">
         {milestone && <MilestoneBanner milestone={milestone} />}
 
-        <VersionsSection versions={appVersions} publishedUrl={appPublishedUrl} />
+        <VersionsSection
+          sessionId={sessionId}
+          versions={appVersions}
+          publishedUrl={appPublishedUrl}
+        />
 
         {materials.length > 0 && (
           <section>

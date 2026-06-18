@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  isPublishableVersionState,
   isPublishedVersion,
   mapVersionStateToMeta,
 } from "@/lib/maxwell/version-status-labels";
@@ -53,5 +54,24 @@ describe("isPublishedVersion", () => {
 
   it("is false when neither signal is set", () => {
     expect(isPublishedVersion({ state: "rolled_back", published: false })).toBe(false);
+  });
+});
+
+describe("isPublishableVersionState", () => {
+  it.each(["ready_for_client_preview", "previous_published", "rolled_back"])(
+    "offers Publish for the publishable state %s (Q-E)",
+    (state) => {
+      expect(isPublishableVersionState(state)).toBe(true);
+    },
+  );
+
+  it("never offers Publish on the live published version (no self-publish)", () => {
+    expect(isPublishableVersionState("published")).toBe(false);
+  });
+
+  it("never offers Publish on an internal/unknown state (App stays the authority)", () => {
+    for (const state of ["draft", "some_future_state", ""]) {
+      expect(isPublishableVersionState(state)).toBe(false);
+    }
   });
 });

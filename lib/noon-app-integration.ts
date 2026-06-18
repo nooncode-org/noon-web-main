@@ -613,6 +613,82 @@ export async function sendClientRequestToNoonApp(input: {
   );
 }
 
+/**
+ * Version Publish action (v3 Fase 2 versioning, Slice 2b). Forwards a client's
+ * publish intent to App's receiver (`POST /api/integrations/website/version-action`)
+ * and returns the resulting published state. camelCase wire (v3 family).
+ *
+ * MVP scope (frozen contract §3, co-signed 2026-06-18): `action` is `publish`
+ * ONLY — rollback is staff-side App-internal and does NOT cross the wire. The App
+ * de-dupes on `externalActionId` (app-level UNIQUE) and replies HTTP 200 on both
+ * first-write and replay with `{ idempotent, publishedSequence, publishedUrl, requestId }`.
+ * `at` is informational; the App orders by its own server clock.
+ *
+ * Unlike the §9 client-request path, NoonWeb does NOT persist a local outbox here:
+ * the App is the sole source of truth for both the published STATE (surfaced via
+ * the project-status pull) and the publish AUDIT (`project_activities`, contract
+ * Q-D). The forward is synchronous — `postNoonAppWebhook` retries transient 5xx /
+ * network failures (3 attempts) and throws on a deterministic 4xx, which the
+ * caller surfaces to the client.
+ */
+export function buildVersionActionPayload(input: {
+  projectId: string;
+  versionSequenceNumber: number;
+  externalActionId: string;
+  at?: string;
+}) {
+  return {
+    action: "publish" as const,
+    projectId: input.projectId,
+    versionSequenceNumber: input.versionSequenceNumber,
+    externalActionId: input.externalActionId,
+    at: input.at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Best-effort extraction of App's publish-reply. Returns nulls/false for any
+ * shape we don't recognise so a contract drift degrades gracefully instead of
+ * throwing — the authoritative published state is always re-read from the pull
+ * on the next render regardless.
+ */
+export function extractNoonAppVersionActionAck(response: unknown): {
+  idempotent: boolean;
+  publishedSequence: number | null;
+  publishedUrl: string | null;
+  requestId: string | null;
+} {
+  if (!response || typeof response !== "object") {
+    return { idempotent: false, publishedSequence: null, publishedUrl: null, requestId: null };
+  }
+  const obj = response as {
+    idempotent?: unknown;
+    publishedSequence?: unknown;
+    publishedUrl?: unknown;
+    requestId?: unknown;
+  };
+  return {
+    idempotent: obj.idempotent === true,
+    publishedSequence:
+      typeof obj.publishedSequence === "number" ? obj.publishedSequence : null,
+    publishedUrl:
+      typeof obj.publishedUrl === "string" && obj.publishedUrl.trim() ? obj.publishedUrl : null,
+    requestId: typeof obj.requestId === "string" && obj.requestId.trim() ? obj.requestId : null,
+  };
+}
+
+export async function sendVersionActionToNoonApp(input: {
+  projectId: string;
+  versionSequenceNumber: number;
+  externalActionId: string;
+  at?: string;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/version-action",
+    buildVersionActionPayload(input),
+  );
+}
+
 export const noonAppProposalReviewDecisionPayloadSchema = z.object({
   event: z.literal("proposal_review_decision"),
   decision: z.enum(["approved", "changes_requested", "rejected", "cancelled"]),
