@@ -25,6 +25,8 @@ import {
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
 import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
 import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/project-status-labels";
+import { mapVersionStateToMeta } from "@/lib/maxwell/version-status-labels";
+import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { CommentBox } from "./_components/comment-box";
@@ -182,6 +184,82 @@ function MilestoneBanner({ milestone }: { milestone: AiMvpMilestone }) {
   );
 }
 
+// Slice 2a (v3 Fase 2 — versioning display): the App's project versions + the
+// live published one, from the project-status pull (`versions[]` +
+// `publishedUrl`). NoonWeb owns the client-facing copy (§8.1) via
+// `mapVersionStateToMeta`; an unmapped/internal state degrades to a neutral chip.
+function VersionsSection({
+  versions,
+  publishedUrl,
+}: {
+  versions: ProjectStatusVersion[];
+  publishedUrl: string | null;
+}) {
+  if (versions.length === 0) return null;
+  // Newest first — the App emits ascending by sequence; we present the latest on top.
+  const ordered = [...versions].sort((a, b) => b.sequence - a.sequence);
+
+  return (
+    <section>
+      <h2 className="mb-4 text-xs font-mono uppercase tracking-widest text-muted-foreground">
+        Versions
+      </h2>
+
+      {publishedUrl && (
+        <div className="mb-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-700">
+            Live
+          </p>
+          <p className="mb-3 mt-1 text-sm text-muted-foreground">
+            Your published version is live and visible to the public.
+          </p>
+          <a
+            href={publishedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="site-primary-action inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
+          >
+            View published site {"->"}
+          </a>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {ordered.map((version) => {
+          const meta = mapVersionStateToMeta(version.state);
+          return (
+            <div key={version.sequence} className="rounded-xl border border-border bg-card p-4">
+              <div className="mb-1.5 flex items-center gap-2.5">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Version {version.sequence}
+                </span>
+                <span className="text-[10px] text-muted-foreground/50">
+                  {formatDate(version.at)}
+                </span>
+                <span
+                  className={`ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${meta.tone}`}
+                >
+                  {meta.label}
+                </span>
+              </div>
+              {version.previewUrl && (
+                <a
+                  href={version.previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
+                >
+                  Open preview {"->"}
+                </a>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function UpdateCard({ update }: { update: WorkspaceUpdate }) {
   return (
     <div className="relative pl-6">
@@ -282,6 +360,10 @@ export default async function WorkspacePage({ params }: Props) {
     : localStatusCfg;
   const appProposal = appStatusData?.proposal ?? null;
   const appLatestUpdate = appStatusData?.latestUpdate ?? null;
+  // Slice 2a: version history + live published URL from the App pull. Empty until
+  // the App emits versions / publishes (then this section renders).
+  const appVersions = appStatusData?.versions ?? [];
+  const appPublishedUrl = appStatusData?.publishedUrl ?? null;
 
   // Slice 1b: the client's message log lives in the local outbox (source of
   // truth — the status read does not return comments).
@@ -347,6 +429,8 @@ export default async function WorkspacePage({ params }: Props) {
 
       <div className="mx-auto max-w-3xl space-y-10 px-6 py-8">
         {milestone && <MilestoneBanner milestone={milestone} />}
+
+        <VersionsSection versions={appVersions} publishedUrl={appPublishedUrl} />
 
         {materials.length > 0 && (
           <section>

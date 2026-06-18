@@ -18,10 +18,13 @@
  * UI. That strip is the real enforcement; `assertNoInternalFields` in the
  * fetch helper is a defensive tripwire on the raw body on top of it.
  *
- * Forward-compat: we DO NOT use `.strict()`. Fase 2 will add fields to
- * `versions[]` (`published`/`published_url`); a strict schema would reject that
- * future-but-valid payload and break the portal. Stripping unknown keys keeps
- * the consumer tolerant of additive producer changes.
+ * Forward-compat: we DO NOT use `.strict()`. Stripping unknown keys keeps the
+ * consumer tolerant of additive producer changes. Fase 2 (versioning contract
+ * co-signed 2026-06-18 — see docs/2026-06-17-v3-fase2-versioning-publish-design.md
+ * §9.2) added `published` per version + top-level `publishedSequence`/`publishedUrl`
+ * (modeled below) and WIDENED the per-version `state` from a single literal to the
+ * App's client-visible publish lifecycle. `state` is now a plain string so a new
+ * lifecycle value never rejects the payload (see the version schema note).
  *
  * Signing input for the GET is the empty-body trailing-dot convention
  * `${unix_timestamp}.` (same as `lib/maxwell/prototipo-render-fetch.ts`).
@@ -30,18 +33,28 @@
 import { z } from "zod";
 
 /**
- * A client-visible version row. Thin in Fase 1 — the App only emits versions in
- * `state: 'ready_for_client_preview'` and Slice 1a does not render them yet
- * (version display / publish / rollback is Fase 2). Modeled here for
- * forward-compat so the envelope parses cleanly once versions are populated.
+ * A client-visible version row. Fase 2 widens this from Slice 1a's single
+ * `ready_for_client_preview` literal to the App's full client-visible publish
+ * lifecycle (`published | previous_published | rolled_back`), co-signed
+ * 2026-06-18.
+ *
+ * `state` is a PLAIN STRING on purpose. A `z.literal`/`z.enum` would reject any
+ * new lifecycle value and fail the ENTIRE versions[] (and thus the whole status
+ * read). Keeping it a string lets NoonWeb own the client-facing label (§8.1) and
+ * degrade any unmapped/future state to a neutral label via `mapVersionStateToMeta`
+ * — exactly how `project.status` is handled by `mapProjectStatusToMeta`.
  */
 export const projectStatusVersionSchema = z.object({
   sequence: z.number(),
-  state: z.literal("ready_for_client_preview"),
+  state: z.string(),
   // Permissive on purpose: a malformed/odd preview URL on a single version must
   // not reject the whole status payload. URL validity is a render-time concern.
   previewUrl: z.string().nullable(),
   at: z.string(),
+  // Fase 2 (NEW): convenience boolean === (state === 'published'). Optional so the
+  // pre-Fase-2 producer (which omits it) still parses; the UI treats `state` as
+  // the canonical signal and never relies on this boolean alone.
+  published: z.boolean().optional(),
 });
 
 export type ProjectStatusVersion = z.infer<typeof projectStatusVersionSchema>;
@@ -68,6 +81,11 @@ export const projectStatusDataSchema = z.object({
     status: z.string().nullable(),
   }),
   versions: z.array(projectStatusVersionSchema),
+  // Fase 2 (NEW): which version sequence is the live published one + its public
+  // client-facing URL. Optional/nullable so the pre-Fase-2 producer (which omits
+  // both) still parses; absent → "nothing published yet".
+  publishedSequence: z.number().nullable().optional(),
+  publishedUrl: z.string().nullable().optional(),
   // The producer always emits this (it falls back to `project.updated_at`), but
   // the frozen contract sketch allowed `| null`, so we tolerate null defensively.
   latestUpdate: z
