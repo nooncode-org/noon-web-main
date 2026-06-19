@@ -385,10 +385,66 @@ function CrmMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function AgentMockup({ enhanced }: { enhanced: boolean }) {
+  const steps = [
+    { label: "Read invoice", done: true },
+    { label: "Match to PO", done: true },
+    { label: "Check amounts", done: true },
+    { label: "Needs approval", gate: true },
+    { label: "Process payment", pending: true },
+  ];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden p-3.5">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[10px] font-mono text-muted-foreground">agent run</span>
+        <span
+          className="rounded-full px-2 py-0.5 text-[9px]"
+          style={{ backgroundColor: siteTones.brand.surface, color: siteTones.brand.accent }}
+        >
+          running
+        </span>
+      </div>
+      <div className="space-y-2">
+        {steps.map((s, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px]"
+              style={
+                s.gate
+                  ? { backgroundColor: siteTones.services.surface, color: siteTones.services.accent }
+                  : s.done
+                    ? { backgroundColor: siteTones.brand.surface, color: siteTones.brand.accent }
+                    : { border: "1px solid var(--border)" }
+              }
+            >
+              {s.done ? "✓" : ""}
+            </span>
+            {s.gate ? (
+              <div
+                className="flex-1 rounded-md px-2 py-1 text-[8px] font-medium transition-all duration-300"
+                style={{
+                  backgroundColor: siteTones.services.surface,
+                  color: siteTones.services.accent,
+                  transform: enhanced ? "translateX(2px)" : "none",
+                }}
+              >
+                Approve / Reject
+              </div>
+            ) : (
+              <div className="h-1.5 rounded bg-foreground/10" style={{ width: s.pending ? "45%" : `${60 + i * 6}%` }} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
   "CRM & sales": CrmMockup,
+  "AI agents & automation": AgentMockup,
   "Dashboards": DashboardMockup,
   "Internal tools": WorkflowMockup,
   "AI assistants": AIMockup,

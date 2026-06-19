@@ -18,5 +18,10 @@
     "src": "/templates/mockups/customer-support-ai-assistant.html",
     "w": 1440,
     "h": 960
+  },
+  "ai-operations-agent": {
+    "src": "/templates/mockups/ai-operations-agent.html",
+    "w": 1440,
+    "h": 940
   }
 }

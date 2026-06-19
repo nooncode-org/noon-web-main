@@ -278,11 +278,37 @@ const SALES_CRM: TemplateCatalogItem = {
   prompt: "Use the Sales CRM template as a starting point for our sales software.",
 };
 
+// New category: an autonomous AI agent that runs a multi-step process and pauses
+// for human approval on the calls that matter (Noon's human-review wedge, live).
+const AI_AGENT: TemplateCatalogItem = {
+  slug: "ai-operations-agent",
+  name: "AI Operations Agent",
+  category: "AI agents & automation",
+  summary:
+    "An autonomous agent that runs a multi-step process for you — reading inputs, taking actions, and pausing for human approval on the calls that matter.",
+  bestFit: ["Back-office automation", "Ops & finance teams", "Document-heavy workflows"],
+  includes: [
+    "Run console — step-by-step execution",
+    "Human-in-the-loop approvals",
+    "Tool & system integrations",
+    "Run history & audit trail",
+  ],
+  extensions: ["Knowledge retrieval (RAG)", "Scheduled & triggered runs", "Multi-agent orchestration", "Guardrails & evals"],
+  useWhen:
+    "A repetitive, multi-step process (triage, document processing, data entry, routing) eats your team's time and the rules are clear enough to delegate — with a human approving the exceptions.",
+  notIdealWhen:
+    "The task needs human judgment at every step, or there's no reliable data and tools for the agent to act on yet.",
+  baselinePromise:
+    "Gives you an agent runtime with execution steps, human approvals, integrations, and an audit trail, so the custom work can focus on your specific workflow and guardrails.",
+  prompt: "Use the AI Operations Agent template as a starting point for our automation.",
+};
+
 export const templatesCatalog: TemplateCatalogItem[] = [
   ...templates
     .filter((t) => t.slug !== "approval-workflow-tool")
     .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t)),
   SALES_CRM,
+  AI_AGENT,
 ];
 
 // Filter chips for the curated catalog (drops the now-unused "Internal tools",
@@ -290,4 +316,5 @@ export const templatesCatalog: TemplateCatalogItem[] = [
 export const templateCatalogCategories: string[] = [
   ...templateCategories.filter((c) => c !== "Internal tools"),
   "CRM & sales",
+  "AI agents & automation",
 ];
