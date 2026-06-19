@@ -5,6 +5,16 @@
 - **Estado:** DRAFT para co-firma del App (pre-freeze). NoonWeb NO construye código hasta que el App co-firme la §3.
 - **Predecesores congelados:** `docs/v3-client-requests-noonweb-design.md` (§9), `docs/2026-06-17-v3-fase2-versioning-publish-design.md` (Fase 2), `docs/2026-06-18-app-to-noonweb-v3-fase2-versioning-cosign-response.md` (co-firma Fase 2).
 
+> ### 🔄 UPDATE 2026-06-19 — el App ya aceptó la mitad del contrato
+>
+> Auditoría de alineación posterior a la redacción de este doc: el contrato desplegado del App **ya acepta `versionRef`** en el `client-request` **desde 2026-06-18** (`App-nooncode/docs/integrations/cross-repo-webhook-v1.md:648`): `versionRef` OPCIONAL, *positive int ≤ 100000*, malformed → `400`, **un ref bien-formado pero aún no resoluble se ACEPTA + almacena** (sin FK, resolución lazy staff-side), **staff-internal — NUNCA ecoado en el outbound §7B**, omitir para un comentario general (NULL).
+>
+> **Efecto sobre las 6 preguntas de §3:** el **campo `versionRef` ya está resuelto** → **Q-B4-1** (recepción aditiva) ✅, **Q-B4-5** (referencia informativa en cualquier type) ✅, **Q-B4-6** (sin env nuevo) ✅, y la parte "no-ecoado" de **Q-B4-4** ✅. Lo que queda **genuinamente abierto es el clúster de rollback, todo gateado por Q-B4-2**: **Q-B4-2** (¿nuevo `type = rollback` vs reuso?) + **Q-B4-3** (targets válidos — depende del diseño de rollback) + la parte "mismas 5 estados para un rollback-request" de Q-B4-4.
+>
+> **El path de *referenciar* una versión ya es construible hoy** (el App lo acepta); solo el path de *solicitar rollback* espera la respuesta a **Q-B4-2**.
+>
+> **Ajustes a este doc por el contrato desplegado:** validación local = `1 ≤ versionRef ≤ 100000` (no solo `≥1`); y un ref no-resoluble **no se rechaza** (el App lo acepta+almacena) — contrario a lo que decía la redacción original de §2.2, ya corregida.
+
 ---
 
 ## 0. TL;DR
@@ -17,7 +27,7 @@ B.4 agrega ese eslabón con el **mínimo de superficie cross-repo**:
 2. **Una señal de rollback** (decisión de co-diseño — recomendación: un 10º `type = rollback`).
 3. **Alcance Opción B:** referenciar una versión en *cualquier* request + un botón **"Solicitar rollback a esta versión"** en cada fila del historial (display 2a), que abre el RequestBox pre-cargado.
 
-**Cero env/secreto nuevo** (reusa el bridge HMAC). **1 migración NoonWeb** (025, columna `version_ref` aditiva). **6 preguntas de co-diseño** que el App debe co-firmar antes de construir (§3).
+**Cero env/secreto nuevo** (reusa el bridge HMAC). **1 migración NoonWeb** (025, columna `version_ref` aditiva). **De las 6 preguntas de co-diseño (§3), 4 ya están resueltas por el contrato desplegado del App (`versionRef` aceptado desde 2026-06-18 — ver UPDATE arriba); queda 1 genuinamente abierta: Q-B4-2 (la señal de rollback).**
 
 ---
 
@@ -47,10 +57,10 @@ Se agrega **un campo opcional**:
 
 | Campo | Tipo | Regla |
 |-------|------|-------|
-| `versionRef` | `integer` | Opcional/omitible. Cuando está presente: `>= 1`, **= `versionSequenceNumber`** (mismo identificador de Fase 2; el App resuelve `(projectId, versionRef) → fila`). |
+| `versionRef` | `integer` | Opcional/omitible. Presente: **`1..100000`**, **= `versionSequenceNumber`** (mismo id de Fase 2). El App resuelve `(projectId, versionRef)` lazy staff-side; un ref bien-formado pero no resoluble se **acepta+almacena** (no se rechaza). **Ya aceptado App-side desde 2026-06-18.** |
 
 - **Back-compat:** ausente → request sin versión, idéntico al comportamiento B.1 actual. Ningún consumidor pre-B.4 se rompe.
-- **Validación local NoonWeb (consistente con Publish 2b):** solo *shape* (`Number.isInteger(versionRef) && versionRef >= 1`). El **App es autoritativo** sobre si `(projectId, versionRef)` resuelve a una versión real (igual que Publish: NoonWeb no re-fetchea el pull en la server action; un ref inexistente lo rechaza el App con error limpio). Para el botón de rollback el ref se elige del historial ya desplegado, así que es válido por construcción.
+- **Validación local NoonWeb (consistente con Publish 2b):** *shape* = `Number.isInteger(versionRef) && versionRef >= 1 && versionRef <= 100000` (el cap `100000` matchea el contrato desplegado del App; malformed → error limpio al cliente, sin llegar al App). Un ref bien-formado pero aún no resoluble **NO se rechaza**: el App lo acepta+almacena (resolución lazy staff-side). Para el botón de rollback el ref se elige del historial ya desplegado, así que resuelve por construcción.
 
 ### 2.3 Señal de "solicitar rollback"
 
@@ -63,6 +73,8 @@ Alternativa si el App prefiere no tocar el vocabulario: reusar `adjustment`/`sco
 ---
 
 ## 3. Preguntas de co-diseño (el App debe co-firmar esto antes de que NoonWeb construya)
+
+> **Estado al 2026-06-19 (ver UPDATE arriba):** el campo `versionRef` ya está aceptado App-side → **Q-B4-1 ✅ · Q-B4-5 ✅ · Q-B4-6 ✅** y la parte "no-ecoado" de **Q-B4-4 ✅**. **La ÚNICA pregunta que bloquea la construcción del rollback es Q-B4-2** (de ella dependen Q-B4-3 y la parte de estados de Q-B4-4).
 
 - **Q-B4-1 — Recepción aditiva.** ¿El receptor `/api/integrations/website/client-request` (B.1, ya desplegado) acepta el `versionRef` opcional de forma aditiva y lo ignora con gracia cuando está ausente (back-compat)? ¿O requiere un cambio de schema del lado App?
 - **Q-B4-2 — Señal de rollback.** ¿Adoptamos un 10º `type = rollback` (recomendación NoonWeb) o reusamos un type existente + `versionRef`? Si es nuevo type: confirmar el string exacto (`rollback`) y que el App lo agrega a su enum + a su colapso de estados.
@@ -133,9 +145,9 @@ ALTER TABLE client_request
 
 ## 8. Checklist de asks-back (lo que NoonWeb necesita del App para destrabar Architecture)
 
-- [ ] Q-B4-1 — `versionRef` aditivo aceptado por el receptor existente, ignorado si ausente.
-- [ ] Q-B4-2 — Señal de rollback: nuevo `type = rollback` (recomendado) vs reuso. String exacto confirmado.
-- [ ] Q-B4-3 — Regla de targets válidos de rollback.
-- [ ] Q-B4-4 — Confirmación de que un rollback-request usa las mismas 5 estados client-visible.
-- [ ] Q-B4-5 — `versionRef` informativo permitido en los 9 types existentes.
-- [ ] Q-B4-6 — Cero env/secreto nuevo, ambos lados.
+- [x] Q-B4-1 — `versionRef` aditivo aceptado por el receptor existente, ignorado si ausente. **✅ RESUELTA** (aceptado App-side desde 2026-06-18, `cross-repo-webhook-v1.md:648`).
+- [ ] **Q-B4-2 — Señal de rollback: nuevo `type = rollback` (recomendado) vs reuso. String exacto confirmado. ⬅️ ÚNICA ABIERTA — bloquea el path de rollback.**
+- [ ] Q-B4-3 — Regla de targets válidos de rollback. *(depende de Q-B4-2)*
+- [~] Q-B4-4 — Rollback-request usa las mismas 5 estados client-visible. **Parte "no-ecoado" ✅** (el App nunca ecoa `versionRef` en §7B); la parte de estados depende de Q-B4-2.
+- [x] Q-B4-5 — `versionRef` informativo permitido en los types existentes. **✅ RESUELTA** (el App lo define como "feedback on a version"; omitir para comentario general).
+- [x] Q-B4-6 — Cero env/secreto nuevo, ambos lados. **✅ CONFIRMADA** (`versionRef` no agrega env).
