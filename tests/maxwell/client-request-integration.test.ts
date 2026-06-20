@@ -84,6 +84,42 @@ describe("buildClientRequestPayload", () => {
     expect(typeof payload.at).toBe("string");
     expect(Number.isNaN(Date.parse(payload.at))).toBe(false);
   });
+
+  it("OMITS versionRef when absent/null (byte-identical to the pre-B.4 wire)", () => {
+    const absent = buildClientRequestPayload({
+      projectId: "p",
+      externalRequestId: "r",
+      submittedBy: "s",
+      type: "bug",
+      clientPriority: "normal",
+      body: "x",
+    });
+    expect("versionRef" in absent).toBe(false);
+
+    const explicitNull = buildClientRequestPayload({
+      projectId: "p",
+      externalRequestId: "r",
+      submittedBy: "s",
+      type: "bug",
+      clientPriority: "normal",
+      body: "x",
+      versionRef: null,
+    });
+    expect("versionRef" in explicitNull).toBe(false);
+  });
+
+  it("includes versionRef when present (B.4 version link)", () => {
+    const payload = buildClientRequestPayload({
+      projectId: "p",
+      externalRequestId: "r",
+      submittedBy: "s",
+      type: "rollback",
+      clientPriority: "normal",
+      body: "x",
+      versionRef: 7,
+    });
+    expect(payload).toMatchObject({ versionRef: 7 });
+  });
 });
 
 describe("extractNoonAppRequestAck", () => {

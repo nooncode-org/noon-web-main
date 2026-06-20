@@ -44,6 +44,8 @@ import {
   CLIENT_REQUEST_BODY_MAX,
   isClientRequestPriority,
   isClientRequestType,
+  isValidVersionRef,
+  ROLLBACK_REQUEST_ENABLED,
 } from "@/lib/maxwell/client-requests";
 import { enforceRateLimit, RateLimitExceededError } from "@/lib/server/rate-limit";
 import { log } from "@/lib/server/logger";
@@ -53,6 +55,8 @@ export type SubmitRequestActionInput = {
   type: string;
   clientPriority: string;
   body: string;
+  /** Optional version link (B.4); REQUIRED when type === "rollback". */
+  versionRef?: number | null;
 };
 
 export type SubmitRequestActionResult =
@@ -80,6 +84,12 @@ export async function submitRequestAction(
   if (!isClientRequestType(requestType)) {
     return { ok: false, error: "Please choose a valid request type.", code: "INVALID" };
   }
+  // B.4 rollback gate: the App must deploy `type = rollback` before NoonWeb may
+  // emit one (hard deploy order). Defense-in-depth — the UI also hides the button
+  // while ROLLBACK_REQUEST_ENABLED is false.
+  if (requestType === "rollback" && !ROLLBACK_REQUEST_ENABLED) {
+    return { ok: false, error: "Rollback requests aren't available yet.", code: "INVALID" };
+  }
   if (!isClientRequestPriority(clientPriority)) {
     return { ok: false, error: "Please choose a valid priority.", code: "INVALID" };
   }
@@ -88,6 +98,21 @@ export async function submitRequestAction(
     return {
       ok: false,
       error: `Your request must be between 1 and ${CLIENT_REQUEST_BODY_MAX} characters.`,
+      code: "INVALID",
+    };
+  }
+
+  // B.4 version link. Optional for the 9 general types, REQUIRED for a rollback.
+  // Validate the shape locally (matches the App's 1..100000 backstop) so a
+  // malformed ref returns a clean error instead of an App 400.
+  const versionRef = input.versionRef ?? null;
+  if (versionRef !== null && !isValidVersionRef(versionRef)) {
+    return { ok: false, error: "Please choose a valid version.", code: "INVALID" };
+  }
+  if (requestType === "rollback" && versionRef === null) {
+    return {
+      ok: false,
+      error: "A rollback request must reference a version.",
       code: "INVALID",
     };
   }
@@ -141,6 +166,7 @@ export async function submitRequestAction(
     type: requestType,
     clientPriority,
     body,
+    versionRef,
     submittedBy,
   });
 
@@ -154,6 +180,7 @@ export async function submitRequestAction(
       type: requestRow.type,
       clientPriority: requestRow.clientPriority,
       body: requestRow.body,
+      versionRef: requestRow.versionRef,
       at: requestRow.createdAt,
     });
     const { requestId, idempotent } = extractNoonAppRequestAck(response);
