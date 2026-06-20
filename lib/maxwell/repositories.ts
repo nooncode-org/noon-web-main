@@ -1738,6 +1738,13 @@ export type ClientRequest = {
   type: ClientRequestType;
   clientPriority: ClientRequestPriority;
   body: string;
+  /**
+   * Optional link to a project version (B.4). == the App's
+   * `versionSequenceNumber`. NoonWeb-owned + immutable after create; null for a
+   * request not tied to a version. REQUIRED when `type === "rollback"` (enforced
+   * in the server action, not the DB).
+   */
+  versionRef: number | null;
   /** Opaque submitter id (HMAC of the client email) — never the raw email. */
   submittedBy: string;
   /** Stable idempotency key sent to App; == `id`, reused verbatim on retry. */
@@ -1762,6 +1769,7 @@ type ClientRequestRow = {
   type: string;
   client_priority: string;
   body: string;
+  version_ref: number | null;
   submitted_by: string;
   external_request_id: string;
   forwarded_at: string | null;
@@ -1778,6 +1786,7 @@ function mapClientRequest(r: ClientRequestRow): ClientRequest {
     type: r.type as ClientRequestType,
     clientPriority: r.client_priority as ClientRequestPriority,
     body: r.body,
+    versionRef: r.version_ref != null ? Number(r.version_ref) : null,
     submittedBy: r.submitted_by,
     externalRequestId: r.external_request_id,
     forwardedAt: r.forwarded_at ?? null,
@@ -1801,6 +1810,8 @@ export async function createClientRequest(input: {
   type: ClientRequestType;
   clientPriority: ClientRequestPriority;
   body: string;
+  /** Optional version link (B.4); null for a request not tied to a version. */
+  versionRef?: number | null;
   submittedBy: string;
 }): Promise<ClientRequest> {
   const sql = getDb();
@@ -1808,12 +1819,12 @@ export async function createClientRequest(input: {
   const now = new Date().toISOString();
   const rows = await sql<ClientRequestRow[]>`
     INSERT INTO client_request (
-      id, client_workspace_id, type, client_priority, body, submitted_by,
+      id, client_workspace_id, type, client_priority, body, version_ref, submitted_by,
       external_request_id, forwarded_at,
       client_visible_state, state_revision, state_updated_at, created_at
     ) VALUES (
       ${id}, ${input.clientWorkspaceId}, ${input.type}, ${input.clientPriority},
-      ${input.body}, ${input.submittedBy},
+      ${input.body}, ${input.versionRef ?? null}, ${input.submittedBy},
       ${id}, NULL,
       NULL, 0, NULL, ${now}
     )

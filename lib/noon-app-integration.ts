@@ -556,6 +556,13 @@ export function deriveSubmitterId(email: string): string {
   return crypto.createHmac("sha256", readNoonAppSecret()).update(normalized).digest("hex");
 }
 
+/**
+ * Build the §9 client-request wire payload. `versionRef` (B.4, co-signed
+ * 2026-06-20) is OMITTED entirely when null/undefined so a request without a
+ * version link stays byte-identical to the pre-B.4 wire (additive, back-compat).
+ * Present, it == the App's `versionSequenceNumber`; the App resolves it lazily
+ * staff-side and is dangling-tolerant (Q-B4-3).
+ */
 export function buildClientRequestPayload(input: {
   projectId: string;
   externalRequestId: string;
@@ -563,6 +570,7 @@ export function buildClientRequestPayload(input: {
   type: ClientRequestType;
   clientPriority: ClientRequestPriority;
   body: string;
+  versionRef?: number | null;
   at?: string;
 }) {
   return {
@@ -572,6 +580,7 @@ export function buildClientRequestPayload(input: {
     type: input.type,
     clientPriority: input.clientPriority,
     body: input.body,
+    ...(input.versionRef != null ? { versionRef: input.versionRef } : {}),
     at: input.at ?? new Date().toISOString(),
   };
 }
@@ -605,6 +614,7 @@ export async function sendClientRequestToNoonApp(input: {
   type: ClientRequestType;
   clientPriority: ClientRequestPriority;
   body: string;
+  versionRef?: number | null;
   at?: string;
 }) {
   return postNoonAppWebhook(

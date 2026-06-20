@@ -16,7 +16,16 @@
 
 import { z } from "zod";
 
-/** The 9 canonical request types (wire = snake_case). 1:1 with master-spec §9.1. */
+/**
+ * The 10 canonical request types (wire = snake_case). 1:1 with master-spec §9.1.
+ *
+ * `rollback` (B.4, co-signed 2026-06-20) is the 10th: a client asking staff to
+ * revert to an earlier version. It is *suggest-not-force* — the App accepts the
+ * request and staff decide+execute (rollback is staff authority). It REQUIRES a
+ * `versionRef` (enforced in the server action); the other 9 leave it optional.
+ * It is NOT a generic dropdown choice — see {@link SELECTABLE_CLIENT_REQUEST_TYPES}
+ * — and is gated by {@link ROLLBACK_REQUEST_ENABLED} until the App deploys it.
+ */
 export const CLIENT_REQUEST_TYPES = [
   "material",
   "comment",
@@ -27,8 +36,32 @@ export const CLIENT_REQUEST_TYPES = [
   "feature",
   "scope_change",
   "incident",
+  "rollback",
 ] as const;
 export type ClientRequestType = (typeof CLIENT_REQUEST_TYPES)[number];
+
+/**
+ * Types the client may pick from the generic request form. `rollback` is
+ * EXCLUDED: it is initiated only from a version row (it requires a `versionRef`,
+ * which the row supplies) and is gated by {@link ROLLBACK_REQUEST_ENABLED}.
+ */
+export const SELECTABLE_CLIENT_REQUEST_TYPES: readonly ClientRequestType[] =
+  CLIENT_REQUEST_TYPES.filter((type) => type !== "rollback");
+
+/**
+ * B.4 rollback-path gate (hard deploy order, cosign §4). The App must deploy the
+ * `type = rollback` value (its 10th-value CHECK) BEFORE NoonWeb may emit a
+ * rollback request — until then a forwarded `rollback` degrades to a 400 from the
+ * App. The REFERENCE path (a `versionRef` on the existing 9 types) does NOT depend
+ * on this and ships enabled. Flip to `true` (one-line PR) once the App confirms
+ * `rollback` is deployed+verified, alongside applying the rollback type-CHECK
+ * migration (026). While `false`: the rollback button is hidden and the server
+ * action rejects `type = rollback`.
+ *
+ * Typed `boolean` (not the literal `false`) on purpose: it is a runtime flag, so
+ * conditions reading it must not be treated as statically known/unreachable.
+ */
+export const ROLLBACK_REQUEST_ENABLED: boolean = false;
 
 /**
  * The 5 client-DECLARED priorities (§9.6). Informational only: the OPERATIONAL
@@ -60,6 +93,20 @@ export type ClientVisibleState = (typeof CLIENT_VISIBLE_STATES)[number];
 export const CLIENT_REQUEST_BODY_MIN = 1;
 export const CLIENT_REQUEST_BODY_MAX = 4000;
 
+/**
+ * Bounds for the optional `versionRef` link (B.4). `versionRef == the App's
+ * `versionSequenceNumber` (same id as Fase 2 Publish). The cap mirrors the App's
+ * server-side backstop so a malformed ref is caught client-side with a clean
+ * error before the forward.
+ */
+export const VERSION_REF_MIN = 1;
+export const VERSION_REF_MAX = 100000;
+
+/** Shape guard for a request's optional version link; mirrors the App backstop. */
+export function isValidVersionRef(value: number): boolean {
+  return Number.isInteger(value) && value >= VERSION_REF_MIN && value <= VERSION_REF_MAX;
+}
+
 export const clientRequestTypeSchema = z.enum(CLIENT_REQUEST_TYPES);
 export const clientRequestPrioritySchema = z.enum(CLIENT_REQUEST_PRIORITIES);
 export const clientVisibleStateSchema = z.enum(CLIENT_VISIBLE_STATES);
@@ -75,6 +122,7 @@ export const CLIENT_REQUEST_TYPE_LABELS: Record<ClientRequestType, string> = {
   feature: "New feature",
   scope_change: "Scope change",
   incident: "Urgent incident",
+  rollback: "Rollback request",
 };
 
 export const CLIENT_REQUEST_PRIORITY_LABELS: Record<ClientRequestPriority, string> = {

@@ -23,10 +23,16 @@ import {
   clientVisibleStateSchema,
   isClientRequestPriority,
   isClientRequestType,
+  isValidVersionRef,
+  ROLLBACK_REQUEST_ENABLED,
+  SELECTABLE_CLIENT_REQUEST_TYPES,
+  VERSION_REF_MAX,
+  VERSION_REF_MIN,
 } from "@/lib/maxwell/client-requests";
 
 describe("client-request vocabulary (frozen cross-repo)", () => {
-  it("freezes the 9 types / 5 priorities / 5 client-visible states", () => {
+  it("freezes the 10 types / 5 priorities / 5 client-visible states", () => {
+    // B.4 (2026-06-20) added the 10th type `rollback`; the App declares the same.
     expect(CLIENT_REQUEST_TYPES).toEqual([
       "material",
       "comment",
@@ -37,6 +43,7 @@ describe("client-request vocabulary (frozen cross-repo)", () => {
       "feature",
       "scope_change",
       "incident",
+      "rollback",
     ]);
     expect(CLIENT_REQUEST_PRIORITIES).toEqual(["critical", "high", "normal", "low", "backlog"]);
     expect(CLIENT_VISIBLE_STATES).toEqual([
@@ -57,6 +64,35 @@ describe("client-request vocabulary (frozen cross-repo)", () => {
     for (const t of CLIENT_REQUEST_TYPES) expect(CLIENT_REQUEST_TYPE_LABELS[t]).toBeTruthy();
     for (const p of CLIENT_REQUEST_PRIORITIES) expect(CLIENT_REQUEST_PRIORITY_LABELS[p]).toBeTruthy();
     for (const s of CLIENT_VISIBLE_STATES) expect(CLIENT_VISIBLE_STATE_LABELS[s]).toBeTruthy();
+  });
+});
+
+describe("B.4 version-linking vocabulary", () => {
+  it("rollback is a real type with a label, but ships gated off", () => {
+    expect(isClientRequestType("rollback")).toBe(true);
+    expect(CLIENT_REQUEST_TYPE_LABELS.rollback).toBeTruthy();
+    // Hard deploy order: NoonWeb keeps rollback off until the App deploys it.
+    expect(ROLLBACK_REQUEST_ENABLED).toBe(false);
+  });
+
+  it("the generic form's selectable types exclude rollback (button-initiated)", () => {
+    expect(SELECTABLE_CLIENT_REQUEST_TYPES).not.toContain("rollback");
+    expect(SELECTABLE_CLIENT_REQUEST_TYPES).toHaveLength(CLIENT_REQUEST_TYPES.length - 1);
+    for (const t of SELECTABLE_CLIENT_REQUEST_TYPES) {
+      expect(CLIENT_REQUEST_TYPES).toContain(t);
+    }
+  });
+
+  it("isValidVersionRef enforces an integer in 1..100000 (matches the App backstop)", () => {
+    expect(VERSION_REF_MIN).toBe(1);
+    expect(VERSION_REF_MAX).toBe(100000);
+    expect(isValidVersionRef(1)).toBe(true);
+    expect(isValidVersionRef(100000)).toBe(true);
+    expect(isValidVersionRef(0)).toBe(false);
+    expect(isValidVersionRef(-1)).toBe(false);
+    expect(isValidVersionRef(100001)).toBe(false);
+    expect(isValidVersionRef(1.5)).toBe(false);
+    expect(isValidVersionRef(Number.NaN)).toBe(false);
   });
 });
 

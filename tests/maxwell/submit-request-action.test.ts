@@ -72,6 +72,7 @@ beforeEach(() => {
     type: "feature",
     clientPriority: "high",
     body: "Please add X",
+    versionRef: null,
     submittedBy: "submitter-hash",
     externalRequestId: "rq-1",
     forwardedAt: null,
@@ -158,6 +159,22 @@ describe("submitRequestAction — gates", () => {
     expect(result).toMatchObject({ ok: false, code: "NOT_FOUND" });
     expect(h.createRequestMock).not.toHaveBeenCalled();
   });
+
+  // B.4 version-linking
+  it("rejects a rollback request while the path is gated off (ROLLBACK_REQUEST_ENABLED)", async () => {
+    const result = await submitRequestAction({ ...VALID, type: "rollback", versionRef: 2 });
+    expect(result).toMatchObject({ ok: false, code: "INVALID" });
+    expect(h.createRequestMock).not.toHaveBeenCalled();
+  });
+
+  it.each([0, -1, 1.5, 100001, Number.NaN])(
+    "rejects a malformed versionRef (%p) without persisting",
+    async (versionRef) => {
+      const result = await submitRequestAction({ ...VALID, versionRef });
+      expect(result).toMatchObject({ ok: false, code: "INVALID" });
+      expect(h.createRequestMock).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe("submitRequestAction — persist + forward", () => {
@@ -171,6 +188,7 @@ describe("submitRequestAction — persist + forward", () => {
       type: "feature",
       clientPriority: "high",
       body: "Please add X",
+      versionRef: null,
       submittedBy: "submitter-hash",
     });
     expect(h.sendMock).toHaveBeenCalledWith({
@@ -180,6 +198,7 @@ describe("submitRequestAction — persist + forward", () => {
       type: "feature",
       clientPriority: "high",
       body: "Please add X",
+      versionRef: null,
       at: "2026-06-17T12:00:00.000Z",
     });
     expect(h.markForwardedMock).toHaveBeenCalledWith("rq-1");
@@ -192,5 +211,36 @@ describe("submitRequestAction — persist + forward", () => {
     expect(result).toEqual({ ok: true });
     expect(h.createRequestMock).toHaveBeenCalledTimes(1);
     expect(h.markForwardedMock).not.toHaveBeenCalled();
+  });
+
+  it("passes a versionRef through to persist + forward on a normal-type request (B.4)", async () => {
+    h.createRequestMock.mockResolvedValue({
+      id: "rq-2",
+      clientWorkspaceId: "ws-1",
+      type: "bug",
+      clientPriority: "high",
+      body: "Broken since v3",
+      versionRef: 3,
+      submittedBy: "submitter-hash",
+      externalRequestId: "rq-2",
+      forwardedAt: null,
+      clientVisibleState: null,
+      stateRevision: 0,
+      stateUpdatedAt: null,
+      createdAt: "2026-06-20T12:00:00.000Z",
+    });
+
+    const result = await submitRequestAction({
+      ...VALID,
+      type: "bug",
+      body: "Broken since v3",
+      versionRef: 3,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(h.createRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "bug", versionRef: 3 }),
+    );
+    expect(h.sendMock).toHaveBeenCalledWith(expect.objectContaining({ versionRef: 3 }));
   });
 });

@@ -33,9 +33,11 @@ import {
 import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
+import { ROLLBACK_REQUEST_ENABLED } from "@/lib/maxwell/client-requests";
 import { CommentBox } from "./_components/comment-box";
 import { RequestBox } from "./_components/request-box";
 import { VersionPublishButton } from "./_components/version-publish-button";
+import { VersionRollbackButton } from "./_components/version-rollback-button";
 
 export const dynamic = "force-dynamic";
 
@@ -264,6 +266,16 @@ function VersionsSection({
                   non-publishable target server-side. */}
               {!isPublishedVersion(version) && isPublishableVersionState(version.state) && (
                 <VersionPublishButton
+                  sessionId={sessionId}
+                  versionSequenceNumber={version.sequence}
+                />
+              )}
+              {/* Rollback request (B.4): client asks staff to revert to a
+                  non-live version (staff authority). UX convention — offered on
+                  non-published rows only (Q-B4-3); gated until the App deploys
+                  `type = rollback`. */}
+              {ROLLBACK_REQUEST_ENABLED && !isPublishedVersion(version) && (
+                <VersionRollbackButton
                   sessionId={sessionId}
                   versionSequenceNumber={version.sequence}
                 />
@@ -499,7 +511,7 @@ export default async function WorkspacePage({ params }: Props) {
         </section>
 
         {workspace.noonAppProjectId && (
-          <RequestBox sessionId={sessionId} requests={requests} />
+          <RequestBox sessionId={sessionId} requests={requests} versions={appVersions} />
         )}
 
         <CommentBox sessionId={sessionId} comments={comments} />

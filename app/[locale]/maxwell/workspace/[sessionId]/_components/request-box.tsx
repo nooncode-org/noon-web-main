@@ -13,14 +13,15 @@
 
 import { useState, useTransition, type FormEvent } from "react";
 import type { ClientRequest } from "@/lib/maxwell/repositories";
+import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
 import {
   CLIENT_REQUEST_BODY_MAX,
   CLIENT_REQUEST_PRIORITIES,
   CLIENT_REQUEST_PRIORITY_LABELS,
-  CLIENT_REQUEST_TYPES,
   CLIENT_REQUEST_TYPE_LABELS,
   clientVisibleStateMeta,
   DEFAULT_CLIENT_REQUEST_PRIORITY,
+  SELECTABLE_CLIENT_REQUEST_TYPES,
   type ClientRequestPriority,
   type ClientRequestType,
 } from "@/lib/maxwell/client-requests";
@@ -38,17 +39,24 @@ function formatStamp(iso: string) {
 export function RequestBox({
   sessionId,
   requests,
+  versions,
 }: {
   sessionId: string;
   requests: ClientRequest[];
+  /** Project versions from the App pull, for the optional "Regarding version" link (B.4). */
+  versions: ProjectStatusVersion[];
 }) {
   const [type, setType] = useState<ClientRequestType>("comment");
   const [priority, setPriority] = useState<ClientRequestPriority>(
     DEFAULT_CLIENT_REQUEST_PRIORITY,
   );
   const [body, setBody] = useState("");
+  const [versionRef, setVersionRef] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Newest-first, matching the Versions section ordering.
+  const versionOptions = [...versions].sort((a, b) => b.sequence - a.sequence);
 
   const trimmedLength = body.trim().length;
   const canSend = trimmedLength >= 1 && trimmedLength <= CLIENT_REQUEST_BODY_MAX && !isPending;
@@ -58,11 +66,18 @@ export function RequestBox({
     if (!canSend) return;
     setError(null);
     startTransition(async () => {
-      const result = await submitRequestAction({ sessionId, type, clientPriority: priority, body });
+      const result = await submitRequestAction({
+        sessionId,
+        type,
+        clientPriority: priority,
+        body,
+        versionRef,
+      });
       if (result.ok) {
         setBody("");
         setType("comment");
         setPriority(DEFAULT_CLIENT_REQUEST_PRIORITY);
+        setVersionRef(null);
       } else {
         setError(result.error);
       }
@@ -85,6 +100,11 @@ export function RequestBox({
                   <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                     {CLIENT_REQUEST_TYPE_LABELS[request.type]}
                   </span>
+                  {request.versionRef != null && (
+                    <span className="text-[10px] font-mono text-muted-foreground/70">
+                      Re: version {request.versionRef}
+                    </span>
+                  )}
                   <span className="text-[10px] text-muted-foreground/50">
                     {formatStamp(request.createdAt)}
                   </span>
@@ -114,7 +134,7 @@ export function RequestBox({
               disabled={isPending}
               className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
-              {CLIENT_REQUEST_TYPES.map((value) => (
+              {SELECTABLE_CLIENT_REQUEST_TYPES.map((value) => (
                 <option key={value} value={value}>
                   {CLIENT_REQUEST_TYPE_LABELS[value]}
                 </option>
@@ -140,6 +160,29 @@ export function RequestBox({
             </select>
           </label>
         </div>
+        {versionOptions.length > 0 && (
+          <label className="mb-3 block">
+            <span className="mb-1 block text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Regarding version <span className="normal-case opacity-60">(optional)</span>
+            </span>
+            <select
+              value={versionRef ?? ""}
+              onChange={(event) =>
+                setVersionRef(event.target.value ? Number(event.target.value) : null)
+              }
+              aria-label="Regarding version"
+              disabled={isPending}
+              className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none"
+            >
+              <option value="">No specific version</option>
+              {versionOptions.map((version) => (
+                <option key={version.sequence} value={version.sequence}>
+                  Version {version.sequence}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}
