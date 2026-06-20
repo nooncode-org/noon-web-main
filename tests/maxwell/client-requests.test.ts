@@ -68,11 +68,11 @@ describe("client-request vocabulary (frozen cross-repo)", () => {
 });
 
 describe("B.4 version-linking vocabulary", () => {
-  it("rollback is a real type with a label, but ships gated off", () => {
+  it("rollback is a real type with a label, and is enabled (App deployed it)", () => {
     expect(isClientRequestType("rollback")).toBe(true);
     expect(CLIENT_REQUEST_TYPE_LABELS.rollback).toBeTruthy();
-    // Hard deploy order: NoonWeb keeps rollback off until the App deploys it.
-    expect(ROLLBACK_REQUEST_ENABLED).toBe(false);
+    // Enabled 2026-06-20 after the App deployed its rollback CHECK + receiver.
+    expect(ROLLBACK_REQUEST_ENABLED).toBe(true);
   });
 
   it("the generic form's selectable types exclude rollback (button-initiated)", () => {

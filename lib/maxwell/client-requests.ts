@@ -49,19 +49,20 @@ export const SELECTABLE_CLIENT_REQUEST_TYPES: readonly ClientRequestType[] =
   CLIENT_REQUEST_TYPES.filter((type) => type !== "rollback");
 
 /**
- * B.4 rollback-path gate (hard deploy order, cosign §4). The App must deploy the
- * `type = rollback` value (its 10th-value CHECK) BEFORE NoonWeb may emit a
- * rollback request — until then a forwarded `rollback` degrades to a 400 from the
- * App. The REFERENCE path (a `versionRef` on the existing 9 types) does NOT depend
- * on this and ships enabled. Flip to `true` (one-line PR) once the App confirms
- * `rollback` is deployed+verified, alongside applying the rollback type-CHECK
- * migration (026). While `false`: the rollback button is hidden and the server
- * action rejects `type = rollback`.
+ * B.4 rollback-path gate (hard deploy order, cosign §4). ENABLED 2026-06-20: the
+ * App deployed its `type = rollback` CHECK (migration 0094, ADR-041) + the inbound
+ * receiver's `versionRef`-required refine, and NoonWeb applied the symmetric
+ * migration 026 — so the full rollback path (version-row button + server action)
+ * is live. The REFERENCE path (a `versionRef` on the existing 9 types) never
+ * depended on this.
  *
- * Typed `boolean` (not the literal `false`) on purpose: it is a runtime flag, so
- * conditions reading it must not be treated as statically known/unreachable.
+ * Kept as a flag (not deleted) so the path can be disabled fast if needed: while
+ * `false` the rollback button hides and the server action rejects `type = rollback`.
+ *
+ * Typed `boolean` (not a literal) on purpose: conditions reading it must not be
+ * treated as statically known/unreachable.
  */
-export const ROLLBACK_REQUEST_ENABLED: boolean = false;
+export const ROLLBACK_REQUEST_ENABLED: boolean = true;
 
 /**
  * The 5 client-DECLARED priorities (§9.6). Informational only: the OPERATIONAL

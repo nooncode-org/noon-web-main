@@ -1,12 +1,11 @@
 /**
  * tests/maxwell/submit-request-action-rollback.test.ts
  *
- * B.4 rollback path with the gate FLIPPED ON. The shipping default is
- * ROLLBACK_REQUEST_ENABLED = false (covered in submit-request-action.test.ts);
- * here we mock the flag on to verify the rollback-specific rules the flip PR will
- * activate: `versionRef` is REQUIRED for a rollback, and a valid rollback persists
- * + forwards with type "rollback" + the versionRef. Keeps every other
- * client-requests export real (guards, bounds, isValidVersionRef).
+ * B.4 rollback GATE-OFF branch. The shipping default is ROLLBACK_REQUEST_ENABLED
+ * = true (gate-on behavior is covered in submit-request-action.test.ts against the
+ * real constant); here we mock the flag OFF to verify the kill-switch still works:
+ * a rollback request is rejected before it persists/forwards, while the 9 general
+ * types are unaffected. Keeps every other client-requests export real.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -44,22 +43,15 @@ vi.mock("@/lib/server/rate-limit", async (importActual) => {
   const actual = await importActual<typeof import("@/lib/server/rate-limit")>();
   return { ...actual, enforceRateLimit: h.enforceMock };
 });
-// The whole point of this file: flip the rollback gate on, keep everything else real.
+// The point of this file: force the rollback gate OFF, keep everything else real.
 vi.mock("@/lib/maxwell/client-requests", async (importActual) => {
   const actual = await importActual<typeof import("@/lib/maxwell/client-requests")>();
-  return { ...actual, ROLLBACK_REQUEST_ENABLED: true };
+  return { ...actual, ROLLBACK_REQUEST_ENABLED: false };
 });
 
 import { submitRequestAction } from "@/app/[locale]/maxwell/workspace/[sessionId]/_actions/submit-request";
 
 const SESSION_ID = "session-1";
-const ROLLBACK = {
-  sessionId: SESSION_ID,
-  type: "rollback",
-  clientPriority: "normal",
-  body: "Please roll back to version 2.",
-  versionRef: 2,
-};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -70,14 +62,14 @@ beforeEach(() => {
   h.configuredMock.mockReturnValue(true);
   h.deriveMock.mockReturnValue("submitter-hash");
   h.createRequestMock.mockResolvedValue({
-    id: "rq-rb",
+    id: "rq-1",
     clientWorkspaceId: "ws-1",
-    type: "rollback",
+    type: "comment",
     clientPriority: "normal",
-    body: "Please roll back to version 2.",
-    versionRef: 2,
+    body: "hi",
+    versionRef: null,
     submittedBy: "submitter-hash",
-    externalRequestId: "rq-rb",
+    externalRequestId: "rq-1",
     forwardedAt: null,
     clientVisibleState: null,
     stateRevision: 0,
@@ -85,7 +77,7 @@ beforeEach(() => {
     createdAt: "2026-06-20T12:00:00.000Z",
   });
   h.markForwardedMock.mockResolvedValue(undefined);
-  h.sendMock.mockResolvedValue({ idempotent: false, requestId: "app-rb-1" });
+  h.sendMock.mockResolvedValue({ idempotent: false, requestId: "app-1" });
   h.enforceMock.mockReturnValue(undefined);
 });
 
@@ -93,28 +85,31 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("submitRequestAction — rollback (gate on)", () => {
-  it("requires a versionRef for a rollback request", async () => {
-    const result = await submitRequestAction({ ...ROLLBACK, versionRef: null });
+describe("submitRequestAction — rollback gate OFF (kill switch)", () => {
+  it("rejects a rollback request even with a valid versionRef", async () => {
+    const result = await submitRequestAction({
+      sessionId: SESSION_ID,
+      type: "rollback",
+      clientPriority: "normal",
+      body: "Please roll back to version 2.",
+      versionRef: 2,
+    });
     expect(result).toMatchObject({ ok: false, code: "INVALID" });
     expect(h.createRequestMock).not.toHaveBeenCalled();
+    expect(h.sendMock).not.toHaveBeenCalled();
   });
 
-  it("rejects a rollback with a malformed versionRef (shape check first)", async () => {
-    const result = await submitRequestAction({ ...ROLLBACK, versionRef: 0 });
-    expect(result).toMatchObject({ ok: false, code: "INVALID" });
-    expect(h.createRequestMock).not.toHaveBeenCalled();
-  });
-
-  it("persists + forwards a valid rollback with type rollback + versionRef", async () => {
-    const result = await submitRequestAction(ROLLBACK);
+  it("does not affect the 9 general types (a normal request still goes through)", async () => {
+    const result = await submitRequestAction({
+      sessionId: SESSION_ID,
+      type: "comment",
+      clientPriority: "normal",
+      body: "hi",
+      versionRef: 2,
+    });
     expect(result).toEqual({ ok: true });
     expect(h.createRequestMock).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "rollback", versionRef: 2 }),
+      expect.objectContaining({ type: "comment", versionRef: 2 }),
     );
-    expect(h.sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "rollback", versionRef: 2 }),
-    );
-    expect(h.markForwardedMock).toHaveBeenCalledWith("rq-rb");
   });
 });

@@ -160,9 +160,9 @@ describe("submitRequestAction — gates", () => {
     expect(h.createRequestMock).not.toHaveBeenCalled();
   });
 
-  // B.4 version-linking
-  it("rejects a rollback request while the path is gated off (ROLLBACK_REQUEST_ENABLED)", async () => {
-    const result = await submitRequestAction({ ...VALID, type: "rollback", versionRef: 2 });
+  // B.4 version-linking (rollback path enabled 2026-06-20)
+  it("requires a versionRef for a rollback request", async () => {
+    const result = await submitRequestAction({ ...VALID, type: "rollback", versionRef: null });
     expect(result).toMatchObject({ ok: false, code: "INVALID" });
     expect(h.createRequestMock).not.toHaveBeenCalled();
   });
@@ -242,5 +242,40 @@ describe("submitRequestAction — persist + forward", () => {
       expect.objectContaining({ type: "bug", versionRef: 3 }),
     );
     expect(h.sendMock).toHaveBeenCalledWith(expect.objectContaining({ versionRef: 3 }));
+  });
+
+  it("persists + forwards a rollback request with type rollback + versionRef (B.4)", async () => {
+    h.createRequestMock.mockResolvedValue({
+      id: "rq-rb",
+      clientWorkspaceId: "ws-1",
+      type: "rollback",
+      clientPriority: "normal",
+      body: "Please roll back to version 2.",
+      versionRef: 2,
+      submittedBy: "submitter-hash",
+      externalRequestId: "rq-rb",
+      forwardedAt: null,
+      clientVisibleState: null,
+      stateRevision: 0,
+      stateUpdatedAt: null,
+      createdAt: "2026-06-20T12:00:00.000Z",
+    });
+
+    const result = await submitRequestAction({
+      ...VALID,
+      type: "rollback",
+      clientPriority: "normal",
+      body: "Please roll back to version 2.",
+      versionRef: 2,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(h.createRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "rollback", versionRef: 2 }),
+    );
+    expect(h.sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "rollback", versionRef: 2 }),
+    );
+    expect(h.markForwardedMock).toHaveBeenCalledWith("rq-rb");
   });
 });
