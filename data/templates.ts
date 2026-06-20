@@ -303,12 +303,38 @@ const AI_AGENT: TemplateCatalogItem = {
   prompt: "Use the AI Operations Agent template as a starting point for our automation.",
 };
 
+// New category: a timeline-first project tool (Gantt) — distinct from the CRM
+// kanban (bars across dates, not columns).
+const PROJECT_MGMT: TemplateCatalogItem = {
+  slug: "project-management",
+  name: "Project Management",
+  category: "Project management",
+  summary:
+    "A timeline-first project tool — tasks, dependencies, and milestones laid out on a Gantt so the team can see the whole plan and what's due when.",
+  bestFit: ["Agencies & client delivery", "Product & engineering teams", "Ops & rollouts"],
+  includes: [
+    "Gantt / timeline view",
+    "Tasks, phases & dependencies",
+    "Milestones & assignees",
+    "Multiple project spaces",
+  ],
+  extensions: ["Resource & capacity planning", "Time tracking", "Board & list views", "Reporting & alerts"],
+  useWhen:
+    "Work spans weeks or months with dependencies and deadlines, and the team needs to see the whole plan on a timeline — not just a flat task list.",
+  notIdealWhen:
+    "The work is short-lived or ad-hoc and a simple list or board is enough; a full Gantt would be overkill.",
+  baselinePromise:
+    "Gives you a working timeline with tasks, dependencies, milestones, and project spaces, so the custom work can focus on your planning rules and integrations.",
+  prompt: "Use the Project Management template as a starting point for our project software.",
+};
+
 export const templatesCatalog: TemplateCatalogItem[] = [
   ...templates
     .filter((t) => t.slug !== "approval-workflow-tool")
     .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t)),
   SALES_CRM,
   AI_AGENT,
+  PROJECT_MGMT,
 ];
 
 // Filter chips for the curated catalog (drops the now-unused "Internal tools",
@@ -317,4 +343,5 @@ export const templateCatalogCategories: string[] = [
   ...templateCategories.filter((c) => c !== "Internal tools"),
   "CRM & sales",
   "AI agents & automation",
+  "Project management",
 ];

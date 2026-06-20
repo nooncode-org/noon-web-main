@@ -440,11 +440,53 @@ function AgentMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function ProjectMockup({ enhanced }: { enhanced: boolean }) {
+  const bars = [
+    { offset: 2, width: 46, tone: siteTones.brand },
+    { offset: 22, width: 40, tone: siteTones.data },
+    { offset: 12, width: 30, tone: siteTones.services },
+    { offset: 40, width: 45, tone: siteTones.brand },
+    { offset: 28, width: 34, tone: siteTones.data },
+  ];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden p-3.5">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[10px] font-mono text-muted-foreground">gantt · Sep</span>
+        <span className="text-[9px] font-mono" style={{ color: siteTones.services.accent }}>
+          Today
+        </span>
+      </div>
+      <div className="relative space-y-2">
+        <div className="absolute bottom-0 top-0 w-px" style={{ left: "54%", backgroundColor: siteTones.services.accent }} />
+        {bars.map((b, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="h-1.5 w-9 shrink-0 rounded bg-foreground/10" />
+            <div className="relative h-3 flex-1">
+              <div
+                className="absolute h-3 rounded-full transition-all duration-300"
+                style={{
+                  left: `${b.offset}%`,
+                  width: `${b.width}%`,
+                  backgroundColor: b.tone.surface,
+                  border: `1px solid ${b.tone.border}`,
+                  transform: enhanced ? "translateX(2px)" : "none",
+                  transitionDelay: `${i * 40}ms`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
   "CRM & sales": CrmMockup,
   "AI agents & automation": AgentMockup,
+  "Project management": ProjectMockup,
   "Dashboards": DashboardMockup,
   "Internal tools": WorkflowMockup,
   "AI assistants": AIMockup,
