@@ -16,7 +16,6 @@ import {
 import type {
   AiMvpMilestone,
   ProposalStatus,
-  WorkspaceUpdate,
 } from "@/lib/maxwell/repositories";
 import {
   AI_MVP_MILESTONE_COPY,
@@ -31,6 +30,11 @@ import {
   mapVersionStateToMeta,
 } from "@/lib/maxwell/version-status-labels";
 import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
+import {
+  buildActivityFeed,
+  type ActivityEvent,
+  type ActivityEventKind,
+} from "@/lib/maxwell/activity-feed";
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { ROLLBACK_REQUEST_ENABLED } from "@/lib/maxwell/client-requests";
@@ -62,18 +66,11 @@ function formatDate(iso: string) {
   }).format(new Date(iso));
 }
 
-const UPDATE_ICON: Record<string, string> = {
-  status_update: "*",
-  milestone: "+",
-  material: "->",
-  note: "o",
-};
-
-const UPDATE_LABEL: Record<string, string> = {
-  status_update: "Update",
-  milestone: "Milestone",
-  material: "Material",
-  note: "Note",
+// Small glyph per activity kind (mirrors the prior update-type iconography).
+const ACTIVITY_KIND_ICON: Record<ActivityEventKind, string> = {
+  update: "*",
+  version: "+",
+  request: "o",
 };
 
 const PREPARING_COPY: Record<ProposalStatus, { label: string; description: string }> = {
@@ -288,33 +285,34 @@ function VersionsSection({
   );
 }
 
-function UpdateCard({ update }: { update: WorkspaceUpdate }) {
+// §22.2 — one row of the unified client-visible activity feed.
+function ActivityCard({ event }: { event: ActivityEvent }) {
   return (
     <div className="relative pl-6">
       <span className="absolute left-0 top-1.5 select-none text-xs text-muted-foreground/60">
-        {UPDATE_ICON[update.updateType] ?? "*"}
+        {ACTIVITY_KIND_ICON[event.kind]}
       </span>
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-2 flex items-center gap-2.5">
           <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            {UPDATE_LABEL[update.updateType] ?? update.updateType}
+            {event.tag}
           </span>
-          <span className="text-[10px] text-muted-foreground/50">{formatDate(update.createdAt)}</span>
+          <span className="text-[10px] text-muted-foreground/50">{formatDate(event.at)}</span>
         </div>
-        <p className="text-sm font-medium leading-snug">{update.title}</p>
-        {update.content && (
+        <p className="text-sm font-medium leading-snug">{event.title}</p>
+        {event.detail && (
           <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-            {update.content}
+            {event.detail}
           </p>
         )}
-        {update.materialUrl && (
+        {event.href && (
           <a
-            href={update.materialUrl}
+            href={event.href}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
           >
-            Open link {"->"}
+            Open {"->"}
           </a>
         )}
       </div>
@@ -403,6 +401,15 @@ export default async function WorkspacePage({ params }: Props) {
   const requests = workspace.noonAppProjectId
     ? await getClientRequestsByWorkspace(workspace.id)
     : [];
+
+  // §22.2 status feed: one client-visible activity timeline synthesized from the
+  // data we already hold (Noon updates + version lifecycle + request states).
+  // Newest-first; materials keep their own section, so only `timeline` feeds in.
+  const activity = buildActivityFeed({
+    updates: timeline,
+    versions: appVersions,
+    requests,
+  });
 
   const contactHref = getContactHref({
     inquiry: "project-update",
@@ -495,16 +502,16 @@ export default async function WorkspacePage({ params }: Props) {
 
         <section>
           <h2 className="mb-4 text-xs font-mono uppercase tracking-widest text-muted-foreground">
-            Project updates
+            Activity
           </h2>
-          {timeline.length === 0 ? (
+          {activity.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-              Updates will appear here as your project progresses.
+              Activity will appear here as your project progresses.
             </p>
           ) : (
             <div className="space-y-4">
-              {[...timeline].reverse().map((update) => (
-                <UpdateCard key={update.id} update={update} />
+              {activity.map((event) => (
+                <ActivityCard key={event.id} event={event} />
               ))}
             </div>
           )}
