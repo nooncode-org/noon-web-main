@@ -10,6 +10,7 @@
 import crypto from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  buildClientRequestAttachmentPayload,
   buildClientRequestPayload,
   buildClientRequestUpdatePayload,
   deriveSubmitterId,
@@ -179,5 +180,40 @@ describe("extractNoonAppRequestUpdateAck", () => {
   it("degrades to nulls/false on an unrecognised shape", () => {
     expect(extractNoonAppRequestUpdateAck(null)).toEqual({ updateId: null, idempotent: false });
     expect(extractNoonAppRequestUpdateAck({})).toEqual({ updateId: null, idempotent: false });
+  });
+});
+
+describe("buildClientRequestAttachmentPayload (B.5b §5D kind:attachment)", () => {
+  const attachment = { id: "att-1", filename: "photo.png", mime: "image/png", size: 1024 };
+
+  it("emits kind:attachment + the reference (no URL), parent + updateId keyed", () => {
+    const payload = buildClientRequestAttachmentPayload({
+      externalRequestId: "req-1",
+      updateId: "att-1",
+      attachment,
+      at: "2026-06-20T10:00:00.000Z",
+    });
+    expect(payload).toEqual({
+      externalRequestId: "req-1",
+      updateId: "att-1",
+      kind: "attachment",
+      attachment,
+      at: "2026-06-20T10:00:00.000Z",
+    });
+    expect("projectId" in payload).toBe(false);
+  });
+
+  it("omits body when absent, includes it when present", () => {
+    const without = buildClientRequestAttachmentPayload({ externalRequestId: "r", updateId: "u", attachment });
+    expect("body" in without).toBe(false);
+    expect(without.kind).toBe("attachment");
+
+    const withBody = buildClientRequestAttachmentPayload({
+      externalRequestId: "r",
+      updateId: "u",
+      attachment,
+      body: "see the mockup",
+    });
+    expect(withBody).toMatchObject({ body: "see the mockup" });
   });
 });

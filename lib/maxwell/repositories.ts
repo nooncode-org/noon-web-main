@@ -2013,6 +2013,131 @@ export async function markClientRequestUpdateForwarded(id: string): Promise<void
 }
 
 // ============================================================================
+// client_request_attachment (§9 B.5b — attachment outbox; bytes in Supabase Storage)
+// ============================================================================
+
+export type ClientRequestAttachment = {
+  id: string;
+  clientRequestId: string;
+  /** Private Supabase Storage object key (NoonWeb-owned). */
+  blobKey: string;
+  filename: string;
+  mime: string;
+  sizeBytes: number;
+  /** Optional note accompanying the file. */
+  body: string | null;
+  /** Stable idempotency key sent to App as `updateId`; == `id`, reused on retry. */
+  externalUpdateId: string;
+  forwardedAt: string | null;
+  createdAt: string;
+};
+
+type ClientRequestAttachmentRow = {
+  id: string;
+  client_request_id: string;
+  blob_key: string;
+  filename: string;
+  mime: string;
+  size_bytes: number;
+  body: string | null;
+  external_update_id: string;
+  forwarded_at: string | null;
+  created_at: string;
+};
+
+function mapClientRequestAttachment(r: ClientRequestAttachmentRow): ClientRequestAttachment {
+  return {
+    id: r.id,
+    clientRequestId: r.client_request_id,
+    blobKey: r.blob_key,
+    filename: r.filename,
+    mime: r.mime,
+    sizeBytes: Number(r.size_bytes),
+    body: r.body ?? null,
+    externalUpdateId: r.external_update_id,
+    forwardedAt: r.forwarded_at ?? null,
+    createdAt: r.created_at,
+  };
+}
+
+/**
+ * Persist a client attachment in the local outbox (B.5b). The bytes already live
+ * in Storage at `blobKey`; this row is the durable record + dead-letter anchor.
+ * `external_update_id == id` is the stable key reused on every forward retry so
+ * the App de-dupes on `(externalRequestId, updateId)`.
+ */
+export async function createClientRequestAttachment(input: {
+  clientRequestId: string;
+  blobKey: string;
+  filename: string;
+  mime: string;
+  sizeBytes: number;
+  body?: string | null;
+}): Promise<ClientRequestAttachment> {
+  const sql = getDb();
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const rows = await sql<ClientRequestAttachmentRow[]>`
+    INSERT INTO client_request_attachment (
+      id, client_request_id, blob_key, filename, mime, size_bytes, body,
+      external_update_id, forwarded_at, created_at
+    ) VALUES (
+      ${id}, ${input.clientRequestId}, ${input.blobKey}, ${input.filename},
+      ${input.mime}, ${input.sizeBytes}, ${input.body ?? null},
+      ${id}, NULL, ${now}
+    )
+    RETURNING *
+  `;
+  return mapClientRequestAttachment(rows[0]!);
+}
+
+/** Mark an attachment's forward as delivered. */
+export async function markClientRequestAttachmentForwarded(id: string): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE client_request_attachment
+    SET forwarded_at = ${now}
+    WHERE id = ${id}
+  `;
+}
+
+/** A workspace's attachments for a request, oldest-first (display). */
+export async function getClientRequestAttachmentsByRequest(
+  clientRequestId: string,
+): Promise<ClientRequestAttachment[]> {
+  const sql = getDb();
+  const rows = await sql<ClientRequestAttachmentRow[]>`
+    SELECT * FROM client_request_attachment
+    WHERE client_request_id = ${clientRequestId}
+    ORDER BY created_at ASC
+  `;
+  return rows.map(mapClientRequestAttachment);
+}
+
+/**
+ * Resolve an attachment for the App's signed-read, gated on the parent request's
+ * project being payment-activated (the §B.5b access gate). Returns only what the
+ * signed-read needs (the Storage key + display metadata), or null → 404
+ * non-revealing. The HMAC on the endpoint is the authn; this is the authz/resolve.
+ */
+export async function getAttachmentForSignedRead(
+  id: string,
+): Promise<{ blobKey: string; mime: string; filename: string } | null> {
+  const sql = getDb();
+  const rows = await sql<{ blob_key: string; mime: string; filename: string }[]>`
+    SELECT a.blob_key, a.mime, a.filename
+    FROM client_request_attachment a
+    JOIN client_request r ON r.id = a.client_request_id
+    JOIN client_workspace w ON w.id = r.client_workspace_id
+    WHERE a.id = ${id} AND w.noon_app_project_id IS NOT NULL
+    LIMIT 1
+  `;
+  const row = rows[0];
+  return row ? { blobKey: row.blob_key, mime: row.mime, filename: row.filename } : null;
+}
+
+// ============================================================================
 // payment_event
 // ============================================================================
 
