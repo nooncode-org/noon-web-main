@@ -2,7 +2,19 @@
 
 - **Fecha:** 2026-06-20
 - **Repo:** `noon-web-main`
-- **Estado:** DRAFT para co-firma del App (pre-freeze). NoonWeb NO construye el wire ni el receptor de acceso hasta que el App co-firme la §8. La infra de hosting (Vercel Blob, NoonWeb-interna) puede construirse en paralelo una vez aprobado el shape.
+- **Estado:** **CONGELADO 2026-06-20** — el App co-firmó las 6 preguntas (`docs/2026-06-20-app-to-noonweb-v3-b5b-attachments-cosign-response.md`), sin corrección mayor. NoonWeb entra a build de la infra de hosting (gateada por `ATTACHMENTS_ENABLED=false`). *(Era DRAFT pre-freeze; las precisiones del App están en el bloque FREEZE de abajo.)*
+
+> ### ✅ FREEZE 2026-06-20 — el App co-firmó; contrato de B.5b CONGELADO
+>
+> Las 6 preguntas de §8 **co-firmadas como propuestas**, con precisiones App-side:
+> - **Q-B5b-1 ✅** referencia = `{ id, filename, mime, size }` (los 4; el App los guarda; `id == updateId`).
+> - **Q-B5b-2 ✅** acceso = signed-read HMAC server-to-server **+ `302` a Blob URL de corta vida** (aceptado; "push URL" rechazado). **Precisión:** el binario nunca lo pide el browser del staff directo — el App tiene una **ruta staff (authz `requireRole`)** que firma + llama nuestro signed-read, recibe el 302, y **redirige al staff autenticado** a esa URL de Blob (el App no proxy-ea bytes).
+> - **Q-B5b-3 ✅** `kind:'attachment'` = mismo path que clarification (auto `needs_clarification→in_review` + notify); **`body` OPCIONAL** para attachment (pero el sub-objeto `attachment` requerido); clarification sigue exigiendo `body`.
+> - **Q-B5b-4 ✅** 10 MB / allowlist mime (png·jpeg·webp·gif·pdf·text-plain·office; **sin SVG/exe**) / **1 por update**. NoonWeb autoritativo; el App backstopea el sub-shape (`size` 1..10485760, mime allowlist, filename 1..255) → `400` si malformado.
+> - **Q-B5b-5 ✅** el App guarda SOLO la referencia, fetchea live; **NoonWeb borra los blobs** (extender `gdpr-hard-delete`). Blob borrado → fetch del App da 404 → degrada gracioso ("adjunto no disponible"). El App no necesita lógica de borrado.
+> - **Q-B5b-6 ✅** el App no agrega env/secreto; `BLOB_READ_WRITE_TOKEN` es NoonWeb-only (excepción aceptada); signed-read reusa `NOON_WEBSITE_WEBHOOK_SECRET`.
+>
+> **Orden de despliegue duro:** NoonWeb construye la infra gateada por `ATTACHMENTS_ENABLED=false` → el App despliega el branch `kind:'attachment'` + el fetch → el App confirma → NoonWeb flipea el flag (1 PR, como el rollback). Hasta entonces el receptor del App sigue dando `400` a un attachment (degrada limpio).
 - **Predecesores:** B.5a clarification LIVE (`docs/2026-06-20-noonweb-to-app-v3-section9-rollback-clarification-ready.md`); contrato del App (`docs/2026-06-20-app-to-noonweb-v3-section9-rollback-and-clarification-ready.md` §2.9 OQ-8); spec App `specs/v3-client-requests-b5-clarification.md` §3 (el blocker de adjuntos).
 
 > **Por qué co-diseño:** el App difirió explícitamente el sub-shape del adjunto a "cuando NoonWeb tenga file-hosting + co-firmemos" (OQ-8). Su `client-request-update` **rechaza `kind:'attachment'` con `400`** hasta entonces. El contrato congelado fija la dirección: **NoonWeb hostea los archivos; el App guarda una referencia estable (id), NO una URL cruda.** Este doc propone el shape exacto + el mecanismo de acceso para cerrarlo.
