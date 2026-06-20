@@ -681,6 +681,54 @@ export async function sendClientRequestUpdateToNoonApp(input: {
 }
 
 /**
+ * Client-request ATTACHMENT update (§9 B.5b). Rides the same §5D endpoint as
+ * clarification with `kind:'attachment'`, carrying a stable REFERENCE (never a
+ * URL) — `{ id, filename, mime, size }` — plus an OPTIONAL `body` note. The App
+ * stores the reference and fetches the bytes later via NoonWeb's signed-read.
+ * `updateId == attachment.id` (the App de-dupes on `(externalRequestId, updateId)`).
+ */
+export function buildClientRequestAttachmentPayload(input: {
+  externalRequestId: string;
+  updateId: string;
+  attachment: { id: string; filename: string; mime: string; size: number };
+  body?: string | null;
+  at?: string;
+}) {
+  return {
+    externalRequestId: input.externalRequestId,
+    updateId: input.updateId,
+    kind: "attachment" as const,
+    attachment: input.attachment,
+    ...(input.body != null ? { body: input.body } : {}),
+    at: input.at ?? new Date().toISOString(),
+  };
+}
+
+export async function sendClientRequestAttachmentToNoonApp(input: {
+  externalRequestId: string;
+  updateId: string;
+  attachment: { id: string; filename: string; mime: string; size: number };
+  body?: string | null;
+  at?: string;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/client-request-update",
+    buildClientRequestAttachmentPayload(input),
+  );
+}
+
+/**
+ * Verify an INBOUND signed GET from the App (the attachment signed-read, §B.5b).
+ * The App signs `${timestamp}.` (empty body, the prototype-signed-read convention)
+ * with the shared `NOON_WEBSITE_WEBHOOK_SECRET`; this reuses the exact HMAC +
+ * ±5min skew + missing-timestamp rejection (F-1) as the POST receivers. Throws
+ * `NoonAppIntegrationError` (401) on a bad/absent signature or stale timestamp.
+ */
+export function verifySignedNoonAppGet(request: Request): void {
+  verifyNoonAppSignature(request.headers, "");
+}
+
+/**
  * Version Publish action (v3 Fase 2 versioning, Slice 2b). Forwards a client's
  * publish intent to App's receiver (`POST /api/integrations/website/version-action`)
  * and returns the resulting published state. camelCase wire (v3 family).
