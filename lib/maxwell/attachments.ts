@@ -14,14 +14,14 @@
  */
 
 /**
- * B.5b gate (hard deploy order). The App's §5D receiver 400s `kind:'attachment'`
- * until it deploys the attachment branch — so NoonWeb keeps the upload path OFF
- * until the App confirms. While `false`: the upload UI hides and the server
- * action rejects an attachment. Flip to `true` (one-line PR) once the App
- * confirms `kind:'attachment'` is deployed, alongside provisioning the storage
- * env. Typed `boolean` so conditions are not treated as statically known.
+ * B.5b gate (hard deploy order). ENABLED 2026-06-20: the App deployed its
+ * `kind:'attachment'` receiver (PR #199 / ADR-044) and re-pinned its redirect
+ * allowlist to the Supabase Storage host (`umqbtqbsfjgfhdptbqfb.supabase.co`),
+ * and NoonWeb provisioned the storage bucket + env + migration 028. Kept as a
+ * kill-switch: set to `false` to instantly hide the upload UI + reject the
+ * server action. Typed `boolean` so conditions are not treated as statically known.
  */
-export const ATTACHMENTS_ENABLED: boolean = false;
+export const ATTACHMENTS_ENABLED: boolean = true;
 
 /** Max attachment size in bytes (10 MB), matching the co-signed cap. */
 export const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
