@@ -624,6 +624,63 @@ export async function sendClientRequestToNoonApp(input: {
 }
 
 /**
+ * Client-request UPDATE — the clarification round-trip (§9 B.5a, App §5D / ADR-042).
+ * Forwards a client's reply to App's `POST /api/integrations/website/client-request-update`,
+ * keyed by the PARENT `externalRequestId` (no projectId — the App resolves the
+ * project from the parent) + a stable per-update `updateId`. The App de-dupes on
+ * `(externalRequestId, updateId)` and returns the parent request to In Review.
+ * `kind` is `clarification` only (the App rejects `attachment` as B.5b, deferred).
+ */
+export function buildClientRequestUpdatePayload(input: {
+  externalRequestId: string;
+  updateId: string;
+  body: string;
+  kind?: "clarification";
+  at?: string;
+}) {
+  return {
+    externalRequestId: input.externalRequestId,
+    updateId: input.updateId,
+    kind: input.kind ?? ("clarification" as const),
+    body: input.body,
+    at: input.at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Best-effort extraction of App's update-reply for audit logging. Returns
+ * nulls/false for any shape we don't recognise so a contract drift degrades the
+ * log gracefully instead of throwing.
+ */
+export function extractNoonAppRequestUpdateAck(response: unknown): {
+  updateId: string | null;
+  idempotent: boolean;
+} {
+  if (!response || typeof response !== "object") {
+    return { updateId: null, idempotent: false };
+  }
+  const obj = response as { updateId?: unknown; idempotent?: unknown };
+  return {
+    updateId:
+      typeof obj.updateId === "string" && obj.updateId.trim() ? obj.updateId : null,
+    idempotent: obj.idempotent === true,
+  };
+}
+
+export async function sendClientRequestUpdateToNoonApp(input: {
+  externalRequestId: string;
+  updateId: string;
+  body: string;
+  kind?: "clarification";
+  at?: string;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/client-request-update",
+    buildClientRequestUpdatePayload(input),
+  );
+}
+
+/**
  * Version Publish action (v3 Fase 2 versioning, Slice 2b). Forwards a client's
  * publish intent to App's receiver (`POST /api/integrations/website/version-action`)
  * and returns the resulting published state. camelCase wire (v3 family).

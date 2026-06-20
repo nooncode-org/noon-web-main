@@ -1763,6 +1763,27 @@ export type ClientRequest = {
   createdAt: string;
 };
 
+/** The only update kind the App supports today; 'attachment' (B.5b) is deferred. */
+export type ClientRequestUpdateKind = "clarification";
+
+/** A client's clarification reply to a request (B.5a outbox row). */
+export type ClientRequestUpdate = {
+  id: string;
+  clientRequestId: string;
+  kind: ClientRequestUpdateKind;
+  body: string;
+  /** Stable idempotency key sent to App; == `id`, reused verbatim on retry. */
+  externalUpdateId: string;
+  /** Set when the forward to App succeeded; null = dead-letter. */
+  forwardedAt: string | null;
+  createdAt: string;
+};
+
+/** A request plus its client-posted clarification replies (oldest-first). */
+export type ClientRequestWithUpdates = ClientRequest & {
+  updates: ClientRequestUpdate[];
+};
+
 type ClientRequestRow = {
   id: string;
   client_workspace_id: string;
@@ -1793,6 +1814,28 @@ function mapClientRequest(r: ClientRequestRow): ClientRequest {
     clientVisibleState: (r.client_visible_state as ClientVisibleState | null) ?? null,
     stateRevision: Number(r.state_revision),
     stateUpdatedAt: r.state_updated_at ?? null,
+    createdAt: r.created_at,
+  };
+}
+
+type ClientRequestUpdateRow = {
+  id: string;
+  client_request_id: string;
+  kind: string;
+  body: string;
+  external_update_id: string;
+  forwarded_at: string | null;
+  created_at: string;
+};
+
+function mapClientRequestUpdate(r: ClientRequestUpdateRow): ClientRequestUpdate {
+  return {
+    id: r.id,
+    clientRequestId: r.client_request_id,
+    kind: r.kind as ClientRequestUpdateKind,
+    body: r.body,
+    externalUpdateId: r.external_update_id,
+    forwardedAt: r.forwarded_at ?? null,
     createdAt: r.created_at,
   };
 }
@@ -1844,17 +1887,55 @@ export async function markClientRequestForwarded(id: string): Promise<void> {
   `;
 }
 
-/** The client's request log for a workspace, oldest-first. */
+/**
+ * The client's request log for a workspace, oldest-first, each request carrying
+ * its clarification replies (B.5a), also oldest-first. One extra query, grouped
+ * in memory — the request count per workspace is small.
+ */
 export async function getClientRequestsByWorkspace(
   clientWorkspaceId: string,
-): Promise<ClientRequest[]> {
+): Promise<ClientRequestWithUpdates[]> {
   const sql = getDb();
   const rows = await sql<ClientRequestRow[]>`
     SELECT * FROM client_request
     WHERE client_workspace_id = ${clientWorkspaceId}
     ORDER BY created_at ASC
   `;
-  return rows.map(mapClientRequest);
+  const requests = rows.map(mapClientRequest);
+  if (requests.length === 0) return [];
+
+  const updateRows = await sql<ClientRequestUpdateRow[]>`
+    SELECT u.* FROM client_request_update u
+    JOIN client_request r ON r.id = u.client_request_id
+    WHERE r.client_workspace_id = ${clientWorkspaceId}
+    ORDER BY u.created_at ASC
+  `;
+  const byRequest = new Map<string, ClientRequestUpdate[]>();
+  for (const row of updateRows) {
+    const update = mapClientRequestUpdate(row);
+    const list = byRequest.get(update.clientRequestId);
+    if (list) list.push(update);
+    else byRequest.set(update.clientRequestId, [update]);
+  }
+
+  return requests.map((request) => ({
+    ...request,
+    updates: byRequest.get(request.id) ?? [],
+  }));
+}
+
+/** Look up one request scoped to a workspace (ownership check for B.5a updates). */
+export async function getClientRequestForWorkspace(
+  id: string,
+  clientWorkspaceId: string,
+): Promise<ClientRequest | null> {
+  const sql = getDb();
+  const rows = await sql<ClientRequestRow[]>`
+    SELECT * FROM client_request
+    WHERE id = ${id} AND client_workspace_id = ${clientWorkspaceId}
+    LIMIT 1
+  `;
+  return rows[0] ? mapClientRequest(rows[0]) : null;
 }
 
 export type ApplyClientRequestStateOutcome = "applied" | "stale" | "not_found";
@@ -1892,6 +1973,43 @@ export async function applyClientRequestState(
     SELECT id FROM client_request WHERE external_request_id = ${externalRequestId}
   `;
   return existing.length > 0 ? "stale" : "not_found";
+}
+
+/**
+ * Persist a client's clarification reply in the local outbox (B.5a). The local
+ * row is the durable record + the dead-letter anchor; `external_update_id == id`
+ * is the stable key reused on every forward retry so the App de-dupes on
+ * `(externalRequestId, updateId)`. The forward itself happens in the server
+ * action (best-effort).
+ */
+export async function createClientRequestUpdate(input: {
+  clientRequestId: string;
+  kind: ClientRequestUpdateKind;
+  body: string;
+}): Promise<ClientRequestUpdate> {
+  const sql = getDb();
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const rows = await sql<ClientRequestUpdateRow[]>`
+    INSERT INTO client_request_update (
+      id, client_request_id, kind, body, external_update_id, forwarded_at, created_at
+    ) VALUES (
+      ${id}, ${input.clientRequestId}, ${input.kind}, ${input.body}, ${id}, NULL, ${now}
+    )
+    RETURNING *
+  `;
+  return mapClientRequestUpdate(rows[0]!);
+}
+
+/** Mark a request-update's forward as delivered. */
+export async function markClientRequestUpdateForwarded(id: string): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE client_request_update
+    SET forwarded_at = ${now}
+    WHERE id = ${id}
+  `;
 }
 
 // ============================================================================
