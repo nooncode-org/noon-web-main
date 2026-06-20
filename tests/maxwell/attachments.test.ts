@@ -16,8 +16,8 @@ import {
 } from "@/lib/maxwell/attachments";
 
 describe("attachments — flag + limits", () => {
-  it("ships gated off (hard deploy order)", () => {
-    expect(ATTACHMENTS_ENABLED).toBe(false);
+  it("is enabled (B.5b live; kept as a kill-switch)", () => {
+    expect(ATTACHMENTS_ENABLED).toBe(true);
   });
 
   it("caps at 10 MB", () => {
