@@ -11,8 +11,10 @@ import crypto from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   buildClientRequestPayload,
+  buildClientRequestUpdatePayload,
   deriveSubmitterId,
   extractNoonAppRequestAck,
+  extractNoonAppRequestUpdateAck,
 } from "@/lib/noon-app-integration";
 
 const SECRET = "test-shared-secret";
@@ -134,5 +136,48 @@ describe("extractNoonAppRequestAck", () => {
     expect(extractNoonAppRequestAck(null)).toEqual({ requestId: null, idempotent: false });
     expect(extractNoonAppRequestAck("nope")).toEqual({ requestId: null, idempotent: false });
     expect(extractNoonAppRequestAck({})).toEqual({ requestId: null, idempotent: false });
+  });
+});
+
+describe("buildClientRequestUpdatePayload (B.5a clarification §5D)", () => {
+  it("emits the frozen camelCase shape, keyed by the parent + updateId (no projectId)", () => {
+    const payload = buildClientRequestUpdatePayload({
+      externalRequestId: "req-1",
+      updateId: "upd-1",
+      body: "Here is the detail you asked for",
+      at: "2026-06-20T10:00:00.000Z",
+    });
+    expect(payload).toEqual({
+      externalRequestId: "req-1",
+      updateId: "upd-1",
+      kind: "clarification",
+      body: "Here is the detail you asked for",
+      at: "2026-06-20T10:00:00.000Z",
+    });
+    expect("projectId" in payload).toBe(false);
+  });
+
+  it("defaults kind to clarification and `at` to an ISO timestamp", () => {
+    const payload = buildClientRequestUpdatePayload({
+      externalRequestId: "r",
+      updateId: "u",
+      body: "x",
+    });
+    expect(payload.kind).toBe("clarification");
+    expect(Number.isNaN(Date.parse(payload.at))).toBe(false);
+  });
+});
+
+describe("extractNoonAppRequestUpdateAck", () => {
+  it("pulls updateId + idempotent from a well-formed reply", () => {
+    expect(extractNoonAppRequestUpdateAck({ updateId: "app-u-1", idempotent: true })).toEqual({
+      updateId: "app-u-1",
+      idempotent: true,
+    });
+  });
+
+  it("degrades to nulls/false on an unrecognised shape", () => {
+    expect(extractNoonAppRequestUpdateAck(null)).toEqual({ updateId: null, idempotent: false });
+    expect(extractNoonAppRequestUpdateAck({})).toEqual({ updateId: null, idempotent: false });
   });
 });
