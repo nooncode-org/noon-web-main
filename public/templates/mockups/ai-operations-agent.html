@@ -44,476 +44,275 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>x-dc{display:none!important}</style><style></style><style data-dc-tpl="3">/* latin-ext */
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
 
 /* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
 
 /* latin-ext */
 
 /* latin */
 
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
 /* latin-ext */
 
 /* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
 
 /* latin-ext */
 
 /* latin */
 
 </style><style data-dc-tpl="4">
-:root{
---ink:#0d1220;--ink2:#384256;--muted:#66738b;--faint:#9aa6bb;
---paper:#fff;--canvas:#f6f8fc;--surface:#f2f5fb;--line:#dbe3ef;--line2:#e9eef6;
---brand:#1200c5;--brand-deep:#1000b1;--brand-tint:#ecebfb;--brand-tint2:#d6d5f6;
---struct:#3347ef;--lift:#6a63f2;--client:#6b8cff;--data:#b277ff;
---green:#2cc49a;--green-ink:#0f6e56;--green-tint:#e4f7f1;--green-line:#bce8db;
---amber:#f0a127;--amber-ink:#8a5e12;--amber-tint:#fdf3e0;--amber-line:#f3ddb2;
---red:#d6453e;--red-ink:#b04632;--red-tint:#fbeae7;--red-line:#f3d2ce;
-}
 *{box-sizing:border-box}
-body{margin:0;background:#e9edf3;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
-.mono{font-family:'Instrument Sans',sans-serif;font-variant-numeric:tabular-nums}
-.ca-scroll{scrollbar-width:thin;scrollbar-color:#cdd7e6 transparent}
-.ca-scroll::-webkit-scrollbar{width:8px;height:8px}
-.ca-scroll::-webkit-scrollbar-thumb{background:#cdd7e6;border-radius:99px;border:2px solid transparent;background-clip:padding-box}
-.ca-scroll::-webkit-scrollbar-track{background:transparent}
-[data-node]{transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease}
-[data-node]:hover{border-color:#c2cee0;box-shadow:0 6px 20px rgba(16,24,40,.10);transform:translateY(-1px)}
-[data-node][data-on="1"]{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint),0 8px 24px rgba(18,0,197,.12)}
-[data-nav]{transition:background-color .13s ease,color .13s ease}
-[data-objrow]{transition:background-color .14s ease,border-color .14s ease}
-[data-btn]{transition:background-color .14s ease,border-color .14s ease,color .14s ease}
+body{margin:0;background:#ffffff;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:rgba(108,92,231,.18)}
+.sv-scroll::-webkit-scrollbar{width:10px}
+.sv-scroll::-webkit-scrollbar-thumb{background:#e4e1ef;border-radius:6px;border:3px solid #fff}
+.sv-scroll::-webkit-scrollbar-track{background:transparent}
 </style><style id="self-hosted">/* latin */
 @font-face {
-  font-family: 'Instrument Sans';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 400;
-  font-stretch: 100%;
   font-display: swap;
-  src: url(/templates/mockups/fonts/InstrumentSans-400.woff2) format('woff2');
+  src: url(/templates/mockups/fonts/Geist-400.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* latin */
 @font-face {
-  font-family: 'Instrument Sans';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 500;
-  font-stretch: 100%;
   font-display: swap;
-  src: url(/templates/mockups/fonts/InstrumentSans-500.woff2) format('woff2');
+  src: url(/templates/mockups/fonts/Geist-500.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* latin */
 @font-face {
-  font-family: 'Instrument Sans';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 600;
-  font-stretch: 100%;
   font-display: swap;
-  src: url(/templates/mockups/fonts/InstrumentSans-600.woff2) format('woff2');
+  src: url(/templates/mockups/fonts/Geist-600.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* latin */
 @font-face {
-  font-family: 'Instrument Sans';
+  font-family: 'Geist';
   font-style: normal;
   font-weight: 700;
-  font-stretch: 100%;
   font-display: swap;
-  src: url(/templates/mockups/fonts/InstrumentSans-700.woff2) format('woff2');
+  src: url(/templates/mockups/fonts/Geist-700.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
 <body>
-<div id="dc-root"><div class="sc-host" data-sc-name="tpl-ai-agent"><div data-dc-tpl="5" data-screen-label="Runbeam · User Automation" style="width: 1440px; height: 940px; background: rgb(233, 237, 243); padding: 16px; font-family: &quot;Instrument Sans&quot;, sans-serif; color: var(--ink);">
- <div data-dc-tpl="6" style="width: 100%; height: 100%; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; display: flex; overflow: hidden; box-shadow: rgba(16, 24, 40, 0.12) 0px 18px 50px;">
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl-ai-agent"><div data-dc-tpl="5" data-screen-label="Sevrin · Assistant" style="width: 1440px; min-height: 960px; display: flex; background: rgb(255, 255, 255); font-family: Geist, sans-serif; color: rgb(33, 31, 46); position: relative;">
+
+ 
+ <aside data-dc-tpl="6" style="width: 264px; flex: 0 0 auto; margin: 12px; background: rgb(248, 247, 252); border: 1px solid rgb(231, 228, 242); border-radius: 18px; display: flex; flex-direction: column; height: 936px; position: sticky; top: 12px;">
+  
+  <div data-dc-tpl="7" style="padding: 18px 16px 12px; display: flex; align-items: center; gap: 10px;">
+   <span data-dc-tpl="8" style="width: 28px; height: 28px; border-radius: 9px; flex: 0 0 auto; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+   <span data-dc-tpl="9" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: rgb(26, 24, 40);">Sevrin</span>
+  </div>
 
   
-  <aside data-dc-tpl="7" style="width: 212px; flex: 0 0 auto; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: var(--paper);">
-   <div data-dc-tpl="8" style="height: 60px; flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 0px 16px; border-bottom: 1px solid var(--line);">
-    <span data-dc-tpl="9" style="width: 30px; height: 30px; border-radius: 9px; background: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
-     <svg data-dc-tpl="10" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="11" d="m8 8-4 4 4 4M16 8l4 4-4 4"></path></svg>
-    </span>
-    <div data-dc-tpl="12" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="13" style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.05;">Runbeam</div></div>
-    <button data-dc-tpl="14" data-btn="" title="Collapse" class="scp0" style="width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="15" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="16" x="3" y="4" width="18" height="16" rx="2"></rect><path data-dc-tpl="17" d="M9 4v16"></path></svg></button>
+  <div data-dc-tpl="10" style="padding: 6px 14px 10px; display: flex; gap: 8px;">
+   <div data-dc-tpl="11" data-srch="" class="scp0" style="flex: 1 1 0%; display: flex; align-items: center; gap: 9px; height: 36px; padding: 0px 11px; border-radius: 10px; border: 0px; background: rgb(255, 255, 255);">
+    <svg data-dc-tpl="12" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="2" stroke-linecap="round"><circle data-dc-tpl="13" cx="11" cy="11" r="7"></circle><path data-dc-tpl="14" d="m21 21-4.3-4.3"></path></svg>
+    <span data-dc-tpl="15" style="font-size: 12.5px; color: rgb(157, 153, 175); flex: 1 1 0%;">Search</span>
    </div>
-
-   <div data-dc-tpl="18" class="ca-scroll" style="flex: 1 1 0%; overflow: auto; padding: 13px 12px;">
-    <div data-dc-tpl="19" style="font-size: 11px; font-weight: 600; color: var(--faint); margin: 2px 6px 8px;">General</div>
-    <button data-dc-tpl="20" data-nav="" style="position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; background: var(--surface); color: var(--ink); margin-bottom: 2px;">
-     <span data-dc-tpl="21" style="position: absolute; left: 0px; top: 8px; bottom: 8px; width: 0px; border-radius: 2px; background: var(--brand);"></span>
-     <svg data-dc-tpl="22" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="23" x="3" y="3" width="7" height="9" rx="1.5"></rect><rect data-dc-tpl="24" x="14" y="3" width="7" height="5" rx="1.5"></rect><rect data-dc-tpl="25" x="14" y="12" width="7" height="9" rx="1.5"></rect><rect data-dc-tpl="26" x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
-     <span data-dc-tpl="27" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 600;">Dashboard</span>
-    </button>
-    <button data-dc-tpl="28" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="29" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="30" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path data-dc-tpl="31" d="m9 12 2 2 4-4"></path></svg>
-     <span data-dc-tpl="32" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Compliance</span>
-    </button>
-    <button data-dc-tpl="33" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="34" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="35" x="3" y="4" width="18" height="17" rx="2"></rect><path data-dc-tpl="36" d="M16 2v4M8 2v4M3 10h18"></path></svg>
-     <span data-dc-tpl="37" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Scheduler</span>
-     <span data-dc-tpl="38" class="mono" style="font-size: 10px; font-weight: 600; color: var(--faint);">11</span>
-    </button>
-    <button data-dc-tpl="39" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="41" d="M3 3v16a2 2 0 0 0 2 2h16"></path><path data-dc-tpl="42" d="m19 9-5 5-4-4-3 3"></path></svg>
-     <span data-dc-tpl="43" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Analytics</span>
-    </button>
-
-    <div data-dc-tpl="44" style="font-size: 11px; font-weight: 600; color: var(--faint); margin: 16px 6px 8px;">Automation</div>
-    <button data-dc-tpl="45" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="46" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="47" x="14" y="3" width="7" height="7" rx="1"></rect><path data-dc-tpl="48" d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3"></path></svg>
-     <span data-dc-tpl="49" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Integrations</span>
-    </button>
-    <button data-dc-tpl="50" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="51" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="52" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
-     <span data-dc-tpl="53" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Repository</span>
-     <span data-dc-tpl="54" class="mono" style="font-size: 10px; font-weight: 600; color: var(--faint);">7</span>
-    </button>
-    <button data-dc-tpl="55" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="56" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="57" x="3" y="3" width="8" height="8" rx="2"></rect><path data-dc-tpl="58" d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect data-dc-tpl="59" x="13" y="13" width="8" height="8" rx="2"></rect></svg>
-     <span data-dc-tpl="60" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Workflows</span>
-    </button>
-
-    <div data-dc-tpl="61" style="font-size: 11px; font-weight: 600; color: var(--faint); margin: 16px 6px 8px;">Resources</div>
-    <button data-dc-tpl="62" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="63" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="64" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle data-dc-tpl="65" cx="12" cy="7" r="4"></circle></svg>
-     <span data-dc-tpl="66" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Member</span>
-    </button>
-    <button data-dc-tpl="67" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted); margin-bottom: 2px;">
-     <svg data-dc-tpl="68" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="69" d="M22 12h-6l-2 3h-4l-2-3H2"></path><path data-dc-tpl="70" d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-     <span data-dc-tpl="71" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Inbox</span>
-     <span data-dc-tpl="72" class="mono" style="font-size: 9px; font-weight: 700; color: rgb(255, 255, 255); background: var(--brand); border-radius: 99px; padding: 1px 6px;">13</span>
-    </button>
-    <button data-dc-tpl="73" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted);">
-     <svg data-dc-tpl="74" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="75" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-     <span data-dc-tpl="76" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Messages</span>
-    </button>
-   </div>
-
-   <div data-dc-tpl="77" style="flex: 0 0 auto; border-top: 1px solid var(--line); padding: 9px 12px; display: flex; flex-direction: column; gap: 2px;">
-    <button data-dc-tpl="78" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted);">
-     <svg data-dc-tpl="79" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="80" cx="12" cy="12" r="3"></circle><path data-dc-tpl="81" d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>
-     <span data-dc-tpl="82" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Settings</span>
-    </button>
-    <button data-dc-tpl="83" data-nav="" class="scp0" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; color: var(--muted);">
-     <svg data-dc-tpl="84" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="85" cx="12" cy="12" r="10"></circle><path data-dc-tpl="86" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path data-dc-tpl="87" d="M12 17h.01"></path></svg>
-     <span data-dc-tpl="88" style="flex: 1 1 0%; text-align: left; font-size: 13px; font-weight: 500;">Help &amp; Support</span>
-    </button>
-   </div>
-  </aside>
+   <button data-dc-tpl="16" data-new="" class="scp1" style="width: 36px; height: 36px; border-radius: 10px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="17" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path data-dc-tpl="18" d="M12 5v14M5 12h14"></path></svg></button>
+  </div>
 
   
-  <div data-dc-tpl="89" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; background: var(--canvas);">
+  <nav data-dc-tpl="19" style="padding: 2px 12px 6px; display: flex; flex-direction: column; gap: 1px;">
+   <a data-dc-tpl="20" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="21" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="22" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+   <a data-dc-tpl="23" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="24" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="25" cx="12" cy="12" r="9"></circle><path data-dc-tpl="26" d="m15.5 8.5-2 5-5 2 2-5z"></path></svg>Explore</a>
+   <a data-dc-tpl="27" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="28" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="29" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path data-dc-tpl="30" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>Library</a>
+   <a data-dc-tpl="31" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="32" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="33" cx="12" cy="12" r="9"></circle><path data-dc-tpl="34" d="M12 7v5l3 2"></path></svg>History</a>
+  </nav>
 
-   
-   <div data-dc-tpl="90" style="height: 60px; flex: 0 0 auto; display: flex; align-items: center; gap: 12px; padding: 0px 18px; border-bottom: 1px solid var(--line); background: var(--paper);">
-    <div data-dc-tpl="91" style="display: flex; align-items: center; gap: 2px; border: 1px solid var(--line); border-radius: 9px; padding: 2px;">
-     <button data-dc-tpl="92" data-btn="" title="Undo" class="scp0" style="width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="93" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="94" d="M9 14 4 9l5-5"></path><path data-dc-tpl="95" d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg></button>
-     <span data-dc-tpl="96" style="align-self: stretch; width: 1px; background: var(--line);"></span>
-     <button data-dc-tpl="97" data-btn="" title="Redo" class="scp0" style="width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="98" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="99" d="m15 14 5-5-5-5"></path><path data-dc-tpl="100" d="M20 9H9a5 5 0 0 0 0 10h3"></path></svg></button>
-    </div>
-    <div data-dc-tpl="101" style="flex: 1 1 0%; text-align: center; min-width: 0px;">
-     <div data-dc-tpl="102" style="display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;"><span data-dc-tpl="103" style="font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;">User Automation</span><svg data-dc-tpl="104" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="105" d="m6 9 6 6 6-6"></path></svg></div>
-     <div data-dc-tpl="106" style="font-size: 11.5px; color: var(--muted); margin-top: 1px;">Overview of User Workflows</div>
-    </div>
-    <button data-dc-tpl="107" data-btn="" title="Save" class="scp0" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="108" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="109" d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path data-dc-tpl="110" d="M8 3v5h7"></path></svg></button>
-    <button data-dc-tpl="111" data-btn="" title="Share" class="scp0" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="112" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="113" cx="18" cy="5" r="2.6"></circle><circle data-dc-tpl="114" cx="6" cy="12" r="2.6"></circle><circle data-dc-tpl="115" cx="18" cy="19" r="2.6"></circle><path data-dc-tpl="116" d="m8.3 10.7 7.4-4.4M8.3 13.3l7.4 4.4"></path></svg></button>
-    <button data-dc-tpl="117" data-play="" title="Run flow" class="scp1" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; background: var(--brand); color: rgb(255, 255, 255);"><svg data-dc-tpl="118" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path data-dc-tpl="119" d="M7 4.5v15l13-7.5z"></path></svg></button>
-    <button data-dc-tpl="120" data-btn="" title="Close" class="scp0" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="121" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="122" d="M18 6 6 18M6 6l12 12"></path></svg></button>
-   </div>
-
-   
-   <div data-dc-tpl="123" class="ca-scroll" style="flex: 1 1 0%; position: relative; overflow: auto; background-image: radial-gradient(circle, rgb(211, 220, 234) 1px, transparent 1px); background-position-x: ; background-position-y: ; background-size: 22px 22px; background-repeat: ; background-attachment: ; background-origin: ; background-clip: ; background-color: ;">
-    <div data-dc-tpl="124" style="position: relative; width: 892px; height: 712px; margin: 14px auto 0px 110px;">
-
-     
-     <svg data-dc-tpl="125" width="892" height="712" viewBox="0 0 892 712" fill="none" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; inset: 0px; overflow: visible;">
-      
-      <path data-dc-tpl="126" d="M312,41 H190 Q178,41 178,53 V126" stroke="var(--client)" stroke-width="1.7"></path>
-      <path data-dc-tpl="127" d="M528,41 H558 Q570,41 570,53 V126" stroke="var(--green)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="128" d="M300,183 H448" stroke="var(--amber)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="129" d="M570,224 V281 Q570,293 558,293 H536" stroke="var(--data)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="130" d="M414,342 V360" stroke="var(--client)" stroke-width="1.7"></path>
-      <path data-dc-tpl="131" d="M414,458 V476" stroke="var(--client)" stroke-width="1.7"></path>
-      <path data-dc-tpl="132" d="M414,574 V592" stroke="var(--client)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="133" d="M292,293 H180 Q168,293 168,305 V397 Q168,409 180,409 H292" stroke="var(--data)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="134" d="M536,525 H588 Q600,525 600,537 V615 Q600,627 588,627 H524" stroke="var(--data)" stroke-width="1.7"></path>
-      
-      <path data-dc-tpl="135" d="M56,175 V617 Q56,627 66,627 H304" stroke="var(--client)" stroke-width="1.7"></path>
-     </svg>
-     
-     <svg data-dc-tpl="136" width="892" height="712" viewBox="0 0 892 712" fill="none" stroke="#fff" stroke-width="2" style="position: absolute; inset: 0px; overflow: visible; z-index: 5; pointer-events: none;">
-       <circle data-dc-tpl="137" cx="312" cy="41" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="138" cx="178" cy="126" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="139" cx="528" cy="41" r="4" fill="var(--green)"></circle>
-       <circle data-dc-tpl="140" cx="570" cy="126" r="4" fill="var(--green)"></circle>
-       <circle data-dc-tpl="141" cx="300" cy="183" r="4" fill="var(--amber)"></circle>
-       <circle data-dc-tpl="142" cx="448" cy="183" r="4" fill="var(--amber)"></circle>
-       <circle data-dc-tpl="143" cx="570" cy="224" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="144" cx="536" cy="293" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="145" cx="414" cy="351" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="146" cx="414" cy="467" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="147" cx="414" cy="583" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="148" cx="292" cy="293" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="149" cx="292" cy="409" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="150" cx="536" cy="525" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="151" cx="524" cy="627" r="4" fill="var(--data)"></circle>
-       <circle data-dc-tpl="152" cx="56" cy="175" r="4" fill="var(--client)"></circle>
-       <circle data-dc-tpl="153" cx="304" cy="627" r="4" fill="var(--client)"></circle>
-     </svg>
-
-     
-     <div data-dc-tpl="154" data-node="" data-key="init" style="position: absolute; left: 320px; top: 14px; width: 200px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="155" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="156" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="157" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="158" d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle data-dc-tpl="159" cx="12" cy="8" r="4"></circle></svg></span>
-       <div data-dc-tpl="160" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="161" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">User Initializing</div><div data-dc-tpl="162" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Initializing for Automation</div></div>
-      </div>
-     </div>
-
-     
-     <div data-dc-tpl="163" style="position: absolute; left: 123px; top: 69px; background: var(--paper); border: 1.5px solid var(--client); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--ink2); white-space: nowrap;">Initialize Data</div>
-     <div data-dc-tpl="164" style="position: absolute; left: 510px; top: 69px; background: var(--paper); border: 1.5px solid var(--green); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--ink2); white-space: nowrap;">Setup Automation</div>
-
-     
-     <div data-dc-tpl="165" data-node="" data-key="collect" style="position: absolute; left: 64px; top: 134px; width: 228px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="166" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="167" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="168" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse data-dc-tpl="169" cx="12" cy="6" rx="8" ry="3"></ellipse><path data-dc-tpl="170" d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path><path data-dc-tpl="171" d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg></span>
-       <div data-dc-tpl="172" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="173" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Data Collection</div><div data-dc-tpl="174" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Gathering Data Connected</div></div>
-       <svg data-dc-tpl="175" width="15" height="15" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="176" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="177" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="178" cx="19" cy="12" r="1.6"></circle></svg>
-      </div>
-      <div data-dc-tpl="179" style="display: flex; gap: 5px; margin-top: 10px;">
-       <span data-dc-tpl="180" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="181" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--data)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="182" d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"></path><circle data-dc-tpl="183" cx="12" cy="11" r="2"></circle></svg>11</span>
-       <span data-dc-tpl="184" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="185" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="186" d="M4 21V4M4 4h12l-2 4 2 4H4"></path></svg>27</span>
-       <span data-dc-tpl="187" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="188" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="189" d="m5 12 4.5 4.5L19 7"></path></svg>41</span>
-       <span data-dc-tpl="190" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="191" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="192" d="M15 10l5 5-5 5"></path><path data-dc-tpl="193" d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>72</span>
-      </div>
-     </div>
-
-     
-     <div data-dc-tpl="194" style="position: absolute; left: 374px; top: 183px; transform: translate(-50%, -50%); background: var(--amber-tint); border: 1px solid var(--amber-line); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--amber-ink); box-shadow: rgba(16, 24, 40, 0.06) 0px 2px 6px; white-space: nowrap;">Execute Triggered</div>
-
-     
-     <div data-dc-tpl="195" data-node="" data-key="trigger" style="position: absolute; left: 456px; top: 134px; width: 228px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="196" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="197" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="198" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="199" d="M13 2 4 14h6l-1 8 9-12h-6z"></path></svg></span>
-       <div data-dc-tpl="200" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="201" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Trigger Automation</div><div data-dc-tpl="202" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Workflows on Triggers</div></div>
-       <svg data-dc-tpl="203" width="15" height="15" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="204" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="205" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="206" cx="19" cy="12" r="1.6"></circle></svg>
-      </div>
-      <div data-dc-tpl="207" style="display: flex; gap: 5px; margin-top: 10px;">
-       <span data-dc-tpl="208" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="209" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--data)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="210" d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"></path><circle data-dc-tpl="211" cx="12" cy="11" r="2"></circle></svg>11</span>
-       <span data-dc-tpl="212" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="213" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="214" d="M4 21V4M4 4h12l-2 4 2 4H4"></path></svg>27</span>
-       <span data-dc-tpl="215" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="216" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="217" d="m5 12 4.5 4.5L19 7"></path></svg>41</span>
-       <span data-dc-tpl="218" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="219" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="220" d="M15 10l5 5-5 5"></path><path data-dc-tpl="221" d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>72</span>
-      </div>
-     </div>
-
-     
-     <div data-dc-tpl="222" data-node="" data-key="validate" style="position: absolute; left: 300px; top: 252px; width: 228px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="223" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="224" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="225" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="226" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path data-dc-tpl="227" d="m9 12 2 2 4-4"></path></svg></span>
-       <div data-dc-tpl="228" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="229" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Data Validation</div><div data-dc-tpl="230" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Ensuring Data Accuracy</div></div>
-       <svg data-dc-tpl="231" width="15" height="15" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="232" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="233" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="234" cx="19" cy="12" r="1.6"></circle></svg>
-      </div>
-      <div data-dc-tpl="235" style="display: flex; gap: 5px; margin-top: 10px;">
-       <span data-dc-tpl="236" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="237" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--data)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="238" d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"></path><circle data-dc-tpl="239" cx="12" cy="11" r="2"></circle></svg>91</span>
-       <span data-dc-tpl="240" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--amber-ink); background: var(--amber-tint); border: 1px solid var(--amber-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="241" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="242" d="M12 9v4M12 17h.01"></path><path data-dc-tpl="243" d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>18</span>
-       <span data-dc-tpl="244" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="245" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="246" d="m5 12 4.5 4.5L19 7"></path></svg>20</span>
-       <span data-dc-tpl="247" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="248" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="249" d="M15 10l5 5-5 5"></path><path data-dc-tpl="250" d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>21</span>
-      </div>
-     </div>
-
-     <div data-dc-tpl="251" style="position: absolute; left: 168px; top: 351px; transform: translate(-50%, -50%); background: var(--paper); border: 1.5px solid var(--data); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--ink2); white-space: nowrap;">Combine Results</div>
-
-     <div data-dc-tpl="252" style="position: absolute; left: -4px; top: 398px; background: var(--paper); border: 1.5px solid var(--client); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--ink2); white-space: nowrap;">Direct Processing</div>
-
-     
-     <div data-dc-tpl="253" data-node="" data-key="action" style="position: absolute; left: 300px; top: 368px; width: 228px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="254" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="255" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="256" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="257" d="M3 11l18-5-7 18-2-8z"></path></svg></span>
-       <div data-dc-tpl="258" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="259" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Action Trigger</div><div data-dc-tpl="260" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Performing Tasks Conditions</div></div>
-       <svg data-dc-tpl="261" width="15" height="15" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="262" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="263" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="264" cx="19" cy="12" r="1.6"></circle></svg>
-      </div>
-      <div data-dc-tpl="265" style="display: flex; gap: 5px; margin-top: 10px;">
-       <span data-dc-tpl="266" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="267" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--data)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="268" d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"></path><circle data-dc-tpl="269" cx="12" cy="11" r="2"></circle></svg>67</span>
-       <span data-dc-tpl="270" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="271" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="272" d="M4 21V4M4 4h12l-2 4 2 4H4"></path></svg>34</span>
-       <span data-dc-tpl="273" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--red-ink); background: var(--red-tint); border: 1px solid var(--red-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="274" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="275" d="M12 9v4M12 17h.01"></path><path data-dc-tpl="276" d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>17</span>
-       <span data-dc-tpl="277" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="278" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="279" d="M15 10l5 5-5 5"></path><path data-dc-tpl="280" d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>18</span>
-      </div>
-     </div>
-
-
-     
-     <div data-dc-tpl="281" data-node="" data-key="output" style="position: absolute; left: 300px; top: 484px; width: 228px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="282" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="283" style="width: 30px; height: 30px; border-radius: 8px; background: rgb(238, 241, 246); color: rgb(70, 80, 100); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="284" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="285" d="M14 3v5h5"></path><path data-dc-tpl="286" d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path data-dc-tpl="287" d="M9 13h6M9 17h4"></path></svg></span>
-       <div data-dc-tpl="288" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="289" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Output Generation</div><div data-dc-tpl="290" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Compiling Delivering Outputs</div></div>
-       <svg data-dc-tpl="291" width="15" height="15" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="292" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="293" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="294" cx="19" cy="12" r="1.6"></circle></svg>
-      </div>
-      <div data-dc-tpl="295" style="display: flex; gap: 5px; margin-top: 10px;">
-       <span data-dc-tpl="296" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="297" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--data)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="298" d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"></path><circle data-dc-tpl="299" cx="12" cy="11" r="2"></circle></svg>15</span>
-       <span data-dc-tpl="300" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="301" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--client)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="302" d="M4 21V4M4 4h12l-2 4 2 4H4"></path></svg>55</span>
-       <span data-dc-tpl="303" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="304" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="305" d="m5 12 4.5 4.5L19 7"></path></svg>41</span>
-       <span data-dc-tpl="306" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 7px;"><svg data-dc-tpl="307" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="308" d="M15 10l5 5-5 5"></path><path data-dc-tpl="309" d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>69</span>
-      </div>
-     </div>
-
-     <div data-dc-tpl="310" style="position: absolute; left: 600px; top: 576px; transform: translate(-50%, -50%); background: var(--paper); border: 1.5px solid var(--data); border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: var(--ink2); white-space: nowrap;">Finalize</div>
-
-     
-     <div data-dc-tpl="311" data-node="" data-key="complete" style="position: absolute; left: 312px; top: 600px; width: 204px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; cursor: pointer;">
-      <div data-dc-tpl="312" style="display: flex; align-items: center; gap: 9px;">
-       <span data-dc-tpl="313" style="width: 30px; height: 30px; border-radius: 8px; background: var(--green-tint); color: var(--green-ink); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="314" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="315" cx="12" cy="12" r="9"></circle><path data-dc-tpl="316" d="m8.5 12 2.5 2.5 4.5-5"></path></svg></span>
-       <div data-dc-tpl="317" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="318" style="font-size: 13px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap;">Action Completion</div><div data-dc-tpl="319" style="font-size: 11px; color: var(--muted); white-space: nowrap;">Automation Complete</div></div>
-      </div>
-     </div>
-
-    </div>
-   </div>
-
-   
-   <div data-dc-tpl="320" style="height: 46px; flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 0px 18px; border-top: 1px solid var(--line); background: var(--paper);">
-    <button data-dc-tpl="321" data-btn="" title="Fit view" class="scp0" style="width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="322" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="323" cx="11" cy="11" r="7"></circle><path data-dc-tpl="324" d="m21 21-4.3-4.3"></path></svg></button>
-    <button data-dc-tpl="325" data-btn="" title="Grid" class="scp0" style="width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="326" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="327" x="3" y="3" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="328" x="14" y="3" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="329" x="3" y="14" width="7" height="7" rx="1.5"></rect><rect data-dc-tpl="330" x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></button>
-    <span data-dc-tpl="331" style="flex: 1 1 0%;"></span>
-    <button data-dc-tpl="332" data-btn="" class="scp0" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="333" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path data-dc-tpl="334" d="M5 12h14"></path></svg></button>
-    <span data-dc-tpl="335" class="mono" style="font-size: 11.5px; font-weight: 600; color: var(--ink2); min-width: 40px; text-align: center;">100%</span>
-    <button data-dc-tpl="336" data-btn="" class="scp0" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg data-dc-tpl="337" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path data-dc-tpl="338" d="M12 5v14M5 12h14"></path></svg></button>
+  
+  <div data-dc-tpl="35" style="padding: 16px 16px 6px; flex: 1 1 0%; min-height: 0px; display: flex; flex-direction: column; overflow: hidden;">
+   <div data-dc-tpl="36" class="sv-scroll" style="overflow-y: auto; display: flex; flex-direction: column;">
+    <div data-dc-tpl="37" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 0px 0px 8px;">Earlier today</div>
+    <a data-dc-tpl="38" data-rec="" data-on="" href="#" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; background: rgb(239, 237, 248); color: rgb(26, 24, 40); font-size: 12.5px; font-weight: 600;"><span data-dc-tpl="39" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(108, 92, 231); flex: 0 0 auto;"></span><span data-dc-tpl="40" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Q3 churn analysis &amp; summary</span></a>
+    <a data-dc-tpl="41" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="42" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="43" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Refactor onboarding email sequence</span></a>
+    <a data-dc-tpl="44" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="45" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="46" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Competitor pricing teardown</span></a>
+    <div data-dc-tpl="47" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 16px 0px 8px;">Previous 7 days</div>
+    <a data-dc-tpl="48" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="49" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="50" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Draft RFP response — Halden</span></a>
+    <a data-dc-tpl="51" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="52" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="53" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Weekly metrics digest</span></a>
+    <a data-dc-tpl="54" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="55" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="56" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Summarize support tickets → themes</span></a>
+    <a data-dc-tpl="57" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="58" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="59" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Rewrite landing hero — 3 options</span></a>
    </div>
   </div>
 
   
-  <aside data-dc-tpl="339" class="ca-scroll" style="width: 316px; flex: 0 0 auto; overflow: auto; border-left: 1px solid var(--line); background: var(--paper); padding: 18px 16px 24px;">
-   <div data-dc-tpl="340" style="display: flex; align-items: flex-start; justify-content: space-between;">
-    <div data-dc-tpl="341"><div data-dc-tpl="342" style="font-size: 15px; font-weight: 700; letter-spacing: -0.01em;">Performance Overview</div><div data-dc-tpl="343" style="font-size: 11.5px; color: var(--muted); margin-top: 2px;">Overview Performance Time</div></div>
-    <button data-dc-tpl="344" data-btn="" class="scp0" style="width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="345" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="346" d="M18 6 6 18M6 6l12 12"></path></svg></button>
+  <div data-dc-tpl="60" style="margin: 10px 12px 12px; padding: 9px 11px; background: rgb(255, 255, 255); border-radius: 13px; box-shadow: rgba(20, 18, 31, 0.06) 0px 1px 3px; display: flex; align-items: center; gap: 10px;">
+   <span data-dc-tpl="61" style="width: 30px; height: 30px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EV</span>
+   <div data-dc-tpl="62" style="line-height: 1.25; flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="63" style="font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Elias Vance</div><div data-dc-tpl="64" style="font-size: 10.5px; color: rgb(157, 153, 175); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">elias.vance@halden.co</div></div>
+   <svg data-dc-tpl="65" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#bdb9cd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="66" d="m8 9 4-4 4 4"></path><path data-dc-tpl="67" d="m8 15 4 4 4-4"></path></svg>
+  </div>
+ </aside>
+
+ 
+ <main data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; height: 936px; margin: 12px 12px 12px 0px; background: rgb(251, 250, 253); border: 1px solid rgb(231, 228, 242); border-radius: 18px; overflow: hidden;">
+
+  
+  <div data-dc-tpl="69" style="flex: 0 0 auto; height: 60px; display: flex; align-items: center; gap: 12px; padding: 0px 24px;">
+   <button data-dc-tpl="70" data-model="" class="scp3" style="display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0px 13px; border-radius: 11px; border: 0px; background: rgb(255, 255, 255); box-shadow: rgba(20, 18, 31, 0.08) 0px 1px 3px; cursor: pointer; font-family: inherit;">
+    <span data-dc-tpl="71" style="width: 18px; height: 18px; border-radius: 6px; flex: 0 0 auto; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+    <span data-dc-tpl="72" style="font-size: 13px; font-weight: 600; color: rgb(26, 24, 40); white-space: nowrap;">Sevrin 4o</span>
+    <svg data-dc-tpl="73" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="74" d="m6 9 6 6 6-6"></path></svg>
+   </button>
+   <span data-dc-tpl="75" style="font-size: 10.5px; color: rgb(168, 164, 186); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span data-dc-tpl="76" style="width: 6px; height: 6px; border-radius: 50%; background: rgb(54, 192, 138);"></span>4 tools connected</span>
+   <div data-dc-tpl="77" style="flex: 1 1 0%;"></div>
+   <button data-dc-tpl="78" data-top="" class="scp4" style="width: 38px; height: 38px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); cursor: pointer; color: rgb(111, 108, 130); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="79" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="80" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path data-dc-tpl="81" d="M16 6l-4-4-4 4M12 2v14"></path></svg></button>
+   <button data-dc-tpl="82" data-top="" class="scp5" style="display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 0px; background: rgb(23, 21, 34); cursor: pointer; color: rgb(255, 255, 255); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap;"><svg data-dc-tpl="83" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path data-dc-tpl="84" d="M12 5v14M5 12h14"></path></svg>New chat</button>
+   <span data-dc-tpl="85" style="width: 34px; height: 34px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EV</span>
+  </div>
+
+  
+  <div data-dc-tpl="86" class="sv-scroll" style="flex: 1 1 0%; overflow-y: auto; padding: 28px 24px 8px;">
+   <div data-dc-tpl="87" style="max-width: 720px; margin: 0px auto;">
+
+    <div data-dc-tpl="88" style="text-align: center; margin-bottom: 26px;"><span data-dc-tpl="89" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(189, 185, 205);">Today · 9:42 AM</span></div>
+
+    
+    <div data-dc-tpl="90" style="display: flex; justify-content: flex-end; gap: 11px; margin-bottom: 30px;">
+     <div data-dc-tpl="91" style="max-width: 540px; background: rgb(241, 238, 251); border-radius: 16px 16px 5px; padding: 13px 16px; font-size: 14px; line-height: 1.55; color: rgb(42, 39, 64);">Compare Q2 vs Q3 churn, find the top 3 drivers, and draft a 4-line summary for Thursday's leadership update.</div>
+     <span data-dc-tpl="92" style="width: 30px; height: 30px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: 2px;">EV</span>
+    </div>
+
+    
+    <div data-dc-tpl="93" style="display: flex; gap: 13px;">
+     <span data-dc-tpl="94" style="width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; margin-top: 1px; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+     <div data-dc-tpl="95" style="flex: 1 1 0%; min-width: 0px;">
+      <div data-dc-tpl="96" style="display: flex; align-items: center; gap: 9px; margin-bottom: 12px;"><span data-dc-tpl="97" style="font-size: 13px; font-weight: 700; color: rgb(26, 24, 40);">Sevrin</span><span data-dc-tpl="98" style="font-size: 10px; color: rgb(168, 164, 186);">Reason 2.5</span></div>
+
+      
+      <button data-dc-tpl="99" data-think="" class="scp6" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0px 12px; border-radius: 10px; border: 1px solid rgb(235, 233, 243); background: rgb(250, 249, 254); cursor: pointer; font-family: inherit; margin-bottom: 12px;">
+       <svg data-dc-tpl="100" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="101" d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.2V17h6v-1.3c0-.8.4-1.6 1-2.2A6 6 0 0 0 12 3z"></path><path data-dc-tpl="102" d="M9 21h6"></path></svg>
+       <span data-dc-tpl="103" style="font-size: 12px; color: rgb(86, 83, 106); font-weight: 600; white-space: nowrap;">Thought for 7s</span>
+       <svg data-dc-tpl="104" data-chev="" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a8a4ba" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="105" d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <div data-dc-tpl="106" data-trace="" style="display: none; border-left: 2px solid rgb(235, 233, 243); margin: 0px 0px 14px 4px; padding: 2px 0px 2px 14px; font-size: 11.5px; line-height: 1.75; color: rgb(138, 134, 153);">
+       · Pulled churn by cohort for Q2 and Q3 from Analytics<br data-dc-tpl="107">
+       · Normalized for seasonality, isolated mid-market segment<br data-dc-tpl="108">
+       · Cross-referenced exit-survey reasons and support SLAs<br data-dc-tpl="109">
+       · Ranked drivers by share of churned ARR
+      </div>
+
+      
+      <div data-dc-tpl="110" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+       <span data-dc-tpl="111" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="112" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="113" d="m5 12 4 4 10-11"></path></svg>Queried analytics<span data-dc-tpl="114" style="font-size: 10px; color: rgb(168, 164, 186);">2 cohorts</span></span>
+       <span data-dc-tpl="115" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="116" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="117" d="m5 12 4 4 10-11"></path></svg>Ran retention analysis</span>
+       <span data-dc-tpl="118" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="119" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="120" d="m5 12 4 4 10-11"></path></svg>Read 2 strategy docs</span>
+      </div>
+
+      
+      <div data-dc-tpl="121" style="font-size: 14.5px; line-height: 1.64; color: rgb(51, 48, 63);">
+       Net churn rose from <b data-dc-tpl="122" style="color: rgb(26, 24, 40); font-weight: 700;">3.1%</b> in Q2 to <b data-dc-tpl="123" style="color: rgb(26, 24, 40); font-weight: 700;">4.4%</b> in Q3 — a 1.3-point increase, concentrated almost entirely in mid-market accounts.
+      </div>
+
+      
+      <div data-dc-tpl="124" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 18px 0px 10px;">Top 3 drivers</div>
+      <div data-dc-tpl="125" style="display: flex; flex-direction: column; gap: 9px;">
+       <div data-dc-tpl="126" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="127" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">01</span>
+        <div data-dc-tpl="128" style="flex: 1 1 0%;"><div data-dc-tpl="129" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Onboarding drop-off</div><div data-dc-tpl="130" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">41% of churned accounts never completed setup</div></div>
+        <span data-dc-tpl="131" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+12 pts</span>
+       </div>
+       <div data-dc-tpl="132" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="133" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">02</span>
+        <div data-dc-tpl="134" style="flex: 1 1 0%;"><div data-dc-tpl="135" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Renewal pricing friction</div><div data-dc-tpl="136" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">Annual uplift flagged in 28% of exit surveys</div></div>
+        <span data-dc-tpl="137" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+7 pts</span>
+       </div>
+       <div data-dc-tpl="138" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="139" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">03</span>
+        <div data-dc-tpl="140" style="flex: 1 1 0%;"><div data-dc-tpl="141" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Slow support response</div><div data-dc-tpl="142" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">Median first reply slipped to 9h in Q3</div></div>
+        <span data-dc-tpl="143" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+4 pts</span>
+       </div>
+      </div>
+
+      
+      <div data-dc-tpl="144" style="font-size: 14.5px; line-height: 1.64; color: rgb(51, 48, 63); margin: 18px 0px 12px;">I drafted the 4-line summary below — review it, then I can post it or save it for you.</div>
+      <div data-dc-tpl="145" style="border: 1px solid rgb(236, 235, 244); border-radius: 14px; background: rgb(250, 249, 254); overflow: hidden;">
+       <div data-dc-tpl="146" style="display: flex; align-items: center; gap: 8px; padding: 11px 15px; border-bottom: 1px solid rgb(236, 235, 244); background: rgb(255, 255, 255);"><svg data-dc-tpl="147" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="148" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path data-dc-tpl="149" d="M14 3v5h5"></path></svg><span data-dc-tpl="150" style="font-size: 10.5px; letter-spacing: 0.06em; color: rgb(157, 153, 175);">Leadership update — draft</span></div>
+       <div data-dc-tpl="151" style="padding: 14px 16px; font-size: 13.5px; line-height: 1.72; color: rgb(74, 71, 89);">
+        Q3 net churn reached 4.4%, up 1.3 points from Q2, driven by mid-market accounts.<br data-dc-tpl="152">
+        The largest factor is onboarding drop-off — 41% of churned accounts never finished setup.<br data-dc-tpl="153">
+        Renewal pricing friction and a 9-hour median support reply time compounded the trend.<br data-dc-tpl="154">
+        Recommended next step: a mid-market onboarding fix and an SLA review before Q4.
+       </div>
+      </div>
+
+      
+      <div data-dc-tpl="155" style="display: flex; align-items: center; gap: 9px; margin-top: 14px; flex-wrap: wrap;">
+       <button data-dc-tpl="156" data-do="" class="scp1" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;"><svg data-dc-tpl="157" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="158" d="m22 2-7 20-4-9-9-4z"></path><path data-dc-tpl="159" d="M22 2 11 13"></path></svg>Post to #leadership</button>
+       <button data-dc-tpl="160" data-do2="" class="scp7" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); color: rgb(51, 48, 63); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;"><svg data-dc-tpl="161" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="162" d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Save to Q3 Review doc</button>
+       <button data-dc-tpl="163" data-do2="" class="scp4" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 14px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); color: rgb(111, 108, 130); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;"><svg data-dc-tpl="164" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="165" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path data-dc-tpl="166" d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg>Edit draft</button>
+       <span data-dc-tpl="167" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: rgb(157, 153, 175); margin-left: 2px;"><svg data-dc-tpl="168" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="169" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Sevrin asks before it sends</span>
+      </div>
+
+      
+      <div data-dc-tpl="170" style="display: flex; align-items: center; gap: 5px; margin-top: 16px;">
+       <button data-dc-tpl="171" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="172" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="173" x="9" y="9" width="11" height="11" rx="2"></rect><path data-dc-tpl="174" d="M5 15V5a2 2 0 0 1 2-2h8"></path></svg></button>
+       <button data-dc-tpl="175" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="176" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="177" d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zM7 11l4-7a2 2 0 0 1 2 2v3h5a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 16.6 20H7"></path></svg></button>
+       <button data-dc-tpl="178" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="179" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="180" d="M17 13v8H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zM17 13l-4 7a2 2 0 0 1-2-2v-3H6a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 7.4 4H17"></path></svg></button>
+       <button data-dc-tpl="181" data-ra="" class="scp2" style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0px 11px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); font-family: inherit; font-size: 12px; font-weight: 500;"><svg data-dc-tpl="182" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="183" d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path data-dc-tpl="184" d="M21 3v5h-5"></path></svg>Retry</button>
+      </div>
+
+     </div>
+    </div>
+
    </div>
+  </div>
 
-   <div data-dc-tpl="347" style="display: flex; align-items: center; justify-content: space-between; margin: 20px 0px 9px;"><span data-dc-tpl="348" style="font-size: 13px; font-weight: 600; color: var(--ink);">Insight Metrics</span><button data-dc-tpl="349" data-btn="" class="scp0" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="350" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="351" d="M12 5v14M5 12h14"></path></svg></button></div>
-   <div data-dc-tpl="352" style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--canvas);">
-    <svg data-dc-tpl="353" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="1.9" stroke-linecap="round"><circle data-dc-tpl="354" cx="11" cy="11" r="7"></circle><path data-dc-tpl="355" d="m21 21-4.3-4.3"></path></svg>
-    <span data-dc-tpl="356" style="flex: 1 1 0%; font-size: 12.5px; color: var(--faint);">Search Here...</span>
-    <svg data-dc-tpl="357" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="358" d="M3 6h18M7 12h10M11 18h2"></path></svg>
+  
+  <div data-dc-tpl="185" style="flex: 0 0 auto; padding: 10px 24px 18px;">
+   <div data-dc-tpl="186" style="max-width: 720px; margin: 0px auto;">
+    <div data-dc-tpl="187" data-input="" class="scp8" style="border: 1px solid rgb(227, 224, 240); border-radius: 20px; background: rgb(255, 255, 255); padding: 16px 16px 12px; box-shadow: rgba(108, 92, 231, 0.07) 0px 4px 22px;">
+     <div data-dc-tpl="188" style="font-size: 15px; color: rgb(157, 153, 175); padding: 2px 4px 16px; line-height: 1.5;">Ask anything or give a task…<span data-dc-tpl="189" style="display: inline-block; width: 2px; height: 18px; background: rgb(108, 92, 231); vertical-align: -4px; margin-left: 1px;"></span></div>
+     <div data-dc-tpl="190" style="display: flex; align-items: center; gap: 8px;">
+      <button data-dc-tpl="191" data-plus="" class="scp4" style="width: 38px; height: 38px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); cursor: pointer; color: rgb(111, 108, 130); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="192" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="193" d="M12 5v14M5 12h14"></path></svg></button>
+      <div data-dc-tpl="194" style="flex: 1 1 0%;"></div>
+      <button data-dc-tpl="195" data-send="" class="scp1" style="width: 38px; height: 38px; border-radius: 11px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="196" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="197" d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
+     </div>
+    </div>
+    <div data-dc-tpl="198" style="text-align: center; font-size: 11px; color: rgb(189, 185, 205); margin-top: 9px;">Sevrin can take actions in connected apps. It pauses for your approval before anything is sent.</div>
    </div>
+  </div>
 
-   <div data-dc-tpl="359" style="border: 1px solid var(--line); border-radius: 9px; padding: 12px 13px; margin-top: 18px;">
-    <div data-dc-tpl="360" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-     <div data-dc-tpl="361" style="font-size: 13px; font-weight: 600;">Automation Coverage</div>
-     <button data-dc-tpl="362" data-btn="" class="scp0" style="width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="363" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="364" d="M18 6 6 18M6 6l12 12"></path></svg></button>
-    </div>
-    <div data-dc-tpl="365" style="font-size: 11.5px; color: var(--muted);">Your last week is better <b data-dc-tpl="366" style="color: var(--brand-deep); font-weight: 600;">72%</b></div>
-   </div>
-
-   
-   <div data-dc-tpl="367" style="border: 1px solid var(--line); border-radius: 9px; padding: 12px 13px; margin-top: 12px;">
-    <div data-dc-tpl="368" style="display: flex; align-items: baseline; justify-content: space-between;"><span data-dc-tpl="369" style="font-size: 12.5px; font-weight: 600;">Workflow A</span><button data-dc-tpl="370" data-btn="" class="scp0" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="371" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="372" d="M12 5v14M5 12h14"></path></svg></button></div>
-    <div data-dc-tpl="373" style="font-size: 11px; color: var(--muted); margin-top: 1px;">Triggered by User Actions</div>
-    <div data-dc-tpl="374" style="display: flex; gap: 2px; height: 8px; border-radius: 99px; overflow: hidden; margin-top: 9px;">
-     <span data-dc-tpl="375" style="flex: 28 1 0%; background: var(--red);"></span><span data-dc-tpl="376" style="flex: 10 1 0%; background: var(--client);"></span><span data-dc-tpl="377" style="flex: 13 1 0%; background: var(--green);"></span>
-    </div>
-    <div data-dc-tpl="378" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px;">
-     <span data-dc-tpl="379" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--red-ink); background: rgb(255, 255, 255); border: 1px solid var(--red-line); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="380" style="width: 6px; height: 6px; border-radius: 50%; background: var(--red);"></span>Task: 28</span>
-     <span data-dc-tpl="381" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: rgb(74, 95, 192); background: rgb(255, 255, 255); border: 1px solid rgb(205, 214, 245); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="382" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>Exec: 10</span>
-     <span data-dc-tpl="383" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--green-ink); background: rgb(255, 255, 255); border: 1px solid var(--green-line); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="384" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>Done: 13</span>
-    </div>
-   </div>
-
-   
-   <div data-dc-tpl="385" style="border: 1px solid var(--line); border-radius: 9px; padding: 12px 13px; margin-top: 9px;">
-    <div data-dc-tpl="386" style="display: flex; align-items: baseline; justify-content: space-between;"><span data-dc-tpl="387" style="font-size: 12.5px; font-weight: 600;">Workflow B</span><button data-dc-tpl="388" data-btn="" class="scp0" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="389" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="390" d="M12 5v14M5 12h14"></path></svg></button></div>
-    <div data-dc-tpl="391" style="font-size: 11px; color: var(--muted); margin-top: 1px;">Scheduled Automation</div>
-    <div data-dc-tpl="392" style="display: flex; gap: 2px; height: 8px; border-radius: 99px; overflow: hidden; margin-top: 9px;">
-     <span data-dc-tpl="393" style="flex: 10 1 0%; background: var(--red);"></span><span data-dc-tpl="394" style="flex: 33 1 0%; background: var(--client);"></span><span data-dc-tpl="395" style="flex: 17 1 0%; background: var(--green);"></span>
-    </div>
-    <div data-dc-tpl="396" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px;">
-     <span data-dc-tpl="397" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--red-ink); background: rgb(255, 255, 255); border: 1px solid var(--red-line); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="398" style="width: 6px; height: 6px; border-radius: 50%; background: var(--red);"></span>Task: 10</span>
-     <span data-dc-tpl="399" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: rgb(74, 95, 192); background: rgb(255, 255, 255); border: 1px solid rgb(205, 214, 245); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="400" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>Exec: 33</span>
-     <span data-dc-tpl="401" style="display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--green-ink); background: rgb(255, 255, 255); border: 1px solid var(--green-line); border-radius: 99px; padding: 2px 8px; white-space: nowrap; flex: 0 0 auto;"><span data-dc-tpl="402" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>Done: 17</span>
-    </div>
-   </div>
-
-   <div data-dc-tpl="403" style="display: flex; align-items: center; justify-content: space-between; margin: 22px 0px 10px;"><span data-dc-tpl="404" style="font-size: 13px; font-weight: 600; color: var(--ink);">Flow Objectives</span><button data-dc-tpl="405" data-btn="" class="scp0" style="width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--faint);"><svg data-dc-tpl="406" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path data-dc-tpl="407" d="M12 5v14M5 12h14"></path></svg></button></div>
-
-   <div data-dc-tpl="408" data-objrow="" data-target="output" class="scp2" style="border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; margin-bottom: 9px; cursor: pointer;">
-    <div data-dc-tpl="409" style="display: flex; align-items: center; gap: 9px;">
-     <span data-dc-tpl="410" style="width: 28px; height: 28px; border-radius: 8px; background: var(--brand-tint); color: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="411" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="412" d="M14 3v5h5"></path><path data-dc-tpl="413" d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg></span>
-     <div data-dc-tpl="414" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="415" style="font-size: 12.5px; font-weight: 600; white-space: nowrap;">Output Generation</div><div data-dc-tpl="416" style="font-size: 10.5px; color: var(--muted); white-space: nowrap;">Compiling Delivering Outputs</div></div>
-     <svg data-dc-tpl="417" width="14" height="14" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="418" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="419" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="420" cx="19" cy="12" r="1.5"></circle></svg>
-    </div>
-    <div data-dc-tpl="421" style="display: flex; gap: 5px; margin-top: 9px;">
-     <span data-dc-tpl="422" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="423" style="width: 6px; height: 6px; border-radius: 50%; background: var(--data);"></span>15</span>
-     <span data-dc-tpl="424" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="425" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>55</span>
-     <span data-dc-tpl="426" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="427" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>41</span>
-     <span data-dc-tpl="428" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="429" style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand);"></span>69</span>
-    </div>
-   </div>
-
-   <div data-dc-tpl="430" data-objrow="" data-target="trigger" class="scp2" style="border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; margin-bottom: 9px; cursor: pointer;">
-    <div data-dc-tpl="431" style="display: flex; align-items: center; gap: 9px;">
-     <span data-dc-tpl="432" style="width: 28px; height: 28px; border-radius: 8px; background: var(--brand-tint); color: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="433" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="434" d="M13 2 4 14h6l-1 8 9-12h-6z"></path></svg></span>
-     <div data-dc-tpl="435" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="436" style="font-size: 12.5px; font-weight: 600; white-space: nowrap;">Trigger Automation</div><div data-dc-tpl="437" style="font-size: 10.5px; color: var(--muted); white-space: nowrap;">Workflows on Triggers</div></div>
-     <svg data-dc-tpl="438" width="14" height="14" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="439" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="440" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="441" cx="19" cy="12" r="1.5"></circle></svg>
-    </div>
-    <div data-dc-tpl="442" style="display: flex; gap: 5px; margin-top: 9px;">
-     <span data-dc-tpl="443" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="444" style="width: 6px; height: 6px; border-radius: 50%; background: var(--data);"></span>11</span>
-     <span data-dc-tpl="445" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="446" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>27</span>
-     <span data-dc-tpl="447" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="448" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>41</span>
-     <span data-dc-tpl="449" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="450" style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand);"></span>72</span>
-    </div>
-   </div>
-
-   <div data-dc-tpl="451" data-objrow="" data-target="action" class="scp2" style="border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; margin-bottom: 9px; cursor: pointer;">
-    <div data-dc-tpl="452" style="display: flex; align-items: center; gap: 9px;">
-     <span data-dc-tpl="453" style="width: 28px; height: 28px; border-radius: 8px; background: var(--brand-tint); color: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="454" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="455" d="M3 11l18-5-7 18-2-8z"></path></svg></span>
-     <div data-dc-tpl="456" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="457" style="font-size: 12.5px; font-weight: 600; white-space: nowrap;">Action Trigger</div><div data-dc-tpl="458" style="font-size: 10.5px; color: var(--muted); white-space: nowrap;">Performing Tasks Conditions</div></div>
-     <svg data-dc-tpl="459" width="14" height="14" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="460" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="461" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="462" cx="19" cy="12" r="1.5"></circle></svg>
-    </div>
-    <div data-dc-tpl="463" style="display: flex; gap: 5px; margin-top: 9px;">
-     <span data-dc-tpl="464" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="465" style="width: 6px; height: 6px; border-radius: 50%; background: var(--data);"></span>87</span>
-     <span data-dc-tpl="466" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="467" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>34</span>
-     <span data-dc-tpl="468" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--red-ink); background: var(--red-tint); border: 1px solid var(--red-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="469" style="width: 6px; height: 6px; border-radius: 50%; background: rgb(207, 65, 55);"></span>18</span>
-    </div>
-   </div>
-
-   <div data-dc-tpl="470" data-objrow="" data-target="validate" class="scp2" style="border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; margin-bottom: 9px; cursor: pointer;">
-    <div data-dc-tpl="471" style="display: flex; align-items: center; gap: 9px;">
-     <span data-dc-tpl="472" style="width: 28px; height: 28px; border-radius: 8px; background: var(--brand-tint); color: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="473" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="474" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path data-dc-tpl="475" d="m9 12 2 2 4-4"></path></svg></span>
-     <div data-dc-tpl="476" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="477" style="font-size: 12.5px; font-weight: 600; white-space: nowrap;">Data Validation</div><div data-dc-tpl="478" style="font-size: 10.5px; color: var(--muted); white-space: nowrap;">Ensuring Data Accuracy</div></div>
-     <svg data-dc-tpl="479" width="14" height="14" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="480" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="481" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="482" cx="19" cy="12" r="1.5"></circle></svg>
-    </div>
-    <div data-dc-tpl="483" style="display: flex; gap: 5px; margin-top: 9px;">
-     <span data-dc-tpl="484" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="485" style="width: 6px; height: 6px; border-radius: 50%; background: var(--data);"></span>91</span>
-     <span data-dc-tpl="486" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--amber-ink); background: var(--amber-tint); border: 1px solid var(--amber-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="487" style="width: 6px; height: 6px; border-radius: 50%; background: var(--amber);"></span>18</span>
-     <span data-dc-tpl="488" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="489" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>20</span>
-     <span data-dc-tpl="490" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="491" style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand);"></span>21</span>
-    </div>
-   </div>
-
-   <div data-dc-tpl="492" data-objrow="" data-target="init" class="scp2" style="border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; cursor: pointer;">
-    <div data-dc-tpl="493" style="display: flex; align-items: center; gap: 9px;">
-     <span data-dc-tpl="494" style="width: 28px; height: 28px; border-radius: 8px; background: var(--brand-tint); color: var(--brand); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="495" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="496" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle data-dc-tpl="497" cx="9" cy="7" r="4"></circle><path data-dc-tpl="498" d="M19 8v6M22 11h-6"></path></svg></span>
-     <div data-dc-tpl="499" style="flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="500" style="font-size: 12.5px; font-weight: 600; white-space: nowrap;">Registration Form</div><div data-dc-tpl="501" style="font-size: 10.5px; color: var(--muted); white-space: nowrap;">User registration process</div></div>
-     <svg data-dc-tpl="502" width="14" height="14" viewBox="0 0 24 24" fill="var(--faint)"><circle data-dc-tpl="503" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="504" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="505" cx="19" cy="12" r="1.5"></circle></svg>
-    </div>
-    <div data-dc-tpl="506" style="display: flex; gap: 5px; margin-top: 9px;">
-     <span data-dc-tpl="507" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="508" style="width: 6px; height: 6px; border-radius: 50%; background: var(--data);"></span>11</span>
-     <span data-dc-tpl="509" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="510" style="width: 6px; height: 6px; border-radius: 50%; background: var(--client);"></span>27</span>
-     <span data-dc-tpl="511" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: var(--green-ink); background: var(--green-tint); border: 1px solid var(--green-line); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="512" style="width: 6px; height: 6px; border-radius: 50%; background: var(--green);"></span>41</span>
-     <span data-dc-tpl="513" style="display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; color: rgb(91, 74, 208); background: var(--brand-tint); border: 1px solid var(--brand-tint2); border-radius: 8px; padding: 2px 6px;"><span data-dc-tpl="514" style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand);"></span>72</span>
-    </div>
-   </div>
-
-  </aside>
- </div></div></div></div>
+ </main></div></div></div>
 
 
 

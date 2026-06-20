@@ -285,21 +285,21 @@ const AI_AGENT: TemplateCatalogItem = {
   name: "AI Operations Agent",
   category: "AI agents & automation",
   summary:
-    "An autonomous agent that runs a multi-step process for you — reading inputs, taking actions, and pausing for human approval on the calls that matter.",
-  bestFit: ["Back-office automation", "Ops & finance teams", "Document-heavy workflows"],
+    "A conversational AI assistant that takes a task, reasons over your data and tools, and produces the work — drafts, analysis, answers — with you reviewing before anything ships.",
+  bestFit: ["Ops & analytics", "Knowledge work", "Drafting & research"],
   includes: [
-    "Run console — step-by-step execution",
-    "Human-in-the-loop approvals",
-    "Tool & system integrations",
-    "Run history & audit trail",
+    "Conversational task interface",
+    "Reasoning + multi-tool use (your data, docs, apps)",
+    "Drafts, analysis & answers as output",
+    "Chat history & connected tools",
   ],
-  extensions: ["Knowledge retrieval (RAG)", "Scheduled & triggered runs", "Multi-agent orchestration", "Guardrails & evals"],
+  extensions: ["Knowledge retrieval (RAG)", "Scheduled & triggered runs", "Human approval gates", "Guardrails & evals"],
   useWhen:
-    "A repetitive, multi-step process (triage, document processing, data entry, routing) eats your team's time and the rules are clear enough to delegate — with a human approving the exceptions.",
+    "You want to hand recurring analysis, drafting, and lookups to an AI that can use your own tools and data — and you want to review its work before it goes out.",
   notIdealWhen:
-    "The task needs human judgment at every step, or there's no reliable data and tools for the agent to act on yet.",
+    "The task needs human judgment at every step, or there's no reliable data and tools for the assistant to draw on yet.",
   baselinePromise:
-    "Gives you an agent runtime with execution steps, human approvals, integrations, and an audit trail, so the custom work can focus on your specific workflow and guardrails.",
+    "Gives you a conversational agent that reasons, uses your tools, and shows its work, so the custom work can focus on your data, integrations, and guardrails.",
   prompt: "Use the AI Operations Agent template as a starting point for our automation.",
 };
 

@@ -386,55 +386,43 @@ function CrmMockup({ enhanced }: { enhanced: boolean }) {
 }
 
 function AgentMockup({ enhanced }: { enhanced: boolean }) {
-  const steps = [
-    { label: "Read invoice", done: true },
-    { label: "Match to PO", done: true },
-    { label: "Check amounts", done: true },
-    { label: "Needs approval", gate: true },
-    { label: "Process payment", pending: true },
-  ];
+  const tools = ["Queried data", "Ran analysis", "Read 2 docs"];
   return (
     <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden p-3.5">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[10px] font-mono text-muted-foreground">agent run</span>
+      <div className="mb-2.5 flex items-center justify-between">
+        <span className="text-[10px] font-mono text-muted-foreground">assistant</span>
         <span
           className="rounded-full px-2 py-0.5 text-[9px]"
           style={{ backgroundColor: siteTones.brand.surface, color: siteTones.brand.accent }}
         >
-          running
+          4 tools
         </span>
       </div>
-      <div className="space-y-2">
-        {steps.map((s, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <span
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px]"
-              style={
-                s.gate
-                  ? { backgroundColor: siteTones.services.surface, color: siteTones.services.accent }
-                  : s.done
-                    ? { backgroundColor: siteTones.brand.surface, color: siteTones.brand.accent }
-                    : { border: "1px solid var(--border)" }
-              }
-            >
-              {s.done ? "✓" : ""}
-            </span>
-            {s.gate ? (
-              <div
-                className="flex-1 rounded-md px-2 py-1 text-[8px] font-medium transition-all duration-300"
-                style={{
-                  backgroundColor: siteTones.services.surface,
-                  color: siteTones.services.accent,
-                  transform: enhanced ? "translateX(2px)" : "none",
-                }}
-              >
-                Approve / Reject
-              </div>
-            ) : (
-              <div className="h-1.5 rounded bg-foreground/10" style={{ width: s.pending ? "45%" : `${60 + i * 6}%` }} />
-            )}
-          </div>
+      <div className="mb-2.5 flex justify-end">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-foreground px-2.5 py-1.5 text-[9px] text-background">
+          Analyze Q3 churn &amp; draft a summary
+        </div>
+      </div>
+      <div className="mb-1.5 text-[8px] text-muted-foreground">Thought for 7s</div>
+      <div className="mb-2.5 flex flex-wrap gap-1">
+        {tools.map((t, i) => (
+          <span
+            key={t}
+            className="flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 text-[8px] transition-all duration-300"
+            style={{
+              color: siteTones.brand.accent,
+              backgroundColor: siteTones.brand.surface,
+              transform: enhanced ? `translateY(${-i}px)` : "none",
+            }}
+          >
+            ✓ {t}
+          </span>
         ))}
+      </div>
+      <div className="rounded-md border border-border p-2">
+        <div className="mb-1.5 h-1.5 w-2/3 rounded bg-foreground/25" />
+        <div className="mb-1 h-1.5 w-full rounded bg-foreground/10" />
+        <div className="h-1.5 w-4/5 rounded bg-foreground/10" />
       </div>
     </div>
   );
