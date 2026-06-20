@@ -37,8 +37,14 @@ export function hashEmail(email) {
  *   studio_message_feedback → studio_message (CASCADE)
  *   proposal_review_event   → proposal_request (CASCADE)
  *   workspace_update        → client_workspace (CASCADE)
+ *   client_comment          → client_workspace (CASCADE)            (v3 §9)
+ *   client_request          → client_workspace (CASCADE)            (v3 §9)
+ *   client_request_update   → client_request   (CASCADE)            (v3 §9 B.5a)
+ *   client_request_attachment → client_request (CASCADE)            (v3 §9 B.5b)
  *
  * All deleted by a single DELETE FROM studio_session WHERE id IN (...).
+ * NOTE: client_request_attachment's Storage BLOBS are NOT reachable by the SQL
+ * cascade — they are deleted separately in gdpr-hard-delete.mjs.
  */
 export const CASCADE_DELETED_TABLES = [
   "studio_session",
@@ -51,6 +57,10 @@ export const CASCADE_DELETED_TABLES = [
   "proposal_review_event",     // transitive via proposal_request
   "client_workspace",
   "workspace_update",          // transitive via client_workspace
+  "client_comment",            // transitive via client_workspace (v3 §9)
+  "client_request",            // transitive via client_workspace (v3 §9)
+  "client_request_update",     // transitive via client_request (v3 §9 B.5a)
+  "client_request_attachment", // transitive via client_request (v3 §9 B.5b)
   "payment_event",
 ];
 
@@ -174,4 +184,25 @@ export function formatPlanSummary(plan) {
   lines.push("");
   lines.push(`Snapshot path: ${plan.snapshotPath}`);
   return lines.join("\n");
+}
+
+/**
+ * Bucket holding B.5b client-request attachments (private). The SQL cascade
+ * deletes the `client_request_attachment` rows, but the Storage objects are not
+ * reachable by a cascade — they must be removed separately. See
+ * gdpr-hard-delete.mjs (`deleteAttachmentBlobs`).
+ */
+export const ATTACHMENT_STORAGE_BUCKET = "client-request-attachments";
+
+/**
+ * Encode a Storage object key for a REST URL: percent-encode each path segment
+ * but keep the slashes (the folder structure is significant). Mirrors
+ * `encodeStorageKey` in lib/maxwell/attachment-storage.ts so the GDPR delete
+ * targets the exact same object the upload created.
+ */
+export function encodeStorageObjectKey(key) {
+  return key
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
 }

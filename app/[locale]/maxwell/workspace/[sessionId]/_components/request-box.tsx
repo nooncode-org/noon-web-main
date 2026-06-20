@@ -25,8 +25,15 @@ import {
   type ClientRequestPriority,
   type ClientRequestType,
 } from "@/lib/maxwell/client-requests";
+import {
+  ATTACHMENT_MIME_ALLOWLIST,
+  ATTACHMENTS_ENABLED,
+  isAllowedAttachmentMime,
+  isValidAttachmentSize,
+} from "@/lib/maxwell/attachments";
 import { submitRequestAction } from "../_actions/submit-request";
 import { submitRequestUpdateAction } from "../_actions/submit-request-update";
+import { submitRequestAttachmentAction } from "../_actions/submit-request-attachment";
 
 function formatStamp(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -54,11 +61,17 @@ function RequestCard({
   const stateMeta = clientVisibleStateMeta(request.clientVisibleState);
   const [replying, setReplying] = useState(false);
   const [reply, setReply] = useState("");
+  // Attachment sub-form (B.5b). Gated by ATTACHMENTS_ENABLED; mutually exclusive
+  // with the reply form. Shares `error` and the transition with the reply path.
+  const [attaching, setAttaching] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [attachNote, setAttachNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const trimmedLength = reply.trim().length;
   const canSend = trimmedLength >= 1 && trimmedLength <= CLIENT_REQUEST_BODY_MAX && !isPending;
+  const canAttach = file != null && !isPending;
 
   function sendReply() {
     if (!canSend) return;
@@ -72,6 +85,39 @@ function RequestCard({
       if (result.ok) {
         setReply("");
         setReplying(false);
+      } else {
+        setError(result.error);
+      }
+    });
+  }
+
+  function closeAttach() {
+    setAttaching(false);
+    setFile(null);
+    setAttachNote("");
+  }
+
+  function sendAttachment() {
+    if (!file || isPending) return;
+    // Client-side mirror of the server validation — fail fast before upload.
+    if (!isAllowedAttachmentMime(file.type)) {
+      setError("That file type isn't allowed.");
+      return;
+    }
+    if (!isValidAttachmentSize(file.size)) {
+      setError("That file is too large (max 10 MB).");
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const result = await submitRequestAttachmentAction({
+        sessionId,
+        requestId: request.id,
+        file,
+        body: attachNote.trim() ? attachNote : null,
+      });
+      if (result.ok) {
+        closeAttach();
       } else {
         setError(result.error);
       }
@@ -146,18 +192,75 @@ function RequestCard({
             </button>
           </div>
         </div>
+      ) : attaching ? (
+        <div className="mt-3">
+          <input
+            type="file"
+            accept={ATTACHMENT_MIME_ALLOWLIST.join(",")}
+            onChange={(event) => {
+              setError(null);
+              setFile(event.target.files?.[0] ?? null);
+            }}
+            aria-label="Choose a file to attach"
+            disabled={isPending}
+            className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-secondary/70"
+          />
+          <textarea
+            value={attachNote}
+            onChange={(event) => setAttachNote(event.target.value)}
+            maxLength={CLIENT_REQUEST_BODY_MAX}
+            rows={2}
+            placeholder="Add an optional note…"
+            aria-label="Attachment note (optional)"
+            className="mt-2 w-full resize-none rounded-lg border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
+            disabled={isPending}
+          />
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={sendAttachment}
+              disabled={!canAttach}
+              className="site-primary-action inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPending ? "Attaching…" : "Attach file"}
+            </button>
+            <button
+              type="button"
+              onClick={closeAttach}
+              disabled={isPending}
+              className="rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setError(null);
-            setReplying(true);
-          }}
-          disabled={isPending}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Reply
-        </button>
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setReplying(true);
+            }}
+            disabled={isPending}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Reply
+          </button>
+          {ATTACHMENTS_ENABLED && (
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setAttaching(true);
+              }}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Attach file
+            </button>
+          )}
+        </div>
       )}
       {error && (
         <p className="mt-2 text-xs text-red-600" role="alert">

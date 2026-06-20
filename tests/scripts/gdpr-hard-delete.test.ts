@@ -12,11 +12,13 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  ATTACHMENT_STORAGE_BUCKET,
   CASCADE_DELETED_TABLES,
   EMAIL_DELETED_TABLES,
   RETAINED_TABLES,
   anonymizeStripePayloads,
   buildDeletionPlan,
+  encodeStorageObjectKey,
   formatPlanSummary,
   hashEmail,
   serializeSnapshot,
@@ -72,6 +74,32 @@ describe("table catalog constants", () => {
     for (const t of emailDel) {
       expect(retained.has(t), `${t} in both email + retained`).toBe(false);
     }
+  });
+});
+
+describe("attachment storage (B.5b)", () => {
+  it("CASCADE_DELETED_TABLES includes the v3 client_request_attachment table", () => {
+    expect(CASCADE_DELETED_TABLES).toContain("client_request_attachment");
+    expect(CASCADE_DELETED_TABLES).toContain("client_request");
+  });
+
+  it("names the private attachment bucket", () => {
+    expect(ATTACHMENT_STORAGE_BUCKET).toBe("client-request-attachments");
+  });
+
+  it("percent-encodes each key segment but keeps the slashes", () => {
+    expect(encodeStorageObjectKey("ws-1/uuid/report 2026.pdf")).toBe(
+      "ws-1/uuid/report%202026.pdf",
+    );
+  });
+
+  it("encodes characters that would break the REST path", () => {
+    // '#', '?' and '+' must be escaped so the Storage URL targets the real key.
+    expect(encodeStorageObjectKey("a/b#c?d+e")).toBe("a/b%23c%3Fd%2Be");
+  });
+
+  it("mirrors the upload key shape (workspace/uuid/filename) without touching separators", () => {
+    expect(encodeStorageObjectKey("w/i-d/f.png")).toBe("w/i-d/f.png");
   });
 });
 

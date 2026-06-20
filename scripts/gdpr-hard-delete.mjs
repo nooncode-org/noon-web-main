@@ -51,8 +51,10 @@ import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 
 import {
+  ATTACHMENT_STORAGE_BUCKET,
   EMAIL_DELETED_TABLES,
   buildDeletionPlan,
+  encodeStorageObjectKey,
   formatPlanSummary,
   hashEmail,
   serializeSnapshot,
@@ -218,6 +220,51 @@ async function countRowsByTable(sql, sessionIds, normalizedEmail) {
   `;
   counts.workspace_update = Number(wuRows[0]?.c ?? 0);
 
+  // Transitive cascade #4: client_comment → client_workspace → studio_session (v3 §9)
+  const ccRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM client_comment
+    WHERE client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  counts.client_comment = Number(ccRows[0]?.c ?? 0);
+
+  // Transitive cascade #5: client_request → client_workspace → studio_session (v3 §9)
+  const crRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM client_request
+    WHERE client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  counts.client_request = Number(crRows[0]?.c ?? 0);
+
+  // Transitive cascade #6: client_request_update → client_request → … (v3 §9 B.5a)
+  const cruRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM client_request_update
+    WHERE client_request_id IN (
+      SELECT id FROM client_request WHERE client_workspace_id IN (
+        SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+      )
+    )
+  `;
+  counts.client_request_update = Number(cruRows[0]?.c ?? 0);
+
+  // Transitive cascade #7: client_request_attachment → client_request → … (v3 §9 B.5b)
+  // (the row count == the number of Storage blobs to delete separately.)
+  const craRows = await sql`
+    SELECT COUNT(*)::int AS c
+    FROM client_request_attachment
+    WHERE client_request_id IN (
+      SELECT id FROM client_request WHERE client_workspace_id IN (
+        SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+      )
+    )
+  `;
+  counts.client_request_attachment = Number(craRows[0]?.c ?? 0);
+
   // Tables deleted by email (no FK to studio_session).
   for (const tbl of EMAIL_DELETED_TABLES) {
     const rows = await sql`
@@ -294,12 +341,95 @@ async function readFullSnapshot(sql, sessionIds, normalizedEmail) {
     )
   `;
 
+  // v3 client-portal tables (§9). Cascade-deleted via client_workspace /
+  // client_request; snapshotted here so the pre-delete dump is complete.
+  dump.client_comment = await sql`
+    SELECT * FROM client_comment
+    WHERE client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  dump.client_request = await sql`
+    SELECT * FROM client_request
+    WHERE client_workspace_id IN (
+      SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+    )
+  `;
+  dump.client_request_update = await sql`
+    SELECT * FROM client_request_update
+    WHERE client_request_id IN (
+      SELECT id FROM client_request WHERE client_workspace_id IN (
+        SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+      )
+    )
+  `;
+  // Includes blob_key — the only record of which Storage objects to remove.
+  dump.client_request_attachment = await sql`
+    SELECT * FROM client_request_attachment
+    WHERE client_request_id IN (
+      SELECT id FROM client_request WHERE client_workspace_id IN (
+        SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+      )
+    )
+  `;
+
   for (const tbl of EMAIL_DELETED_TABLES) {
     dump[tbl] = await sql`
       SELECT * FROM ${sql(tbl)} WHERE lower(email) = ${normalizedEmail}
     `;
   }
   return dump;
+}
+
+// ─── Storage (B.5b attachment blobs) ─────────────────────────────────────────
+
+/** Read the blob keys of every attachment owned (transitively) by the email. */
+async function readAttachmentBlobKeys(sql, sessionIds) {
+  if (sessionIds.length === 0) return [];
+  const rows = await sql`
+    SELECT blob_key
+    FROM client_request_attachment
+    WHERE client_request_id IN (
+      SELECT id FROM client_request WHERE client_workspace_id IN (
+        SELECT id FROM client_workspace WHERE studio_session_id IN ${sql(sessionIds)}
+      )
+    )
+  `;
+  return rows.map((r) => r.blob_key);
+}
+
+/** Storage REST config (separate from DATABASE_URL — only needed for blobs). */
+function readStorageConfig() {
+  const baseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!baseUrl || !serviceKey) return null;
+  return { baseUrl, serviceKey };
+}
+
+/**
+ * Delete attachment blobs from the private Storage bucket. The DB rows are
+ * already gone via the cascade; these objects are not reachable by SQL, so they
+ * are removed here. A 404 means already-gone (treated as success). Returns
+ * { deleted, failed: [{ key, status }] }.
+ */
+async function deleteAttachmentBlobs(blobKeys) {
+  const cfg = readStorageConfig();
+  if (!cfg) {
+    throw new Error(
+      "SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are required to delete attachment blobs.",
+    );
+  }
+  let deleted = 0;
+  const failed = [];
+  for (const key of blobKeys) {
+    const res = await fetch(
+      `${cfg.baseUrl}/storage/v1/object/${ATTACHMENT_STORAGE_BUCKET}/${encodeStorageObjectKey(key)}`,
+      { method: "DELETE", headers: { Authorization: `Bearer ${cfg.serviceKey}` } },
+    );
+    if (res.ok || res.status === 404) deleted++;
+    else failed.push({ key, status: res.status });
+  }
+  return { deleted, failed };
 }
 
 async function logAttempt(sql, payload) {
@@ -401,6 +531,19 @@ async function main() {
     console.log(formatPlanSummary(plan));
     console.log("");
 
+    // B.5b: attachment blobs live in Storage, not the DB — surface them up front.
+    const blobCount = rowsByTable.client_request_attachment ?? 0;
+    if (blobCount > 0) {
+      const storageReady = readStorageConfig() !== null;
+      console.log(
+        `[gdpr] ${blobCount} attachment blob(s) in Storage to delete on --confirm` +
+          (storageReady
+            ? "."
+            : " — SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are NOT set; set them before --confirm."),
+      );
+      console.log("");
+    }
+
     // ── Dry-run path ─────────────────────────────────────────────────────
     if (args.dryRun) {
       logId = await logAttempt(sql, {
@@ -420,6 +563,16 @@ async function main() {
     }
 
     // ── Real-exec path ───────────────────────────────────────────────────
+    // 0. Pre-flight: collect blob keys + require Storage env BEFORE any delete,
+    //    so we never drop DB rows we then cannot fully scrub from Storage.
+    const blobKeys = await readAttachmentBlobKeys(sql, sessionIds);
+    if (blobKeys.length > 0 && readStorageConfig() === null) {
+      throw new Error(
+        `${blobKeys.length} attachment blob(s) to delete but SUPABASE_URL / ` +
+          "SUPABASE_SERVICE_ROLE_KEY are not set. Set them and re-run.",
+      );
+    }
+
     // 1. Snapshot first.
     const snapshot = await readFullSnapshot(sql, sessionIds, normalizedEmail);
     const snapshotPath = resolve(REPO_ROOT, plan.snapshotPath);
@@ -454,11 +607,29 @@ async function main() {
     // 3. Execute cascade.
     const realCounts = await executeCascade(sql, sessionIds, normalizedEmail);
 
+    // 3b. Delete attachment blobs (DB rows are gone; Storage is not cascaded).
+    if (blobKeys.length > 0) {
+      const { deleted, failed } = await deleteAttachmentBlobs(blobKeys);
+      realCounts.client_request_attachment_blobs = deleted;
+      console.log(`[gdpr] Deleted ${deleted}/${blobKeys.length} attachment blob(s) from Storage`);
+      if (failed.length > 0) {
+        realCounts.client_request_attachment_blobs_failed = failed.length;
+        console.error(
+          `[gdpr] WARNING: ${failed.length} blob(s) failed to delete (manual cleanup needed):`,
+        );
+        for (const f of failed) console.error(`  - ${f.key} (HTTP ${f.status})`);
+        exitCode = 1;
+      }
+    }
+
     // 4. Mark log complete.
     await markLogComplete(sql, logId, realCounts, null);
     console.log("");
     console.log(`[gdpr] DONE. Deleted ${realCounts.studio_session} studio_session row(s) (+ cascade)`);
     console.log(`[gdpr]      Deleted ${realCounts.contact_leads} contact_leads row(s)`);
+    if (blobKeys.length > 0) {
+      console.log(`[gdpr]      Deleted ${realCounts.client_request_attachment_blobs ?? 0} attachment blob(s)`);
+    }
     console.log(`[gdpr] Log: gdpr_deletion_log id=${logId} (status=executed)`);
   } catch (err) {
     console.error(`[gdpr] FAILED: ${err.message}`);
