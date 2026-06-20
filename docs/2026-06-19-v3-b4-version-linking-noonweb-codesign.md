@@ -2,8 +2,22 @@
 
 - **Fecha:** 2026-06-19
 - **Repo:** `noon-web-main`
-- **Estado:** DRAFT para co-firma del App (pre-freeze). NoonWeb NO construye código hasta que el App co-firme la §3.
+- **Estado:** **CONGELADO 2026-06-20** — el App co-firmó las 6 preguntas (`docs/2026-06-20-app-to-noonweb-v3-b4-version-linking-cosign-response.md`). NoonWeb entra a build. *(Este doc era DRAFT pre-freeze; se conserva como registro del diseño; las resoluciones finales están en el bloque FREEZE de abajo.)*
 - **Predecesores congelados:** `docs/v3-client-requests-noonweb-design.md` (§9), `docs/2026-06-17-v3-fase2-versioning-publish-design.md` (Fase 2), `docs/2026-06-18-app-to-noonweb-v3-fase2-versioning-cosign-response.md` (co-firma Fase 2).
+
+> ### ✅ FREEZE 2026-06-20 — el App co-firmó; contrato de B.4 CONGELADO
+>
+> El App respondió las 6 preguntas de §3 (`docs/2026-06-20-app-to-noonweb-v3-b4-version-linking-cosign-response.md`). 4 ya estaban resueltas por el contrato desplegado; esta respuesta **decide Q-B4-2** y **corrige Q-B4-3**:
+>
+> - **Q-B4-2 DECIDIDO →** se adopta el **10º `type = rollback`** (wire string exacto `rollback`, snake_case). Regla congelada: **`versionRef` REQUERIDO cuando `type = rollback`** (el App valida server-side como `400`, además del check client-side de NoonWeb). El App lo agrega a su enum + CHECK aditivo + matriz de scope-eval (`rollback → in_scope`); su máquina de estados y outbound son type-agnostic → no cambian.
+> - **Q-B4-3 CORREGIDO →** el App **NO rechaza targets de rollback al recibir** (*dangling-accept*: un `versionRef` bien-formado se acepta+almacena aunque apunte a la versión actual / inexistente / aún no mirrored). La **validación + ejecución del rollback es staff-side** (panel Fase 2 S3, ya en prod). El cliente **pide**; el staff **decide y ejecuta**. Nuestro filtro UI (ofrecer rollback solo en versiones no-actuales) es **convención de UX aceptada, NO contrato App-enforced**.
+> - **Q-B4-1 ✅ · Q-B4-4 ✅ · Q-B4-5 ✅ · Q-B4-6 ✅** confirmadas tal cual: `versionRef` aditivo/opcional, mismas 5 estados client-visible (máquina type-agnostic), informativo en los types existentes, cero env/secreto nuevo.
+>
+> **Orden de despliegue duro (§4 de la respuesta del App):**
+> 1. El **path de referencia** (`versionRef` en cualquier type) ya lo acepta el App en prod → **construible + mergeable hoy**, sin dependencia.
+> 2. El **path de rollback** requiere que el App **despliegue primero** el CHECK con el 10º valor. Hasta entonces, un `type = rollback` reenviado degrada limpio a `400 CLIENT_REQUEST_INVALID_PAYLOAD`. → **NoonWeb NO habilita el path de rollback en prod hasta que el App confirme `rollback` desplegado+verificado** (nos avisarán). Decisión de build: construir ambos paths y **gatear el de rollback apagado en prod** hasta ese aviso.
+>
+> **Sugerencia no-bloqueante del App:** alinear el CHECK de la migración 025 a `version_ref IS NULL OR (version_ref >= 1 AND version_ref <= 100000)` para empatar el cap `100000` del App (o dejar `>= 1` en DB + rango completo en la server action — cualquiera sirve, el App es el backstop).
 
 > ### 🔄 UPDATE 2026-06-19 — el App ya aceptó la mitad del contrato
 >
@@ -146,8 +160,8 @@ ALTER TABLE client_request
 ## 8. Checklist de asks-back (lo que NoonWeb necesita del App para destrabar Architecture)
 
 - [x] Q-B4-1 — `versionRef` aditivo aceptado por el receptor existente, ignorado si ausente. **✅ RESUELTA** (aceptado App-side desde 2026-06-18, `cross-repo-webhook-v1.md:648`).
-- [ ] **Q-B4-2 — Señal de rollback: nuevo `type = rollback` (recomendado) vs reuso. String exacto confirmado. ⬅️ ÚNICA ABIERTA — bloquea el path de rollback.**
-- [ ] Q-B4-3 — Regla de targets válidos de rollback. *(depende de Q-B4-2)*
-- [~] Q-B4-4 — Rollback-request usa las mismas 5 estados client-visible. **Parte "no-ecoado" ✅** (el App nunca ecoa `versionRef` en §7B); la parte de estados depende de Q-B4-2.
+- [x] **Q-B4-2 — Señal de rollback: nuevo `type = rollback`. ✅ DECIDIDO 2026-06-20** (string exacto `rollback`; `versionRef` requerido cuando aplica; el App lo agrega a enum + CHECK + matriz scope-eval).
+- [x] Q-B4-3 — Targets de rollback: **el App no valida al recibir (dangling-accept); staff valida+ejecuta**. Filtro UI de NoonWeb = convención UX, no contrato. **✅ CORREGIDO + cerrado 2026-06-20.**
+- [x] Q-B4-4 — Rollback-request usa las mismas 5 estados client-visible (máquina type-agnostic) + `versionRef` nunca ecoado. **✅ completo 2026-06-20.**
 - [x] Q-B4-5 — `versionRef` informativo permitido en los types existentes. **✅ RESUELTA** (el App lo define como "feedback on a version"; omitir para comentario general).
 - [x] Q-B4-6 — Cero env/secreto nuevo, ambos lados. **✅ CONFIRMADA** (`versionRef` no agrega env).
