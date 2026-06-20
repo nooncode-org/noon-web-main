@@ -328,6 +328,27 @@ const PROJECT_MGMT: TemplateCatalogItem = {
   prompt: "Use the Project Management template as a starting point for our project software.",
 };
 
+// New category: a marketing site / landing — public web presence (the one V0
+// category Noon was missing). Distinct from every app template (it's a website,
+// not an app).
+const MARKETING_SITE: TemplateCatalogItem = {
+  slug: "marketing-site",
+  name: "Marketing Site",
+  category: "Marketing & websites",
+  summary:
+    "A fast, on-brand marketing site — the pages that convert (home, product, pricing) plus a blog/CMS to publish without a developer.",
+  bestFit: ["Product launches", "Company sites", "Content & SEO"],
+  includes: ["Landing & marketing pages", "Blog / CMS", "SEO & metadata", "Lead capture & analytics"],
+  extensions: ["Localization", "A/B testing", "Newsletter", "Docs / changelog"],
+  useWhen:
+    "You need a credible public presence you can update yourself — a launch site, a company site, or a content engine for SEO.",
+  notIdealWhen:
+    "You mainly need application software (a portal, tool, or product); a marketing site is the storefront, not the product itself.",
+  baselinePromise:
+    "Gives you a fast, on-brand site with marketing pages and a CMS, so the custom work can focus on your message, design, and conversion.",
+  prompt: "Use the Marketing Site template as a starting point for our website.",
+};
+
 export const templatesCatalog: TemplateCatalogItem[] = [
   ...templates
     .filter((t) => t.slug !== "approval-workflow-tool")
@@ -335,6 +356,7 @@ export const templatesCatalog: TemplateCatalogItem[] = [
   SALES_CRM,
   AI_AGENT,
   PROJECT_MGMT,
+  MARKETING_SITE,
 ];
 
 // Filter chips for the curated catalog (drops the now-unused "Internal tools",
@@ -344,4 +366,5 @@ export const templateCatalogCategories: string[] = [
   "CRM & sales",
   "AI agents & automation",
   "Project management",
+  "Marketing & websites",
 ];

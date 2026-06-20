@@ -481,12 +481,49 @@ function ProjectMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function MarketingMockup({ enhanced }: { enhanced: boolean }) {
+  return (
+    <div className="absolute inset-4 overflow-hidden rounded-xl border border-border bg-background">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <div className="h-2 w-12 rounded bg-foreground/20" />
+        <div className="flex items-center gap-1.5">
+          <div className="h-1.5 w-6 rounded bg-foreground/10" />
+          <div className="h-1.5 w-6 rounded bg-foreground/10" />
+          <div className="h-3 w-9 rounded-full" style={{ backgroundColor: siteTones.brand.accent }} />
+        </div>
+      </div>
+      <div className="p-4 text-center">
+        <div className="mx-auto mb-2 h-3 w-3/4 rounded bg-foreground/80" />
+        <div className="mx-auto mb-3 h-1.5 w-1/2 rounded bg-foreground/20" />
+        <div
+          className="mx-auto mb-4 h-6 w-24 rounded-full transition-all duration-300"
+          style={{ backgroundColor: siteTones.brand.accent, transform: enhanced ? "scale(1.04)" : "none" }}
+        />
+        <div className="grid grid-cols-3 gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="rounded-lg border border-border p-2 transition-all duration-300"
+              style={{ transform: enhanced ? "translateY(-2px)" : "none", transitionDelay: `${i * 50}ms` }}
+            >
+              <div className="mb-1.5 h-5 w-5 rounded" style={{ backgroundColor: siteTones.brand.surface }} />
+              <div className="mb-1 h-1.5 w-full rounded bg-foreground/15" />
+              <div className="h-1.5 w-2/3 rounded bg-foreground/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
   "CRM & sales": CrmMockup,
   "AI agents & automation": AgentMockup,
   "Project management": ProjectMockup,
+  "Marketing & websites": MarketingMockup,
   "Dashboards": DashboardMockup,
   "Internal tools": WorkflowMockup,
   "AI assistants": AIMockup,
