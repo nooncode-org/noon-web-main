@@ -37,6 +37,6 @@
   "field-service-mobile-app": {
     "src": "/templates/mockups/field-service-mobile-app.html",
     "w": 1440,
-    "h": 1024
+    "h": 920
   }
 }
