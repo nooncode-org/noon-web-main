@@ -388,6 +388,13 @@ export function buildWebsiteProposalPayload(input: {
       body: proposal.draftContent ?? "",
       amount: amount.amount,
       currency: amount.currency,
+      // v3 membership (M0): the modality the client chose at checkout + the
+      // (engine-derived) recurring monthly. Additive + nullable — null on the
+      // inbound-proposal handoff (chosen later), set on payment-confirmed. The
+      // App is the wallet owner; it consumes these when membership billing lands
+      // (M1). NoonWeb charges only the activation in M0.
+      payment_modality: proposal.paymentModality,
+      monthly_amount_usd: proposal.monthlyAmountUsd,
     },
     maxwell: buildMaxwellSnapshot(session, versions),
     metadata: {

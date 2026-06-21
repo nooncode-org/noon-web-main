@@ -5,8 +5,10 @@ import {
   getProposalRequestByPublicToken,
   getStudioSession,
   getStudioVersions,
+  updateProposalRequest,
   updateProposalRequestStatus,
 } from "@/lib/maxwell/repositories";
+import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import { buildWebsiteProposalPayload } from "@/lib/noon-app-integration";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
 import { log } from "@/lib/server/logger";
@@ -17,6 +19,9 @@ export const dynamic = "force-dynamic";
 
 const checkoutSchema = z.object({
   public_token: z.string().min(1),
+  // v3 membership (M0): the modality the client picks on the proposal page.
+  // Defaults to one_time for back-compat with clients that omit it.
+  payment_modality: z.enum(["one_time", "membership"]).optional().default("one_time"),
 });
 
 const PAYABLE_STATUSES = new Set(["sent", "payment_pending"]);
@@ -87,6 +92,18 @@ export async function POST(request: Request) {
       );
     }
 
+    // v3 membership (M0): persist the client's chosen modality + the
+    // engine-derived recurring monthly BEFORE the Stripe session logic, so the
+    // choice is captured on every checkout attempt (incl. the reuse path below).
+    // The CHARGED amount stays the PM-approved activation (`approvedAmountUsd`);
+    // the monthly is NOT charged yet — membership is billed manually until M1.
+    const paymentModality = payload.payment_modality;
+    const monthlyAmountUsd =
+      paymentModality === "membership"
+        ? resolveProposalCommercialProfile(session).monthlyAmountUsd
+        : null;
+    await updateProposalRequest(proposal.id, { paymentModality, monthlyAmountUsd });
+
     const stripe = getStripeClient();
     const publicUrl = buildPublicProposalUrl(proposal.publicToken, request);
 
@@ -133,6 +150,8 @@ export async function POST(request: Request) {
           public_token: proposal.publicToken,
           amount_usd: String(websitePayload.proposal.amount),
           currency: websitePayload.proposal.currency,
+          payment_modality: paymentModality,
+          monthly_amount_usd: monthlyAmountUsd != null ? String(monthlyAmountUsd) : "",
         },
         payment_intent_data: {
           metadata: {

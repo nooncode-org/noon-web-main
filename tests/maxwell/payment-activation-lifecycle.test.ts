@@ -137,6 +137,8 @@ function fakeProposal(overrides: Partial<ProposalRequest> = {}): ProposalRequest
     deliveryRecipient: "client@noon.dev",
     approvedAmountUsd: 1250,
     approvedCurrency: "USD",
+    paymentModality: null,
+    monthlyAmountUsd: null,
     stripeCheckoutSessionId: null,
     stripePaymentIntentId: null,
     stripePaidAt: null,

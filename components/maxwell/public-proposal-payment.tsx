@@ -13,6 +13,15 @@ type PublicProposalPaymentProps = {
   approvedAmountUsd: number | null;
   approvedCurrency: string | null;
   /**
+   * v3 membership (M0). When the engine recommends membership for this project
+   * AND a monthly is available, the client can pick "Membership" vs "One-time".
+   * The activation (`approvedAmountUsd`) is charged either way; the monthly is
+   * NOT charged here (arranged manually by the PM until M1). Defaults keep the
+   * one-time-only behaviour for projects where membership doesn't apply.
+   */
+  membershipApplicable?: boolean;
+  monthlyAmountUsd?: number | null;
+  /**
    * Set from the `?checkout=success|cancelled` query param Stripe appends when
    * it redirects back from Checkout (see `success_url` / `cancel_url` in
    * `app/api/maxwell/checkout/route.ts`). `success` means the card was charged;
@@ -35,6 +44,8 @@ export function PublicProposalPayment({
   status,
   approvedAmountUsd,
   approvedCurrency,
+  membershipApplicable = false,
+  monthlyAmountUsd = null,
   checkoutResult = null,
 }: PublicProposalPaymentProps) {
   const router = useRouter();
@@ -43,6 +54,9 @@ export function PublicProposalPayment({
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
+  // Default to one-time; membership is an explicit opt-in (doc marks it
+  // "Recomendado" but we don't pre-select a recurring commitment).
+  const [modality, setModality] = useState<"one_time" | "membership">("one_time");
   const hasApprovedAmount = approvedAmountUsd != null;
   const payable = (status === "sent" || status === "payment_pending") && hasApprovedAmount;
   const currency = approvedCurrency ?? "USD";
@@ -121,7 +135,7 @@ export function PublicProposalPayment({
           method: "POST",
           headers: { "content-type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ public_token: publicToken }),
+          body: JSON.stringify({ public_token: publicToken, payment_modality: modality }),
         });
         const data = (await response.json().catch(() => null)) as {
           checkout_url?: string;
@@ -200,6 +214,51 @@ export function PublicProposalPayment({
           </p>
         </div>
       </div>
+
+      {membershipApplicable && monthlyAmountUsd != null && (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">Choose your plan</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setModality("one_time")}
+              aria-pressed={modality === "one_time"}
+              className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
+                modality === "one_time"
+                  ? "border-foreground/40 bg-secondary/40"
+                  : "border-border hover:bg-muted/50"
+              }`}
+            >
+              <span className="font-medium text-foreground">One-time</span>
+              <span className="text-xs text-muted-foreground">
+                {formatMoney(payableAmount, currency)} once
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setModality("membership")}
+              aria-pressed={modality === "membership"}
+              className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
+                modality === "membership"
+                  ? "border-foreground/40 bg-secondary/40"
+                  : "border-border hover:bg-muted/50"
+              }`}
+            >
+              <span className="font-medium text-foreground">Membership</span>
+              <span className="text-xs text-muted-foreground">
+                {formatMoney(payableAmount, currency)} + {formatMoney(monthlyAmountUsd, currency)}/mo
+              </span>
+            </button>
+          </div>
+          {modality === "membership" && (
+            <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              You pay the {formatMoney(payableAmount, currency)} activation now. The{" "}
+              {formatMoney(monthlyAmountUsd, currency)}/mo membership is arranged with your Noon
+              PM — it isn&apos;t charged automatically yet.
+            </p>
+          )}
+        </div>
+      )}
 
       {checkoutResult === "cancelled" && (
         <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">

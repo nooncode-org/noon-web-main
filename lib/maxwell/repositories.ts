@@ -191,6 +191,11 @@ export type StudioEvent = {
   createdAt: string;
 };
 
+/** v3 membership billing — the payment modality the client chooses at checkout
+ *  (doc maxwell-commercial-constraints.md §2). Activation is charged either way;
+ *  membership additionally carries a recurring monthly (manual until M1). */
+export type PaymentModality = "one_time" | "membership";
+
 export type ProposalRequest = {
   id: string;
   studioSessionId: string;
@@ -206,6 +211,8 @@ export type ProposalRequest = {
   deliveryRecipient: string | null;
   approvedAmountUsd: number | null;
   approvedCurrency: string | null;
+  paymentModality: PaymentModality | null;
+  monthlyAmountUsd: number | null;
   stripeCheckoutSessionId: string | null;
   stripePaymentIntentId: string | null;
   stripePaidAt: string | null;
@@ -335,6 +342,8 @@ type ProposalRow = {
   delivery_recipient: string | null;
   approved_amount_usd: number | string | null;
   approved_currency: string | null;
+  payment_modality: string | null;
+  monthly_amount_usd: number | string | null;
   stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
   stripe_paid_at: string | Date | null;
@@ -515,6 +524,8 @@ function mapProposal(r: ProposalRow): ProposalRequest {
     deliveryRecipient: r.delivery_recipient,
     approvedAmountUsd: toNumber(r.approved_amount_usd),
     approvedCurrency: r.approved_currency,
+    paymentModality: r.payment_modality as PaymentModality | null,
+    monthlyAmountUsd: toNumber(r.monthly_amount_usd),
     stripeCheckoutSessionId: r.stripe_checkout_session_id,
     stripePaymentIntentId: r.stripe_payment_intent_id,
     stripePaidAt: toIsoTimestamp(r.stripe_paid_at),
@@ -1148,6 +1159,8 @@ export async function updateProposalRequest(id: string, patch: {
   deliveryRecipient?: string | null;
   approvedAmountUsd?: number | null;
   approvedCurrency?: string | null;
+  paymentModality?: PaymentModality | null;
+  monthlyAmountUsd?: number | null;
   stripeCheckoutSessionId?: string | null;
   stripePaymentIntentId?: string | null;
   stripePaidAt?: string | null;
@@ -1200,6 +1213,16 @@ export async function updateProposalRequest(id: string, patch: {
           WHEN ${patch.approvedCurrency !== undefined}
             THEN ${patch.approvedCurrency ?? null}
           ELSE approved_currency
+        END,
+        payment_modality = CASE
+          WHEN ${patch.paymentModality !== undefined}
+            THEN ${patch.paymentModality ?? null}
+          ELSE payment_modality
+        END,
+        monthly_amount_usd = CASE
+          WHEN ${patch.monthlyAmountUsd !== undefined}
+            THEN ${patch.monthlyAmountUsd ?? null}
+          ELSE monthly_amount_usd
         END,
         stripe_checkout_session_id = CASE
           WHEN ${patch.stripeCheckoutSessionId !== undefined}

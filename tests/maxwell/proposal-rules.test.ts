@@ -3,6 +3,7 @@ import {
   resolveProjectCategory,
   resolveComplexityTier,
   formatPricing,
+  resolveProposalCommercialProfile,
   validateProposalDraft,
   buildProposalContext,
   isMembershipContraindicated,
@@ -110,6 +111,21 @@ describe("resolveComplexityTier", () => {
 
   it("returns medio for unrecognized hints", () => {
     expect(resolveComplexityTier("some project")).toBe("medio");
+  });
+});
+
+describe("resolveProposalCommercialProfile", () => {
+  it("exposes a numeric monthly that matches the pricing table cell", () => {
+    const profile = resolveProposalCommercialProfile(makeSession());
+    expect(profile.monthlyAmountUsd).toBe(
+      PRICING_TABLE[profile.category][profile.tier].monthly,
+    );
+    expect(typeof profile.monthlyAmountUsd).toBe("number");
+  });
+
+  it("the numeric monthly is the unformatted counterpart of pricing.monthly", () => {
+    const profile = resolveProposalCommercialProfile(makeSession({ goalSummary: "online store" }));
+    expect(profile.pricing.monthly).toBe(`$${profile.monthlyAmountUsd} USD/mes`);
   });
 });
 

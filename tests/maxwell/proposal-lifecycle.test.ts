@@ -27,6 +27,8 @@ function makeProposal(overrides: Partial<ProposalRequest> = {}): ProposalRequest
     deliveryRecipient: "client@example.com",
     approvedAmountUsd: null,
     approvedCurrency: null,
+    paymentModality: null,
+    monthlyAmountUsd: null,
     stripeCheckoutSessionId: null,
     stripePaymentIntentId: null,
     stripePaidAt: null,

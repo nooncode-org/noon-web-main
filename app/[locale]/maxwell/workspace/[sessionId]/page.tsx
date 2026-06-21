@@ -402,6 +402,11 @@ export default async function WorkspacePage({ params }: Props) {
     ? await getClientRequestsByWorkspace(workspace.id)
     : [];
 
+  // §8.2 payment/membership indicator: the chosen modality + monthly live on the
+  // local proposal (NoonWeb-owned, captured at checkout — M0). The App status
+  // pull does not carry the modality.
+  const planProposal = await getLatestProposalRequest(sessionId);
+
   // §22.2 status feed: one client-visible activity timeline synthesized from the
   // data we already hold (Noon updates + version lifecycle + request states).
   // Newest-first; materials keep their own section, so only `timeline` feeds in.
@@ -457,6 +462,35 @@ export default async function WorkspacePage({ params }: Props) {
               <span className="shrink-0 text-sm font-medium">
                 {formatProposalAmount(appProposal.amount, appProposal.currency)}
               </span>
+            </div>
+          )}
+
+          {planProposal?.paymentModality && (
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Plan
+                </p>
+                <p className="text-sm font-medium">
+                  {planProposal.paymentModality === "membership" ? "Membership" : "One-time"}
+                </p>
+                {planProposal.paymentModality === "membership" &&
+                  planProposal.monthlyAmountUsd != null && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Monthly membership is coordinated with your Noon PM.
+                    </p>
+                  )}
+              </div>
+              {planProposal.paymentModality === "membership" &&
+                planProposal.monthlyAmountUsd != null && (
+                  <span className="shrink-0 text-sm font-medium">
+                    {formatProposalAmount(
+                      planProposal.monthlyAmountUsd,
+                      planProposal.approvedCurrency ?? "USD",
+                    )}
+                    /mo
+                  </span>
+                )}
             </div>
           )}
         </div>
