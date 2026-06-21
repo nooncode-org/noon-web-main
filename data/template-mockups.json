@@ -22,7 +22,7 @@
   "ai-operations-agent": {
     "src": "/templates/mockups/ai-operations-agent.html",
     "w": 1440,
-    "h": 1024
+    "h": 969
   },
   "commerce-operations-storefront": {
     "src": "/templates/mockups/commerce-operations-storefront.html",
