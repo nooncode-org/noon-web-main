@@ -108,9 +108,11 @@ export function buildActivityFeed(input: {
       kind: "request",
       tag: "Request",
       at: r.createdAt,
-      title: `Request: ${typeLabel}`,
-      detail:
-        r.versionRef != null ? `Submitted · re: version ${r.versionRef}` : "Submitted",
+      // Distinct from the state event below so the two don't read as duplicate
+      // "Request: {type}" rows (the chip already says "Request"). The submission
+      // carries only the optional version reference as its detail.
+      title: `Request submitted: ${typeLabel}`,
+      detail: r.versionRef != null ? `re: version ${r.versionRef}` : null,
       href: null,
     });
     if (r.clientVisibleState && r.stateUpdatedAt) {
@@ -119,7 +121,8 @@ export function buildActivityFeed(input: {
         kind: "request",
         tag: "Request",
         at: r.stateUpdatedAt,
-        title: `Request: ${typeLabel}`,
+        // The App-pushed status change; the state label is the detail.
+        title: `Request updated: ${typeLabel}`,
         detail: clientVisibleStateLabel(r.clientVisibleState),
         href: null,
       });
