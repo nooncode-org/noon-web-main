@@ -70,7 +70,7 @@ describe("buildActivityFeed", () => {
     expect(byKind.version.detail).toBe("Preview ready"); // mapVersionStateToMeta
     expect(byKind.version.href).toBe("https://p/1");
     expect(byKind.request.tag).toBe("Request");
-    expect(byKind.request.title).toBe("Request: Bug / problem");
+    expect(byKind.request.title).toBe("Request submitted: Bug / problem");
   });
 
   it("orders the whole feed newest-first by timestamp", () => {
@@ -103,9 +103,18 @@ describe("buildActivityFeed", () => {
     });
     const requestEvents = feed.filter((e) => e.kind === "request");
     expect(requestEvents).toHaveLength(2);
-    // Newest-first: the state change leads, the submission follows.
-    expect(requestEvents[0]).toMatchObject({ at: "2026-06-04T00:00:00.000Z", detail: "Completed" });
-    expect(requestEvents[1]).toMatchObject({ at: "2026-06-01T00:00:00.000Z", detail: "Submitted" });
+    // Newest-first: the state change leads, the submission follows. The two
+    // carry DISTINCT titles so they don't read as duplicate confirmations.
+    expect(requestEvents[0]).toMatchObject({
+      at: "2026-06-04T00:00:00.000Z",
+      title: "Request updated: Minor adjustment",
+      detail: "Completed",
+    });
+    expect(requestEvents[1]).toMatchObject({
+      at: "2026-06-01T00:00:00.000Z",
+      title: "Request submitted: Minor adjustment",
+      detail: null,
+    });
     // Distinct stable ids.
     expect(new Set(requestEvents.map((e) => e.id)).size).toBe(2);
   });
@@ -117,7 +126,11 @@ describe("buildActivityFeed", () => {
       requests: [request({ id: "r1", type: "support", createdAt: "2026-06-01T00:00:00.000Z" })],
     });
     expect(feed).toHaveLength(1);
-    expect(feed[0]).toMatchObject({ kind: "request", detail: "Submitted" });
+    expect(feed[0]).toMatchObject({
+      kind: "request",
+      title: "Request submitted: Support",
+      detail: null,
+    });
   });
 
   it("annotates a request that references a version", () => {
@@ -126,7 +139,10 @@ describe("buildActivityFeed", () => {
       versions: [],
       requests: [request({ id: "r1", type: "rollback", versionRef: 4, createdAt: "2026-06-01T00:00:00.000Z" })],
     });
-    expect(feed[0].detail).toBe("Submitted · re: version 4");
+    expect(feed[0]).toMatchObject({
+      title: "Request submitted: Rollback request",
+      detail: "re: version 4",
+    });
   });
 
   it("carries the workspace update's material link through as the event href", () => {
