@@ -151,6 +151,8 @@ describe("postNoonAppWebhook — retry / backoff", () => {
       deliveryError: null,
       approvedAmountUsd: 4500,
       approvedCurrency: "USD",
+      paymentModality: null,
+      monthlyAmountUsd: null,
       stripeCheckoutSessionId: null,
       stripePaymentIntentId: null,
       stripePaidAt: null,

@@ -139,6 +139,8 @@ function fullProposal(): ProposalRequest {
     deliveryRecipient: "client@noon.dev",
     approvedAmountUsd: 1250,
     approvedCurrency: "USD",
+    paymentModality: null,
+    monthlyAmountUsd: null,
     stripeCheckoutSessionId: "cs_test_1", // ← internal
     stripePaymentIntentId: "pi_test_1", // ← internal
     stripePaidAt: new Date().toISOString(),

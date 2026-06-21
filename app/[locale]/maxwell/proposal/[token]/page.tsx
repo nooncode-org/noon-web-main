@@ -6,8 +6,10 @@ import { PublicProposalPayment } from "@/components/maxwell/public-proposal-paym
 import { StatusBadge } from "@/app/[locale]/maxwell/review/_components/status-badge";
 import {
   getProposalRequestByPublicToken,
+  getStudioSession,
   markProposalFirstOpened,
 } from "@/lib/maxwell/repositories";
+import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import { log } from "@/lib/server/logger";
 import {
@@ -143,6 +145,15 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
   const cleanDraft = stripInternalReviewFlags(proposal.draftContent);
 
+  // v3 membership (M0): the commercial profile drives the modality selector on
+  // the payment card. The session carries the project type / complexity the
+  // engine maps to a category+tier (and thus the monthly). Best-effort: if the
+  // session is missing we hide the membership option (one-time only).
+  const session = await getStudioSession(proposal.studioSessionId);
+  const commercialProfile = session
+    ? resolveProposalCommercialProfile(session)
+    : null;
+
   return (
     <main className="min-h-screen bg-background px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-6">
@@ -177,6 +188,8 @@ export default async function PublicProposalPage({ params, searchParams }: Props
           status={proposal.status}
           approvedAmountUsd={proposal.approvedAmountUsd}
           approvedCurrency={proposal.approvedCurrency}
+          membershipApplicable={commercialProfile?.membershipRecommended ?? false}
+          monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
           checkoutResult={checkoutResult}
         />
 

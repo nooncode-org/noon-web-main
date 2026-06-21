@@ -102,6 +102,10 @@ export type ProposalCommercialProfile = {
   category: ProjectCategory;
   tier: ComplexityTier;
   pricing: { activation: string; monthly: string };
+  /** Raw recurring monthly (USD) for the membership modality — the numeric
+   *  counterpart of `pricing.monthly`. Persisted at checkout when the client
+   *  picks membership (M0); never charged automatically yet. */
+  monthlyAmountUsd: number;
   membershipRecommended: boolean;
 };
 
@@ -259,6 +263,7 @@ export function resolveProposalCommercialProfile(
     category,
     tier,
     pricing,
+    monthlyAmountUsd: PRICING_TABLE[category][tier].monthly,
     membershipRecommended,
   };
 }

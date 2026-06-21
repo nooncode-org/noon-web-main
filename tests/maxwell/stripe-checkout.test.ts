@@ -4,10 +4,12 @@ const mocks = vi.hoisted(() => ({
   getProposalRequestByPublicToken: vi.fn(),
   getStudioSession: vi.fn(),
   getStudioVersions: vi.fn(),
+  updateProposalRequest: vi.fn(),
   updateProposalRequestStatus: vi.fn(),
   appendPaymentEvent: vi.fn(),
   buildWebsiteProposalPayload: vi.fn(),
   buildPublicProposalUrl: vi.fn(),
+  resolveProposalCommercialProfile: vi.fn(),
   retrieveCheckoutSession: vi.fn(),
   createCheckoutSession: vi.fn(),
 }));
@@ -16,12 +18,17 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getProposalRequestByPublicToken: mocks.getProposalRequestByPublicToken,
   getStudioSession: mocks.getStudioSession,
   getStudioVersions: mocks.getStudioVersions,
+  updateProposalRequest: mocks.updateProposalRequest,
   updateProposalRequestStatus: mocks.updateProposalRequestStatus,
   appendPaymentEvent: mocks.appendPaymentEvent,
 }));
 
 vi.mock("@/lib/noon-app-integration", () => ({
   buildWebsiteProposalPayload: mocks.buildWebsiteProposalPayload,
+}));
+
+vi.mock("@/lib/maxwell/proposal-rules", () => ({
+  resolveProposalCommercialProfile: mocks.resolveProposalCommercialProfile,
 }));
 
 vi.mock("@/lib/maxwell/public-url", () => ({
@@ -47,11 +54,11 @@ import { POST } from "@/app/api/maxwell/checkout/route";
 
 const ROUTE_URL = "http://localhost/api/maxwell/checkout";
 
-function buildRequest(publicToken = "public-token-abc") {
+function buildRequest(body: Record<string, unknown> = { public_token: "public-token-abc" }) {
   return new Request(ROUTE_URL, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ public_token: publicToken }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -86,8 +93,16 @@ function session(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getStudioVersions.mockResolvedValue([]);
+  mocks.updateProposalRequest.mockResolvedValue(proposal());
   mocks.updateProposalRequestStatus.mockResolvedValue(proposal({ status: "payment_pending" }));
   mocks.appendPaymentEvent.mockResolvedValue({});
+  mocks.resolveProposalCommercialProfile.mockReturnValue({
+    category: "webapp",
+    tier: "medio",
+    pricing: { activation: "$179 USD", monthly: "$69 USD/mes" },
+    monthlyAmountUsd: 69,
+    membershipRecommended: true,
+  });
   mocks.buildPublicProposalUrl.mockReturnValue("https://noon.test/en/maxwell/proposal/public-token-abc");
   mocks.buildWebsiteProposalPayload.mockReturnValue({
     customer: { email: "client@noon.test" },
@@ -195,6 +210,63 @@ describe("POST /api/maxwell/checkout", () => {
         provider: "stripe",
         providerSessionId: "cs_test_123",
       }),
+    );
+  });
+
+  it("defaults to one_time and persists it without a recurring monthly", async () => {
+    mocks.getProposalRequestByPublicToken.mockResolvedValue(proposal());
+    mocks.getStudioSession.mockResolvedValue(session());
+    mocks.createCheckoutSession.mockResolvedValue({
+      id: "cs_one_time",
+      url: "https://checkout.stripe.test/pay",
+    });
+
+    await POST(buildRequest());
+
+    expect(mocks.updateProposalRequest).toHaveBeenCalledWith("proposal-1", {
+      paymentModality: "one_time",
+      monthlyAmountUsd: null,
+    });
+    // one_time never derives a monthly from the engine.
+    expect(mocks.resolveProposalCommercialProfile).not.toHaveBeenCalled();
+    expect(mocks.createCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          payment_modality: "one_time",
+          monthly_amount_usd: "",
+        }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it("persists membership with the engine-derived monthly; activation charge unchanged", async () => {
+    mocks.getProposalRequestByPublicToken.mockResolvedValue(proposal());
+    mocks.getStudioSession.mockResolvedValue(session());
+    mocks.createCheckoutSession.mockResolvedValue({
+      id: "cs_membership",
+      url: "https://checkout.stripe.test/pay",
+    });
+
+    await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "membership" }));
+
+    expect(mocks.resolveProposalCommercialProfile).toHaveBeenCalled();
+    expect(mocks.updateProposalRequest).toHaveBeenCalledWith("proposal-1", {
+      paymentModality: "membership",
+      monthlyAmountUsd: 69,
+    });
+    expect(mocks.createCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // The charged amount stays the PM-approved activation (one-time);
+        // the monthly is metadata only — NOT a Stripe recurring line item (M0).
+        mode: "payment",
+        metadata: expect.objectContaining({
+          payment_modality: "membership",
+          monthly_amount_usd: "69",
+          amount_usd: "4500",
+        }),
+      }),
+      expect.anything(),
     );
   });
 });
