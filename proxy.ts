@@ -1,9 +1,9 @@
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import { resolveDisabledLocaleRedirect } from "./i18n/launch-locales";
 
 const intlMiddleware = createMiddleware(routing);
-const disabledLaunchLocales = new Set(["es", "fr", "de"]);
 
 // Routes that should NOT be locale-prefixed
 const bypassPatterns = [
@@ -25,11 +25,12 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const localeSegment = pathname.split("/")[1];
-  if (disabledLaunchLocales.has(localeSegment)) {
+  // §7.1 / spec §32 — locales declared but not launched (es/fr/de) redirect to
+  // their /en equivalent so a visitor never lands on a half-built localized page.
+  const localeRedirect = resolveDisabledLocaleRedirect(pathname);
+  if (localeRedirect) {
     const url = request.nextUrl.clone();
-    const rest = pathname.slice(localeSegment.length + 1);
-    url.pathname = `/en${rest || ""}`;
+    url.pathname = localeRedirect; // query/hash preserved by clone()
     return NextResponse.redirect(url);
   }
 
