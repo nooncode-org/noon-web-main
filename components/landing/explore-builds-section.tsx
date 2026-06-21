@@ -505,9 +505,75 @@ function MarketingMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function FieldServiceMockup({ enhanced }: { enhanced: boolean }) {
+  const pins = [
+    { x: 60, y: 28, tone: siteTones.brand.accent },
+    { x: 80, y: 52, tone: siteTones.services.accent },
+    { x: 50, y: 70, tone: siteTones.data.accent },
+  ];
+  return (
+    <div className="absolute inset-4 flex overflow-hidden rounded-xl border border-border bg-background">
+      {/* jobs list */}
+      <div className="w-[34%] shrink-0 border-r border-border p-2.5">
+        <div className="mb-2 font-mono text-[9px] text-muted-foreground">dispatch</div>
+        {pins.map((p, i) => (
+          <div
+            key={i}
+            className="mb-1.5 rounded-md border border-border p-1.5 transition-all duration-300"
+            style={{
+              backgroundColor: i === 0 ? siteTones.brand.surface : "transparent",
+              transform: enhanced && i === 0 ? "translateX(2px)" : "none",
+            }}
+          >
+            <div className="mb-1 h-1.5 w-3/4 rounded bg-foreground/20" />
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: p.tone }} />
+              <div className="h-1 w-2/3 rounded bg-foreground/10" />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* dispatch map */}
+      <div className="relative flex-1" style={{ backgroundColor: siteTones.data.surface }}>
+        {[24, 50, 76].map((t) => (
+          <div key={`h${t}`} className="absolute inset-x-0 h-px bg-foreground/10" style={{ top: `${t}%` }} />
+        ))}
+        {[34, 64, 88].map((l) => (
+          <div key={`v${l}`} className="absolute inset-y-0 w-px bg-foreground/10" style={{ left: `${l}%` }} />
+        ))}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <path
+            d="M60 28 L80 52 L50 70"
+            fill="none"
+            stroke={siteTones.brand.accent}
+            strokeWidth="0.8"
+            strokeDasharray="3 2"
+            opacity={enhanced ? 0.9 : 0.5}
+          />
+        </svg>
+        {pins.map((p, i) => (
+          <span
+            key={i}
+            className="absolute flex h-3.5 w-3.5 items-center justify-center rounded-full text-[7px] font-semibold text-white shadow-sm transition-transform duration-300"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              backgroundColor: p.tone,
+              transform: `translate(-50%, -50%) scale(${enhanced ? 1.15 : 1})`,
+            }}
+          >
+            {i + 1}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
+  "Field service": FieldServiceMockup,
   "CRM & sales": CrmMockup,
   "AI agents & automation": AgentMockup,
   "Project management": ProjectMockup,

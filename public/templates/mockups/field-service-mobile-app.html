@@ -1,0 +1,1169 @@
+<!DOCTYPE html><html><head><style>
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      section, article, figure, table { break-inside: avoid; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* symbols2 */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* symbols2 */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style data-dc-tpl="4">
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#f6f7f9;font-family:'Geist',system-ui,sans-serif;color:#1b2330;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+.hw-scroll::-webkit-scrollbar{width:9px}
+.hw-scroll::-webkit-scrollbar-thumb{background:#dadee4;border-radius:99px;border:2px solid #fff;background-clip:padding-box}
+.hw-scroll::-webkit-scrollbar-track{background:transparent}
+.mono{font-family:'Geist Mono',monospace}
+.leaflet-container{font-family:'Geist',system-ui,sans-serif;background:#e7e9ee}
+.leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 16px 38px rgba(20,28,40,.20);border:1px solid #ebedf0;padding:0;background:#fff}
+.leaflet-popup-content{margin:0!important;width:266px!important}
+.leaflet-popup-tip{box-shadow:none;border:1px solid #ebedf0}
+.leaflet-popup-close-button{display:none}
+.leaflet-control-zoom{display:none}
+.hw-pin,.hw-tech{background:none!important;border:0!important}
+.leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.74);color:#9aa3b0;padding:1px 6px;border-radius:6px 0 0 0}
+.leaflet-control-attribution a{color:#5a6675;text-decoration:none}
+</style><style data-dc-tpl="5">/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url("/templates/mockups/assets/field-service-mobile-app-1.png");
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url("/templates/mockups/assets/field-service-mobile-app-2.png");
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url("/templates/mockups/assets/field-service-mobile-app-3.png");
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+</style><style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/GeistMono-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/GeistMono-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl8-field-service-console"><div data-dc-tpl="7" data-screen-label="Crewvale · Dispatch" style="width: 1440px; height: 920px; display: flex; background: rgb(246, 247, 249); color: rgb(27, 35, 48); overflow: hidden;">
+
+ 
+ <aside data-dc-tpl="8" style="width: 242px; flex: 0 0 auto; background: rgb(247, 247, 247); display: flex; flex-direction: column; padding: 0px;">
+  <div data-dc-tpl="9" style="display: flex; align-items: center; gap: 9px; padding: 18px 16px 16px;">
+   <span data-dc-tpl="10" style="width: 30px; height: 30px; border-radius: 10px; flex: 0 0 auto; background: rgb(18, 160, 106); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="11" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="12" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+   <span data-dc-tpl="13" style="font-size: 15.5px; font-weight: 700; letter-spacing: -0.02em; color: rgb(22, 32, 44);">Crewvale</span>
+  </div>
+
+  <nav data-dc-tpl="14" style="padding: 4px 10px; display: flex; flex-direction: column; gap: 2px;">
+   <a data-dc-tpl="15" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="16" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="17" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Dashboard</a>
+   <a data-dc-tpl="18" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="19" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="20" x="3.5" y="4.5" width="17" height="15" rx="2.5"></rect><path data-dc-tpl="21" d="M8 3v3M16 3v3M3.5 9h17"></path></svg>Jobs</a>
+   <a data-dc-tpl="22" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="23" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="24" cx="9" cy="8" r="3.2"></circle><path data-dc-tpl="25" d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 6M17.5 19a5.2 5.2 0 0 0-3-4.7"></path></svg><span data-dc-tpl="26" style="flex: 1 1 0%;">Technicians</span><svg data-dc-tpl="27" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a9aa0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="28" d="m9 6 6 6-6 6"></path></svg></a>
+   <a data-dc-tpl="29" data-nav="" data-active="" href="#" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; background: rgb(255, 255, 255); color: rgb(31, 31, 36); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="30" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1f1f24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="31" d="M9 3 3 5.5v15L9 18l6 2.5 6-2.5v-15L15 5.5 9 3z"></path><path data-dc-tpl="32" d="M9 3v15M15 5.5v15"></path></svg>Dispatch</a>
+   <a data-dc-tpl="33" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="34" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="35" d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path data-dc-tpl="36" d="M4 9h16M8 13h5"></path></svg>Customers</a>
+   <a data-dc-tpl="37" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="38" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="39" d="M6 3h9l5 5v13a0 0 0 0 1 0 0H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path data-dc-tpl="40" d="M14 3v6h6M9 13h6M9 17h6"></path></svg>Invoices</a>
+   <a data-dc-tpl="41" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="42" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="43" d="M4 19V5M4 19h16M8 19v-6M12 19V9M16 19v-9"></path></svg>Reports</a>
+  </nav>
+
+  <div data-dc-tpl="44" style="flex: 1 1 0%;"></div>
+
+  <div data-dc-tpl="45" style="padding: 10px 16px; margin: 0px 8px 6px; border-radius: 12px; background: rgb(255, 255, 255); border: 1px solid rgb(232, 232, 228);">
+   <div data-dc-tpl="46" style="font-size: 10px; letter-spacing: 0.04em; color: rgb(124, 154, 140); font-weight: 600; text-transform: uppercase;">Techs on shift</div>
+   <div data-dc-tpl="47" style="display: flex; align-items: center; margin-top: 8px;">
+    <span data-dc-tpl="48" style="width: 24px; height: 24px; border-radius: 50%; background: rgb(18, 160, 106); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid rgb(255, 255, 255);">RO</span>
+    <span data-dc-tpl="49" style="width: 24px; height: 24px; border-radius: 50%; background: rgb(47, 111, 237); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid rgb(255, 255, 255); margin-left: -7px;">TB</span>
+    <span data-dc-tpl="50" style="width: 24px; height: 24px; border-radius: 50%; background: rgb(111, 86, 214); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid rgb(255, 255, 255); margin-left: -7px;">MR</span>
+    <span data-dc-tpl="51" style="width: 24px; height: 24px; border-radius: 50%; background: rgb(224, 138, 20); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid rgb(255, 255, 255); margin-left: -7px;">LP</span>
+    <span data-dc-tpl="52" style="width: 24px; height: 24px; border-radius: 50%; background: rgb(238, 240, 243); color: rgb(90, 102, 117); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 2px solid rgb(255, 255, 255); margin-left: -7px;">+1</span>
+   </div>
+  </div>
+
+  <nav data-dc-tpl="53" style="padding: 4px 10px 14px; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid rgb(240, 241, 243);">
+   <a data-dc-tpl="54" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500; margin-top: 8px;"><svg data-dc-tpl="55" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="56" cx="12" cy="12" r="3.2"></circle><path data-dc-tpl="57" d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V22a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H4a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1A2 2 0 1 1 7.9 3.4l.1.1a1.6 1.6 0 0 0 1.8.3H10a1.6 1.6 0 0 0 1-1.5V2a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V10a1.6 1.6 0 0 0 1.5 1H22a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"></path></svg>Settings</a>
+   <a data-dc-tpl="58" data-nav="" href="#" class="scp0" style="display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: rgb(63, 63, 69); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="59" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="60" cx="12" cy="12" r="9"></circle><path data-dc-tpl="61" d="M9.3 9.3a2.8 2.8 0 0 1 5.3 1c0 1.9-2.8 2.5-2.8 2.5M12 17h.01"></path></svg>Help &amp; support</a>
+  </nav>
+ </aside>
+
+ 
+ <section data-dc-tpl="62" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column;">
+
+  
+  <header data-dc-tpl="63" style="flex: 0 0 auto; height: 60px; display: flex; align-items: center; gap: 14px; padding: 0px 20px; border-bottom: 1px solid rgb(235, 237, 240); background: rgb(255, 255, 255);">
+   <div data-dc-tpl="64" style="display: flex; align-items: center; gap: 9px; width: 320px; height: 36px; padding: 0px 12px; border-radius: 10px; background: rgb(243, 244, 246);">
+    <svg data-dc-tpl="65" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="2" stroke-linecap="round"><circle data-dc-tpl="66" cx="11" cy="11" r="7"></circle><path data-dc-tpl="67" d="m21 21-4.3-4.3"></path></svg>
+    <span data-dc-tpl="68" style="font-size: 13px; color: rgb(154, 163, 176);">Search jobs, customers, techs…</span>
+   </div>
+
+   <div data-dc-tpl="69" style="flex: 1 1 0%;"></div>
+
+   <div data-dc-tpl="70" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0px 12px; border-radius: 10px; background: rgb(234, 246, 240); border: 1px solid rgb(214, 236, 225);">
+    <span data-dc-tpl="71" style="width: 7px; height: 7px; border-radius: 50%; background: rgb(18, 160, 106);"></span>
+    <span data-dc-tpl="72" style="font-size: 12px; color: rgb(14, 122, 81); font-weight: 600; white-space: nowrap;">12 jobs today · 5 techs active</span>
+   </div>
+
+   <div data-dc-tpl="73" style="display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap;"><svg data-dc-tpl="74" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="75" x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path data-dc-tpl="76" d="M8 3v3M16 3v3M3.5 9.5h17"></path></svg>Mon, Jun 23</div>
+
+   <span data-dc-tpl="77" style="width: 1px; height: 22px; background: rgb(235, 237, 240);"></span>
+
+   <button data-dc-tpl="78" data-top="" class="scp1" style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgb(90, 102, 117); position: relative;"><svg data-dc-tpl="79" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="80" d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"></path></svg><span data-dc-tpl="81" style="position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: rgb(224, 86, 63); border: 1.5px solid rgb(255, 255, 255);"></span></button>
+
+   <button data-dc-tpl="82" data-top="" class="scp2" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 6px 0px 8px; border-radius: 10px;">
+    <span data-dc-tpl="83" style="width: 28px; height: 28px; border-radius: 50%; background: rgb(22, 32, 44); color: rgb(255, 255, 255); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">DW</span>
+    <span data-dc-tpl="84" style="font-size: 13px; font-weight: 600; color: rgb(27, 35, 48); white-space: nowrap;">Dana Whitlock</span>
+    <svg data-dc-tpl="85" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="86" d="m6 9 6 6 6-6"></path></svg>
+   </button>
+
+   <button data-dc-tpl="87" data-top="" class="scp3" style="width: 38px; height: 38px; border-radius: 50%; background: rgb(22, 32, 44); color: rgb(255, 255, 255); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="88" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path data-dc-tpl="89" d="M12 5v14M5 12h14"></path></svg></button>
+  </header>
+
+  
+  <div data-dc-tpl="90" style="flex: 1 1 0%; min-height: 0px; display: flex;">
+
+   
+   <div data-dc-tpl="91" style="width: 374px; flex: 0 0 auto; background: rgb(255, 255, 255); border-right: 1px solid rgb(235, 237, 240); display: flex; flex-direction: column; min-height: 0px;">
+
+    <div data-dc-tpl="92" style="padding: 18px 18px 0px; display: flex; align-items: center; gap: 8px;">
+     <h1 data-dc-tpl="93" style="margin: 0px; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: rgb(22, 32, 44);">Dispatch</h1>
+     <div data-dc-tpl="94" style="flex: 1 1 0%;"></div>
+     <button data-dc-tpl="95" data-top="" class="scp4" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgb(235, 237, 240); display: flex; align-items: center; justify-content: center; color: rgb(154, 163, 176);"><svg data-dc-tpl="96" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="97" d="m15 6-6 6 6 6"></path></svg></button>
+    </div>
+
+    
+    <div data-dc-tpl="98" style="display: flex; align-items: center; gap: 20px; padding: 14px 18px 0px; border-bottom: 1px solid rgb(235, 237, 240);">
+     <button data-dc-tpl="99" data-tab="" data-on="" style="display: inline-flex; align-items: center; gap: 7px; padding: 0px 0px 11px; color: rgb(22, 32, 44); font-size: 13.5px; font-weight: 600; border-bottom: 2px solid rgb(18, 160, 106); margin-bottom: -1px;">Jobs<span data-dc-tpl="100" style="font-size: 11px; font-weight: 600; color: rgb(90, 102, 117); background: rgb(238, 240, 243); border-radius: 6px; padding: 1px 6px;">12</span></button>
+     <button data-dc-tpl="101" data-tab="" class="scp5" style="padding: 0px 0px 11px; color: rgb(138, 147, 160); font-size: 13.5px; font-weight: 500;">Technicians</button>
+     <button data-dc-tpl="102" data-tab="" class="scp5" style="padding: 0px 0px 11px; color: rgb(138, 147, 160); font-size: 13.5px; font-weight: 500;">Customers</button>
+    </div>
+
+    
+    <div data-dc-tpl="103" style="display: flex; gap: 8px; padding: 14px 18px 12px;">
+     <div data-dc-tpl="104" style="flex: 1 1 0%; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0px 11px; border-radius: 10px; background: rgb(243, 244, 246);">
+      <svg data-dc-tpl="105" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="2" stroke-linecap="round"><circle data-dc-tpl="106" cx="11" cy="11" r="7"></circle><path data-dc-tpl="107" d="m21 21-4.3-4.3"></path></svg>
+      <span data-dc-tpl="108" style="font-size: 12.5px; color: rgb(154, 163, 176);">Search jobs</span>
+     </div>
+     <button data-dc-tpl="109" data-top="" class="scp6" style="display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0px 12px; border-radius: 10px; border: 1px solid rgb(235, 237, 240); color: rgb(90, 102, 117); font-size: 12.5px; font-weight: 500; background: rgb(255, 255, 255);">All<svg data-dc-tpl="110" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="111" d="m6 9 6 6 6-6"></path></svg></button>
+    </div>
+
+    
+    <div data-dc-tpl="112" class="hw-scroll" style="flex: 1 1 0%; overflow-y: auto; padding: 2px 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0px;">
+
+     
+     <div data-dc-tpl="113" data-job="" data-on="" style="border: 1.5px solid rgb(18, 160, 106); border-radius: 14px; background: rgb(255, 255, 255); padding: 13px 14px; cursor: pointer;">
+      <div data-dc-tpl="114" style="display: flex; align-items: center; gap: 8px;">
+       <span data-dc-tpl="115" class="mono" style="font-size: 11px; color: rgb(138, 147, 160); letter-spacing: 0.01em;">WO-4821</span>
+       <span data-dc-tpl="116" style="font-size: 10.5px; font-weight: 600; color: rgb(37, 99, 235); background: rgb(233, 240, 253); border-radius: 6px; padding: 2px 7px; white-space: nowrap;">Scheduled</span>
+       <div data-dc-tpl="117" style="flex: 1 1 0%;"></div>
+       <svg data-dc-tpl="118" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b3bac4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="119" cx="12" cy="12" r="9"></circle><path data-dc-tpl="120" d="M12 8v4l2.5 1.5"></path></svg>
+       <span data-dc-tpl="121" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">2h 00m</span>
+      </div>
+      <div data-dc-tpl="122" style="display: flex; align-items: center; gap: 8px; margin-top: 9px;">
+       <span data-dc-tpl="123" style="font-size: 15px; font-weight: 600; color: rgb(22, 32, 44);">Priya Nandakumar</span>
+       <div data-dc-tpl="124" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="125" style="font-size: 14px; font-weight: 600; color: rgb(22, 32, 44);">$185.00</span>
+      </div>
+      <div data-dc-tpl="126" style="margin-top: 11px; position: relative; padding-left: 4px;">
+       <span data-dc-tpl="127" style="position: absolute; left: 10px; top: 13px; width: 1.5px; height: 17px; background: repeating-linear-gradient(rgb(212, 216, 222) 0px, rgb(212, 216, 222) 2px, transparent 2px, transparent 5px);"></span>
+       <div data-dc-tpl="128" style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
+        <span data-dc-tpl="129" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(233, 240, 253); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="130" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="131" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+        <span data-dc-tpl="132" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">AC repair — no cooling, upstairs unit</span>
+        <span data-dc-tpl="133" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+       <div data-dc-tpl="134" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="135" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(234, 246, 240); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="136" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="137" d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle data-dc-tpl="138" cx="12" cy="10" r="2.4"></circle></svg></span>
+        <span data-dc-tpl="139" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">506 Foster St, Midtown</span>
+        <span data-dc-tpl="140" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+      </div>
+      <div data-dc-tpl="141" style="display: flex; align-items: center; gap: 8px; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgb(240, 241, 243);">
+       <span data-dc-tpl="142" style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0px 9px 0px 4px; border: 1px dashed rgb(201, 207, 215); border-radius: 99px;"><span data-dc-tpl="143" style="width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed rgb(194, 201, 210); color: rgb(154, 163, 176); display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;">+</span><span data-dc-tpl="144" style="white-space: nowrap; font-size: 11.5px; color: rgb(138, 147, 160); font-weight: 500;">Assign tech</span></span>
+       <div data-dc-tpl="145" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="146" style="white-space: nowrap; font-size: 11.5px; color: rgb(138, 147, 160);">Window 10:00–12:00 PM</span>
+       <svg data-dc-tpl="147" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2c9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="148" d="m9 6 6 6-6 6"></path></svg>
+      </div>
+     </div>
+
+     
+     <div data-dc-tpl="149" data-job="" class="scp7" style="border: 1px solid rgb(235, 237, 240); border-radius: 14px; background: rgb(255, 255, 255); padding: 13px 14px; cursor: pointer;">
+      <div data-dc-tpl="150" style="display: flex; align-items: center; gap: 8px;">
+       <span data-dc-tpl="151" class="mono" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">WO-4822</span>
+       <span data-dc-tpl="152" style="font-size: 10.5px; font-weight: 600; color: rgb(179, 118, 10); background: rgb(253, 241, 216); border-radius: 6px; padding: 2px 7px; white-space: nowrap;">En route</span>
+       <div data-dc-tpl="153" style="flex: 1 1 0%;"></div>
+       <svg data-dc-tpl="154" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b3bac4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="155" cx="12" cy="12" r="9"></circle><path data-dc-tpl="156" d="M12 8v4l2.5 1.5"></path></svg>
+       <span data-dc-tpl="157" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">2h 00m</span>
+      </div>
+      <div data-dc-tpl="158" style="display: flex; align-items: center; gap: 8px; margin-top: 9px;">
+       <span data-dc-tpl="159" style="font-size: 15px; font-weight: 600; color: rgb(22, 32, 44);">Dell Hartman</span>
+       <div data-dc-tpl="160" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="161" style="font-size: 14px; font-weight: 600; color: rgb(22, 32, 44);">$1,420.00</span>
+      </div>
+      <div data-dc-tpl="162" style="margin-top: 11px; position: relative; padding-left: 4px;">
+       <span data-dc-tpl="163" style="position: absolute; left: 10px; top: 13px; width: 1.5px; height: 17px; background: repeating-linear-gradient(rgb(212, 216, 222) 0px, rgb(212, 216, 222) 2px, transparent 2px, transparent 5px);"></span>
+       <div data-dc-tpl="164" style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
+        <span data-dc-tpl="165" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(233, 240, 253); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="166" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="167" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+        <span data-dc-tpl="168" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Water heater install — 50 gal</span>
+        <span data-dc-tpl="169" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+       <div data-dc-tpl="170" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="171" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(234, 246, 240); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="172" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="173" d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle data-dc-tpl="174" cx="12" cy="10" r="2.4"></circle></svg></span>
+        <span data-dc-tpl="175" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">39 Brookline Ct, Northgate</span>
+        <span data-dc-tpl="176" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+      </div>
+      <div data-dc-tpl="177" style="display: flex; align-items: center; gap: 8px; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgb(240, 241, 243);">
+       <span data-dc-tpl="178" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(47, 111, 237); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">TB</span>
+       <span data-dc-tpl="179" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117); font-weight: 500;">Tasha Bell</span>
+       <div data-dc-tpl="180" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="181" style="white-space: nowrap; font-size: 11.5px; color: rgb(179, 118, 10); font-weight: 500;">ETA 9:42 · 6 min</span>
+       <svg data-dc-tpl="182" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2c9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="183" d="m9 6 6 6-6 6"></path></svg>
+      </div>
+     </div>
+
+     
+     <div data-dc-tpl="184" data-job="" class="scp7" style="border: 1px solid rgb(235, 237, 240); border-radius: 14px; background: rgb(255, 255, 255); padding: 13px 14px; cursor: pointer;">
+      <div data-dc-tpl="185" style="display: flex; align-items: center; gap: 8px;">
+       <span data-dc-tpl="186" class="mono" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">WO-4823</span>
+       <span data-dc-tpl="187" style="font-size: 10.5px; font-weight: 600; color: rgb(100, 70, 200); background: rgb(236, 233, 251); border-radius: 6px; padding: 2px 7px; white-space: nowrap;">In progress</span>
+       <div data-dc-tpl="188" style="flex: 1 1 0%;"></div>
+       <svg data-dc-tpl="189" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b3bac4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="190" cx="12" cy="12" r="9"></circle><path data-dc-tpl="191" d="M12 8v4l2.5 1.5"></path></svg>
+       <span data-dc-tpl="192" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">1h 12m</span>
+      </div>
+      <div data-dc-tpl="193" style="display: flex; align-items: center; gap: 8px; margin-top: 9px;">
+       <span data-dc-tpl="194" style="font-size: 15px; font-weight: 600; color: rgb(22, 32, 44);">Marisol Vega</span>
+       <div data-dc-tpl="195" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="196" style="font-size: 14px; font-weight: 600; color: rgb(22, 32, 44);">$2,800.00</span>
+      </div>
+      <div data-dc-tpl="197" style="margin-top: 11px; position: relative; padding-left: 4px;">
+       <span data-dc-tpl="198" style="position: absolute; left: 10px; top: 13px; width: 1.5px; height: 17px; background: repeating-linear-gradient(rgb(212, 216, 222) 0px, rgb(212, 216, 222) 2px, transparent 2px, transparent 5px);"></span>
+       <div data-dc-tpl="199" style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
+        <span data-dc-tpl="200" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(233, 240, 253); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="201" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="202" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+        <span data-dc-tpl="203" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Electrical panel upgrade — 200A</span>
+        <span data-dc-tpl="204" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+       <div data-dc-tpl="205" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="206" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(234, 246, 240); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="207" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="208" d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle data-dc-tpl="209" cx="12" cy="10" r="2.4"></circle></svg></span>
+        <span data-dc-tpl="210" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">142 Aldergrove Ave, Eastside</span>
+        <span data-dc-tpl="211" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+      </div>
+      <div data-dc-tpl="212" style="display: flex; align-items: center; gap: 8px; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgb(240, 241, 243);">
+       <span data-dc-tpl="213" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(18, 160, 106); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RO</span>
+       <span data-dc-tpl="214" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117); font-weight: 500;">Ray Okafor</span>
+       <div data-dc-tpl="215" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="216" style="white-space: nowrap; font-size: 11.5px; color: rgb(100, 70, 200); font-weight: 500;">On site 48 min</span>
+       <svg data-dc-tpl="217" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2c9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="218" d="m9 6 6 6-6 6"></path></svg>
+      </div>
+     </div>
+
+     
+     <div data-dc-tpl="219" data-job="" class="scp7" style="border: 1px solid rgb(235, 237, 240); border-radius: 14px; background: rgb(255, 255, 255); padding: 13px 14px; cursor: pointer;">
+      <div data-dc-tpl="220" style="display: flex; align-items: center; gap: 8px;">
+       <span data-dc-tpl="221" class="mono" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">WO-4824</span>
+       <span data-dc-tpl="222" style="font-size: 10.5px; font-weight: 600; color: rgb(37, 99, 235); background: rgb(233, 240, 253); border-radius: 6px; padding: 2px 7px; white-space: nowrap;">Scheduled</span>
+       <div data-dc-tpl="223" style="flex: 1 1 0%;"></div>
+       <svg data-dc-tpl="224" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b3bac4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="225" cx="12" cy="12" r="9"></circle><path data-dc-tpl="226" d="M12 8v4l2.5 1.5"></path></svg>
+       <span data-dc-tpl="227" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">1h 30m</span>
+      </div>
+      <div data-dc-tpl="228" style="display: flex; align-items: center; gap: 8px; margin-top: 9px;">
+       <span data-dc-tpl="229" style="font-size: 15px; font-weight: 600; color: rgb(22, 32, 44);">Caleb Whitmore</span>
+       <div data-dc-tpl="230" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="231" style="font-size: 14px; font-weight: 600; color: rgb(22, 32, 44);">$145.00</span>
+      </div>
+      <div data-dc-tpl="232" style="margin-top: 11px; position: relative; padding-left: 4px;">
+       <span data-dc-tpl="233" style="position: absolute; left: 10px; top: 13px; width: 1.5px; height: 17px; background: repeating-linear-gradient(rgb(212, 216, 222) 0px, rgb(212, 216, 222) 2px, transparent 2px, transparent 5px);"></span>
+       <div data-dc-tpl="234" style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
+        <span data-dc-tpl="235" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(233, 240, 253); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="236" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="237" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+        <span data-dc-tpl="238" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Furnace tune-up — seasonal</span>
+        <span data-dc-tpl="239" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+       <div data-dc-tpl="240" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="241" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(234, 246, 240); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="242" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="243" d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle data-dc-tpl="244" cx="12" cy="10" r="2.4"></circle></svg></span>
+        <span data-dc-tpl="245" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">21 Vernon Pl, Hillcrest</span>
+        <span data-dc-tpl="246" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+      </div>
+      <div data-dc-tpl="247" style="display: flex; align-items: center; gap: 8px; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgb(240, 241, 243);">
+       <span data-dc-tpl="248" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(111, 86, 214); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">MR</span>
+       <span data-dc-tpl="249" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117); font-weight: 500;">Marco Reyes</span>
+       <div data-dc-tpl="250" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="251" style="white-space: nowrap; font-size: 11.5px; color: rgb(138, 147, 160);">Window 11:00–1:00 PM</span>
+       <svg data-dc-tpl="252" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2c9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="253" d="m9 6 6 6-6 6"></path></svg>
+      </div>
+     </div>
+
+     
+     <div data-dc-tpl="254" data-job="" class="scp7" style="border: 1px solid rgb(235, 237, 240); border-radius: 14px; background: rgb(251, 251, 252); padding: 13px 14px; cursor: pointer;">
+      <div data-dc-tpl="255" style="display: flex; align-items: center; gap: 8px;">
+       <span data-dc-tpl="256" class="mono" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">WO-4825</span>
+       <span data-dc-tpl="257" style="font-size: 10.5px; font-weight: 600; color: rgb(19, 122, 74); background: rgb(225, 243, 232); border-radius: 6px; padding: 2px 7px; white-space: nowrap;">Done</span>
+       <div data-dc-tpl="258" style="flex: 1 1 0%;"></div>
+       <svg data-dc-tpl="259" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b3bac4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="260" cx="12" cy="12" r="9"></circle><path data-dc-tpl="261" d="M12 8v4l2.5 1.5"></path></svg>
+       <span data-dc-tpl="262" style="font-size: 11px; color: rgb(138, 147, 160); white-space: nowrap;">0h 55m</span>
+      </div>
+      <div data-dc-tpl="263" style="display: flex; align-items: center; gap: 8px; margin-top: 9px;">
+       <span data-dc-tpl="264" style="font-size: 15px; font-weight: 600; color: rgb(22, 32, 44);">Owen Frye</span>
+       <div data-dc-tpl="265" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="266" style="font-size: 14px; font-weight: 600; color: rgb(22, 32, 44);">$220.00</span>
+      </div>
+      <div data-dc-tpl="267" style="margin-top: 11px; position: relative; padding-left: 4px;">
+       <span data-dc-tpl="268" style="position: absolute; left: 10px; top: 13px; width: 1.5px; height: 17px; background: repeating-linear-gradient(rgb(212, 216, 222) 0px, rgb(212, 216, 222) 2px, transparent 2px, transparent 5px);"></span>
+       <div data-dc-tpl="269" style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
+        <span data-dc-tpl="270" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(233, 240, 253); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="271" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="272" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg></span>
+        <span data-dc-tpl="273" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Drain cleaning — kitchen line</span>
+        <span data-dc-tpl="274" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+       <div data-dc-tpl="275" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="276" style="width: 18px; height: 18px; border-radius: 6px; background: rgb(234, 246, 240); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="277" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="278" d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle data-dc-tpl="279" cx="12" cy="10" r="2.4"></circle></svg></span>
+        <span data-dc-tpl="280" style="flex: 1 1 0%; min-width: 0px; font-size: 12.5px; color: rgb(90, 102, 117); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">88 Larkspur Dr, Westbrook</span>
+        <span data-dc-tpl="281" style="font-size: 11px; color: rgb(179, 186, 196);">--</span>
+       </div>
+      </div>
+      <div data-dc-tpl="282" style="display: flex; align-items: center; gap: 8px; margin-top: 13px; padding-top: 11px; border-top: 1px solid rgb(240, 241, 243);">
+       <span data-dc-tpl="283" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(47, 111, 237); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">TB</span>
+       <span data-dc-tpl="284" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117); font-weight: 500;">Tasha Bell</span>
+       <div data-dc-tpl="285" style="flex: 1 1 0%;"></div>
+       <span data-dc-tpl="286" style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 11.5px; color: rgb(19, 122, 74); font-weight: 500;"><svg data-dc-tpl="287" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="288" d="m5 12 4 4 10-11"></path></svg>Invoiced</span>
+       <svg data-dc-tpl="289" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c2c9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="290" d="m9 6 6 6-6 6"></path></svg>
+      </div>
+     </div>
+
+    </div>
+   </div>
+
+   
+   <div data-dc-tpl="291" style="flex: 1 1 0%; min-width: 0px; position: relative; background: rgb(231, 233, 238); overflow: hidden;">
+
+    <div data-dc-tpl="292" id="hw-map" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: absolute; inset: 0px; z-index: 0;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 20; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext4.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(227px, 301px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext5.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(483px, 301px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext6.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(227px, 45px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext7.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(483px, 45px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext8.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(227px, 557px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext9.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(483px, 557px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext10.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-29px, 301px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext11.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(739px, 301px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext12.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-29px, 45px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext13.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(739px, 45px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext14.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-29px, 557px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext15.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(739px, 557px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext16.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(227px, -211px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext17.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(483px, -211px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext18.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(227px, 813px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext19.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(483px, 813px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext20.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-29px, -211px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext21.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(739px, -211px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext22.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-29px, 813px, 0px); opacity: 1;"><img alt="" src="/templates/mockups/assets/field-service-mobile-app-ext23.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(739px, 813px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="989" height="1032" viewBox="-82 -86 989 1032" style="transform: translate3d(-82px, -86px, 0px);"><g><path class="leaflet-interactive" stroke="#12a06a" stroke-opacity="1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 9" fill="none" d="M292 362L327 326"></path><path class="leaflet-interactive" stroke="#12a06a" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 9" fill="none" d="M536 461L497 350"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon hw-tech leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -15px; margin-top: -15px; width: 30px; height: 30px; transform: translate3d(292px, 362px, 0px); z-index: 412;"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#fff;border:2.5px solid #12a06a;box-shadow:0 3px 8px rgba(20,28,40,.22);display:flex;align-items:center;justify-content:center;color:#16202c;font-size:11px;font-weight:700;font-family:'Geist',system-ui,sans-serif">TB<span style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:#f3a219;border:2px solid #fff"></span></div></div><div class="leaflet-marker-icon hw-tech leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -15px; margin-top: -15px; width: 30px; height: 30px; transform: translate3d(536px, 461px, 0px); z-index: 511;"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#fff;border:2.5px solid #12a06a;box-shadow:0 3px 8px rgba(20,28,40,.22);display:flex;align-items:center;justify-content:center;color:#16202c;font-size:11px;font-weight:700;font-family:'Geist',system-ui,sans-serif">MR<span style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:#2f6fed;border:2px solid #fff"></span></div></div><div class="leaflet-marker-icon hw-tech leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -15px; margin-top: -15px; width: 30px; height: 30px; transform: translate3d(427px, 507px, 0px); z-index: 557;"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#fff;border:2.5px solid #12a06a;box-shadow:0 3px 8px rgba(20,28,40,.22);display:flex;align-items:center;justify-content:center;color:#16202c;font-size:11px;font-weight:700;font-family:'Geist',system-ui,sans-serif">RO<span style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:#6f56d6;border:2px solid #fff"></span></div></div><div class="leaflet-marker-icon hw-pin leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -18px; margin-top: -18px; width: 36px; height: 36px; transform: translate3d(394px, 403px, 0px); z-index: 1003;"><div style="width:36px;height:36px;border-radius:50%;background:#2f6fed;border:3px solid #fff;box-shadow:0 0 0 5px #2f6fed2e,0 3px 8px rgba(20,28,40,.30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;font-family:'Geist',system-ui,sans-serif">1</div></div><div class="leaflet-marker-icon hw-pin leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(327px, 326px, 0px); z-index: 526;"><div style="width:32px;height:32px;border-radius:50%;background:#f3a219;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(20,28,40,.30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;font-family:'Geist',system-ui,sans-serif">2</div></div><div class="leaflet-marker-icon hw-pin leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(445px, 520px, 0px); z-index: 720;"><div style="width:32px;height:32px;border-radius:50%;background:#6f56d6;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(20,28,40,.30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;font-family:'Geist',system-ui,sans-serif">3</div></div><div class="leaflet-marker-icon hw-pin leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(497px, 350px, 0px); z-index: 550;"><div style="width:32px;height:32px;border-radius:50%;background:#2f6fed;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(20,28,40,.30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;font-family:'Geist',system-ui,sans-serif">4</div></div><div class="leaflet-marker-icon hw-pin leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -16px; margin-top: -16px; width: 32px; height: 32px; transform: translate3d(310px, 574px, 0px); z-index: 774;"><div style="width:32px;height:32px;border-radius:50%;background:#1aa363;border:2.5px solid #fff;box-shadow:0 3px 8px rgba(20,28,40,.30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;font-family:'Geist',system-ui,sans-serif">5</div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"><div class="leaflet-popup  leaflet-zoom-animated" style="opacity: 1; transform: translate3d(394px, 383px, 0px); bottom: -4px; left: -135px;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 267px;"><div style="padding:15px 15px 14px;font-family:'Geist',system-ui,sans-serif"><div style="display:flex;align-items:flex-start;gap:12px"><span style="position:relative;width:42px;height:42px;border-radius:50%;background:#e9f0fd;color:#2563eb;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #2f6fed">PN<span style="position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#2f6fed;border:2px solid #fff"></span></span><div style="flex:1;min-width:0;padding-top:1px"><div style="font-size:16px;font-weight:700;letter-spacing:-.01em;color:#16202c">Priya Nandakumar</div><div style="font-size:12.5px;color:#8a93a0;margin-top:2px">Scheduled · window 10:00 AM</div></div><span style="display:flex;align-items:center;justify-content:center;flex:none;padding-top:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"></path></svg></span></div><div style="display:flex;align-items:center;gap:10px;margin-top:14px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.2 7-11a7 7 0 0 0-14 0c0 5.8 7 11 7 11z"></path><circle cx="12" cy="10" r="2.4"></circle></svg><span style="font-size:13px;color:#48505c">506 Foster St, Midtown</span></div><div style="display:flex;align-items:center;gap:10px;margin-top:11px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6a1.5 1.5 0 0 0 2.1 2.1l6-6a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.5-.5-2.1z"></path></svg><span style="font-size:13px;color:#48505c">AC repair · no technician assigned</span></div><div style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:42px;margin-top:14px;border-radius:12px;border:1px solid #e4e6ea;color:#1f2a37;font-size:13.5px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Assign technician</div></div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(958393px, 1.72685e+06px, 0px) scale(8192);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap © CARTO</div></div><div class="leaflet-bottom leaflet-right"></div></div></div>
+
+    
+    <div data-dc-tpl="293" style="position: absolute; left: 18px; top: 18px; z-index: 1000; background: rgb(255, 255, 255); border: 1px solid rgb(235, 237, 240); border-radius: 12px; box-shadow: rgba(20, 28, 40, 0.1) 0px 6px 18px; padding: 11px 13px;">
+     <div data-dc-tpl="294" style="font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(154, 163, 176); font-weight: 600; margin-bottom: 8px;">Job status</div>
+     <div data-dc-tpl="295" style="display: flex; flex-direction: column; gap: 7px;">
+      <div data-dc-tpl="296" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="297" style="width: 10px; height: 10px; border-radius: 50%; background: rgb(47, 111, 237);"></span><span data-dc-tpl="298" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117);">Scheduled</span></div>
+      <div data-dc-tpl="299" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="300" style="width: 10px; height: 10px; border-radius: 50%; background: rgb(243, 162, 25);"></span><span data-dc-tpl="301" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117);">En route</span></div>
+      <div data-dc-tpl="302" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="303" style="width: 10px; height: 10px; border-radius: 50%; background: rgb(111, 86, 214);"></span><span data-dc-tpl="304" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117);">In progress</span></div>
+      <div data-dc-tpl="305" style="display: flex; align-items: center; gap: 8px;"><span data-dc-tpl="306" style="width: 10px; height: 10px; border-radius: 50%; background: rgb(26, 163, 99);"></span><span data-dc-tpl="307" style="white-space: nowrap; font-size: 11.5px; color: rgb(90, 102, 117);">Done</span></div>
+     </div>
+    </div>
+
+    
+    <button data-dc-tpl="308" data-refresh="" class="scp8" style="position: absolute; right: 18px; top: 18px; z-index: 1000; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0px 14px; border-radius: 10px; background: rgb(255, 255, 255); border: 1px solid rgb(235, 237, 240); box-shadow: rgba(20, 28, 40, 0.1) 0px 4px 12px; font-size: 12.5px; font-weight: 600; color: rgb(27, 35, 48);"><svg data-dc-tpl="309" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12a06a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="310" d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path data-dc-tpl="311" d="M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16"></path><path data-dc-tpl="312" d="M3 21v-5h5"></path></svg>Refresh</button>
+
+    
+    <div data-dc-tpl="313" style="position: absolute; right: 18px; bottom: 30px; z-index: 1000; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+     <button data-dc-tpl="314" data-compass="" class="scp9" style="width: 38px; height: 38px; border-radius: 12px; background: rgb(255, 255, 255); border: 1px solid rgb(235, 237, 240); box-shadow: rgba(20, 28, 40, 0.1) 0px 4px 12px; display: flex; align-items: center; justify-content: center; color: rgb(90, 102, 117);"><svg data-dc-tpl="315" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="316" cx="12" cy="12" r="9"></circle><path data-dc-tpl="317" d="m15.5 8.5-2.4 5.6-5.6 2.4 2.4-5.6 5.6-2.4z"></path></svg></button>
+     <div data-dc-tpl="318" style="background: rgb(255, 255, 255); border: 1px solid rgb(235, 237, 240); border-radius: 12px; box-shadow: rgba(20, 28, 40, 0.1) 0px 4px 12px; display: flex; flex-direction: column; overflow: hidden;">
+      <button data-dc-tpl="319" data-zin="" class="scpa" style="width: 38px; height: 36px; display: flex; align-items: center; justify-content: center; color: rgb(90, 102, 117);"><svg data-dc-tpl="320" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path data-dc-tpl="321" d="M12 5v14M5 12h14"></path></svg></button>
+      <span data-dc-tpl="322" style="height: 1px; background: rgb(235, 237, 240);"></span>
+      <button data-dc-tpl="323" data-zout="" class="scpa" style="width: 38px; height: 36px; display: flex; align-items: center; justify-content: center; color: rgb(90, 102, 117);"><svg data-dc-tpl="324" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path data-dc-tpl="325" d="M5 12h14"></path></svg></button>
+     </div>
+    </div>
+
+   </div>
+  </div>
+ </section></div></div></div>
+
+
+
+</body></html>

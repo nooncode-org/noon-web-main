@@ -349,10 +349,44 @@ const MARKETING_SITE: TemplateCatalogItem = {
   prompt: "Use the Marketing Site template as a starting point for our website.",
 };
 
+// New category: a field-service dispatch console — today's jobs and technicians
+// on a live map with assignment. The catalog's only map-first surface, so it
+// reads as visually distinct from every other template. Overrides the original
+// "Field Service Mobile App" entry (the frozen Home still shows that name); on
+// /templates we render the desktop dispatch console we actually built.
+const FIELD_SERVICE: TemplateCatalogItem = {
+  slug: "field-service-mobile-app",
+  name: "Field Service Dispatch",
+  category: "Field service",
+  summary:
+    "A dispatch console for field teams — today's jobs and technicians on a live map, so a coordinator can assign, route, and track work from one screen.",
+  bestFit: ["Home & trade services", "Install & repair teams", "Dispatch & coordination"],
+  includes: [
+    "Live dispatch map — job pins & technician markers",
+    "Today's jobs list — status, time window, address",
+    "Assign & reassign technicians",
+    "Job detail & status tracking",
+  ],
+  extensions: ["Route optimization", "Technician mobile app", "Customer notifications", "Scheduling & calendar"],
+  useWhen:
+    "You send people to locations and need to see jobs and crews on a map to assign and track work in real time — not just a flat list of tasks.",
+  notIdealWhen:
+    "The work happens in one place or back-office, or a simple schedule or list covers it without any geography.",
+  baselinePromise:
+    "Gives you a working dispatch map, jobs list, and assignment flow, so the custom work can focus on your scheduling rules, routing, and field integrations.",
+  prompt: "Use the Field Service Dispatch template as a starting point for our field service software.",
+};
+
 export const templatesCatalog: TemplateCatalogItem[] = [
   ...templates
     .filter((t) => t.slug !== "approval-workflow-tool")
-    .map((t) => (t.slug === "operations-command-center" ? MERGED_OPERATIONS : t)),
+    .map((t) =>
+      t.slug === "operations-command-center"
+        ? MERGED_OPERATIONS
+        : t.slug === "field-service-mobile-app"
+          ? FIELD_SERVICE
+          : t,
+    ),
   SALES_CRM,
   AI_AGENT,
   PROJECT_MGMT,
@@ -362,9 +396,12 @@ export const templatesCatalog: TemplateCatalogItem[] = [
 // Filter chips for the curated catalog (drops the now-unused "Internal tools",
 // adds new taxonomy categories as their templates land).
 export const templateCatalogCategories: string[] = [
-  ...templateCategories.filter((c) => c !== "Internal tools"),
+  // drop "Internal tools" (unused) and "Mobile apps" (field service moved to its
+  // own desktop "Field service" category — see FIELD_SERVICE above).
+  ...templateCategories.filter((c) => c !== "Internal tools" && c !== "Mobile apps"),
   "CRM & sales",
   "AI agents & automation",
   "Project management",
+  "Field service",
   "Marketing & websites",
 ];
