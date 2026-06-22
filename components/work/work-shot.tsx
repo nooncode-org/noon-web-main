@@ -53,7 +53,15 @@ function ScaledFrame({
     return () => ro.disconnect();
   }, [frame.w]);
 
-  return (
+  // A very tall (landing-style) mockup shown inline would be a multi-screen-tall
+  // block that only reveals the hero. Cap the inline height and let it scroll
+  // within a contained window so the whole page is browsable in place; the iframe
+  // is kept inert there so the wheel scrolls the window (no scroll-trap), and the
+  // Expand button still opens the fully interactive 1:1 view. Only triggers for
+  // landing-aspect mockups (h ≫ w); every app mockup is ≤1.4× and unaffected.
+  const tallInline = interactive === "lg" && frame.h / frame.w > 2;
+
+  const box = (
     <div
       ref={boxRef}
       className="relative w-full overflow-hidden"
@@ -65,7 +73,11 @@ function ScaledFrame({
         loading={lazy ? "lazy" : "eager"}
         scrolling="no"
         className={`absolute left-0 top-0 border-0 ${
-          interactive === "always" ? "" : "pointer-events-none lg:pointer-events-auto"
+          interactive === "always"
+            ? ""
+            : tallInline
+              ? "pointer-events-none"
+              : "pointer-events-none lg:pointer-events-auto"
         }`}
         style={{
           width: frame.w,
@@ -77,6 +89,15 @@ function ScaledFrame({
       />
     </div>
   );
+
+  if (tallInline) {
+    return (
+      <div className="w-full overflow-y-auto overscroll-contain" style={{ maxHeight: "70vh" }}>
+        {box}
+      </div>
+    );
+  }
+  return box;
 }
 
 export function WorkShot({ frame }: { frame: WorkShotFrame }) {
