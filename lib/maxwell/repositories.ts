@@ -215,6 +215,9 @@ export type ProposalRequest = {
   monthlyAmountUsd: number | null;
   stripeCheckoutSessionId: string | null;
   stripePaymentIntentId: string | null;
+  /** v3 membership M1: Stripe correlation ids for the recurring subscription. */
+  stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
   stripePaidAt: string | null;
   sentAt: string | null;
   firstOpenedAt: string | null;
@@ -346,6 +349,8 @@ type ProposalRow = {
   monthly_amount_usd: number | string | null;
   stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
   stripe_paid_at: string | Date | null;
   sent_at: string | Date | null;
   first_opened_at: string | Date | null;
@@ -528,6 +533,8 @@ function mapProposal(r: ProposalRow): ProposalRequest {
     monthlyAmountUsd: toNumber(r.monthly_amount_usd),
     stripeCheckoutSessionId: r.stripe_checkout_session_id,
     stripePaymentIntentId: r.stripe_payment_intent_id,
+    stripeSubscriptionId: r.stripe_subscription_id,
+    stripeCustomerId: r.stripe_customer_id,
     stripePaidAt: toIsoTimestamp(r.stripe_paid_at),
     sentAt: toIsoTimestamp(r.sent_at),
     firstOpenedAt: toIsoTimestamp(r.first_opened_at),
@@ -1150,6 +1157,26 @@ export async function getProposalRequestByPublicToken(publicToken: string): Prom
   return rows[0] ? mapProposal(rows[0]) : null;
 }
 
+/**
+ * v3 membership M1 — correlate a recurring Stripe webhook (invoice.* /
+ * customer.subscription.*) back to its proposal via the persisted subscription
+ * id. Unique partial index (`proposal_request_stripe_subscription_id_key`)
+ * guarantees at most one match. The webhook falls back to
+ * `subscription.metadata.external_proposal_id` when this returns null.
+ */
+export async function getProposalRequestByStripeSubscriptionId(
+  stripeSubscriptionId: string,
+): Promise<ProposalRequest | null> {
+  const sql = getDb();
+  const rows = await sql<ProposalRow[]>`
+    SELECT *
+    FROM proposal_request
+    WHERE stripe_subscription_id = ${stripeSubscriptionId}
+    LIMIT 1
+  `;
+  return rows[0] ? mapProposal(rows[0]) : null;
+}
+
 export async function updateProposalRequest(id: string, patch: {
   status?: ProposalStatus;
   caseClassification?: ProposalCaseClassification;
@@ -1163,6 +1190,8 @@ export async function updateProposalRequest(id: string, patch: {
   monthlyAmountUsd?: number | null;
   stripeCheckoutSessionId?: string | null;
   stripePaymentIntentId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripeCustomerId?: string | null;
   stripePaidAt?: string | null;
   sentAt?: string | null;
   firstOpenedAt?: string | null;
@@ -1233,6 +1262,16 @@ export async function updateProposalRequest(id: string, patch: {
           WHEN ${patch.stripePaymentIntentId !== undefined}
             THEN ${patch.stripePaymentIntentId ?? null}
           ELSE stripe_payment_intent_id
+        END,
+        stripe_subscription_id = CASE
+          WHEN ${patch.stripeSubscriptionId !== undefined}
+            THEN ${patch.stripeSubscriptionId ?? null}
+          ELSE stripe_subscription_id
+        END,
+        stripe_customer_id = CASE
+          WHEN ${patch.stripeCustomerId !== undefined}
+            THEN ${patch.stripeCustomerId ?? null}
+          ELSE stripe_customer_id
         END,
         stripe_paid_at = CASE
           WHEN ${patch.stripePaidAt !== undefined}

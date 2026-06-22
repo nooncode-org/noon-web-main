@@ -80,6 +80,20 @@ export const projectStatusDataSchema = z.object({
     activated: z.boolean(),
     status: z.string().nullable(),
   }),
+  // v3 membership M1 (NEW): the App's SoT membership state, SANITIZED — only the
+  // client-safe `{ status, monthly, current_period_end }`, never Stripe ids /
+  // earnings / internals (§8.3). Optional/nullable so the pre-membership producer
+  // (which omits it) still parses; absent → the §8.2 indicator falls back to the
+  // local M0 plan copy. `status` is a plain string — NoonWeb owns the client label
+  // (mapMembershipStatusToMeta), so a future/unmapped status degrades to neutral.
+  membership: z
+    .object({
+      status: z.string(),
+      monthlyAmountUsd: z.number().nullable().optional(),
+      currentPeriodEnd: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   versions: z.array(projectStatusVersionSchema),
   // Fase 2 (NEW): which version sequence is the live published one + its public
   // client-facing URL. Optional/nullable so the pre-Fase-2 producer (which omits

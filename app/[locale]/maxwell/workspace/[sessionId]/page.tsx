@@ -23,7 +23,11 @@ import {
 } from "@/lib/maxwell/ai-mvp-milestone-copy";
 import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
 import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
-import { formatProposalAmount, mapProjectStatusToMeta } from "@/lib/maxwell/project-status-labels";
+import {
+  formatProposalAmount,
+  mapMembershipStatusToMeta,
+  mapProjectStatusToMeta,
+} from "@/lib/maxwell/project-status-labels";
 import {
   isPublishableVersionState,
   isPublishedVersion,
@@ -390,6 +394,11 @@ export default async function WorkspacePage({ params }: Props) {
   // the App emits versions / publishes (then this section renders).
   const appVersions = appStatusData?.versions ?? [];
   const appPublishedUrl = appStatusData?.publishedUrl ?? null;
+  // §8.2 membership indicator (M1): the App's SoT membership state arrives
+  // sanitized in the pull. Null until the App emits it (flag off / pre-M1) → the
+  // Plan card falls back to the local M0 copy. NoonWeb owns the client label.
+  const appMembership = appStatusData?.membership ?? null;
+  const membershipMeta = appMembership ? mapMembershipStatusToMeta(appMembership.status) : null;
 
   // Slice 1b: the client's message log lives in the local outbox (source of
   // truth — the status read does not return comments).
@@ -471,13 +480,26 @@ export default async function WorkspacePage({ params }: Props) {
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                   Plan
                 </p>
-                <p className="text-sm font-medium">
-                  {planProposal.paymentModality === "membership" ? "Membership" : "One-time"}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">
+                    {planProposal.paymentModality === "membership" ? "Membership" : "One-time"}
+                  </p>
+                  {/* M1: live membership status chip when the App emits state in the pull. */}
+                  {membershipMeta && (
+                    <span
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${membershipMeta.color}`}
+                    >
+                      {membershipMeta.label}
+                    </span>
+                  )}
+                </div>
                 {planProposal.paymentModality === "membership" &&
                   planProposal.monthlyAmountUsd != null && (
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      Monthly membership is coordinated with your Noon PM.
+                      {/* M1 status description when live; M0 interim copy otherwise. */}
+                      {membershipMeta
+                        ? membershipMeta.description
+                        : "Monthly membership is coordinated with your Noon PM."}
                     </p>
                   )}
               </div>
