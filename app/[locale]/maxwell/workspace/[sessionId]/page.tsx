@@ -42,8 +42,10 @@ import {
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import { ROLLBACK_REQUEST_ENABLED } from "@/lib/maxwell/client-requests";
+import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
 import { CommentBox } from "./_components/comment-box";
 import { RequestBox } from "./_components/request-box";
+import { ManageMembershipButton } from "./_components/manage-membership-button";
 import { VersionPublishButton } from "./_components/version-publish-button";
 import { VersionRollbackButton } from "./_components/version-rollback-button";
 
@@ -502,6 +504,12 @@ export default async function WorkspacePage({ params }: Props) {
                         : "Monthly membership is coordinated with your Noon PM."}
                     </p>
                   )}
+                {/* M2 (Fase 6b): self-manage / cancel via Stripe Billing Portal.
+                    Only when there's a real subscription to manage (stripe_customer_id
+                    persisted at M1 activation) and the flag is on. */}
+                {MEMBERSHIP_BILLING_ENABLED && planProposal.stripeCustomerId && (
+                  <ManageMembershipButton sessionId={sessionId} />
+                )}
               </div>
               {planProposal.paymentModality === "membership" &&
                 planProposal.monthlyAmountUsd != null && (
