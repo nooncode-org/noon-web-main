@@ -3,6 +3,7 @@ import { z, ZodError, type ZodTypeAny } from "zod";
 import type { StudioSession, ProposalRequest, StudioVersion } from "@/lib/maxwell/repositories";
 import type { ClientRequestType, ClientRequestPriority } from "@/lib/maxwell/client-requests";
 import { clientVisibleStateSchema } from "@/lib/maxwell/client-requests";
+import type { MembershipEventKind, MembershipStatus } from "@/lib/maxwell/membership-billing";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 
 const SIGNATURE_HEADER = "x-noon-signature";
@@ -808,6 +809,74 @@ export async function sendVersionActionToNoonApp(input: {
   return postNoonAppWebhook(
     "/api/integrations/website/version-action",
     buildVersionActionPayload(input),
+  );
+}
+
+/**
+ * Membership lifecycle forward (v3 membership billing M1). NoonWeb runs Stripe
+ * and forwards a NORMALIZED, Stripe-agnostic lifecycle event to App's receiver
+ * (`POST /api/integrations/website/membership-lifecycle`). snake_case wire,
+ * modeled on `payment-confirmed`/§9 (the App proposed this casing in its cosign).
+ *
+ * The App is SoT of the membership state; this wire is **state-only** — ZERO
+ * earnings (master-spec §24.2; earnings are credited once on the activation via
+ * `payment-confirmed`). The App de-dupes on `external_event_id` (the Stripe
+ * `evt_…`, globally unique — NoonWeb amendment 1) and applies latest-wins by
+ * `created` (the Stripe event unix ts — amendment 2) so a reordered webhook
+ * never resurrects a stale state.
+ *
+ * `monthly_amount_usd` is whole USD DOLLARS (amendment 3) — NoonWeb's own
+ * engine-derived monthly (`proposal.monthlyAmountUsd`), NOT Stripe minor units,
+ * so the App reads it directly without a 100× conversion.
+ *
+ * Contract: docs/2026-06-22-v3-membership-m1-architecture.md C3 +
+ * docs/2026-06-22-noonweb-to-app-v3-membership-billing-amendment.md.
+ */
+export function buildMembershipLifecyclePayload(input: {
+  externalSessionId: string;
+  externalProposalId: string;
+  externalSubscriptionId: string;
+  externalEventId: string;
+  eventKind: MembershipEventKind;
+  status: MembershipStatus;
+  currentPeriodEnd: string | null;
+  monthlyAmountUsd: number;
+  created: number;
+  metadata?: Record<string, unknown>;
+}) {
+  return {
+    external_source: "noon_website",
+    external_session_id: input.externalSessionId,
+    external_proposal_id: input.externalProposalId,
+    external_subscription_id: input.externalSubscriptionId,
+    external_event_id: input.externalEventId,
+    membership: {
+      event_kind: input.eventKind,
+      status: input.status,
+      current_period_end: input.currentPeriodEnd,
+      monthly_amount_usd: input.monthlyAmountUsd,
+      currency: "USD" as const,
+    },
+    created: input.created,
+    ...(input.metadata ? { metadata: input.metadata } : {}),
+  };
+}
+
+export async function sendMembershipLifecycleToNoonApp(input: {
+  externalSessionId: string;
+  externalProposalId: string;
+  externalSubscriptionId: string;
+  externalEventId: string;
+  eventKind: MembershipEventKind;
+  status: MembershipStatus;
+  currentPeriodEnd: string | null;
+  monthlyAmountUsd: number;
+  created: number;
+  metadata?: Record<string, unknown>;
+}) {
+  return postNoonAppWebhook(
+    "/api/integrations/website/membership-lifecycle",
+    buildMembershipLifecyclePayload(input),
   );
 }
 

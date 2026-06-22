@@ -152,6 +152,8 @@ function fakeProposal(overrides: Partial<ProposalRequest> = {}): ProposalRequest
     monthlyAmountUsd: null,
     stripeCheckoutSessionId: null,
     stripePaymentIntentId: null,
+    stripeSubscriptionId: null,
+    stripeCustomerId: null,
     stripePaidAt: null,
     sentAt: new Date().toISOString(),
     firstOpenedAt: null,

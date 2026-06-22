@@ -143,6 +143,8 @@ function fullProposal(): ProposalRequest {
     monthlyAmountUsd: null,
     stripeCheckoutSessionId: "cs_test_1", // ← internal
     stripePaymentIntentId: "pi_test_1", // ← internal
+    stripeSubscriptionId: "sub_test_1", // ← internal
+    stripeCustomerId: "cus_test_1", // ← internal
     stripePaidAt: new Date().toISOString(),
     sentAt: new Date().toISOString(),
     firstOpenedAt: null,

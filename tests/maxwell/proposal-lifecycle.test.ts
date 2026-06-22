@@ -31,6 +31,8 @@ function makeProposal(overrides: Partial<ProposalRequest> = {}): ProposalRequest
     monthlyAmountUsd: null,
     stripeCheckoutSessionId: null,
     stripePaymentIntentId: null,
+    stripeSubscriptionId: null,
+    stripeCustomerId: null,
     stripePaidAt: null,
     sentAt: null,
     firstOpenedAt: null,
