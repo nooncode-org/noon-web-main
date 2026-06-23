@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { getTemplateHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
 import { templates, type TemplateCatalogItem } from "@/data/templates";
+import templateMockups from "@/data/template-mockups.json";
 
 // ============================================================================
 // Category tone map
@@ -594,6 +595,24 @@ export function TemplateMockup({ category, enhanced = false }: { category: strin
   return <Mockup enhanced={enhanced} />;
 }
 
+// A lightweight preview of the ACTUAL template: a pre-rendered hero screenshot
+// (public/templates/mockups/heroes/<slug>.webp, ~40–140 KB) shown cover/top — so
+// the card shows the real product without 11 live iframes choking the grid. The
+// detail page stays fully live. Hero path is derived from the mockup html path
+// (so the reused Operations/Marketplace mockups share their source's hero).
+function MockupHeroPreview({ src, name }: { src: string; name: string }) {
+  const hero = src.replace("/mockups/", "/mockups/heroes/").replace(/\.html$/, ".webp");
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- pre-rendered static webp; next/image is overkill and didn't composite reliably
+    <img
+      src={hero}
+      alt={`${name} preview`}
+      loading="lazy"
+      className="absolute inset-0 h-full w-full object-cover object-top"
+    />
+  );
+}
+
 // ============================================================================
 // Template Card
 // ============================================================================
@@ -603,6 +622,7 @@ export function TemplateCard({ template, index }: { template: TemplateCatalogIte
   const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.15 });
   const tone = categoryTone(template.category);
   const Mockup = MockupByCategory[template.category] ?? SaaSMockup;
+  const mockup = (templateMockups as Record<string, { src: string; w: number; h: number }>)[template.slug];
 
   return (
     <div
@@ -614,9 +634,13 @@ export function TemplateCard({ template, index }: { template: TemplateCatalogIte
       }`}
       style={{ transitionDelay: `${index * 80}ms` }}
     >
-      {/* Mockup preview area */}
+      {/* Mockup preview area — the real template hero when a live mockup exists */}
       <div className={`relative h-44 lg:h-52 overflow-hidden bg-foreground/[0.035] transition-colors duration-500 ${hovered ? "bg-foreground/[0.06]" : ""}`}>
-        <Mockup enhanced={hovered} />
+        {mockup ? (
+          <MockupHeroPreview src={mockup.src} name={template.name} />
+        ) : (
+          <Mockup enhanced={hovered} />
+        )}
       </div>
 
       {/* Content */}
