@@ -112,3 +112,27 @@ html.dark .work-rd {
 /* abstract systemic illustration (hero accent) */
 .wr-figure { color: var(--text-muted); }
 .wr-figure .node { fill: var(--brand); stroke: var(--brand); }
+
+/* section heading */
+.wr-sechead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 36px; }
+
+/* case studies — two-col text + live mockup (Pathly pattern), alternating */
+.wr-cases { display: grid; gap: 56px; }
+.wr-case { display: grid; gap: 26px; align-items: center; }
+@media (min-width: 900px) {
+  .wr-case { grid-template-columns: 1.05fr 1fr; gap: 48px; }
+  .wr-case.flip .wr-case-figure { order: 2; }
+}
+.wr-case-figure { position: relative; }
+.wr-case-shot { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); }
+.wr-case-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 15px; }
+.wr-case-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.wr-badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brand); border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent); background: color-mix(in srgb, var(--brand) 8%, transparent); border-radius: var(--radius-pill); padding: 3px 9px; }
+.wr-case-title { font-size: clamp(21px, 2.4vw, 27px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--text-primary); margin: 0; }
+.wr-case-summary { margin-top: 12px; font-size: 15px; line-height: 1.6; color: var(--text-secondary); }
+.wr-metrics { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.wr-metric { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 5px 12px; font-size: 12.5px; font-weight: 500; color: var(--text-primary); }
+.wr-metric .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--brand); flex-shrink: 0; }
+.wr-stack { margin-top: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.wr-stack span:not(:last-child)::after { content: "·"; margin-left: 9px; color: color-mix(in srgb, var(--text-muted) 45%, transparent); }
+.wr-honesty { margin-top: 30px; text-align: center; font-family: var(--mono); font-size: 10.5px; line-height: 1.6; color: var(--text-muted); max-width: 72ch; margin-inline: auto; }
