@@ -72,6 +72,7 @@ vi.mock("@/lib/stripe/server", async (importOriginal) => {
 });
 
 import { POST } from "@/app/api/stripe/webhook/route";
+import { NoonAppIntegrationError } from "@/lib/noon-app-integration";
 
 const PERIOD_END_UNIX = 1_700_600_000;
 const PERIOD_END_ISO = new Date(PERIOD_END_UNIX * 1000).toISOString();
@@ -315,5 +316,112 @@ describe("guards", () => {
     // one-time path passes the strict paidAmountMinor.
     expect(mocks.confirmProposalPayment.mock.calls[0][0].paidAmountMinor).toBe(450000);
     expect(mocks.sendMembershipLifecycle).not.toHaveBeenCalled();
+  });
+});
+
+describe("version-robustness fallbacks + metadata resolution + delivery", () => {
+  it("reads current_period_end from the subscription top level when items omit it", async () => {
+    // dahlia carries it per-item; older API versions exposed it at the top level.
+    mocks.getProposalRequestBySub.mockResolvedValue(proposalFixture());
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_9",
+      type: "customer.subscription.updated",
+      created: CREATED,
+      data: {
+        object: subscriptionFixture({
+          status: "active",
+          items: { data: [{}] },
+          current_period_end: PERIOD_END_UNIX,
+        }),
+      },
+    });
+
+    await post();
+    expect(mocks.sendMembershipLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ currentPeriodEnd: PERIOD_END_ISO }),
+    );
+  });
+
+  it("reads the subscription id from the legacy top-level invoice.subscription", async () => {
+    // dahlia nests it under invoice.parent.subscription_details.subscription;
+    // older API versions exposed invoice.subscription at the top level.
+    mocks.getProposalRequestBySub.mockResolvedValue(proposalFixture());
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_10",
+      type: "invoice.paid",
+      created: CREATED,
+      data: { object: { billing_reason: "subscription_cycle", subscription: "sub_1" } },
+    });
+
+    await post();
+    expect(mocks.getProposalRequestBySub).toHaveBeenCalledWith("sub_1");
+    expect(mocks.sendMembershipLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ eventKind: "renewed", externalSubscriptionId: "sub_1" }),
+    );
+  });
+
+  it("falls back to subscription.metadata.external_proposal_id when no row maps the sub", async () => {
+    // resolveMembershipProposal: bySub miss → metadata.external_proposal_id (set on
+    // the subscription at checkout via subscription_data.metadata).
+    mocks.getProposalRequestBySub.mockResolvedValue(null);
+    mocks.getProposalRequest.mockResolvedValue(proposalFixture());
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_11",
+      type: "invoice.paid",
+      created: CREATED,
+      data: {
+        object: {
+          billing_reason: "subscription_cycle",
+          parent: { subscription_details: { subscription: "sub_1" } },
+        },
+      },
+    });
+
+    await post();
+    expect(mocks.getProposalRequest).toHaveBeenCalledWith("proposal-1");
+    expect(mocks.sendMembershipLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ eventKind: "renewed", externalProposalId: "proposal-1" }),
+    );
+  });
+
+  it("ignores an invoice.paid with an unsupported billing_reason", async () => {
+    mocks.getProposalRequestBySub.mockResolvedValue(proposalFixture());
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_12",
+      type: "invoice.paid",
+      created: CREATED,
+      data: {
+        object: {
+          billing_reason: "subscription_update",
+          parent: { subscription_details: { subscription: "sub_1" } },
+        },
+      },
+    });
+
+    const res = await post();
+    const body = await res.json();
+    expect(body.ignored).toBe(true);
+    expect(mocks.sendMembershipLifecycle).not.toHaveBeenCalled();
+  });
+
+  it("propagates a forward failure as a non-2xx so Stripe re-delivers (at-least-once)", async () => {
+    mocks.getProposalRequestBySub.mockResolvedValue(proposalFixture());
+    mocks.sendMembershipLifecycle.mockRejectedValue(
+      new NoonAppIntegrationError("App handoff failed", 502),
+    );
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_13",
+      type: "invoice.paid",
+      created: CREATED,
+      data: {
+        object: {
+          billing_reason: "subscription_cycle",
+          parent: { subscription_details: { subscription: "sub_1" } },
+        },
+      },
+    });
+
+    const res = await post();
+    expect(res.status).toBe(502);
   });
 });
