@@ -193,3 +193,215 @@ export const templates = [
 ] as const;
 
 export type TemplateItem = (typeof templates)[number];
+
+// ============================================================================
+// CURATED CATALOG (the /templates page) — 7 sharply-distinct baselines.
+//
+// `templates` (above, 8 entries) is the source the FROZEN Home hero carousel
+// reads (hero-templates-panel.tsx) and MUST stay untouched. The /templates page
+// instead renders this curated catalog, where "Operations Command Center" and
+// the old standalone "Approval Workflow Tool" are merged into one operations
+// surface (monitor + act). The retired `approval-workflow-tool` slug redirects
+// to `operations-command-center` (see [slug]/page.tsx), so the Home link still
+// resolves. Owner decision 2026-06-12: keep Home at 8, sharpen /templates to 7.
+// ============================================================================
+
+export type TemplateCatalogItem = {
+  slug: string;
+  image?: string;
+  name: string;
+  category: string;
+  summary: string;
+  bestFit: readonly string[];
+  includes: readonly string[];
+  extensions: readonly string[];
+  useWhen: string;
+  notIdealWhen: string;
+  baselinePromise: string;
+  prompt: string;
+};
+
+// Operations Command Center + Approval Workflow Tool, merged: one operational
+// surface that pairs live visibility (orders/tasks/KPIs) with the approval
+// queues, assignments, and escalations a team acts on.
+const MERGED_OPERATIONS: TemplateCatalogItem = {
+  slug: "operations-command-center",
+  image: "/templates/operations-command-center.jpg",
+  name: "Operations Command Center",
+  category: "Dashboards",
+  summary:
+    "A central operations surface that pairs live visibility — orders, tasks, KPIs — with the approval queues, assignments, and escalations your team acts on, in one place.",
+  bestFit: ["Ops reporting & visibility", "Internal approvals & routing", "Team & exec dashboards"],
+  includes: [
+    "Dashboard & KPI modules",
+    "Operational lists & queues",
+    "Approval flows — assign, escalate, decide",
+    "Role-based views & an audit-friendly trail",
+  ],
+  extensions: ["Custom reports & alerts", "SLA & escalation logic", "AI routing", "Automation triggers & connectors"],
+  useWhen:
+    "The team needs one operational surface to both see what's happening across the business and act on it — moving fragmented tools and informal approvals into a single control layer.",
+  notIdealWhen:
+    "The real need is a narrow single-purpose tool, or there's no agreed source of truth yet behind the dashboard and the approval steps are still entirely informal.",
+  baselinePromise:
+    "Provides a fast baseline for operational visibility, KPI layout, role-based structure, and approval workflows — assignments, escalation paths, decision states — so the scope can focus on the real data and business rules.",
+  prompt: "Use the Operations Command Center template as a starting point for our operations and approvals software.",
+};
+
+// Retired in the curated catalog → redirects to operations-command-center.
+export const RETIRED_TEMPLATE_SLUGS: Record<string, string> = {
+  "approval-workflow-tool": "operations-command-center",
+};
+
+// New category (taxonomy expansion 2026-06-12): a pipeline-first CRM. Distinct
+// from Dashboards (this is where a sales team ACTS on deals, not a metrics view).
+const SALES_CRM: TemplateCatalogItem = {
+  slug: "sales-crm",
+  name: "Sales CRM",
+  category: "CRM & sales",
+  summary:
+    "A pipeline-first CRM for teams that need to track contacts, deals, and follow-ups — without drowning in a bloated enterprise tool.",
+  bestFit: ["B2B sales teams", "Agencies & services", "Founder-led sales"],
+  includes: [
+    "Contact & company records",
+    "Deal pipeline — stages, drag-and-drop",
+    "Activity timeline & follow-ups",
+    "Role-based access",
+  ],
+  extensions: ["Email & calendar sync", "Lead scoring", "Quotes & invoicing", "Reporting & forecasts"],
+  useWhen:
+    "You're outgrowing spreadsheets and want a pipeline your team actually updates — shaped around how you sell, not a generic enterprise CRM config.",
+  notIdealWhen:
+    "You need a full marketing-automation suite or a heavily regulated system of record; that's a broader, more specialized build.",
+  baselinePromise:
+    "Gives you a working pipeline, contact model, and activity tracking so the custom work can focus on your sales process and the integrations that matter.",
+  prompt: "Use the Sales CRM template as a starting point for our sales software.",
+};
+
+// New category: an autonomous AI agent that runs a multi-step process and pauses
+// for human approval on the calls that matter (Noon's human-review wedge, live).
+const AI_AGENT: TemplateCatalogItem = {
+  slug: "ai-operations-agent",
+  name: "AI Operations Agent",
+  category: "AI agents & automation",
+  summary:
+    "A conversational AI assistant that takes a task, reasons over your data and tools, and produces the work — drafts, analysis, answers — with you reviewing before anything ships.",
+  bestFit: ["Ops & analytics", "Knowledge work", "Drafting & research"],
+  includes: [
+    "Conversational task interface",
+    "Reasoning + multi-tool use (your data, docs, apps)",
+    "Drafts, analysis & answers as output",
+    "Chat history & connected tools",
+  ],
+  extensions: ["Knowledge retrieval (RAG)", "Scheduled & triggered runs", "Human approval gates", "Guardrails & evals"],
+  useWhen:
+    "You want to hand recurring analysis, drafting, and lookups to an AI that can use your own tools and data — and you want to review its work before it goes out.",
+  notIdealWhen:
+    "The task needs human judgment at every step, or there's no reliable data and tools for the assistant to draw on yet.",
+  baselinePromise:
+    "Gives you a conversational agent that reasons, uses your tools, and shows its work, so the custom work can focus on your data, integrations, and guardrails.",
+  prompt: "Use the AI Operations Agent template as a starting point for our automation.",
+};
+
+// New category: a timeline-first project tool (Gantt) — distinct from the CRM
+// kanban (bars across dates, not columns).
+const PROJECT_MGMT: TemplateCatalogItem = {
+  slug: "project-management",
+  name: "Project Management",
+  category: "Project management",
+  summary:
+    "A timeline-first project tool — tasks, dependencies, and milestones laid out on a Gantt so the team can see the whole plan and what's due when.",
+  bestFit: ["Agencies & client delivery", "Product & engineering teams", "Ops & rollouts"],
+  includes: [
+    "Gantt / timeline view",
+    "Tasks, phases & dependencies",
+    "Milestones & assignees",
+    "Multiple project spaces",
+  ],
+  extensions: ["Resource & capacity planning", "Time tracking", "Board & list views", "Reporting & alerts"],
+  useWhen:
+    "Work spans weeks or months with dependencies and deadlines, and the team needs to see the whole plan on a timeline — not just a flat task list.",
+  notIdealWhen:
+    "The work is short-lived or ad-hoc and a simple list or board is enough; a full Gantt would be overkill.",
+  baselinePromise:
+    "Gives you a working timeline with tasks, dependencies, milestones, and project spaces, so the custom work can focus on your planning rules and integrations.",
+  prompt: "Use the Project Management template as a starting point for our project software.",
+};
+
+// New category: a marketing site / landing — public web presence (the one V0
+// category Noon was missing). Distinct from every app template (it's a website,
+// not an app).
+const MARKETING_SITE: TemplateCatalogItem = {
+  slug: "marketing-site",
+  name: "Marketing Site",
+  category: "Marketing & websites",
+  summary:
+    "A fast, on-brand marketing site — the pages that convert (home, product, pricing) plus a blog/CMS to publish without a developer.",
+  bestFit: ["Product launches", "Company sites", "Content & SEO"],
+  includes: ["Landing & marketing pages", "Blog / CMS", "SEO & metadata", "Lead capture & analytics"],
+  extensions: ["Localization", "A/B testing", "Newsletter", "Docs / changelog"],
+  useWhen:
+    "You need a credible public presence you can update yourself — a launch site, a company site, or a content engine for SEO.",
+  notIdealWhen:
+    "You mainly need application software (a portal, tool, or product); a marketing site is the storefront, not the product itself.",
+  baselinePromise:
+    "Gives you a fast, on-brand site with marketing pages and a CMS, so the custom work can focus on your message, design, and conversion.",
+  prompt: "Use the Marketing Site template as a starting point for our website.",
+};
+
+// New category: a field-service dispatch console — today's jobs and technicians
+// on a live map with assignment. The catalog's only map-first surface, so it
+// reads as visually distinct from every other template. Overrides the original
+// "Field Service Mobile App" entry (the frozen Home still shows that name); on
+// /templates we render the desktop dispatch console we actually built.
+const FIELD_SERVICE: TemplateCatalogItem = {
+  slug: "field-service-mobile-app",
+  name: "Field Service Dispatch",
+  category: "Field service",
+  summary:
+    "A dispatch console for field teams — today's jobs and technicians on a live map, so a coordinator can assign, route, and track work from one screen.",
+  bestFit: ["Home & trade services", "Install & repair teams", "Dispatch & coordination"],
+  includes: [
+    "Live dispatch map — job pins & technician markers",
+    "Today's jobs list — status, time window, address",
+    "Assign & reassign technicians",
+    "Job detail & status tracking",
+  ],
+  extensions: ["Route optimization", "Technician mobile app", "Customer notifications", "Scheduling & calendar"],
+  useWhen:
+    "You send people to locations and need to see jobs and crews on a map to assign and track work in real time — not just a flat list of tasks.",
+  notIdealWhen:
+    "The work happens in one place or back-office, or a simple schedule or list covers it without any geography.",
+  baselinePromise:
+    "Gives you a working dispatch map, jobs list, and assignment flow, so the custom work can focus on your scheduling rules, routing, and field integrations.",
+  prompt: "Use the Field Service Dispatch template as a starting point for our field service software.",
+};
+
+export const templatesCatalog: TemplateCatalogItem[] = [
+  ...templates
+    .filter((t) => t.slug !== "approval-workflow-tool")
+    .map((t) =>
+      t.slug === "operations-command-center"
+        ? MERGED_OPERATIONS
+        : t.slug === "field-service-mobile-app"
+          ? FIELD_SERVICE
+          : t,
+    ),
+  SALES_CRM,
+  AI_AGENT,
+  PROJECT_MGMT,
+  MARKETING_SITE,
+];
+
+// Filter chips for the curated catalog (drops the now-unused "Internal tools",
+// adds new taxonomy categories as their templates land).
+export const templateCatalogCategories: string[] = [
+  // drop "Internal tools" (unused) and "Mobile apps" (field service moved to its
+  // own desktop "Field service" category — see FIELD_SERVICE above).
+  ...templateCategories.filter((c) => c !== "Internal tools" && c !== "Mobile apps"),
+  "CRM & sales",
+  "AI agents & automation",
+  "Project management",
+  "Field service",
+  "Marketing & websites",
+];

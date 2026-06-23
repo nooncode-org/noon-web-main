@@ -1,5 +1,5 @@
 import { buildOg, OG_SIZE } from "@/lib/og-image";
-import { templates } from "@/data/templates";
+import { templatesCatalog, templates } from "@/data/templates";
 
 export const alt = "Noon template";
 export const size = OG_SIZE;
@@ -10,7 +10,8 @@ export const contentType = "image/png";
 // templates-index framing.
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const t = templates.find((item) => item.slug === slug);
+  const t =
+    templatesCatalog.find((item) => item.slug === slug) ?? templates.find((item) => item.slug === slug);
   const title = t?.name ?? "Starting points for real software.";
   const raw = t?.summary ?? "Pre-defined scopes, delivered as production code you own.";
   const subtitle = raw.length > 110 ? `${raw.slice(0, 107).trimEnd()}…` : raw;

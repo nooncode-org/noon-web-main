@@ -1,0 +1,478 @@
+<!DOCTYPE html><html><head><style>
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes sc-veil-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine .73s ease infinite}
+    html.sc-dc-streaming::after{content:'';position:fixed;inset:0;
+      z-index:2147483646;pointer-events:none;
+      box-shadow:inset 0 0 90px rgba(217,119,87,.16),inset 0 0 22px rgba(217,119,87,.1);
+      animation:sc-veil-pulse 1.36s ease-in-out infinite}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      html, body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      section, article, figure, table { break-inside: avoid; }
+      *, *::before, *::after {
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style data-dc-tpl="4">
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#ffffff;font-family:'Poppins',system-ui,sans-serif;color:#1b1d1f;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+.df-scroll::-webkit-scrollbar{width:10px;height:10px}
+.df-scroll::-webkit-scrollbar-thumb{background:rgba(27,29,31,.14);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+.df-scroll::-webkit-scrollbar-track{background:transparent}
+@keyframes dfRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.df-rise{animation:dfRise .5s cubic-bezier(.22,.61,.36,1) both}
+@media (prefers-reduced-motion: reduce){.df-rise{animation:none}}
+</style><style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Poppins-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl-sales-crm"><div data-dc-tpl="5" data-screen-label="Dealford · Deals Pipeline" style="width: 1440px; min-height: 940px; display: flex; background: rgb(255, 255, 255); color: rgb(27, 29, 31);">
+
+  
+  <aside data-dc-tpl="6" style="width: 218px; flex: 0 0 auto; background: rgb(251, 251, 250); border-right: 1px solid rgb(237, 237, 235); display: flex; flex-direction: column; padding: 18px 14px 14px;">
+    <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between; padding: 2px 6px 22px;">
+      <div data-dc-tpl="8" style="display: flex; align-items: center; gap: 9px;">
+        <span data-dc-tpl="9" style="width: 28px; height: 28px; border-radius: 8px; background: rgb(67, 160, 71); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+          <svg data-dc-tpl="10" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="11" d="M4 17 L9 11 L13 14 L20 6"></path><path data-dc-tpl="12" d="M15 6h5v5"></path></svg>
+        </span>
+        <span data-dc-tpl="13" style="font-size: 18px; font-weight: 700; letter-spacing: -0.03em; color: rgb(47, 143, 67);">dealford</span>
+      </div>
+      <button data-dc-tpl="14" aria-label="Collapse" class="scp0" style="color: rgb(182, 187, 194); display: flex;"><svg data-dc-tpl="15" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="16" d="m13 17-5-5 5-5M19 17l-5-5 5-5"></path></svg></button>
+    </div>
+
+    <div data-dc-tpl="17" style="font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(170, 176, 184); padding: 0px 8px 9px;">Dashboard</div>
+    <nav data-dc-tpl="18" style="display: flex; flex-direction: column; gap: 2px;">
+      <button data-dc-tpl="19" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="20" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="21" d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path></svg>Dashboard</button>
+      <button data-dc-tpl="22" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; background: rgb(234, 245, 234); color: rgb(47, 143, 67); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="23" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="24" cx="12" cy="12" r="9"></circle><path data-dc-tpl="25" d="M15 9a2.6 2.6 0 0 0-3-1.3c-1.5 0-2.5.8-2.5 2s1 1.6 2.5 2 2.6 1 2.6 2-1.1 2-2.6 2A2.7 2.7 0 0 1 9 14.8M12 6v12"></path></svg>Deals</button>
+      <button data-dc-tpl="26" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="27" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="28" x="3" y="4.5" width="18" height="17" rx="2.5"></rect><path data-dc-tpl="29" d="M16 2.5v4M8 2.5v4M3 10h18"></path></svg>Appointments</button>
+      <button data-dc-tpl="30" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="31" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="32" d="m3 6 1.4 1.4L7 4.5M3 12l1.4 1.4L7 10.5M3 18l1.4 1.4L7 16.5M11 5.5h10M11 11.5h10M11 17.5h10"></path></svg>Tasks
+        <span data-dc-tpl="33" style="margin-left: auto; font-size: 10px; font-weight: 600; color: rgb(154, 160, 168); background: rgb(236, 234, 230); border-radius: 99px; padding: 1px 7px;">5</span></button>
+    </nav>
+
+    <div data-dc-tpl="34" style="font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(170, 176, 184); padding: 20px 8px 9px;">Management</div>
+    <nav data-dc-tpl="35" style="display: flex; flex-direction: column; gap: 2px;">
+      <button data-dc-tpl="36" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="37" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="38" d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"></path><circle data-dc-tpl="39" cx="5" cy="19" r="1.2" fill="currentColor" stroke="none"></circle></svg>Activity</button>
+      <button data-dc-tpl="40" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="41" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="42" d="M14 2.5H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5z"></path><path data-dc-tpl="43" d="M14 2.5v6h6M8 13h8M8 17h6"></path></svg>Proposals</button>
+      <button data-dc-tpl="44" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="45" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="46" d="M5 2.5v19l2-1 2 1 2-1 2 1 2-1 2 1v-19l-2 1-2-1-2 1-2-1-2 1z"></path><path data-dc-tpl="47" d="M9 8h6M9 12h6M9 16h4"></path></svg>Invoices</button>
+      <button data-dc-tpl="48" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="49" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="50" cx="12" cy="8" r="4"></circle><path data-dc-tpl="51" d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>Contacts</button>
+      <button data-dc-tpl="52" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="53" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="54" d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h.01M9 11h.01M9 15h.01M15 7h.01M15 11h.01M15 15h.01"></path></svg>Companies</button>
+      <button data-dc-tpl="55" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="56" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="57" d="M3 3v18h18"></path><path data-dc-tpl="58" d="m19 8-5 5-3-3-4 4"></path></svg>Metrics</button>
+      <button data-dc-tpl="59" class="scp1" style="display: flex; align-items: center; gap: 11px; padding: 8px 9px; border-radius: 9px; color: rgb(105, 112, 121); font-size: 13px; font-weight: 600; text-align: left;">
+        <svg data-dc-tpl="60" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="61" x="3" y="5" width="18" height="14" rx="2.5"></rect><path data-dc-tpl="62" d="m3.5 7 8.5 6 8.5-6"></path></svg>Emails</button>
+    </nav>
+
+    <div data-dc-tpl="63" style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 11px; border: 1px solid rgb(237, 237, 235); background: rgb(255, 255, 255);">
+      <img data-dc-tpl="64" src="/templates/mockups/assets/sales-crm-1.jpg" alt="Ahmad Fawaid" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: 0 0 auto;">
+      <div data-dc-tpl="65" style="display: flex; flex-direction: column; line-height: 1.25; min-width: 0px;">
+        <span data-dc-tpl="66" style="font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ahmad Fawaid</span>
+        <span data-dc-tpl="67" style="font-size: 10.5px; color: rgb(154, 160, 168); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Account executive</span>
+      </div>
+      <svg data-dc-tpl="68" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; flex: 0 0 auto;"><path data-dc-tpl="69" d="m6 9 6 6 6-6"></path></svg>
+    </div>
+  </aside>
+
+  
+  <main data-dc-tpl="70" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column;">
+
+    
+    <div data-dc-tpl="71" style="display: flex; align-items: center; gap: 18px; padding: 22px 28px 15px; border-bottom: 1px solid rgb(237, 237, 235);">
+      <h1 data-dc-tpl="72" style="margin: 0px; font-size: 25px; font-weight: 500; letter-spacing: -0.02em; white-space: nowrap;">Deals Pipeline</h1>
+      <div data-dc-tpl="73" style="flex: 1 1 0%;"></div>
+      <button data-dc-tpl="74" class="scp2" style="display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0px 14px; border-radius: 10px; border: 1px solid rgb(230, 231, 227); background: rgb(255, 255, 255); color: rgb(90, 96, 105); font-size: 13px; font-weight: 600;">
+        <svg data-dc-tpl="75" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="76" d="M22 3H2l8 9.5V20l4-2v-5.5z"></path></svg>Filter
+        <span data-dc-tpl="77" style="background: rgb(234, 245, 234); color: rgb(47, 143, 67); border-radius: 99px; font-size: 10px; font-weight: 600; padding: 1px 6px;">2</span></button>
+      <div data-dc-tpl="78" class="scp3" style="display: flex; align-items: center; gap: 9px; height: 38px; padding: 0px 13px; border: 1px solid rgb(230, 231, 227); border-radius: 10px; background: rgb(255, 255, 255); width: 230px;">
+        <svg data-dc-tpl="79" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><circle data-dc-tpl="80" cx="11" cy="11" r="7"></circle><path data-dc-tpl="81" d="m21 21-4.3-4.3"></path></svg>
+        <span data-dc-tpl="82" style="font-size: 12.5px; color: rgb(170, 176, 184); flex: 1 1 0%;">Search deals…</span>
+      </div>
+      <button data-dc-tpl="83" class="scp4" style="display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0px 16px; border-radius: 10px; background: rgb(67, 160, 71); color: rgb(255, 255, 255); font-size: 13px; font-weight: 600; box-shadow: rgba(47, 143, 67, 0.35) 0px 1px 2px;">
+        <svg data-dc-tpl="84" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="85" d="M12 5v14M5 12h14"></path></svg>New deal</button>
+    </div>
+
+    
+    <div data-dc-tpl="86" style="display: flex; align-items: center; gap: 0px; padding: 14px 28px 0px; border-bottom: 1px solid rgb(237, 237, 235);">
+      <button data-dc-tpl="87" style="display: inline-flex; align-items: center; gap: 7px; padding: 0px 4px 13px; margin-right: 24px; color: rgb(27, 29, 31); font-size: 13.5px; font-weight: 600; border-bottom: 2px solid rgb(67, 160, 71);">
+        <svg data-dc-tpl="88" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="89" x="3" y="4" width="5" height="16" rx="1.3"></rect><rect data-dc-tpl="90" x="10" y="4" width="5" height="11" rx="1.3"></rect><rect data-dc-tpl="91" x="17" y="4" width="4" height="16" rx="1.3"></rect></svg>Pipeline</button>
+      <button data-dc-tpl="92" class="scp5" style="display: inline-flex; align-items: center; gap: 7px; padding: 0px 4px 13px; margin-right: 24px; color: rgb(154, 160, 168); font-size: 13.5px; font-weight: 600; border-bottom: 2px solid transparent;">
+        <svg data-dc-tpl="93" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="94" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>List</button>
+      <div data-dc-tpl="95" style="width: 1px; height: 18px; background: rgb(230, 231, 227); margin: 0px 22px 13px 0px;"></div>
+      <div data-dc-tpl="96" style="padding-bottom: 13px; font-size: 13px; color: rgb(154, 160, 168); font-weight: 500;">Open deals: <b data-dc-tpl="97" style="color: rgb(27, 29, 31); font-weight: 600;">14</b><span data-dc-tpl="98" style="margin: 0px 9px; color: rgb(210, 213, 218);">·</span>Projected revenue: <b data-dc-tpl="99" style="color: rgb(27, 29, 31); font-weight: 600;">$538,800</b></div>
+      <div data-dc-tpl="100" style="flex: 1 1 0%;"></div>
+      <button data-dc-tpl="101" class="scp6" style="display: inline-flex; align-items: center; gap: 7px; padding-bottom: 13px; color: rgb(105, 112, 121); font-size: 12.5px; font-weight: 600;">This quarter<svg data-dc-tpl="102" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="103" d="m6 9 6 6 6-6"></path></svg></button>
+    </div>
+
+    
+    <div data-dc-tpl="104" class="df-scroll" style="flex: 1 1 0%; overflow: auto; padding: 20px 20px 26px; background: rgb(255, 255, 255);">
+      <div data-dc-tpl="105" style="display: flex; gap: 12px; align-items: flex-start; min-width: 0px;">
+
+        
+        <section data-dc-tpl="106" class="df-rise" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 10px; background: rgb(244, 245, 243); border-radius: 14px; padding: 10px 5px; animation-delay: 0.02s;">
+          <div data-dc-tpl="107" style="padding: 7px 14px 3px;">
+            <div data-dc-tpl="108" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+              <div data-dc-tpl="109" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="110" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(195, 200, 207); flex: 0 0 auto;"></span><span data-dc-tpl="111" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.045em; text-transform: uppercase; color: rgb(138, 144, 153);">Lead</span></div>
+              <button data-dc-tpl="112" class="scp0" style="color: rgb(182, 187, 194); display: flex;"><svg data-dc-tpl="113" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="114" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="115" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="116" cx="19" cy="12" r="1.6"></circle></svg></button>
+            </div>
+            <div data-dc-tpl="117" style="display: flex; align-items: baseline; gap: 8px; margin-top: 7px;"><span data-dc-tpl="118" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em;">$51,400</span><span data-dc-tpl="119" style="font-size: 11.5px; color: rgb(154, 160, 168); font-weight: 500; white-space: nowrap;">4 deals</span></div>
+          </div>
+
+          
+          <div data-dc-tpl="120" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="121" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="122" style="min-width: 0px;"><div data-dc-tpl="123" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Northwind Apparel</div><div data-dc-tpl="124" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Retail · 120 staff</div></div><button data-dc-tpl="125" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="126" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="127" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="128" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="129" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="130" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="131" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(66, 133, 244); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">JC</span><span data-dc-tpl="132" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Jane Cooper</span><span data-dc-tpl="133" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$12,400</span></div>
+            <div data-dc-tpl="134" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="135" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="136" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="137" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>2</span>
+              <span data-dc-tpl="138" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="139" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="140" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>1</span>
+              <span data-dc-tpl="141" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="142" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="143" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="144" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="145" d="m21 15-5-5L5 21"></path></svg>3</span>
+              <span data-dc-tpl="146" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="147" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">3d</span>
+              <span data-dc-tpl="148" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="149" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="150" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="151" style="min-width: 0px;"><div data-dc-tpl="152" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Cedar &amp; Vine Group</div><div data-dc-tpl="153" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Hospitality</div></div><button data-dc-tpl="154" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="155" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="156" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="157" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="158" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="159" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="160" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(52, 168, 83); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AW</span><span data-dc-tpl="161" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Annette Willie</span><span data-dc-tpl="162" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$8,200</span></div>
+            <div data-dc-tpl="163" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="164" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="165" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="166" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>1</span>
+              <span data-dc-tpl="167" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="168" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="169" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>0</span>
+              <span data-dc-tpl="170" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="171" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="172" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="173" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="174" d="m21 15-5-5L5 21"></path></svg>2</span>
+              <span data-dc-tpl="175" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="176" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">6d</span>
+              <span data-dc-tpl="177" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="178" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="179" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="180" style="min-width: 0px;"><div data-dc-tpl="181" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Atlas Provisions</div><div data-dc-tpl="182" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Wholesale</div></div><button data-dc-tpl="183" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="184" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="185" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="186" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="187" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="188" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="189" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(236, 72, 153); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">KM</span><span data-dc-tpl="190" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Kathryn Murphy</span><span data-dc-tpl="191" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$24,000</span></div>
+            <div data-dc-tpl="192" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="193" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="194" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="195" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>3</span>
+              <span data-dc-tpl="196" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="197" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="198" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>2</span>
+              <span data-dc-tpl="199" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="200" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="201" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="202" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="203" d="m21 15-5-5L5 21"></path></svg>1</span>
+              <span data-dc-tpl="204" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="205" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">2d</span>
+              <span data-dc-tpl="206" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="207" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="208" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="209" style="min-width: 0px;"><div data-dc-tpl="210" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Quillon Media</div><div data-dc-tpl="211" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Media</div></div><button data-dc-tpl="212" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="213" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="214" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="215" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="216" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="217" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="218" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(242, 92, 138); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">DR</span><span data-dc-tpl="219" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Darlene Rivera</span><span data-dc-tpl="220" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$6,800</span></div>
+            <div data-dc-tpl="221" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="222" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="223" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="224" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>0</span>
+              <span data-dc-tpl="225" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="226" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="227" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>1</span>
+              <span data-dc-tpl="228" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="229" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="230" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="231" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="232" d="m21 15-5-5L5 21"></path></svg>4</span>
+              <span data-dc-tpl="233" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="234" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">8d</span>
+              <span data-dc-tpl="235" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+
+        </section>
+
+        
+        <section data-dc-tpl="236" class="df-rise" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 10px; background: rgb(244, 245, 243); border-radius: 14px; padding: 10px 5px; animation-delay: 0.07s;">
+          <div data-dc-tpl="237" style="padding: 7px 14px 3px;">
+            <div data-dc-tpl="238" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+              <div data-dc-tpl="239" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="240" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(147, 184, 245); flex: 0 0 auto;"></span><span data-dc-tpl="241" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.045em; text-transform: uppercase; color: rgb(138, 144, 153);">Qualified</span></div>
+              <button data-dc-tpl="242" class="scp0" style="color: rgb(182, 187, 194); display: flex;"><svg data-dc-tpl="243" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="244" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="245" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="246" cx="19" cy="12" r="1.6"></circle></svg></button>
+            </div>
+            <div data-dc-tpl="247" style="display: flex; align-items: baseline; gap: 8px; margin-top: 7px;"><span data-dc-tpl="248" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em;">$89,300</span><span data-dc-tpl="249" style="font-size: 11.5px; color: rgb(154, 160, 168); font-weight: 500; white-space: nowrap;">4 deals</span></div>
+          </div>
+
+          <div data-dc-tpl="250" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="251" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="252" style="min-width: 0px;"><div data-dc-tpl="253" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Brightpath Logistics</div><div data-dc-tpl="254" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Logistics</div></div><button data-dc-tpl="255" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="256" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="257" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="258" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="259" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="260" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="261" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(52, 168, 83); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">LA</span><span data-dc-tpl="262" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Leslie Alexander</span><span data-dc-tpl="263" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$42,000</span></div>
+            <div data-dc-tpl="264" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="265" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="266" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="267" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>4</span>
+              <span data-dc-tpl="268" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="269" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="270" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>3</span>
+              <span data-dc-tpl="271" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="272" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="273" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="274" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="275" d="m21 15-5-5L5 21"></path></svg>2</span>
+              <span data-dc-tpl="276" style="display: inline-flex; align-items: center; gap: 3px; background: rgb(253, 240, 225); color: rgb(181, 115, 15); border-radius: 99px; padding: 2px 6px; font-size: 9px; font-weight: 600;"><span data-dc-tpl="277" style="width: 4px; height: 4px; border-radius: 50%; background: rgb(224, 144, 21);"></span>Demo</span>
+              <span data-dc-tpl="278" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="279" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">5d</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="280" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="281" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="282" style="min-width: 0px;"><div data-dc-tpl="283" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marlow Dental Group</div><div data-dc-tpl="284" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Healthcare</div></div><button data-dc-tpl="285" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="286" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="287" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="288" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="289" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="290" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="291" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(251, 140, 0); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RR</span><span data-dc-tpl="292" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Ronald Richards</span><span data-dc-tpl="293" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$15,600</span></div>
+            <div data-dc-tpl="294" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="295" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="296" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="297" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>2</span>
+              <span data-dc-tpl="298" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="299" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="300" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>1</span>
+              <span data-dc-tpl="301" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="302" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="303" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="304" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="305" d="m21 15-5-5L5 21"></path></svg>0</span>
+              <span data-dc-tpl="306" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="307" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">9d</span>
+              <span data-dc-tpl="308" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="309" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="310" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="311" style="min-width: 0px;"><div data-dc-tpl="312" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Oakridge Realty</div><div data-dc-tpl="313" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Real estate</div></div><button data-dc-tpl="314" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="315" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="316" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="317" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="318" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="319" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="320" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(139, 92, 246); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">TV</span><span data-dc-tpl="321" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Theresa Webb</span><span data-dc-tpl="322" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$9,900</span></div>
+            <div data-dc-tpl="323" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="324" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="325" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="326" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>1</span>
+              <span data-dc-tpl="327" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="328" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="329" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>0</span>
+              <span data-dc-tpl="330" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="331" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="332" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="333" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="334" d="m21 15-5-5L5 21"></path></svg>1</span>
+              <span data-dc-tpl="335" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="336" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">4d</span>
+              <span data-dc-tpl="337" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="338" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="339" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="340" style="min-width: 0px;"><div data-dc-tpl="341" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sunbelt Freight</div><div data-dc-tpl="342" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Logistics</div></div><button data-dc-tpl="343" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="344" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="345" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="346" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="347" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="348" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="349" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(18, 179, 166); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EP</span><span data-dc-tpl="350" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Eleanor Pena</span><span data-dc-tpl="351" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$21,800</span></div>
+            <div data-dc-tpl="352" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="353" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="354" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="355" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>2</span>
+              <span data-dc-tpl="356" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="357" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="358" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>2</span>
+              <span data-dc-tpl="359" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="360" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="361" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="362" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="363" d="m21 15-5-5L5 21"></path></svg>3</span>
+              <span data-dc-tpl="364" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="365" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">7d</span>
+              <span data-dc-tpl="366" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+        </section>
+
+        
+        <section data-dc-tpl="367" class="df-rise" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 10px; background: rgb(244, 245, 243); border-radius: 14px; padding: 10px 5px; animation-delay: 0.12s;">
+          <div data-dc-tpl="368" style="padding: 7px 14px 3px;">
+            <div data-dc-tpl="369" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+              <div data-dc-tpl="370" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="371" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(224, 169, 59); flex: 0 0 auto;"></span><span data-dc-tpl="372" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.045em; text-transform: uppercase; color: rgb(138, 144, 153);">Proposal</span></div>
+              <button data-dc-tpl="373" class="scp0" style="color: rgb(182, 187, 194); display: flex;"><svg data-dc-tpl="374" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="375" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="376" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="377" cx="19" cy="12" r="1.6"></circle></svg></button>
+            </div>
+            <div data-dc-tpl="378" style="display: flex; align-items: baseline; gap: 8px; margin-top: 7px;"><span data-dc-tpl="379" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em;">$167,700</span><span data-dc-tpl="380" style="font-size: 11.5px; color: rgb(154, 160, 168); font-weight: 500; white-space: nowrap;">3 deals</span></div>
+          </div>
+
+          
+          <div data-dc-tpl="381" style="background: rgb(251, 253, 251); border-width: 1px 1px 1px 3px; border-style: solid; border-color: rgb(205, 234, 207) rgb(205, 234, 207) rgb(205, 234, 207) rgb(67, 160, 71); border-image: initial; border-radius: 12px; box-shadow: rgba(67, 160, 71, 0.12) 0px 2px 10px; padding: 13px 14px 13px 12px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="382" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="383" style="min-width: 0px;"><div data-dc-tpl="384" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Verena Health</div><div data-dc-tpl="385" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Healthcare · 240 staff</div></div><button data-dc-tpl="386" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="387" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="388" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="389" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="390" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="391" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="392" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(66, 133, 244); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">JC</span><span data-dc-tpl="393" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Jane Cooper</span><span data-dc-tpl="394" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$76,500</span></div>
+            <div data-dc-tpl="395" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(232, 241, 233); padding-top: 9px;">
+              <span data-dc-tpl="396" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="397" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="398" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>5</span>
+              <span data-dc-tpl="399" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="401" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>2</span>
+              <span data-dc-tpl="402" style="display: inline-flex; align-items: center; gap: 3px; background: rgb(253, 236, 235); color: rgb(192, 57, 43); border-radius: 99px; padding: 2px 6px; font-size: 9px; font-weight: 600;"><span data-dc-tpl="403" style="width: 4px; height: 4px; border-radius: 50%; background: rgb(224, 72, 58);"></span>Hot</span>
+              <span data-dc-tpl="404" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="405" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">11d</span>
+              <span data-dc-tpl="406" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="407" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="408" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="409" style="min-width: 0px;"><div data-dc-tpl="410" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pelham &amp; Reyes</div><div data-dc-tpl="411" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Legal</div></div><button data-dc-tpl="412" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="413" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="414" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="415" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="416" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="417" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="418" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(236, 72, 153); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">ML</span><span data-dc-tpl="419" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Marvin Lane</span><span data-dc-tpl="420" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$33,200</span></div>
+            <div data-dc-tpl="421" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="422" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="423" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="424" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>3</span>
+              <span data-dc-tpl="425" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="426" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="427" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>1</span>
+              <span data-dc-tpl="428" style="display: inline-flex; align-items: center; gap: 3px; background: rgb(253, 240, 225); color: rgb(181, 115, 15); border-radius: 99px; padding: 2px 6px; font-size: 9px; font-weight: 600;"><span data-dc-tpl="429" style="width: 4px; height: 4px; border-radius: 50%; background: rgb(224, 144, 21);"></span>Warm</span>
+              <span data-dc-tpl="430" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="431" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">6d</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="432" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="433" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="434" style="min-width: 0px;"><div data-dc-tpl="435" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Tindall Manufacturing</div><div data-dc-tpl="436" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Manufacturing</div></div><button data-dc-tpl="437" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="438" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="439" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="440" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="441" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="442" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="443" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(251, 140, 0); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">DC</span><span data-dc-tpl="444" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Dianne Cole</span><span data-dc-tpl="445" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$58,000</span></div>
+            <div data-dc-tpl="446" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="447" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="448" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="449" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>2</span>
+              <span data-dc-tpl="450" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="451" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="452" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>2</span>
+              <span data-dc-tpl="453" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="454" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="455" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="456" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="457" d="m21 15-5-5L5 21"></path></svg>1</span>
+              <span data-dc-tpl="458" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="459" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">14d</span>
+              <span data-dc-tpl="460" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+        </section>
+
+        
+        <section data-dc-tpl="461" class="df-rise" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 10px; background: rgb(244, 245, 243); border-radius: 14px; padding: 10px 5px; animation-delay: 0.17s;">
+          <div data-dc-tpl="462" style="padding: 7px 14px 3px;">
+            <div data-dc-tpl="463" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+              <div data-dc-tpl="464" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="465" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(125, 133, 144); flex: 0 0 auto;"></span><span data-dc-tpl="466" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.045em; text-transform: uppercase; color: rgb(138, 144, 153);">Negotiation</span></div>
+              <button data-dc-tpl="467" class="scp0" style="color: rgb(182, 187, 194); display: flex;"><svg data-dc-tpl="468" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="469" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="470" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="471" cx="19" cy="12" r="1.6"></circle></svg></button>
+            </div>
+            <div data-dc-tpl="472" style="display: flex; align-items: baseline; gap: 8px; margin-top: 7px;"><span data-dc-tpl="473" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em;">$230,400</span><span data-dc-tpl="474" style="font-size: 11.5px; color: rgb(154, 160, 168); font-weight: 500; white-space: nowrap;">3 deals</span></div>
+          </div>
+
+          <div data-dc-tpl="475" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="476" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="477" style="min-width: 0px;"><div data-dc-tpl="478" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Greyson Capital</div><div data-dc-tpl="479" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Finance · 1,200 staff</div></div><button data-dc-tpl="480" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="481" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="482" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="483" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="484" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="485" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="486" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(242, 92, 138); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">DR</span><span data-dc-tpl="487" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Darlene Rivera</span><span data-dc-tpl="488" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$128,000</span></div>
+            <div data-dc-tpl="489" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="490" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="491" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="492" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>6</span>
+              <span data-dc-tpl="493" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="494" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="495" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>4</span>
+              <span data-dc-tpl="496" style="display: inline-flex; align-items: center; gap: 3px; background: rgb(253, 236, 235); color: rgb(192, 57, 43); border-radius: 99px; padding: 2px 6px; font-size: 9px; font-weight: 600;"><span data-dc-tpl="497" style="width: 4px; height: 4px; border-radius: 50%; background: rgb(224, 72, 58);"></span>Hot</span>
+              <span data-dc-tpl="498" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="499" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">18d</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="500" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="501" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="502" style="min-width: 0px;"><div data-dc-tpl="503" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Tidewater Components</div><div data-dc-tpl="504" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Manufacturing</div></div><button data-dc-tpl="505" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="506" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="507" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="508" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="509" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="510" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="511" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(239, 83, 80); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">PN</span><span data-dc-tpl="512" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Priya Nair</span><span data-dc-tpl="513" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$54,000</span></div>
+            <div data-dc-tpl="514" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="515" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="516" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="517" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>3</span>
+              <span data-dc-tpl="518" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="519" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="520" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>2</span>
+              <span data-dc-tpl="521" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="522" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="523" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="524" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="525" d="m21 15-5-5L5 21"></path></svg>2</span>
+              <span data-dc-tpl="526" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="527" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">16d</span>
+              <span data-dc-tpl="528" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="529" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="530" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="531" style="min-width: 0px;"><div data-dc-tpl="532" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marrow &amp; Vale</div><div data-dc-tpl="533" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Consulting</div></div><button data-dc-tpl="534" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="535" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="536" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="537" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="538" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="539" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="540" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(139, 92, 246); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">TV</span><span data-dc-tpl="541" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Theresa Webb</span><span data-dc-tpl="542" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$48,400</span></div>
+            <div data-dc-tpl="543" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="544" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="545" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="546" d="M8 7h11M8 12h11M8 17h7M4 7h.01M4 12h.01M4 17h.01"></path></svg>2</span>
+              <span data-dc-tpl="547" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="548" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="549" d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg>1</span>
+              <span data-dc-tpl="550" style="display: inline-flex; align-items: center; gap: 3px; color: rgb(154, 160, 168); font-size: 11px; font-weight: 600;"><svg data-dc-tpl="551" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b6bbc2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="552" x="3" y="3" width="18" height="18" rx="2.5"></rect><circle data-dc-tpl="553" cx="8.5" cy="8.5" r="1.6"></circle><path data-dc-tpl="554" d="m21 15-5-5L5 21"></path></svg>1</span>
+              <span data-dc-tpl="555" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="556" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">20d</span>
+              <span data-dc-tpl="557" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+        </section>
+
+        
+        <section data-dc-tpl="558" class="df-rise" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 10px; background: rgb(238, 246, 239); border-radius: 14px; padding: 10px 5px; animation-delay: 0.22s;">
+          <div data-dc-tpl="559" style="padding: 7px 14px 3px;">
+            <div data-dc-tpl="560" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+              <div data-dc-tpl="561" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="562" style="width: 8px; height: 8px; border-radius: 50%; background: rgb(67, 160, 71); flex: 0 0 auto;"></span><span data-dc-tpl="563" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.045em; text-transform: uppercase; color: rgb(47, 143, 67);">Won</span></div>
+              <button data-dc-tpl="564" class="scp8" style="color: rgb(159, 199, 163); display: flex;"><svg data-dc-tpl="565" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="566" cx="5" cy="12" r="1.6"></circle><circle data-dc-tpl="567" cx="12" cy="12" r="1.6"></circle><circle data-dc-tpl="568" cx="19" cy="12" r="1.6"></circle></svg></button>
+            </div>
+            <div data-dc-tpl="569" style="display: flex; align-items: baseline; gap: 8px; margin-top: 7px;"><span data-dc-tpl="570" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: rgb(47, 143, 67);">$143,500</span><span data-dc-tpl="571" style="font-size: 11.5px; color: rgb(127, 174, 134); font-weight: 500; white-space: nowrap;">2 deals</span></div>
+          </div>
+
+          <div data-dc-tpl="572" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="573" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="574" style="min-width: 0px;"><div data-dc-tpl="575" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Holloway Group</div><div data-dc-tpl="576" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Professional svc</div></div><button data-dc-tpl="577" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="578" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="579" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="580" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="581" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="582" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="583" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(236, 72, 153); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">ML</span><span data-dc-tpl="584" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Marvin Lane</span><span data-dc-tpl="585" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$96,000</span></div>
+            <div data-dc-tpl="586" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="587" style="display: inline-flex; align-items: center; gap: 4px; background: rgb(234, 245, 234); color: rgb(47, 143, 67); border-radius: 99px; padding: 2px 7px; font-size: 9px; font-weight: 600;"><svg data-dc-tpl="588" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2f8f43" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="589" d="M20 6 9 17l-5-5"></path></svg>Won</span>
+              <span data-dc-tpl="590" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="591" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">Jun 9</span>
+              <span data-dc-tpl="592" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">AF</span>
+            </div>
+          </div>
+
+          <div data-dc-tpl="593" class="scp7" style="background: rgb(255, 255, 255); border: 1px solid rgb(237, 238, 240); border-radius: 12px; box-shadow: rgba(16, 24, 40, 0.05) 0px 1px 2px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s; cursor: grab;">
+            <div data-dc-tpl="594" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;"><div data-dc-tpl="595" style="min-width: 0px;"><div data-dc-tpl="596" style="font-size: 13.5px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Riverton Tech</div><div data-dc-tpl="597" style="font-size: 11.5px; color: rgb(154, 160, 168); margin-top: 2px;">Software</div></div><button data-dc-tpl="598" class="scp0" style="color: rgb(194, 198, 204); display: flex;"><svg data-dc-tpl="599" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle data-dc-tpl="600" cx="5" cy="12" r="1.5"></circle><circle data-dc-tpl="601" cx="12" cy="12" r="1.5"></circle><circle data-dc-tpl="602" cx="19" cy="12" r="1.5"></circle></svg></button></div>
+            <div data-dc-tpl="603" style="display: flex; align-items: center; gap: 7px;"><span data-dc-tpl="604" style="width: 22px; height: 22px; border-radius: 50%; background: rgb(18, 179, 166); color: rgb(255, 255, 255); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EP</span><span data-dc-tpl="605" style="font-size: 12px; font-weight: 500; color: rgb(69, 75, 83); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0px; flex: 1 1 0%;">Eleanor Pena</span><span data-dc-tpl="606" style="font-size: 12px; font-weight: 600; letter-spacing: -0.01em; margin-left: auto; flex: 0 0 auto;">$47,500</span></div>
+            <div data-dc-tpl="607" style="display: flex; align-items: center; gap: 9px; border-top: 1px solid rgb(242, 243, 245); padding-top: 9px;">
+              <span data-dc-tpl="608" style="display: inline-flex; align-items: center; gap: 4px; background: rgb(234, 245, 234); color: rgb(47, 143, 67); border-radius: 99px; padding: 2px 7px; font-size: 9px; font-weight: 600;"><svg data-dc-tpl="609" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2f8f43" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="610" d="M20 6 9 17l-5-5"></path></svg>Won</span>
+              <span data-dc-tpl="611" style="flex: 1 1 0%;"></span>
+              <span data-dc-tpl="612" style="font-size: 11px; font-weight: 600; color: rgb(154, 160, 168);">Jun 4</span>
+              <span data-dc-tpl="613" style="width: 18px; height: 18px; border-radius: 50%; background: rgb(233, 235, 239); color: rgb(125, 133, 144); font-size: 7.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">RM</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main></div></div></div>
+
+
+</body></html>

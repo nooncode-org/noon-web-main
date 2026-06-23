@@ -1,0 +1,319 @@
+<!DOCTYPE html><html><head><style>
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      section, article, figure, table { break-inside: avoid; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>x-dc{display:none!important}</style><style></style><style>html,body{height:100%;margin:0}#dc-root,#dc-root>.sc-host{height:100%}</style><style data-dc-tpl="3">/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style data-dc-tpl="4">
+*{box-sizing:border-box}
+body{margin:0;background:#ffffff;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:rgba(108,92,231,.18)}
+.sv-scroll::-webkit-scrollbar{width:10px}
+.sv-scroll::-webkit-scrollbar-thumb{background:#e4e1ef;border-radius:6px;border:3px solid #fff}
+.sv-scroll::-webkit-scrollbar-track{background:transparent}
+</style><style id="self-hosted">/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-500.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-600.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/templates/mockups/fonts/Geist-700.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,body{margin:0 !important;padding:0 !important;background:transparent !important}</style></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="tpl-ai-agent"><div data-dc-tpl="5" data-screen-label="Sevrin · Assistant" style="width: 1440px; min-height: 960px; display: flex; background: rgb(255, 255, 255); font-family: Geist, sans-serif; color: rgb(33, 31, 46); position: relative;">
+
+ 
+ <aside data-dc-tpl="6" style="width: 264px; flex: 0 0 auto; margin: 12px; background: rgb(248, 247, 252); border: 1px solid rgb(231, 228, 242); border-radius: 18px; display: flex; flex-direction: column; height: 936px; position: sticky; top: 12px;">
+  
+  <div data-dc-tpl="7" style="padding: 18px 16px 12px; display: flex; align-items: center; gap: 10px;">
+   <span data-dc-tpl="8" style="width: 28px; height: 28px; border-radius: 9px; flex: 0 0 auto; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+   <span data-dc-tpl="9" style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: rgb(26, 24, 40);">Sevrin</span>
+  </div>
+
+  
+  <div data-dc-tpl="10" style="padding: 6px 14px 10px; display: flex; gap: 8px;">
+   <div data-dc-tpl="11" data-srch="" class="scp0" style="flex: 1 1 0%; display: flex; align-items: center; gap: 9px; height: 36px; padding: 0px 11px; border-radius: 10px; border: 0px; background: rgb(255, 255, 255);">
+    <svg data-dc-tpl="12" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="2" stroke-linecap="round"><circle data-dc-tpl="13" cx="11" cy="11" r="7"></circle><path data-dc-tpl="14" d="m21 21-4.3-4.3"></path></svg>
+    <span data-dc-tpl="15" style="font-size: 12.5px; color: rgb(157, 153, 175); flex: 1 1 0%;">Search</span>
+   </div>
+   <button data-dc-tpl="16" data-new="" class="scp1" style="width: 36px; height: 36px; border-radius: 10px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="17" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path data-dc-tpl="18" d="M12 5v14M5 12h14"></path></svg></button>
+  </div>
+
+  
+  <nav data-dc-tpl="19" style="padding: 2px 12px 6px; display: flex; flex-direction: column; gap: 1px;">
+   <a data-dc-tpl="20" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="21" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="22" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+   <a data-dc-tpl="23" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="24" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="25" cx="12" cy="12" r="9"></circle><path data-dc-tpl="26" d="m15.5 8.5-2 5-5 2 2-5z"></path></svg>Explore</a>
+   <a data-dc-tpl="27" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="28" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="29" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path data-dc-tpl="30" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>Library</a>
+   <a data-dc-tpl="31" data-nav="" href="#" class="scp2" style="display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 9px; text-decoration: none; color: rgb(86, 83, 106); font-size: 13px; font-weight: 500;"><svg data-dc-tpl="32" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle data-dc-tpl="33" cx="12" cy="12" r="9"></circle><path data-dc-tpl="34" d="M12 7v5l3 2"></path></svg>History</a>
+  </nav>
+
+  
+  <div data-dc-tpl="35" style="padding: 16px 16px 6px; flex: 1 1 0%; min-height: 0px; display: flex; flex-direction: column; overflow: hidden;">
+   <div data-dc-tpl="36" class="sv-scroll" style="overflow-y: auto; display: flex; flex-direction: column;">
+    <div data-dc-tpl="37" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 0px 0px 8px;">Earlier today</div>
+    <a data-dc-tpl="38" data-rec="" data-on="" href="#" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; background: rgb(239, 237, 248); color: rgb(26, 24, 40); font-size: 12.5px; font-weight: 600;"><span data-dc-tpl="39" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(108, 92, 231); flex: 0 0 auto;"></span><span data-dc-tpl="40" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Q3 churn analysis &amp; summary</span></a>
+    <a data-dc-tpl="41" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="42" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="43" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Refactor onboarding email sequence</span></a>
+    <a data-dc-tpl="44" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="45" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="46" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Competitor pricing teardown</span></a>
+    <div data-dc-tpl="47" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 16px 0px 8px;">Previous 7 days</div>
+    <a data-dc-tpl="48" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="49" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="50" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Draft RFP response — Halden</span></a>
+    <a data-dc-tpl="51" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="52" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="53" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Weekly metrics digest</span></a>
+    <a data-dc-tpl="54" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="55" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="56" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Summarize support tickets → themes</span></a>
+    <a data-dc-tpl="57" data-rec="" href="#" class="scp2" style="display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 9px; text-decoration: none; color: rgb(111, 108, 130); font-size: 12.5px;"><span data-dc-tpl="58" style="width: 5px; height: 5px; border-radius: 50%; background: rgb(216, 212, 230); flex: 0 0 auto;"></span><span data-dc-tpl="59" style="flex: 1 1 0%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Rewrite landing hero — 3 options</span></a>
+   </div>
+  </div>
+
+  
+  <div data-dc-tpl="60" style="margin: 10px 12px 12px; padding: 9px 11px; background: rgb(255, 255, 255); border-radius: 13px; box-shadow: rgba(20, 18, 31, 0.06) 0px 1px 3px; display: flex; align-items: center; gap: 10px;">
+   <span data-dc-tpl="61" style="width: 30px; height: 30px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EV</span>
+   <div data-dc-tpl="62" style="line-height: 1.25; flex: 1 1 0%; min-width: 0px;"><div data-dc-tpl="63" style="font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Elias Vance</div><div data-dc-tpl="64" style="font-size: 10.5px; color: rgb(157, 153, 175); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">elias.vance@halden.co</div></div>
+   <svg data-dc-tpl="65" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#bdb9cd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="66" d="m8 9 4-4 4 4"></path><path data-dc-tpl="67" d="m8 15 4 4 4-4"></path></svg>
+  </div>
+ </aside>
+
+ 
+ <main data-dc-tpl="68" style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; height: 936px; margin: 12px 12px 12px 0px; background: rgb(251, 250, 253); border: 1px solid rgb(231, 228, 242); border-radius: 18px; overflow: hidden;">
+
+  
+  <div data-dc-tpl="69" style="flex: 0 0 auto; height: 60px; display: flex; align-items: center; gap: 12px; padding: 0px 24px;">
+   <button data-dc-tpl="70" data-model="" class="scp3" style="display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0px 13px; border-radius: 11px; border: 0px; background: rgb(255, 255, 255); box-shadow: rgba(20, 18, 31, 0.08) 0px 1px 3px; cursor: pointer; font-family: inherit;">
+    <span data-dc-tpl="71" style="width: 18px; height: 18px; border-radius: 6px; flex: 0 0 auto; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+    <span data-dc-tpl="72" style="font-size: 13px; font-weight: 600; color: rgb(26, 24, 40); white-space: nowrap;">Sevrin 4o</span>
+    <svg data-dc-tpl="73" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="74" d="m6 9 6 6 6-6"></path></svg>
+   </button>
+   <span data-dc-tpl="75" style="font-size: 10.5px; color: rgb(168, 164, 186); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span data-dc-tpl="76" style="width: 6px; height: 6px; border-radius: 50%; background: rgb(54, 192, 138);"></span>4 tools connected</span>
+   <div data-dc-tpl="77" style="flex: 1 1 0%;"></div>
+   <button data-dc-tpl="78" data-top="" class="scp4" style="width: 38px; height: 38px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); cursor: pointer; color: rgb(111, 108, 130); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="79" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="80" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path data-dc-tpl="81" d="M16 6l-4-4-4 4M12 2v14"></path></svg></button>
+   <button data-dc-tpl="82" data-top="" class="scp5" style="display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 0px; background: rgb(23, 21, 34); cursor: pointer; color: rgb(255, 255, 255); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap;"><svg data-dc-tpl="83" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path data-dc-tpl="84" d="M12 5v14M5 12h14"></path></svg>New chat</button>
+   <span data-dc-tpl="85" style="width: 34px; height: 34px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">EV</span>
+  </div>
+
+  
+  <div data-dc-tpl="86" class="sv-scroll" style="flex: 1 1 0%; overflow-y: auto; padding: 28px 24px 8px;">
+   <div data-dc-tpl="87" style="max-width: 720px; margin: 0px auto;">
+
+    <div data-dc-tpl="88" style="text-align: center; margin-bottom: 26px;"><span data-dc-tpl="89" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(189, 185, 205);">Today · 9:42 AM</span></div>
+
+    
+    <div data-dc-tpl="90" style="display: flex; justify-content: flex-end; gap: 11px; margin-bottom: 30px;">
+     <div data-dc-tpl="91" style="max-width: 540px; background: rgb(241, 238, 251); border-radius: 16px 16px 5px; padding: 13px 16px; font-size: 14px; line-height: 1.55; color: rgb(42, 39, 64);">Compare Q2 vs Q3 churn, find the top 3 drivers, and draft a 4-line summary for Thursday's leadership update.</div>
+     <span data-dc-tpl="92" style="width: 30px; height: 30px; border-radius: 50%; background: rgb(236, 233, 249); color: rgb(108, 92, 231); font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: 2px;">EV</span>
+    </div>
+
+    
+    <div data-dc-tpl="93" style="display: flex; gap: 13px;">
+     <span data-dc-tpl="94" style="width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; margin-top: 1px; background: radial-gradient(circle at 30% 26%, rgb(188, 212, 255) 0%, rgb(179, 164, 247) 46%, rgb(232, 166, 224) 82%, rgb(243, 194, 221) 100%);"></span>
+     <div data-dc-tpl="95" style="flex: 1 1 0%; min-width: 0px;">
+      <div data-dc-tpl="96" style="display: flex; align-items: center; gap: 9px; margin-bottom: 12px;"><span data-dc-tpl="97" style="font-size: 13px; font-weight: 700; color: rgb(26, 24, 40);">Sevrin</span><span data-dc-tpl="98" style="font-size: 10px; color: rgb(168, 164, 186);">Reason 2.5</span></div>
+
+      
+      <button data-dc-tpl="99" data-think="" class="scp6" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0px 12px; border-radius: 10px; border: 1px solid rgb(235, 233, 243); background: rgb(250, 249, 254); cursor: pointer; font-family: inherit; margin-bottom: 12px;">
+       <svg data-dc-tpl="100" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="101" d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.2V17h6v-1.3c0-.8.4-1.6 1-2.2A6 6 0 0 0 12 3z"></path><path data-dc-tpl="102" d="M9 21h6"></path></svg>
+       <span data-dc-tpl="103" style="font-size: 12px; color: rgb(86, 83, 106); font-weight: 600; white-space: nowrap;">Thought for 7s</span>
+       <svg data-dc-tpl="104" data-chev="" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a8a4ba" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="105" d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <div data-dc-tpl="106" data-trace="" style="display: none; border-left: 2px solid rgb(235, 233, 243); margin: 0px 0px 14px 4px; padding: 2px 0px 2px 14px; font-size: 11.5px; line-height: 1.75; color: rgb(138, 134, 153);">
+       · Pulled churn by cohort for Q2 and Q3 from Analytics<br data-dc-tpl="107">
+       · Normalized for seasonality, isolated mid-market segment<br data-dc-tpl="108">
+       · Cross-referenced exit-survey reasons and support SLAs<br data-dc-tpl="109">
+       · Ranked drivers by share of churned ARR
+      </div>
+
+      
+      <div data-dc-tpl="110" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+       <span data-dc-tpl="111" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="112" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="113" d="m5 12 4 4 10-11"></path></svg>Queried analytics<span data-dc-tpl="114" style="font-size: 10px; color: rgb(168, 164, 186);">2 cohorts</span></span>
+       <span data-dc-tpl="115" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="116" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="117" d="m5 12 4 4 10-11"></path></svg>Ran retention analysis</span>
+       <span data-dc-tpl="118" style="display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0px 12px; border-radius: 9px; border: 1px solid rgb(235, 233, 243); background: rgb(255, 255, 255); font-size: 11.5px; color: rgb(86, 83, 106);"><svg data-dc-tpl="119" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="120" d="m5 12 4 4 10-11"></path></svg>Read 2 strategy docs</span>
+      </div>
+
+      
+      <div data-dc-tpl="121" style="font-size: 14.5px; line-height: 1.64; color: rgb(51, 48, 63);">
+       Net churn rose from <b data-dc-tpl="122" style="color: rgb(26, 24, 40); font-weight: 700;">3.1%</b> in Q2 to <b data-dc-tpl="123" style="color: rgb(26, 24, 40); font-weight: 700;">4.4%</b> in Q3 — a 1.3-point increase, concentrated almost entirely in mid-market accounts.
+      </div>
+
+      
+      <div data-dc-tpl="124" style="font-size: 10px; letter-spacing: 0.02em; color: rgb(168, 164, 186); margin: 18px 0px 10px;">Top 3 drivers</div>
+      <div data-dc-tpl="125" style="display: flex; flex-direction: column; gap: 9px;">
+       <div data-dc-tpl="126" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="127" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">01</span>
+        <div data-dc-tpl="128" style="flex: 1 1 0%;"><div data-dc-tpl="129" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Onboarding drop-off</div><div data-dc-tpl="130" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">41% of churned accounts never completed setup</div></div>
+        <span data-dc-tpl="131" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+12 pts</span>
+       </div>
+       <div data-dc-tpl="132" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="133" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">02</span>
+        <div data-dc-tpl="134" style="flex: 1 1 0%;"><div data-dc-tpl="135" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Renewal pricing friction</div><div data-dc-tpl="136" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">Annual uplift flagged in 28% of exit surveys</div></div>
+        <span data-dc-tpl="137" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+7 pts</span>
+       </div>
+       <div data-dc-tpl="138" style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px; border: 1px solid rgb(236, 235, 244); border-radius: 13px; background: rgb(255, 255, 255);">
+        <span data-dc-tpl="139" style="font-size: 12px; color: rgb(108, 92, 231); font-weight: 600; flex: 0 0 auto;">03</span>
+        <div data-dc-tpl="140" style="flex: 1 1 0%;"><div data-dc-tpl="141" style="font-size: 13.5px; font-weight: 600; color: rgb(26, 24, 40);">Slow support response</div><div data-dc-tpl="142" style="font-size: 12.5px; color: rgb(111, 108, 130); margin-top: 2px;">Median first reply slipped to 9h in Q3</div></div>
+        <span data-dc-tpl="143" style="font-size: 11px; color: rgb(212, 99, 78); font-weight: 600; flex: 0 0 auto; margin-top: 1px;">+4 pts</span>
+       </div>
+      </div>
+
+      
+      <div data-dc-tpl="144" style="font-size: 14.5px; line-height: 1.64; color: rgb(51, 48, 63); margin: 18px 0px 12px;">I drafted the 4-line summary below — review it, then I can post it or save it for you.</div>
+      <div data-dc-tpl="145" style="border: 1px solid rgb(236, 235, 244); border-radius: 14px; background: rgb(250, 249, 254); overflow: hidden;">
+       <div data-dc-tpl="146" style="display: flex; align-items: center; gap: 8px; padding: 11px 15px; border-bottom: 1px solid rgb(236, 235, 244); background: rgb(255, 255, 255);"><svg data-dc-tpl="147" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9d99af" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="148" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path data-dc-tpl="149" d="M14 3v5h5"></path></svg><span data-dc-tpl="150" style="font-size: 10.5px; letter-spacing: 0.06em; color: rgb(157, 153, 175);">Leadership update — draft</span></div>
+       <div data-dc-tpl="151" style="padding: 14px 16px; font-size: 13.5px; line-height: 1.72; color: rgb(74, 71, 89);">
+        Q3 net churn reached 4.4%, up 1.3 points from Q2, driven by mid-market accounts.<br data-dc-tpl="152">
+        The largest factor is onboarding drop-off — 41% of churned accounts never finished setup.<br data-dc-tpl="153">
+        Renewal pricing friction and a 9-hour median support reply time compounded the trend.<br data-dc-tpl="154">
+        Recommended next step: a mid-market onboarding fix and an SLA review before Q4.
+       </div>
+      </div>
+
+      
+      <div data-dc-tpl="155" style="display: flex; align-items: center; gap: 9px; margin-top: 14px; flex-wrap: wrap;">
+       <button data-dc-tpl="156" data-do="" class="scp1" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;"><svg data-dc-tpl="157" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="158" d="m22 2-7 20-4-9-9-4z"></path><path data-dc-tpl="159" d="M22 2 11 13"></path></svg>Post to #leadership</button>
+       <button data-dc-tpl="160" data-do2="" class="scp7" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 15px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); color: rgb(51, 48, 63); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;"><svg data-dc-tpl="161" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="162" d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Save to Q3 Review doc</button>
+       <button data-dc-tpl="163" data-do2="" class="scp4" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0px 14px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); color: rgb(111, 108, 130); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;"><svg data-dc-tpl="164" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="165" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path data-dc-tpl="166" d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg>Edit draft</button>
+       <span data-dc-tpl="167" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: rgb(157, 153, 175); margin-left: 2px;"><svg data-dc-tpl="168" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="169" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Sevrin asks before it sends</span>
+      </div>
+
+      
+      <div data-dc-tpl="170" style="display: flex; align-items: center; gap: 5px; margin-top: 16px;">
+       <button data-dc-tpl="171" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="172" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect data-dc-tpl="173" x="9" y="9" width="11" height="11" rx="2"></rect><path data-dc-tpl="174" d="M5 15V5a2 2 0 0 1 2-2h8"></path></svg></button>
+       <button data-dc-tpl="175" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="176" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="177" d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zM7 11l4-7a2 2 0 0 1 2 2v3h5a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 16.6 20H7"></path></svg></button>
+       <button data-dc-tpl="178" data-ra="" class="scp2" style="width: 30px; height: 30px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="179" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="180" d="M17 13v8H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zM17 13l-4 7a2 2 0 0 1-2-2v-3H6a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 7.4 4H17"></path></svg></button>
+       <button data-dc-tpl="181" data-ra="" class="scp2" style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0px 11px; border-radius: 8px; border: 0px; background: none; cursor: pointer; color: rgb(168, 164, 186); font-family: inherit; font-size: 12px; font-weight: 500;"><svg data-dc-tpl="182" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="183" d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path data-dc-tpl="184" d="M21 3v5h-5"></path></svg>Retry</button>
+      </div>
+
+     </div>
+    </div>
+
+   </div>
+  </div>
+
+  
+  <div data-dc-tpl="185" style="flex: 0 0 auto; padding: 10px 24px 18px;">
+   <div data-dc-tpl="186" style="max-width: 720px; margin: 0px auto;">
+    <div data-dc-tpl="187" data-input="" class="scp8" style="border: 1px solid rgb(227, 224, 240); border-radius: 20px; background: rgb(255, 255, 255); padding: 16px 16px 12px; box-shadow: rgba(108, 92, 231, 0.07) 0px 4px 22px;">
+     <div data-dc-tpl="188" style="font-size: 15px; color: rgb(157, 153, 175); padding: 2px 4px 16px; line-height: 1.5;">Ask anything or give a task…<span data-dc-tpl="189" style="display: inline-block; width: 2px; height: 18px; background: rgb(108, 92, 231); vertical-align: -4px; margin-left: 1px;"></span></div>
+     <div data-dc-tpl="190" style="display: flex; align-items: center; gap: 8px;">
+      <button data-dc-tpl="191" data-plus="" class="scp4" style="width: 38px; height: 38px; border-radius: 11px; border: 1px solid rgb(231, 228, 242); background: rgb(255, 255, 255); cursor: pointer; color: rgb(111, 108, 130); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="192" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="193" d="M12 5v14M5 12h14"></path></svg></button>
+      <div data-dc-tpl="194" style="flex: 1 1 0%;"></div>
+      <button data-dc-tpl="195" data-send="" class="scp1" style="width: 38px; height: 38px; border-radius: 11px; border: 0px; background: rgb(108, 92, 231); color: rgb(255, 255, 255); cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg data-dc-tpl="196" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path data-dc-tpl="197" d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
+     </div>
+    </div>
+    <div data-dc-tpl="198" style="text-align: center; font-size: 11px; color: rgb(189, 185, 205); margin-top: 9px;">Sevrin can take actions in connected apps. It pauses for your approval before anything is sent.</div>
+   </div>
+  </div>
+
+ </main></div></div></div>
+
+
+
+</body></html>

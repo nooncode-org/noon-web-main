@@ -1,0 +1,57 @@
+{
+  "client-portal-saas": {
+    "src": "/templates/mockups/client-portal-saas.html",
+    "w": 1440,
+    "h": 1334
+  },
+  "sales-crm": {
+    "src": "/templates/mockups/sales-crm.html",
+    "w": 1440,
+    "h": 940
+  },
+  "reservation-platform": {
+    "src": "/templates/mockups/reservation-platform.html",
+    "w": 1440,
+    "h": 1341
+  },
+  "customer-support-ai-assistant": {
+    "src": "/templates/mockups/customer-support-ai-assistant.html",
+    "w": 1440,
+    "h": 960
+  },
+  "ai-operations-agent": {
+    "src": "/templates/mockups/ai-operations-agent.html",
+    "w": 1440,
+    "h": 969
+  },
+  "commerce-operations-storefront": {
+    "src": "/templates/mockups/commerce-operations-storefront.html",
+    "w": 1440,
+    "h": 2004
+  },
+  "project-management": {
+    "src": "/templates/mockups/project-management.html",
+    "w": 1440,
+    "h": 1170
+  },
+  "field-service-mobile-app": {
+    "src": "/templates/mockups/field-service-mobile-app.html",
+    "w": 1440,
+    "h": 920
+  },
+  "marketing-site": {
+    "src": "/templates/mockups/marketing-site.html",
+    "w": 1440,
+    "h": 5236
+  },
+  "operations-command-center": {
+    "src": "/templates/mockups/client-portal-saas.html",
+    "w": 1440,
+    "h": 1334
+  },
+  "multi-vendor-marketplace": {
+    "src": "/templates/mockups/commerce-operations-storefront.html",
+    "w": 1440,
+    "h": 2004
+  }
+}

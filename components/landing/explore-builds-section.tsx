@@ -6,7 +6,7 @@ import { useRevealOnView } from "@/hooks/use-reveal-on-view";
 import { ArrowRight } from "lucide-react";
 import { getTemplateHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { siteTones } from "@/lib/site-tones";
-import { templates } from "@/data/templates";
+import { templates, type TemplateCatalogItem } from "@/data/templates";
 
 // ============================================================================
 // Category tone map
@@ -344,9 +344,240 @@ function MobileMockup({ enhanced }: { enhanced: boolean }) {
   );
 }
 
+function CrmMockup({ enhanced }: { enhanced: boolean }) {
+  const cols = ["Lead", "Proposal", "Won"];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/30">
+        <span className="text-[10px] font-mono text-muted-foreground">pipeline</span>
+        <span
+          className="text-[9px] transition-all duration-300"
+          style={{ color: enhanced ? siteTones.brand.accent : "var(--muted-foreground)" }}
+        >
+          12 deals · $84k
+        </span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 p-3">
+        {cols.map((c, ci) => (
+          <div key={c} className="space-y-1.5">
+            <div className="text-[8px] font-mono uppercase tracking-wide text-muted-foreground/70">{c}</div>
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="rounded-md border bg-secondary/40 p-1.5 transition-all duration-300"
+                style={{
+                  transform: enhanced && ci === 2 && i === 0 ? "translateY(-2px)" : "none",
+                  borderColor: enhanced && ci === 2 ? siteTones.brand.border : "var(--border)",
+                  transitionDelay: `${ci * 40}ms`,
+                }}
+              >
+                <div className="mb-1 h-1.5 w-3/4 rounded bg-foreground/20" />
+                <div className="flex items-center justify-between">
+                  <div className="h-1 w-1/3 rounded bg-foreground/10" />
+                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: siteTones.brand.surface }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AgentMockup({ enhanced }: { enhanced: boolean }) {
+  const tools = ["Queried data", "Ran analysis", "Read 2 docs"];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden p-3.5">
+      <div className="mb-2.5 flex items-center justify-between">
+        <span className="text-[10px] font-mono text-muted-foreground">assistant</span>
+        <span
+          className="rounded-full px-2 py-0.5 text-[9px]"
+          style={{ backgroundColor: siteTones.brand.surface, color: siteTones.brand.accent }}
+        >
+          4 tools
+        </span>
+      </div>
+      <div className="mb-2.5 flex justify-end">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-foreground px-2.5 py-1.5 text-[9px] text-background">
+          Analyze Q3 churn &amp; draft a summary
+        </div>
+      </div>
+      <div className="mb-1.5 text-[8px] text-muted-foreground">Thought for 7s</div>
+      <div className="mb-2.5 flex flex-wrap gap-1">
+        {tools.map((t, i) => (
+          <span
+            key={t}
+            className="flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 text-[8px] transition-all duration-300"
+            style={{
+              color: siteTones.brand.accent,
+              backgroundColor: siteTones.brand.surface,
+              transform: enhanced ? `translateY(${-i}px)` : "none",
+            }}
+          >
+            ✓ {t}
+          </span>
+        ))}
+      </div>
+      <div className="rounded-md border border-border p-2">
+        <div className="mb-1.5 h-1.5 w-2/3 rounded bg-foreground/25" />
+        <div className="mb-1 h-1.5 w-full rounded bg-foreground/10" />
+        <div className="h-1.5 w-4/5 rounded bg-foreground/10" />
+      </div>
+    </div>
+  );
+}
+
+function ProjectMockup({ enhanced }: { enhanced: boolean }) {
+  const bars = [
+    { offset: 2, width: 46, tone: siteTones.brand },
+    { offset: 22, width: 40, tone: siteTones.data },
+    { offset: 12, width: 30, tone: siteTones.services },
+    { offset: 40, width: 45, tone: siteTones.brand },
+    { offset: 28, width: 34, tone: siteTones.data },
+  ];
+  return (
+    <div className="absolute inset-4 bg-background rounded-xl border border-border overflow-hidden p-3.5">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[10px] font-mono text-muted-foreground">gantt · Sep</span>
+        <span className="text-[9px] font-mono" style={{ color: siteTones.services.accent }}>
+          Today
+        </span>
+      </div>
+      <div className="relative space-y-2">
+        <div className="absolute bottom-0 top-0 w-px" style={{ left: "54%", backgroundColor: siteTones.services.accent }} />
+        {bars.map((b, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="h-1.5 w-9 shrink-0 rounded bg-foreground/10" />
+            <div className="relative h-3 flex-1">
+              <div
+                className="absolute h-3 rounded-full transition-all duration-300"
+                style={{
+                  left: `${b.offset}%`,
+                  width: `${b.width}%`,
+                  backgroundColor: b.tone.surface,
+                  border: `1px solid ${b.tone.border}`,
+                  transform: enhanced ? "translateX(2px)" : "none",
+                  transitionDelay: `${i * 40}ms`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MarketingMockup({ enhanced }: { enhanced: boolean }) {
+  return (
+    <div className="absolute inset-4 overflow-hidden rounded-xl border border-border bg-background">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <div className="h-2 w-12 rounded bg-foreground/20" />
+        <div className="flex items-center gap-1.5">
+          <div className="h-1.5 w-6 rounded bg-foreground/10" />
+          <div className="h-1.5 w-6 rounded bg-foreground/10" />
+          <div className="h-3 w-9 rounded-full" style={{ backgroundColor: siteTones.brand.accent }} />
+        </div>
+      </div>
+      <div className="p-4 text-center">
+        <div className="mx-auto mb-2 h-3 w-3/4 rounded bg-foreground/80" />
+        <div className="mx-auto mb-3 h-1.5 w-1/2 rounded bg-foreground/20" />
+        <div
+          className="mx-auto mb-4 h-6 w-24 rounded-full transition-all duration-300"
+          style={{ backgroundColor: siteTones.brand.accent, transform: enhanced ? "scale(1.04)" : "none" }}
+        />
+        <div className="grid grid-cols-3 gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="rounded-lg border border-border p-2 transition-all duration-300"
+              style={{ transform: enhanced ? "translateY(-2px)" : "none", transitionDelay: `${i * 50}ms` }}
+            >
+              <div className="mb-1.5 h-5 w-5 rounded" style={{ backgroundColor: siteTones.brand.surface }} />
+              <div className="mb-1 h-1.5 w-full rounded bg-foreground/15" />
+              <div className="h-1.5 w-2/3 rounded bg-foreground/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FieldServiceMockup({ enhanced }: { enhanced: boolean }) {
+  const pins = [
+    { x: 60, y: 28, tone: siteTones.brand.accent },
+    { x: 80, y: 52, tone: siteTones.services.accent },
+    { x: 50, y: 70, tone: siteTones.data.accent },
+  ];
+  return (
+    <div className="absolute inset-4 flex overflow-hidden rounded-xl border border-border bg-background">
+      {/* jobs list */}
+      <div className="w-[34%] shrink-0 border-r border-border p-2.5">
+        <div className="mb-2 font-mono text-[9px] text-muted-foreground">dispatch</div>
+        {pins.map((p, i) => (
+          <div
+            key={i}
+            className="mb-1.5 rounded-md border border-border p-1.5 transition-all duration-300"
+            style={{
+              backgroundColor: i === 0 ? siteTones.brand.surface : "transparent",
+              transform: enhanced && i === 0 ? "translateX(2px)" : "none",
+            }}
+          >
+            <div className="mb-1 h-1.5 w-3/4 rounded bg-foreground/20" />
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: p.tone }} />
+              <div className="h-1 w-2/3 rounded bg-foreground/10" />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* dispatch map */}
+      <div className="relative flex-1" style={{ backgroundColor: siteTones.data.surface }}>
+        {[24, 50, 76].map((t) => (
+          <div key={`h${t}`} className="absolute inset-x-0 h-px bg-foreground/10" style={{ top: `${t}%` }} />
+        ))}
+        {[34, 64, 88].map((l) => (
+          <div key={`v${l}`} className="absolute inset-y-0 w-px bg-foreground/10" style={{ left: `${l}%` }} />
+        ))}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+          <path
+            d="M60 28 L80 52 L50 70"
+            fill="none"
+            stroke={siteTones.brand.accent}
+            strokeWidth="0.8"
+            strokeDasharray="3 2"
+            opacity={enhanced ? 0.9 : 0.5}
+          />
+        </svg>
+        {pins.map((p, i) => (
+          <span
+            key={i}
+            className="absolute flex h-3.5 w-3.5 items-center justify-center rounded-full text-[7px] font-semibold text-white shadow-sm transition-transform duration-300"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              backgroundColor: p.tone,
+              transform: `translate(-50%, -50%) scale(${enhanced ? 1.15 : 1})`,
+            }}
+          >
+            {i + 1}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
   "SaaS": SaaSMockup,
+  "Field service": FieldServiceMockup,
+  "CRM & sales": CrmMockup,
+  "AI agents & automation": AgentMockup,
+  "Project management": ProjectMockup,
+  "Marketing & websites": MarketingMockup,
   "Dashboards": DashboardMockup,
   "Internal tools": WorkflowMockup,
   "AI assistants": AIMockup,
@@ -367,7 +598,7 @@ export function TemplateMockup({ category, enhanced = false }: { category: strin
 // Template Card
 // ============================================================================
 
-export function TemplateCard({ template, index }: { template: typeof templates[number]; index: number }) {
+export function TemplateCard({ template, index }: { template: TemplateCatalogItem; index: number }) {
   const [hovered, setHovered] = useState(false);
   const { ref, isVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.15 });
   const tone = categoryTone(template.category);
