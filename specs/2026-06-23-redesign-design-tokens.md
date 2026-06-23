@@ -12,6 +12,9 @@ Reglas que no se rompen:
 1. **Todo color sale de un token semántico** que resuelve por tema. Nunca un hex suelto en un componente.
 2. **El azul es acento, no campo.** Default a negro/neutro; el azul solo para los roles listados en §1.
 3. **Cada referencia se traduce a estos tokens** — se roba la idea, se reconstruye la ejecución. No se pega.
+4. **Sin gradientes** — todo flat/mono; la profundidad sale de bordes + neutrales.
+5. **Tema en vivo:** el sitio sigue `prefers-color-scheme` (arranca en la preferencia del SO) + toggle opcional.
+6. **Íconos:** lucide, línea fina (stroke ~1.75). **Mono:** Geist Mono.
 
 ---
 
@@ -32,14 +35,16 @@ Reglas que no se rompen:
 ### Superficies semánticas (resuelven por tema)
 | Token | Light (default) | Dark |
 |---|---|---|
-| `--bg-base` | `#FFFFFF` | `#09090F` |
-| `--bg-secondary` | `#F7F8FC` | `#11111A` |
-| `--surface` | `#F1F2F7` | `#121230` |
-| `--border` | `#E6E8F2` | `#1F1F33` |
-| `--hover` | `#EEF0FF` | `#272742` |
+| `--bg-base` | `#FFFFFF` | `#000000` |
+| `--bg-secondary` | `#F7F8FC` | `#0C0C0C` |
+| `--surface` | `#F1F2F7` | `#161616` |
+| `--border` | `#E6E8F2` | `#262626` |
+| `--hover` | `#EEF0FF` | `#1F1F1F` |
 | `--text-primary` | `#111827` | `#FFFFFF` |
-| `--text-secondary` | `#6B7280` | `#9CA3AF` |
-| `--text-muted` | `#9CA3AF` | `#6B6B7D` |
+| `--text-secondary` | `#6B7280` | `#A3A3A3` |
+| `--text-muted` | `#9CA3AF` | `#6B6B6B` |
+
+> **Dark = negro neutro** (revisa el `#09090F` azulado de v3, owner 2026-06-23): más contraste y alinea con mono-forward. La escala dark es neutral (sin tinte azul).
 
 ### Estado (semántico, NO decorativo)
 `success #00C853` · `warning #FFB300` · `error #FF3B6E` · `info #00D4FF`
@@ -49,7 +54,7 @@ Fondo de alerts/banners al **10–15% de opacidad**; color pleno solo para ícon
 
 ## 2 · Tipografía
 
-**Una sola sans, con peso.** Familia = **A/B en la galería: Geist (free) vs Söhne (premium)** · fallback free = Neue Montreal. Se cierra viéndola en contexto.
+**Una sola sans, con peso → Geist** (LOCKED 2026-06-23: neutral, técnica, free, sin fricción de licencia; el owner la eligió sobre Söhne). **Mono = Geist Mono** (código, labels, hex).
 
 | Rol | Tamaño | Peso | Tracking | Line-height |
 |---|---|---|---|---|
@@ -115,9 +120,12 @@ Pesos a cargar: **400 / 500 / 600 (+700 display).** El "peso" = peso alto + trac
 
 ---
 
-## 8 · Motion
+## 8 · Motion — intencional, con propósito
 
-Sutil y rápido: **150–250ms ease-out.** El hover levanta por color/borde, no por movimiento grande. Reduced-motion safe.
+**Menos animaciones, mejor ejecutadas.** El motion solo donde aporta valor visual o funcional — nunca por rellenar.
+- **SÍ llevan motion:** ilustraciones, gráficos/data-viz, elementos decorativos, mockups, indicadores de estado, componentes interactivos — vía **loops sutiles** o **hover**.
+- **NO animar:** textos, cards o secciones completas sin razón clara (genera ruido visual y baja la sensación premium).
+- Transiciones 150–250ms ease-out · reduced-motion safe.
 
 ---
 
