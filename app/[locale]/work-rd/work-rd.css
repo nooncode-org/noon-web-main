@@ -1,0 +1,114 @@
+/* ============================================================================
+   Work page — REDESIGN (staging at /work-rd). Self-contained, scoped under
+   .work-rd so it can't leak into / be leaked into by the live site theme.
+   Follows the locked spine: Geist, mono-forward, flat/mono, pill, hybrid grid.
+   Dark = neutral BLACK, driven by the site's existing html.dark (system pref).
+   ============================================================================ */
+
+.work-rd {
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* light (default) */
+  --bg-base: #ffffff;
+  --bg-secondary: #f7f8fc;
+  --surface: #f1f2f7;
+  --border: #e6e8f2;
+  --hover: #eef0ff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --brand: #1200c5;
+  --brand-hover: #2e1cff;
+  --tint: rgba(17, 24, 39, 0.04);
+
+  font-family: var(--sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .work-rd {
+  --bg-base: #000000;
+  --bg-secondary: #0c0c0c;
+  --surface: #161616;
+  --border: #262626;
+  --hover: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b6b6b;
+  --tint: rgba(255, 255, 255, 0.05);
+}
+
+/* layout */
+.wr-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+@media (min-width: 768px) { .wr-wrap { padding: 0 40px; } }
+.wr-section { padding: 64px 0; }
+
+/* nav */
+.wr-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--bg-base) 72%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.wr-nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 768px) { .wr-nav-inner { padding: 0 40px; } }
+.wr-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
+.wr-nav-links { display: none; gap: 36px; }
+@media (min-width: 768px) { .wr-nav-links { display: flex; } }
+.wr-nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color .2s; position: relative; }
+.wr-nav-links a:hover { color: var(--text-primary); }
+.wr-nav-links a.active { color: var(--text-primary); }
+.wr-nav-cta { display: inline-flex; }
+
+/* type */
+.wr-display { font-family: var(--sans); font-size: clamp(40px, 5.5vw, 64px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; margin: 0; }
+.wr-h1 { font-size: clamp(34px, 4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
+.wr-h2 { font-size: clamp(26px, 2.6vw, 32px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.15; margin: 0; }
+.wr-h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; margin: 0; }
+.wr-lead { font-size: clamp(17px, 1.6vw, 19px); font-weight: 400; line-height: 1.5; color: var(--text-secondary); margin: 0; }
+.wr-body { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+.wr-kicker { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
+.wr-mono { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); }
+
+/* buttons */
+.wr-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; }
+.wr-btn-sm { padding: 8px 16px; font-size: 13px; }
+.wr-btn-primary { background: var(--text-primary); color: var(--bg-base); }
+.wr-btn-primary:hover { transform: translateY(-1px); }
+.wr-btn-secondary { background: transparent; color: var(--text-primary); border-color: var(--border); }
+.wr-btn-secondary:hover { background: var(--hover); }
+
+/* corner ticks (technical zones) */
+.wr-tickframe { position: relative; }
+.wr-tick { position: absolute; width: 11px; height: 11px; color: var(--text-muted); opacity: 0.7; pointer-events: none; }
+.wr-tick svg { width: 100%; height: 100%; display: block; }
+.wr-tick.tl { top: -6px; left: -6px; }
+.wr-tick.tr { top: -6px; right: -6px; }
+.wr-tick.bl { bottom: -6px; left: -6px; }
+.wr-tick.br { bottom: -6px; right: -6px; }
+
+/* hero */
+.wr-hero { padding: clamp(56px, 9vw, 104px) 0 clamp(40px, 6vw, 72px); }
+.wr-hero .wr-display { max-width: 14ch; }
+.wr-hero-lead { max-width: 52ch; margin-top: 22px; }
+.wr-hero-actions { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.wr-hero-meta { margin-top: 28px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.wr-hero-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+
+/* stat band — technical grid (hairlines + ticks) */
+.wr-statband { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.wr-statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
+.wr-stat { background: var(--bg-base); padding: 28px 24px; text-align: center; }
+.wr-stat .v { font-size: clamp(28px, 3vw, 36px); font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.wr-stat .l { margin-top: 6px; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+
+/* abstract systemic illustration (hero accent) */
+.wr-figure { color: var(--text-muted); }
+.wr-figure .node { fill: var(--brand); stroke: var(--brand); }
