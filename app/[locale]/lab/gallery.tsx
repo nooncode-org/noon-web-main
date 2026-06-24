@@ -328,7 +328,7 @@ export function Gallery() {
 
         {/* 10 cards, feature row, content blocks */}
         <Section n="10" title="Cards & content patterns">
-          <div className="lab-tickframe" style={{ borderRadius: 12, overflow: "hidden" }}>
+          <div className="lab-tickframe" style={{ borderRadius: 0, overflow: "hidden" }}>
             <Ticks />
             <div className="lab-features">
               {[["01", "Human review", "A real engineer reviews every build before it ships."], ["02", "You own the code", "No lock-in. Clean, documented, yours from day one."], ["03", "Built with Maxwell", "A brief becomes production software with an auditable trail."]].map(([n, t, d]) => (

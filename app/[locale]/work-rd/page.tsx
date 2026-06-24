@@ -186,8 +186,7 @@ export default async function WorkRedesignPage({ params }: Props) {
                 className={`wr-case ${i % 2 === 1 ? "flip" : ""}`}
                 style={{ scrollMarginTop: 80 }}
               >
-                <div className="wr-case-figure wr-tickframe">
-                  <Ticks />
+                <div className="wr-case-figure">
                   <div className="wr-case-shot">
                     <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, w: c.mockup.w, h: c.mockup.h }} />
                   </div>
