@@ -48,7 +48,7 @@ html.dark .work-rd {
 /* layout */
 .wr-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 @media (min-width: 768px) { .wr-wrap { padding: 0 40px; } }
-.wr-section { padding: 64px 0; }
+.wr-section { padding: clamp(72px, 9vw, 112px) 0; }
 
 /* nav */
 .wr-nav {
@@ -141,7 +141,8 @@ html.dark .work-rd {
 .wr-sechead { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 36px; }
 
 /* case studies — two-col text + live mockup (Pathly pattern), alternating */
-.wr-cases { display: grid; gap: 56px; }
+.wr-cases { display: grid; gap: clamp(56px, 7vw, 84px); }
+.wr-case-num { display: block; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 14px; }
 .wr-case { display: grid; gap: 26px; align-items: center; }
 @media (min-width: 900px) {
   .wr-case { grid-template-columns: 1.05fr 1fr; gap: 48px; }

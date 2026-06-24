@@ -215,6 +215,7 @@ export default async function WorkRedesignPage({ params }: Props) {
                   </div>
                 </div>
                 <div className="wr-case-text">
+                  <span className="wr-case-num">{String(i + 1).padStart(2, "0")} / {String(CASES.length).padStart(2, "0")}</span>
                   <div className="wr-case-head">
                     <span className="wr-case-kicker">{c.service} · {c.sector}</span>
                     <span className="wr-badge"><ShieldCheck size={11} strokeWidth={2.25} /> Human-reviewed</span>
@@ -257,21 +258,7 @@ export default async function WorkRedesignPage({ params }: Props) {
           </div>
         </section>
 
-        {/* closing CTA */}
-        <section className="wr-section">
-          <div className="wr-cta">
-            <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
-            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project could be next.</h2>
-            <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
-              Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
-            </p>
-            <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
-              <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={16} /></Link>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ — native details accordion */}
+        {/* FAQ — native details accordion (answers doubts before the final CTA) */}
         <section className="wr-section">
           <div className="wr-sechead">
             <h2 className="wr-h2">Questions</h2>
@@ -284,6 +271,20 @@ export default async function WorkRedesignPage({ params }: Props) {
                 <div className="ans">{f.a}</div>
               </details>
             ))}
+          </div>
+        </section>
+
+        {/* closing CTA — the final action */}
+        <section className="wr-section">
+          <div className="wr-cta">
+            <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
+            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project could be next.</h2>
+            <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
+              Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
+            </p>
+            <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+              <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={16} /></Link>
+            </div>
           </div>
         </section>
       </main>
