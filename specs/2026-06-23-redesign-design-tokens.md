@@ -54,7 +54,7 @@ Fondo de alerts/banners al **10–15% de opacidad**; color pleno solo para ícon
 
 ## 2 · Tipografía
 
-**Una sola sans, con peso → Geist** (LOCKED 2026-06-23: neutral, técnica, free, sin fricción de licencia; el owner la eligió sobre Söhne). **Mono = Geist Mono** (código, labels, hex).
+**Una sola sans → Instrument Sans** (revisado 2026-06-23: el owner prefirió su calidez/humanismo al comparar el redesign con el sitio actual — que ya usa Instrument Sans; Geist fue la elección previa del A/B, pero quedó descartada por sentirse más fría/técnica). **Mono = Geist Mono** (código, labels, hex).
 
 | Rol | Tamaño | Peso | Tracking | Line-height |
 |---|---|---|---|---|
