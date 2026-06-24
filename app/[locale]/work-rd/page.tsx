@@ -147,27 +147,25 @@ export default async function WorkRedesignPage({ params }: Props) {
       <main className="wr-wrap">
         {/* hero */}
         <section className="wr-hero">
-          <p className="wr-kicker">/ Selected work</p>
-          <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, shipped and reviewed.</h1>
-          <p className="wr-lead wr-hero-lead">
-            Internal platforms, product rebuilds, AI integrations, and audits — across industries.
-            Every build accelerated by AI and reviewed by senior engineers, line by line.
-          </p>
-          <div className="wr-hero-actions">
-            <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
-            <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
-          </div>
-        </section>
-
-        {/* stat band — technical grid */}
-        <section className="wr-section" style={{ paddingTop: 0 }}>
-          <div className="wr-statband wr-tickframe">
-            <Ticks />
-            <div className="wr-statgrid">
+          <div className="wr-hero-inner">
+            <div>
+              <p className="wr-kicker">/ Selected work</p>
+              <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, shipped and reviewed.</h1>
+              <p className="wr-lead wr-hero-lead">
+                Internal platforms, product rebuilds, AI integrations, and audits — across industries.
+                Every build accelerated by AI and reviewed by senior engineers, line by line.
+              </p>
+              <div className="wr-hero-actions">
+                <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
+                <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
+              </div>
+            </div>
+            <div className="wr-hero-proof wr-tickframe">
+              <Ticks />
               {STATS.map((s) => (
-                <div key={s.label} className="wr-stat">
-                  <div className="v">{s.value}</div>
-                  <div className="l">{s.label}</div>
+                <div key={s.label} className="wr-proof-row">
+                  <span className="v">{s.value}</span>
+                  <span className="l">{s.label}</span>
                 </div>
               ))}
             </div>

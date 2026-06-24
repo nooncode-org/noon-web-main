@@ -94,11 +94,18 @@ html.dark .work-rd {
 .wr-tick.bl { bottom: -6px; left: -6px; }
 .wr-tick.br { bottom: -6px; right: -6px; }
 
-/* hero */
+/* hero — split: statement + proof block (agency "Design that delivers" style) */
 .wr-hero { padding: clamp(56px, 9vw, 104px) 0 clamp(40px, 6vw, 72px); }
+.wr-hero-inner { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 900px) { .wr-hero-inner { grid-template-columns: 1.1fr 0.9fr; gap: 56px; } }
 .wr-hero .wr-display { max-width: 15ch; }
-.wr-hero-lead { max-width: 52ch; margin-top: 22px; }
+.wr-hero-lead { max-width: 48ch; margin-top: 22px; }
 .wr-hero-actions { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.wr-hero-proof { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 26px; }
+.wr-proof-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--border); }
+.wr-proof-row:last-child { border-bottom: 0; }
+.wr-proof-row .v { font-size: clamp(28px, 3.2vw, 38px); font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.wr-proof-row .l { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: right; max-width: 13ch; line-height: 1.4; }
 
 /* tabular numbers on data */
 .wr-stat .v, .wr-metric, .wr-mono { font-variant-numeric: tabular-nums; }
