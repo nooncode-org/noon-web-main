@@ -15,6 +15,7 @@ Reglas que no se rompen:
 4. **Sin gradientes** — todo flat/mono; la profundidad sale de bordes + neutrales.
 5. **Tema en vivo:** el sitio sigue `prefers-color-scheme` (arranca en la preferencia del SO) + toggle opcional.
 6. **Íconos:** lucide, línea fina (stroke ~1.75). **Mono:** Geist Mono.
+7. **Jerarquía por énfasis (owner 2026-06-24):** resaltá SOLO lo importante (color pleno, `--text-primary`); todo lo secundario/de apoyo va en **gris/muted** (`--text-secondary`), para que el foco quede en lo clave. En **títulos** = muted-word emphasis: palabras clave plenas, conectores en gris (ej: "Real software, _shipped and_ reviewed." · "Your project _could be_ next."). Aplicar en todo lo necesario, sin recargar.
 
 ---
 

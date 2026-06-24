@@ -256,7 +256,7 @@ export default async function WorkRedesignPage({ params }: Props) {
         <section className="wr-section">
           <div className="wr-cta">
             <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
-            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project could be next.</h2>
+            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project <span style={{ color: "var(--text-secondary)" }}>could be</span> next.</h2>
             <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
               Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
             </p>
