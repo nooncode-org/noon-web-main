@@ -144,8 +144,8 @@ export default async function WorkRedesignPage({ params }: Props) {
         </div>
       </header>
 
-      {/* framed-page border + corner crosshairs (Noon identity / Pathly) */}
-      <div className="wr-frame" aria-hidden><Ticks /></div>
+      {/* framed-page border (Noon identity / Pathly) — clean, no floating ticks */}
+      <div className="wr-frame" aria-hidden />
 
       <main className="wr-wrap">
         {/* hero */}
