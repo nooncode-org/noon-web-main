@@ -56,8 +56,8 @@ html.dark .work-rd {
   background: var(--bg-base);
   border-bottom: 1px solid var(--border);
 }
-.wr-nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-@media (min-width: 768px) { .wr-nav-inner { padding: 0 40px; } }
+.wr-nav-inner { padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 768px) { .wr-nav-inner { padding: 0 28px; } }
 .wr-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
 .wr-nav-links { display: none; gap: 36px; }
 @media (min-width: 768px) { .wr-nav-links { display: flex; } }
