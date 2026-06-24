@@ -54,7 +54,7 @@ Fondo de alerts/banners al **10–15% de opacidad**; color pleno solo para ícon
 
 ## 2 · Tipografía
 
-**Una sola sans → Instrument Sans** (revisado 2026-06-23: el owner prefirió su calidez/humanismo al comparar el redesign con el sitio actual — que ya usa Instrument Sans; Geist fue la elección previa del A/B, pero quedó descartada por sentirse más fría/técnica). **Mono = Geist Mono** (código, labels, hex).
+**Una sola sans → Geist** (FINAL 2026-06-24: el owner volvió a Geist tras compararla directo con Instrument Sans — /lab [Geist] vs /work-rd [Instrument]; Instrument se sintió muy similar y prefirió Geist, la elección original del A/B). **Mono = Geist Mono** (código, labels, hex). Los títulos pueden llevar el tratamiento de **énfasis muted-word** (conectores en `--text-secondary`) — el owner lo eligió (opción 2).
 
 | Rol | Tamaño | Peso | Tracking | Line-height |
 |---|---|---|---|---|
