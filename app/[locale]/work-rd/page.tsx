@@ -117,24 +117,6 @@ function Ticks() {
   );
 }
 
-// Abstract-systemic hero signature: thin-line node graph, monochrome, sparse
-// blue (the Vercel/Pathly/CeSIA family). Flat — no gradient.
-function HeroFigure() {
-  const nodes = [[55, 70], [150, 38], [245, 82], [335, 52], [105, 150], [210, 168], [305, 140], [68, 242], [178, 258], [292, 228], [348, 285]];
-  const edges = [[0, 1], [1, 2], [2, 3], [0, 4], [1, 4], [4, 5], [2, 5], [5, 6], [3, 6], [4, 7], [5, 8], [7, 8], [6, 9], [8, 9], [9, 10], [6, 10]];
-  const blue = new Set([5, 9]);
-  return (
-    <svg viewBox="0 0 400 320" fill="none" aria-hidden>
-      {edges.map(([a, b], i) => (
-        <line key={i} className="node-line" x1={nodes[a][0]} y1={nodes[a][1]} x2={nodes[b][0]} y2={nodes[b][1]} strokeWidth="1" />
-      ))}
-      {nodes.map((n, i) => (
-        <circle key={i} className={blue.has(i) ? "node-blue" : "node-dot"} cx={n[0]} cy={n[1]} r={blue.has(i) ? 6 : 4.5} strokeWidth="1.5" />
-      ))}
-    </svg>
-  );
-}
-
 type Props = { params: Promise<{ locale: string }> };
 
 export default async function WorkRedesignPage({ params }: Props) {
@@ -165,20 +147,15 @@ export default async function WorkRedesignPage({ params }: Props) {
       <main className="wr-wrap">
         {/* hero */}
         <section className="wr-hero">
-          <div className="wr-hero-inner">
-            <div>
-              <p className="wr-kicker">/ Selected work</p>
-              <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, shipped and reviewed.</h1>
-              <p className="wr-lead wr-hero-lead">
-                Internal platforms, product rebuilds, AI integrations, and audits — across industries.
-                Every build accelerated by AI and reviewed by senior engineers, line by line.
-              </p>
-              <div className="wr-hero-actions">
-                <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
-                <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
-              </div>
-            </div>
-            <div className="wr-hero-figure"><HeroFigure /></div>
+          <p className="wr-kicker">/ Selected work</p>
+          <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, shipped and reviewed.</h1>
+          <p className="wr-lead wr-hero-lead">
+            Internal platforms, product rebuilds, AI integrations, and audits — across industries.
+            Every build accelerated by AI and reviewed by senior engineers, line by line.
+          </p>
+          <div className="wr-hero-actions">
+            <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
+            <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
           </div>
         </section>
 

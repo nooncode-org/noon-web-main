@@ -96,18 +96,9 @@ html.dark .work-rd {
 
 /* hero */
 .wr-hero { padding: clamp(56px, 9vw, 104px) 0 clamp(40px, 6vw, 72px); }
-.wr-hero-inner { display: grid; gap: 44px; align-items: center; }
-@media (min-width: 920px) { .wr-hero-inner { grid-template-columns: 1.05fr 0.95fr; gap: 56px; } }
-.wr-hero .wr-display { max-width: 13ch; }
-.wr-hero-lead { max-width: 50ch; margin-top: 22px; }
+.wr-hero .wr-display { max-width: 15ch; }
+.wr-hero-lead { max-width: 52ch; margin-top: 22px; }
 .wr-hero-actions { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.wr-hero-figure { display: none; }
-@media (min-width: 920px) { .wr-hero-figure { display: block; } }
-.wr-hero-figure svg { width: 100%; height: auto; }
-.wr-hero-figure .node-line { stroke: var(--border); }
-.wr-hero-figure .node-dot { fill: var(--bg-base); stroke: var(--text-muted); }
-.wr-hero-figure .node-blue { fill: var(--brand); stroke: var(--brand); }
-.wr-hero-figure .grid-line { stroke: var(--border); opacity: 0.5; }
 
 /* tabular numbers on data */
 .wr-stat .v, .wr-metric, .wr-mono { font-variant-numeric: tabular-nums; }
