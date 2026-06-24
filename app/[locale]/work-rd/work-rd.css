@@ -80,7 +80,7 @@ html.dark .work-rd {
 }
 
 /* type */
-.wr-display { font-family: var(--sans); font-size: clamp(46px, 6.5vw, 80px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.04; margin: 0; }
+.wr-display { font-family: var(--sans); font-size: clamp(40px, 5.5vw, 64px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.04; margin: 0; }
 .wr-h1 { font-size: clamp(34px, 4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
 .wr-h2 { font-size: clamp(26px, 2.6vw, 32px); font-weight: 600; letter-spacing: -0.015em; line-height: 1.15; margin: 0; }
 .wr-h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; margin: 0; }
@@ -109,8 +109,8 @@ html.dark .work-rd {
 /* hero — split: statement + proof block (agency "Design that delivers" style) */
 .wr-hero { padding: clamp(84px, 9vw, 116px) 0 clamp(40px, 6vw, 72px); }
 .wr-hero-inner { display: grid; gap: 40px; align-items: center; }
-@media (min-width: 900px) { .wr-hero-inner { grid-template-columns: 1.3fr 0.82fr; gap: 48px; } }
-.wr-hero .wr-display { max-width: 19ch; }
+@media (min-width: 900px) { .wr-hero-inner { grid-template-columns: 1.7fr 0.8fr; gap: 40px; } }
+.wr-hero .wr-display { max-width: 26ch; }
 .wr-hero-lead { max-width: 48ch; margin-top: 22px; }
 .wr-hero-actions { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .wr-hero-proof { border: 1px solid var(--border); border-radius: 0; padding: 4px 26px; }
