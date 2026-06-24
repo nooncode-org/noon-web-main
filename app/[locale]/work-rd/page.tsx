@@ -84,6 +84,27 @@ const CASES: CaseStudy[] = [
   },
 ];
 
+const TRACK: { sector: string; project: string }[] = [
+  { sector: "E-commerce", project: "Internal operations platform" },
+  { sector: "B2B SaaS", project: "Product rebuild & UX overhaul" },
+  { sector: "Real estate tech", project: "Embedded engineering team" },
+  { sector: "Professional services", project: "Technology audit" },
+  { sector: "Healthcare", project: "Scheduling & clinical transcription" },
+  { sector: "Retail", project: "Loyalty & automated marketing system" },
+  { sector: "Fintech", project: "Reporting dashboard with automated alerts" },
+  { sector: "Restaurant group", project: "Online ordering & POS integration" },
+  { sector: "EdTech", project: "LMS with conversational AI tutor" },
+  { sector: "Legal services", project: "Contract analysis & summarization" },
+  { sector: "Property management", project: "Tenant portal & maintenance tracking" },
+];
+
+const WORK_FAQS: { q: string; a: string }[] = [
+  { q: "Are these real projects?", a: "Yes — every case is real, delivered work, and the outcomes shown are from those engagements. The interfaces are anonymized recreations: names, brands, and data are changed to protect client confidentiality, exactly as noted under the cases." },
+  { q: "Why don't you name the clients?", a: "Confidentiality is part of the engagement. Cases are published by sector instead, and nothing identifiable goes public without permission." },
+  { q: "My industry isn't on the list — can you still help?", a: "Almost certainly. Eleven sectors so far, and the approach — scope the real problem, build it, review it line by line — carries across industries. Tell us the problem and you'll get a straight read on whether we're the right fit." },
+  { q: "What do you build with?", a: "Each case lists its stack — typically Next.js or React on the front, Node and Postgres behind it, and AI where it earns its place. Whatever the stack, the code and IP are yours." },
+];
+
 function Ticks() {
   return (
     <>
@@ -192,6 +213,55 @@ export default async function WorkRedesignPage({ params }: Props) {
           <p className="wr-honesty">
             Interfaces shown are anonymized recreations of delivered products — names, brands, and data have been changed to protect client confidentiality.
           </p>
+        </section>
+
+        {/* track record — technical grid */}
+        <section className="wr-section">
+          <div className="wr-sechead">
+            <h2 className="wr-h2">More across sectors</h2>
+            <span className="wr-mono">{TRACK.length} projects</span>
+          </div>
+          <div className="wr-track">
+            <div className="wr-track-grid">
+              {TRACK.map((t) => (
+                <div key={`${t.sector}-${t.project}`} className="wr-track-row">
+                  <span className="dot" />
+                  <span className="sector">{t.sector}</span>
+                  <span className="project">{t.project}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* closing CTA */}
+        <section className="wr-section">
+          <div className="wr-cta">
+            <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
+            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project could be next.</h2>
+            <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
+              Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
+            </p>
+            <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+              <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={16} /></Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ — native details accordion */}
+        <section className="wr-section">
+          <div className="wr-sechead">
+            <h2 className="wr-h2">Questions</h2>
+            <span className="wr-mono">FAQ</span>
+          </div>
+          <div className="wr-faq">
+            {WORK_FAQS.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <div className="ans">{f.a}</div>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
     </div>
