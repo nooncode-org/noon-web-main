@@ -67,6 +67,13 @@ html.dark .work-rd {
 .wr-nav-links a.active { color: var(--text-primary); }
 .wr-nav-cta { display: inline-flex; }
 
+/* framed page (original Noon identity + Pathly pattern) — fixed inset border
+   with corner crosshairs. Desktop only. */
+.wr-frame { display: none; }
+@media (min-width: 768px) {
+  .wr-frame { display: block; position: fixed; top: 59px; left: 12px; right: 12px; bottom: 12px; border: 1px solid var(--border); pointer-events: none; z-index: 30; }
+}
+
 /* type */
 .wr-display { font-family: var(--sans); font-size: clamp(40px, 5.5vw, 64px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.04; margin: 0; }
 .wr-h1 { font-size: clamp(34px, 4vw, 46px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
