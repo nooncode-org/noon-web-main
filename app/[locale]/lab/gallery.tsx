@@ -87,7 +87,7 @@ function Iso() {
 /* ---------- data ---------- */
 
 const TYPE = [
-  ["Display", "lab-display", "76 · 700"], ["H1", "lab-h1", "48 · 600"], ["H2", "lab-h2", "32 · 600"],
+  ["Display", "lab-display", "76 · 400"], ["H1", "lab-h1", "48 · 600"], ["H2", "lab-h2", "32 · 600"],
   ["H3", "lab-h3", "24 · 600"], ["Lead", "lab-lead", "19 · 500"], ["Body", "lab-body", "16 · 400"],
   ["Small", "lab-small", "14 · 400"], ["Kicker", "lab-kicker", "12 · 500 · upper"],
 ] as const;
@@ -160,6 +160,9 @@ export function Gallery() {
           <div className="lab-row" style={{ gap: 28 }}>
             {WEIGHTS.map(([n, w]) => <span key={n} className="lab-h3" style={{ fontWeight: w }}>{n}</span>)}
           </div>
+          <p className="lab-subhead" style={{ marginTop: 40 }}>Emphasis — muted-word</p>
+          <div className="lab-h1" style={{ fontWeight: 400, maxWidth: "15ch" }}>Real software, <span style={{ color: "var(--text-secondary)" }}>shipped and</span> reviewed.</div>
+          <p className="lab-small lab-muted" style={{ marginTop: 12, maxWidth: "46ch" }}>Highlight only what matters — supporting words go grey. Hierarchy comes from color, not weight. Light weights (display 400).</p>
         </Section>
 
         {/* 02 spacing + radius */}

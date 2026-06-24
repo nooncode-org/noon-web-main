@@ -67,7 +67,7 @@
 .lab-subhead { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px; }
 
 /* type scale */
-.lab-display { font-size: clamp(48px, 6vw, 76px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+.lab-display { font-size: clamp(48px, 6vw, 76px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
 .lab-h1 { font-size: clamp(36px, 4vw, 48px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
 .lab-h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; margin: 0; }
 .lab-h3 { font-size: 24px; font-weight: 600; line-height: 1.2; margin: 0; }
