@@ -102,3 +102,20 @@ Most refs lean on "Trusted by" logo strips (Pathly: Anthropic/ClickUp; Paradigm:
 - **Abstract systemic (default):** wireframe globe (rekord), node-graph network (Pathly), node cluster / Venn / path (agency), concentric radar (EchelonAI), dot-field (CeSIA).
 - **Isometric (how it works only):** crafted blueprint scenes (Acme), per-step device minis (Timeglass).
 - All: thin line, monochrome, sparse blue, same weight → one family.
+
+---
+
+## Vercel — the underlying aesthetic (NORTH STAR)
+
+The owner's whole reference set descends from the **"Vercel aesthetic."** Owner's original captures were lost (Cowork) and archive.org is blocked from fetch, so this is reconstructed from **Vercel's own Web Interface Guidelines** + the "Blueprint Grid" analysis. Key fact: **Vercel created Geist** (our locked font) → **Noon's locked system IS the Vercel system.**
+
+- **Type:** clean monospaced-influenced sans — **Geist Sans (body) + Geist Mono (code/labels)**. Title Case for headings/buttons (Vercel convention — open choice for us). **Tabular numbers** for data/metrics; curly quotes, real ellipsis "…", non-breaking spaces for units ("20 h/week").
+- **Grid:** subtle lines/dots behind content — **10–20% opacity max, 1px, light-gray (~#E5E7EB), 16/24px (or 8px) spacing**. linear-gradient = lines, radial-gradient = dots. (The corner crosshairs/ticks we use are layered ON TOP by the *derived* refs — rekord/EchelonAI — the base is the plain grid.)
+- **Color:** black + white primary, **2–3 colors max**, minimal accent → our mono-forward, confirmed.
+- **Spacing:** generous whitespace; systematic; everything aligned deliberately (grid/baseline/edge/optical center); optical alignment (±1px).
+- **Motion:** animate only when it "clarifies cause & effect or adds deliberate delight"; GPU props (transform/opacity); honor prefers-reduced-motion; interruptible → **confirms our intentional-motion decision verbatim.**
+- **Components:** visible focus rings, hit targets ≥24px (44 mobile), optimistic updates, "…" loading states ("Generating…").
+- **Signature = "invisible excellence":** precision, accessibility, performance, copy clarity — not decoration.
+- **Homepage IA (typical Vercel, from knowledge — confirm exact with owner):** hero (bold statement + subtle grid) → logo wall → feature sections (product UI + code) → workflow band → stats → enterprise/security → social proof → big CTA → large organized footer.
+
+**→ Noon adopts / sharpens (we already have the system):** tabular numbers on metrics · the concrete grid specs (opacity/weight/spacing) · ellipsis + non-breaking-space polish · optical alignment · visible focus rings · (decide: Title Case headings). The homepage IA informs how we organize pages.
