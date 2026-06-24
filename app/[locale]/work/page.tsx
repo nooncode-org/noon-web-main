@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { NoonWordmark } from "@/components/brand/noon-logo";
 import { WorkShot } from "@/components/work/work-shot";
-import { FaqSection, type Faq } from "@/components/landing/faq-section";
-import { SitePageFrame } from "@/app/_components/site/site-page-frame";
-import { getAuthenticatedViewer } from "@/lib/auth/session";
-import { getContactHref } from "@/lib/site-config";
+import { siteRoutes, getContactHref, getStartWithMaxwellHref, footerLinkGroups, footerSocialLinks } from "@/lib/site-config";
+import "./work-rd.css";
 
 export const metadata: Metadata = {
   title: "Work | Noon",
@@ -13,149 +14,77 @@ export const metadata: Metadata = {
     "Real software Noon has shipped — internal platforms, product rebuilds, AI integrations and audits, across e-commerce, SaaS, healthcare, fintech and more. Every build human-reviewed.",
 };
 
-// Owner-provided, real, anonymized-by-sector case studies + track record
-// (noon_case_studies.md, 2026-06-06). Metric-in-the-title per the Vercel/Stripe
-// pattern. Model names are kept — they describe the client product's stack and
-// are allowed per the owner's framing decision.
+const STATS = [
+  { value: "11", label: "sectors shipped" },
+  { value: "100%", label: "human-reviewed" },
+  { value: "Yours", label: "code & IP" },
+];
+
+// Owner-provided, real, anonymized-by-sector case studies (noon_case_studies.md).
+// Content is verbatim from the live /work page — only the execution is redesigned.
 type CaseStudy = {
-  service: string;
-  sector: string;
-  title: string; // the result, as the headline
-  summary: string; // problem → what we built, condensed
-  metrics: string[];
-  stack: string[];
-  // Anonymized product recreation (Claude Design handoff → self-contained live
-  // HTML, public/work/mockups/). Fictional product identity; disclosed below.
+  service: string; sector: string; title: string; summary: string;
+  metrics: string[]; stack: string[];
   mockup: { src: string; w: number; h: number; desc: string };
 };
 
 const CASES: CaseStudy[] = [
   {
-    service: "Custom Development",
-    sector: "E-commerce",
+    service: "Custom Development", sector: "E-commerce",
     title: "Manual ops, from 20 h/week to under 3.",
     summary:
       "Inventory in a spreadsheet, orders in the carrier portal, returns in a separate form — the team was the integration. We built an internal operations platform wired directly to Shopify and their 3PL, with AI return classification and customer-response drafting.",
     metrics: ["20h → <3h / week", "−75% order processing time"],
     stack: ["Next.js", "Node.js", "Supabase", "Shopify API", "GPT-4o"],
-    mockup: {
-      src: "/work/mockups/cs1-ordwell.html",
-      w: 1440,
-      h: 951,
-      desc: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue",
-    },
+    mockup: { src: "/work/mockups/cs1-ordwell.html", w: 1440, h: 951, desc: "Operations dashboard with live order metrics, an orders table, and an AI-classified returns queue" },
   },
   {
-    service: "Upgrade",
-    sector: "B2B SaaS",
+    service: "Upgrade", sector: "B2B SaaS",
     title: "22% fewer support tickets after a UX rebuild.",
     summary:
       "The product worked, but three years of growth without structure left inconsistent flows and an onboarding that confused users from day one. We did a full frontend rebuild — shorter flows, consistent navigation, a real-time dashboard with a clear hierarchy.",
     metrics: ["−22% UX support tickets", "in the first 60 days"],
     stack: ["React", "TypeScript", "Tailwind"],
-    mockup: {
-      src: "/work/mockups/cs2-crewfield.html",
-      w: 1440,
-      h: 1018,
-      desc: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed",
-    },
+    mockup: { src: "/work/mockups/cs2-crewfield.html", w: 1440, h: 1018, desc: "Team-management dashboard with a KPI hero band, team tiles, hiring pipeline, and activity feed" },
   },
   {
-    service: "Engineering Support",
-    sector: "Real estate tech",
+    service: "Engineering Support", sector: "Real estate tech",
     title: "4 investor-committed features shipped in 90 days.",
     summary:
       "One technical founder was handling features, bugs, and infrastructure at once — everything bottlenecked. We embedded three developers as a direct extension of the team, with AI market-comparable analysis and buyer-report generation.",
     metrics: ["4 features in 90 days", "−60% production incidents"],
     stack: ["Next.js", "Python", "Supabase", "Vercel", "Claude 3.7 Sonnet"],
-    mockup: {
-      src: "/work/mockups/cs3-lotvane.html",
-      w: 1440,
-      h: 975,
-      desc: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables",
-    },
+    mockup: { src: "/work/mockups/cs3-lotvane.html", w: 1440, h: 975, desc: "Dark property-intelligence app with a live map of price pins and a listing panel with comparables" },
   },
   {
-    service: "Business Technology Audit",
-    sector: "Professional services",
+    service: "Business Technology Audit", sector: "Professional services",
     title: "$4,200/month in redundant software, found in two weeks.",
     summary:
       "12 SaaS tools accumulated over years — no one knew which overlapped, which to cut, or what was worth building. A two-week audit covered the full stack, vendor costs, and workflows, ending in a prioritized cut / keep / build plan.",
     metrics: ["$4,200/mo identified", "2 tools → 1 integration"],
     stack: ["Audit", "Roadmap"],
-    mockup: {
-      src: "/work/mockups/cs4-stackbrief.html",
-      w: 1440,
-      h: 1022,
-      desc: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap",
-    },
+    mockup: { src: "/work/mockups/cs4-stackbrief.html", w: 1440, h: 1022, desc: "Tech-stack audit report with spend metrics, a cost table with keep/consolidate/cut verdicts, and a phased roadmap" },
   },
   {
-    service: "Custom Development",
-    sector: "Healthcare",
+    service: "Custom Development", sector: "Healthcare",
     title: "No-shows cut from 28% to 11%.",
     summary:
       "Scheduling, reminders, and patient history lived across three disconnected systems, driving high no-shows and manual admin. We built a scheduling + patient-communication platform integrated with their clinical system, with consultation transcription and automated summaries.",
     metrics: ["No-shows 28% → 11%", "−40% admin time / appointment"],
     stack: ["Next.js", "Supabase", "Twilio", "Whisper", "Claude Opus 4.8"],
-    mockup: {
-      src: "/work/mockups/cs5-visitra.html",
-      w: 1240,
-      h: 754,
-      desc: "Clinical scheduling app with a weekly calendar, reminder timeline, and an AI visit summary",
-    },
+    mockup: { src: "/work/mockups/cs5-visitra.html", w: 1240, h: 754, desc: "Clinical scheduling app with a weekly calendar, reminder timeline, and an AI visit summary" },
   },
   {
-    service: "Custom Development",
-    sector: "Retail",
+    service: "Custom Development", sector: "Retail",
     title: "34% more repeat purchases in 90 days.",
     summary:
       "Repeat customers had no reason to return, and in-store and online purchase history lived in separate systems — so every campaign was manual and generic. We built a unified loyalty + automated marketing system across their POS and online store.",
     metrics: ["+34% repeat purchases", "+28% AOV from members"],
     stack: ["Next.js", "Node.js", "Supabase", "Stripe", "Resend", "GPT-5.1"],
-    mockup: {
-      src: "/work/mockups/cs6-embertide.html",
-      w: 1440,
-      h: 1022,
-      desc: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed",
-    },
+    mockup: { src: "/work/mockups/cs6-embertide.html", w: 1440, h: 1022, desc: "Warm dark loyalty dashboard with campaign table, revenue bars, membership tiers, and a points activity feed" },
   },
 ];
 
-// Work-specific FAQ — every answer restates what this page already discloses
-// (real engagements, anonymized recreations, per-case stacks) or routes to the
-// established contact paths. No new claims.
-const WORK_FAQS: Faq[] = [
-  {
-    question: "Are these real projects?",
-    answer:
-      "Yes — every case is real, delivered work, and the outcomes shown are from those engagements. The interfaces are anonymized recreations: names, brands, and data are changed to protect client confidentiality, exactly as noted under the cases.",
-  },
-  {
-    question: "Why don't you name the clients?",
-    answer:
-      "Confidentiality is part of the engagement. Cases are published by sector instead, and nothing identifiable goes public without permission.",
-  },
-  {
-    question: "My industry isn't on the list — can you still help?",
-    answer:
-      "Almost certainly. Eleven sectors so far, and the approach — scope the real problem, build it, review it line by line — carries across industries. Tell us the problem and you'll get a straight read on whether we're the right fit.",
-  },
-  {
-    question: "What do you build with?",
-    answer:
-      "Each case lists its stack — typically Next.js or React on the front, Node and Postgres behind it, and AI where it earns its place. Whatever the stack, the code and IP are yours.",
-  },
-];
-
-const STATS: { value: string; label: string }[] = [
-  { value: "11", label: "sectors shipped" },
-  { value: "100%", label: "human-reviewed" },
-  { value: "Yours", label: "code & IP ownership" },
-];
-
-// One row per shipped project — the six detailed cases above lead the list (in
-// order), then the rest of the track record. The hero stat mirrors this count.
 const TRACK: { sector: string; project: string }[] = [
   { sector: "E-commerce", project: "Internal operations platform" },
   { sector: "B2B SaaS", project: "Product rebuild & UX overhaul" },
@@ -170,143 +99,201 @@ const TRACK: { sector: string; project: string }[] = [
   { sector: "Property management", project: "Tenant portal & maintenance tracking" },
 ];
 
-type WorkPageProps = { params: Promise<{ locale: string }> };
+const WORK_FAQS: { q: string; a: string }[] = [
+  { q: "Are these real projects?", a: "Yes — every case is real, delivered work, and the outcomes shown are from those engagements. The interfaces are anonymized recreations: names, brands, and data are changed to protect client confidentiality, exactly as noted under the cases." },
+  { q: "Why don't you name the clients?", a: "Confidentiality is part of the engagement. Cases are published by sector instead, and nothing identifiable goes public without permission." },
+  { q: "My industry isn't on the list — can you still help?", a: "Almost certainly. Eleven sectors so far, and the approach — scope the real problem, build it, review it line by line — carries across industries. Tell us the problem and you'll get a straight read on whether we're the right fit." },
+  { q: "What do you build with?", a: "Each case lists its stack — typically Next.js or React on the front, Node and Postgres behind it, and AI where it earns its place. Whatever the stack, the code and IP are yours." },
+];
 
-export default async function WorkPage({ params }: WorkPageProps) {
+function Ticks() {
+  return (
+    <>
+      {(["tl", "tr", "bl", "br"] as const).map((p) => (
+        <span key={p} className={`wr-tick ${p}`} aria-hidden>
+          <svg viewBox="0 0 11 11"><path d="M5.5 0V11M0 5.5H11" stroke="currentColor" strokeWidth="1" /></svg>
+        </span>
+      ))}
+    </>
+  );
+}
+
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function WorkRedesignPage({ params }: Props) {
   const { locale } = await params;
   const lp = (href: string) => `/${locale}${href}`;
-  const viewer = await getAuthenticatedViewer();
   const contactHref = lp(getContactHref({ inquiry: "new-project", source: "work" }));
+  const maxwellHref = lp(getStartWithMaxwellHref());
 
   return (
-    <SitePageFrame viewer={viewer}>
-      <div className="site-shell py-12 lg:py-16">
-        {/* header */}
-        <div className="mx-auto mb-10 max-w-3xl text-center lg:mb-12">
-          <p className="site-meta-label mb-4 font-mono text-muted-foreground">Selected work</p>
-          <h1 className="site-hero-title mb-4">Real software, shipped and reviewed.</h1>
-          <p className="site-hero-copy mx-auto max-w-xl text-muted-foreground">
-            Internal platforms, product rebuilds, AI integrations, and audits — across industries.
-            Every build accelerated by AI and reviewed by senior engineers, line by line.
-          </p>
+    <div className={`${GeistSans.variable} ${GeistMono.variable} work-rd`}>
+      {/* nav */}
+      <header className="wr-nav">
+        <div className="wr-nav-inner">
+          <Link href={lp(siteRoutes.home)} className="wr-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}><NoonWordmark /></span>
+          </Link>
+          <nav className="wr-nav-links">
+            <Link href={lp(siteRoutes.services)}>Services</Link>
+            <Link href={lp(siteRoutes.about)}>About</Link>
+            <Link href={lp(siteRoutes.contact)}>Contact</Link>
+          </nav>
+          <Link href={maxwellHref} className="wr-nav-cta wr-btn wr-btn-primary wr-btn-sm">
+            Start with Maxwell
+          </Link>
         </div>
+      </header>
 
-        {/* stat band */}
-        <div className="mx-auto mb-12 max-w-3xl overflow-hidden rounded-[12px] border border-foreground/12 lg:mb-16">
-          <div className="grid grid-cols-3 gap-px bg-foreground/10">
-            {STATS.map((s) => (
-              <div key={s.label} className="bg-background px-3 py-5 text-center lg:py-6">
-                <div className="text-[22px] font-semibold tracking-[-0.02em] text-foreground lg:text-[26px]">
-                  {s.value}
-                </div>
-                <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/70">
-                  {s.label}
-                </div>
+      {/* framed-page border (Noon identity / Pathly) — clean, no floating ticks */}
+      <div className="wr-frame" aria-hidden />
+
+      <main className="wr-wrap">
+        {/* hero */}
+        <section className="wr-hero">
+          <div className="wr-hero-inner">
+            <div>
+              <p className="wr-kicker">/ Selected work</p>
+              <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, <span style={{ color: "var(--text-secondary)" }}>shipped and</span> reviewed.</h1>
+              <p className="wr-lead wr-hero-lead">
+                Internal platforms, product rebuilds, AI integrations, and audits — across industries.
+                Every build accelerated by AI and reviewed by senior engineers, line by line.
+              </p>
+              <div className="wr-hero-actions">
+                <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
+                <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* case studies — compact side-by-side rows (Linear/Vercel pattern).
-           The inline mockup is a small LIVE preview beside the copy; the Expand
-           lightbox opens it large + interactive, so the preview can stay small
-           — owner asked for less page footprint than the full-width stack. */}
-        <div className="mx-auto max-w-6xl space-y-12 lg:space-y-16">
-          {CASES.map((c, i) => (
-            <article
-              key={c.title}
-              // anchor (e.g. /work#cs2-crewfield) so service blocks can link
-              // straight to their proof case; scroll-mt clears the sticky nav.
-              id={c.mockup.src.split("/").pop()!.replace(".html", "")}
-              className="grid scroll-mt-24 items-center gap-5 lg:grid-cols-12 lg:gap-10"
-            >
-              <div className={`lg:col-span-7 ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, w: c.mockup.w, h: c.mockup.h }} />
-              </div>
-              <div className={`lg:col-span-5 ${i % 2 === 1 ? "lg:order-1" : ""}`}>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">
-                    {c.service} · {c.sector}
-                  </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/[0.06] px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-wide text-primary">
-                    <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.25} /> Human-reviewed
-                  </span>
-                </div>
-                <h2 className="mt-3 text-[19px] font-semibold leading-snug tracking-[-0.015em] text-foreground lg:text-[23px]">
-                  {c.title}
-                </h2>
-                <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                  {c.summary}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {c.metrics.map((m) => (
-                    <span
-                      key={m}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background px-2.5 py-1 text-[11.5px] font-medium text-foreground"
-                    >
-                      <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
-                      {m}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  {c.stack.map((t, j) => (
-                    <span key={t} className="font-mono text-[10.5px] text-muted-foreground/60">
-                      {t}
-                      {j < c.stack.length - 1 && <span className="ml-3 text-muted-foreground/25">·</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* honesty note — the shots are anonymized recreations, not client UIs */}
-        <p className="mx-auto mt-5 max-w-5xl text-center font-mono text-[10.5px] text-muted-foreground/55">
-          Interfaces shown are anonymized recreations of delivered products — names, brands, and
-          data have been changed to protect client confidentiality.
-        </p>
-
-        {/* track record */}
-        <div className="mx-auto mt-16 max-w-5xl lg:mt-20">
-          <div className="mb-6 flex items-baseline justify-between">
-            <h2 className="site-section-title">More across sectors</h2>
-            <span className="font-mono text-[11px] text-muted-foreground/60">{TRACK.length} projects</span>
-          </div>
-          <div className="overflow-hidden rounded-[12px] border border-foreground/12">
-            <div className="grid gap-px bg-foreground/10 sm:grid-cols-2">
-              {TRACK.map((t) => (
-                <div key={`${t.sector}-${t.project}`} className="flex items-center gap-3 bg-background px-5 py-3.5">
-                  <span className="h-1 w-1 shrink-0 rounded-full bg-primary/60" />
-                  <span className="shrink-0 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
-                    {t.sector}
-                  </span>
-                  <span className="truncate text-sm text-foreground/85">{t.project}</span>
+            </div>
+            <div className="wr-hero-proof wr-tickframe">
+              <Ticks />
+              {STATS.map((s) => (
+                <div key={s.label} className="wr-proof-row">
+                  <span className="v">{s.value}</span>
+                  <span className="l">{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* closing CTA */}
-        <div className="mx-auto mt-16 max-w-3xl rounded-[12px] border border-foreground/10 bg-card/40 p-8 text-center lg:mt-20">
-          <h2 className="site-section-title mb-3">Your project could be next.</h2>
-          <p className="site-section-copy mx-auto mb-5 max-w-xl text-muted-foreground">
-            Tell us what you want to build. We&apos;ll scope it with you and ship it as real,
-            human-reviewed software you own.
+        {/* case studies — two-col text + live mockup (Pathly), alternating */}
+        <section className="wr-section">
+          <p className="wr-kicker" style={{ marginBottom: 36 }}>/ Selected case studies</p>
+          <div className="wr-cases">
+            {CASES.map((c, i) => (
+              <article
+                key={c.title}
+                id={c.mockup.src.split("/").pop()!.replace(".html", "")}
+                className={`wr-case ${i % 2 === 1 ? "flip" : ""}`}
+                style={{ scrollMarginTop: 80 }}
+              >
+                <div className="wr-case-figure">
+                  <div className="wr-case-shot">
+                    <WorkShot frame={{ src: c.mockup.src, title: c.mockup.desc, w: c.mockup.w, h: c.mockup.h }} />
+                  </div>
+                </div>
+                <div className="wr-case-text">
+                  <span className="wr-case-num">{String(i + 1).padStart(2, "0")} / {String(CASES.length).padStart(2, "0")}</span>
+                  <div className="wr-case-head">
+                    <span className="wr-case-kicker">{c.service} · {c.sector}</span>
+                    <span className="wr-badge"><ShieldCheck size={11} strokeWidth={2.25} /> Human-reviewed</span>
+                  </div>
+                  <h3 className="wr-case-title">{c.title}</h3>
+                  <p className="wr-case-summary">{c.summary}</p>
+                  <div className="wr-metrics">
+                    {c.metrics.map((m) => (
+                      <span key={m} className="wr-metric"><span className="dot" />{m}</span>
+                    ))}
+                  </div>
+                  <div className="wr-stack">
+                    {c.stack.map((t) => <span key={t}>{t}</span>)}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="wr-honesty">
+            Interfaces shown are anonymized recreations of delivered products — names, brands, and data have been changed to protect client confidentiality.
           </p>
-          <Link
-            href={contactHref}
-            className="site-primary-action inline-flex h-11 items-center rounded-full px-6 text-sm font-medium"
-          >
-            Start a project
-          </Link>
-        </div>
-      </div>
+        </section>
 
-      {/* Work-specific FAQ (per-page depth — see WORK_FAQS) */}
-      <FaqSection items={WORK_FAQS} />
-    </SitePageFrame>
+        {/* track record — technical grid */}
+        <section className="wr-section">
+          <div className="wr-sechead">
+            <h2 className="wr-h2">More across sectors</h2>
+            <span className="wr-mono">{TRACK.length} projects</span>
+          </div>
+          <div className="wr-track">
+            <div className="wr-track-grid">
+              {TRACK.map((t) => (
+                <div key={`${t.sector}-${t.project}`} className="wr-track-row">
+                  <span className="dot" />
+                  <span className="sector">{t.sector}</span>
+                  <span className="project">{t.project}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ — native details accordion (answers doubts before the final CTA) */}
+        <section className="wr-section">
+          <div className="wr-sechead">
+            <h2 className="wr-h2">Questions</h2>
+            <span className="wr-mono">FAQ</span>
+          </div>
+          <div className="wr-faq">
+            {WORK_FAQS.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}</summary>
+                <div className="ans">{f.a}</div>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* closing CTA — the final action */}
+        <section className="wr-section">
+          <div className="wr-cta">
+            <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
+            <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project <span style={{ color: "var(--text-secondary)" }}>could be</span> next.</h2>
+            <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
+              Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
+            </p>
+            <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+              <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={16} /></Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* footer — Vercel-style organized (real link groups from site-config) */}
+      <footer className="wr-footer">
+        <div className="wr-wrap">
+          <div className="wr-footer-top">
+            <div className="wr-footer-brand">
+              <span style={{ height: 22, display: "inline-flex", color: "var(--text-primary)" }}><NoonWordmark /></span>
+              <p className="tag">Custom software and AI products — every build reviewed by a human, and the code is yours.</p>
+            </div>
+            <div className="wr-footer-col">
+              <h4>Site</h4>
+              <ul>{footerLinkGroups.Site.map((l) => <li key={l.name}><Link href={lp(l.href ?? "/")}>{l.name}</Link></li>)}</ul>
+            </div>
+            <div className="wr-footer-col">
+              <h4>Legal</h4>
+              <ul>{footerLinkGroups.Legal.map((l) => <li key={l.name}><Link href={lp(l.href ?? "/")}>{l.name}</Link></li>)}</ul>
+            </div>
+            <div className="wr-footer-col">
+              <h4>Connect</h4>
+              <ul>{footerSocialLinks.map((l) => <li key={l.name}><a href={l.href} target="_blank" rel="noopener noreferrer">{l.name}</a></li>)}</ul>
+            </div>
+          </div>
+          <div className="wr-footer-bottom">
+            <span className="wr-status"><span className="dot" />Every build, human-reviewed</span>
+            <span className="wr-footer-copy">© 2026 Noon</span>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
