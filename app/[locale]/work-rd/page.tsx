@@ -153,7 +153,7 @@ export default async function WorkRedesignPage({ params }: Props) {
           <div className="wr-hero-inner">
             <div>
               <p className="wr-kicker">/ Selected work</p>
-              <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, shipped and reviewed.</h1>
+              <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, <span style={{ color: "var(--text-secondary)" }}>shipped and</span> reviewed.</h1>
               <p className="wr-lead wr-hero-lead">
                 Internal platforms, product rebuilds, AI integrations, and audits — across industries.
                 Every build accelerated by AI and reviewed by senior engineers, line by line.
