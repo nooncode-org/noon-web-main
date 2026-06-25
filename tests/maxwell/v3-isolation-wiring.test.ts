@@ -214,11 +214,34 @@ describe("GET /api/maxwell/studio/session — v3 isolation guard", () => {
     });
     expect(body.workspace).toMatchObject({ id: "workspace-1" });
     expect(body.proposal_status).toBe("paid");
+    // `paid` is a publicly-viewable status → the owner-only deep-link token is
+    // surfaced for the Studio "View your proposal" CTA.
+    expect(body.proposal_public_token).toBe("token-abc");
 
     // Explicit: no internal fields leaked through any nested path.
     expect(body).not.toHaveProperty("session.stylePackId");
     expect(body).not.toHaveProperty("workspace.reviewerId");
     expect(body).not.toHaveProperty("workspace.stripePaymentIntentId");
+  });
+
+  it("withholds proposal_public_token for a non-publicly-viewable status", async () => {
+    // A proposal still in review must NOT leak a deep-link token — the public
+    // page would 404 it, and surfacing it would expose an unsent draft.
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fullSession());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValue({
+      ...fullProposal(),
+      status: "pending_review",
+    });
+
+    const res = await getStudioSessionRoute(
+      new Request("http://localhost/api/maxwell/studio/session?session_id=session-1"),
+    );
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.proposal_status).toBe("pending_review");
+    expect(body.proposal_public_token).toBeNull();
   });
 
   it("returns 401 without an authenticated viewer (guard never runs)", async () => {
