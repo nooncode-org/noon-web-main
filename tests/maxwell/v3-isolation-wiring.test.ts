@@ -168,6 +168,7 @@ function listItem(id: string): StudioSessionListItem {
     goalSummary: `Goal ${id}`,
     updatedAt: new Date().toISOString(),
     hasClientWorkspace: true,
+    proposalPublicToken: null,
   };
 }
 

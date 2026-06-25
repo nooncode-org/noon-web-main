@@ -151,6 +151,9 @@ type SessionSummary = {
   updated_at: string;
   // Slice 1d — session has a provisioned client workspace (post-payment portal).
   has_client_workspace: boolean;
+  // Owner's public proposal token when the latest proposal is viewable — drives
+  // the chats-list "View proposal" link. Null → no viewable proposal.
+  proposal_public_token: string | null;
 };
 
 type StudioShellProps = {
@@ -1264,6 +1267,13 @@ export function StudioShell({
     workspaceHref: s.has_client_workspace
       ? `/${locale}/maxwell/workspace/${s.id}`
       : null,
+    // Direct link to the client's sent proposal — only PRE-payment (no workspace
+    // yet). Once paid, the workspace link above is the primary action, so the
+    // row shows one primary affordance at a time.
+    proposalHref:
+      s.proposal_public_token && !s.has_client_workspace
+        ? `/${locale}/maxwell/proposal/${s.proposal_public_token}`
+        : null,
   }));
 
   // Slice 1d (B) — the active session's workspace, for the in-chat banner.

@@ -21,6 +21,7 @@ export async function GET() {
       goal_summary: s.goalSummary,
       updated_at: s.updatedAt,
       has_client_workspace: s.hasClientWorkspace,
+      proposal_public_token: s.proposalPublicToken,
     })),
   };
 
