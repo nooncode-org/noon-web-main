@@ -8,6 +8,7 @@
 import { getDb } from "@/lib/server/db";
 import { assertValidTransition } from "./state-machine";
 import { buildProposalReviewTimeline, deriveProposalExpiry } from "./proposal-lifecycle";
+import { PUBLIC_PROPOSAL_STATUSES } from "./proposal-visibility";
 import type { WorkspaceStatus } from "./workspace-status";
 export type { WorkspaceStatus } from "./workspace-status";
 import type {
@@ -123,6 +124,12 @@ export type StudioSessionListItem = {
    * shell/header also call "workspace".
    */
   hasClientWorkspace: boolean;
+  /**
+   * The owner's public proposal token when the session's latest proposal is in a
+   * publicly-viewable status (see proposal-visibility). Drives the "View
+   * proposal" link on the chats-list row. Null → no viewable proposal.
+   */
+  proposalPublicToken: string | null;
 };
 
 export type StudioMessage = {
@@ -664,6 +671,7 @@ export async function listStudioSessionsForOwner(
     goal_summary: string | null;
     updated_at: string | Date;
     has_client_workspace: boolean;
+    proposal_public_token: string | null;
   };
   // EXISTS (not a JOIN): a session can have more than one `client_workspace`
   // row (see getClientWorkspaceBySession's `ORDER BY created_at DESC LIMIT 1`),
@@ -674,7 +682,14 @@ export async function listStudioSessionsForOwner(
            EXISTS (
              SELECT 1 FROM client_workspace cw
              WHERE cw.studio_session_id = studio_session.id
-           ) AS has_client_workspace
+           ) AS has_client_workspace,
+           (
+             SELECT pr.public_token FROM proposal_request pr
+             WHERE pr.studio_session_id = studio_session.id
+               AND pr.status = ANY(${sql.array(Array.from(PUBLIC_PROPOSAL_STATUSES))})
+             ORDER BY pr.created_at DESC
+             LIMIT 1
+           ) AS proposal_public_token
     FROM studio_session
     WHERE lower(owner_email) = ${email}
       AND deleted_at IS NULL
@@ -688,6 +703,7 @@ export async function listStudioSessionsForOwner(
     goalSummary: r.goal_summary,
     updatedAt: toIsoTimestamp(r.updated_at)!,
     hasClientWorkspace: r.has_client_workspace,
+    proposalPublicToken: r.proposal_public_token,
   }));
 }
 
