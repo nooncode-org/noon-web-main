@@ -5,7 +5,7 @@
  * prototipo (`decision.status === 'accepted' | 'rejected'`). Renders alongside
  * `PrototipoFrame` so the client can still review the artifact.
  *
- * Copy is editorial — owner review pending per D-slice plan §11.
+ * Copy is editorial — neutral Spanish, owner-approved 2026-06-25 (D-slice plan §11).
  */
 
 import type { PrototipoRenderData } from "@/lib/maxwell/prototipo-render-types";
@@ -17,7 +17,7 @@ type Props = {
 function formatDecidedAt(iso: string | null) {
   if (!iso) return null;
   try {
-    return new Intl.DateTimeFormat("es-AR", {
+    return new Intl.DateTimeFormat("es", {
       day: "numeric",
       month: "long",
       year: "numeric",
