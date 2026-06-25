@@ -10,6 +10,7 @@ import {
   markProposalFirstOpened,
 } from "@/lib/maxwell/repositories";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
+import { isProposalPubliclyViewable } from "@/lib/maxwell/proposal-visibility";
 import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import { log } from "@/lib/server/logger";
 import {
@@ -24,14 +25,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-const PUBLIC_PROPOSAL_STATUSES = new Set([
-  "sent",
-  "payment_pending",
-  "payment_under_verification",
-  "paid",
-  "expired",
-]);
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -114,7 +107,7 @@ export default async function PublicProposalPage({ params, searchParams }: Props
   }
 
   let proposal = await getProposalRequestByPublicToken(token);
-  if (!proposal || !PUBLIC_PROPOSAL_STATUSES.has(proposal.status)) {
+  if (!proposal || !isProposalPubliclyViewable(proposal.status)) {
     // B19 — Audit blocked accesses (unknown token, unpublished status, expired).
     // Indistinguishable from rate-limited externally (both render notFound), but
     // recorded separately so compliance queries can tell them apart.

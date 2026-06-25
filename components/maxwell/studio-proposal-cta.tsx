@@ -22,6 +22,13 @@ type StudioProposalCtaProps = {
   onRequestProposal: () => void;
   agentHref: string;
   /**
+   * Owner-only deep-link token to the public proposal page. Present (from the
+   * session rehydrate) once a sent proposal exists; drives the "View your
+   * proposal" button in the `proposal_sent` phase. Null/absent → the button is
+   * hidden and the copy falls back to "check your email".
+   */
+  proposalToken?: string | null;
+  /**
    * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
    * "Get shareable link" CTA does not render and the
    * `prototype_shared` branch falls back to the legacy `prototype_ready`
@@ -133,6 +140,7 @@ export function StudioProposalCta({
   onRequestCorrection,
   onRequestProposal,
   agentHref,
+  proposalToken,
   shareEnabled = false,
   shareUrl = null,
   shareUxState,
@@ -186,7 +194,7 @@ export function StudioProposalCta({
 
   // ── Proposal pending review ───────────────────────────────────────────────
 
-  if (phase === "proposal_pending_review" || phase === "proposal_sent") {
+  if (phase === "proposal_pending_review") {
     return (
       <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-[#050505] p-4">
         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-muted-foreground">
@@ -203,6 +211,48 @@ export function StudioProposalCta({
           >
             <User className="w-3 h-3" />
             Talk to an agent directly
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Proposal sent — client reviews + pays ─────────────────────────────────
+
+  if (phase === "proposal_sent") {
+    return (
+      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-foreground">
+            <FileText className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium mb-0.5">Your proposal is ready</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {proposalToken
+                ? "Review the formal proposal and complete payment to get started."
+                : "We've emailed your proposal — check your inbox to review it and pay."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-1">
+          {proposalToken ? (
+            <Link
+              href={`/maxwell/proposal/${proposalToken}`}
+              className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              View your proposal
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          ) : null}
+          <Link
+            href={agentHref}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <User className="w-3 h-3" />
+            Talk to an agent
           </Link>
         </div>
       </div>
