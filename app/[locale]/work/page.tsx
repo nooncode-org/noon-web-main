@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { NoonWordmark } from "@/components/brand/noon-logo";
 import { WorkShot } from "@/components/work/work-shot";
 import { siteRoutes, getContactHref, getStartWithMaxwellHref, footerLinkGroups, footerSocialLinks } from "@/lib/site-config";
@@ -193,16 +193,14 @@ export default async function WorkRedesignPage({ params }: Props) {
                   </div>
                 </div>
                 <div className="wr-case-text">
-                  <span className="wr-case-num">{String(i + 1).padStart(2, "0")} / {String(CASES.length).padStart(2, "0")}</span>
                   <div className="wr-case-head">
                     <span className="wr-case-kicker">{c.service} · {c.sector}</span>
-                    <span className="wr-badge"><ShieldCheck size={11} strokeWidth={2.25} /> Human-reviewed</span>
                   </div>
                   <h3 className="wr-case-title">{c.title}</h3>
                   <p className="wr-case-summary">{c.summary}</p>
                   <div className="wr-metrics">
                     {c.metrics.map((m) => (
-                      <span key={m} className="wr-metric"><span className="dot" />{m}</span>
+                      <span key={m} className="wr-metric">{m}</span>
                     ))}
                   </div>
                   <div className="wr-stack">

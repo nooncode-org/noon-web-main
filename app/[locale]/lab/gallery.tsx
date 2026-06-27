@@ -94,7 +94,7 @@ const TYPE = [
 const WEIGHTS = [["Regular", 400], ["Medium", 500], ["Semibold", 600], ["Bold", 700]] as const;
 const SPACING = [4, 8, 12, 16, 24, 32, 48, 64, 96, 128];
 const SWATCHES = [
-  ["Brand", "var(--brand)", "#1200C5"], ["Brand hover", "var(--brand-hover)", "#2E1CFF"], ["Accent", "var(--accent)", "#00D4FF"],
+  ["Brand", "var(--brand)", "#0056FD"], ["Brand hover", "var(--brand-hover)", "#3378FD"], ["Accent", "var(--accent)", "#00D4FF"],
   ["Text", "var(--text-primary)", "primary"], ["Surface", "var(--surface)", "surface"], ["Border", "var(--border)", "border"],
   ["Success", "var(--success)", "#00C853"], ["Warning", "var(--warning)", "#FFB300"], ["Error", "var(--error)", "#FF3B6E"],
 ];
@@ -205,7 +205,7 @@ export function Gallery() {
         </Section>
 
         {/* 04 color */}
-        <Section n="04" title="Color" note="Mono-forward: el azul es chispa, no campo. Todo resuelve por tema.">
+        <Section n="04" title="Color" note="Neutra primero — el color es un acento intencional, nunca de relleno: solo si mejora la jerarquía o destaca lo importante. Si ya funciona en gris, no lleva color. Azul de marca #0056FD, escaso. Todo resuelve por tema.">
           <div className="lab-swatches">
             {SWATCHES.map(([name, val, hex]) => (
               <div key={name} className="lab-swatch">

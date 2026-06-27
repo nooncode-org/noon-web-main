@@ -24,7 +24,7 @@ Reglas que no se rompen:
 ### Marca (escaso)
 | Token | Hex | Rol |
 |---|---|---|
-| `--brand` | `#1200C5` | **Azul de marca, ESCASO.** Solo: CTA primario-azul (máx 1 por página, ver §7), estado activo/nav, logo, highlight de data-viz/ilustración, focus ring. |
+| `--brand` | `#0056FD` | **Azul de marca, ESCASO** (revisa #1200C5 de v3 — owner 2026-06-26; estilo Vercel, mejor contraste en dark). **No se fuerza — el owner indica dónde va.** Roles: estado activo/nav, logo, highlight de data-viz/ilustración, focus ring, CTA azul (máx 1/página, raro). |
 | `--brand-hover` | `#2E1CFF` | Hover del azul. |
 | `--accent` | `#00D4FF` | Cyan eléctrico — highlight secundario / info. Aún más escaso que `--brand`. |
 
