@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { templates } from "@/data/templates";
+import { templatesCatalog } from "@/data/templates";
 import { getTemplateHref, siteRoutes } from "@/lib/site-config";
 
 export type HeroTemplatesPanelProps = {
@@ -51,7 +51,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto scroll-smooth pb-2 snap-x text-left [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {templates.map((template) => (
+          {templatesCatalog.map((template) => (
             // ----------------------------------------------------------------
             // CARD ACTION — Option 1 (ACTIVE): navigate to the template detail
             // page (`/{locale}/templates/{slug}`).
@@ -78,9 +78,10 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <span className="absolute inset-x-3 bottom-2.5 text-sm font-medium text-white drop-shadow">
-                {template.name}
-              </span>
+              <div className="absolute inset-x-3 bottom-2.5 drop-shadow">
+                <span className="block text-[10px] font-mono uppercase tracking-[0.08em] text-white/70">{template.category}</span>
+                <span className="block text-sm font-medium text-white">{template.name}</span>
+              </div>
             </Link>
           ))}
         </div>
