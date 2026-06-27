@@ -25,6 +25,16 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
 
   const localHref = (href: string) => `/${locale}${href}`;
 
+  // Each template is a visual starting point, so the Home teaser shows ONE card
+  // per category (one visual shape) — no repeated looks. The full catalog (with
+  // every template) lives on /templates.
+  const seenCategories = new Set<string>();
+  const heroTemplates = templatesCatalog.filter((t) => {
+    if (seenCategories.has(t.category)) return false;
+    seenCategories.add(t.category);
+    return true;
+  });
+
   const scrollByCards = (dir: 1 | -1) => {
     const el = scrollRef.current;
     if (!el) return;
@@ -51,7 +61,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto scroll-smooth pb-2 snap-x text-left [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {templatesCatalog.map((template) => (
+          {heroTemplates.map((template) => (
             // ----------------------------------------------------------------
             // CARD ACTION — Option 1 (ACTIVE): navigate to the template detail
             // page (`/{locale}/templates/{slug}`).
@@ -78,10 +88,9 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <div className="absolute inset-x-3 bottom-2.5 drop-shadow">
-                <span className="block text-[10px] font-mono uppercase tracking-[0.08em] text-white/70">{template.category}</span>
-                <span className="block text-sm font-medium text-white">{template.name}</span>
-              </div>
+              <span className="absolute inset-x-3 bottom-2.5 text-base font-medium text-white drop-shadow">
+                {template.category}
+              </span>
             </Link>
           ))}
         </div>

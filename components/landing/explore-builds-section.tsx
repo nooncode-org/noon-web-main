@@ -14,6 +14,12 @@ import { templates, type TemplateCatalogItem } from "@/data/templates";
 
 const categoryTone = (category: string) => {
   switch (category) {
+    case "AI": return siteTones.data;
+    case "Booking": return siteTones.services;
+    case "CRM": return siteTones.brand;
+    case "Projects": return siteTones.data;
+    case "Sites": return siteTones.brand;
+    case "Field service": return siteTones.services;
     case "SaaS": return siteTones.brand;
     case "Dashboards": return siteTones.client;
     case "Internal tools": return siteTones.gateway;
@@ -572,6 +578,13 @@ function FieldServiceMockup({ enhanced }: { enhanced: boolean }) {
 
 // Assign mockup by category
 const MockupByCategory: Record<string, React.ComponentType<{ enhanced: boolean }>> = {
+  // Current visual-based taxonomy (2026-06-27)
+  "AI": AIMockup,
+  "Booking": BookingMockup,
+  "CRM": CrmMockup,
+  "Projects": ProjectMockup,
+  "Sites": MarketingMockup,
+  // (Dashboards / E-commerce / Field service keyed below; legacy names kept so older strings still resolve)
   "SaaS": SaaSMockup,
   "Field service": FieldServiceMockup,
   "CRM & sales": CrmMockup,

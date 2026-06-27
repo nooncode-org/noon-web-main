@@ -2,28 +2,17 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Filter, Gauge, LayoutGrid, LayoutTemplate, Minus, Shapes } from "lucide-react";
+import Image from "next/image";
+import { LayoutGrid, Search } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { FaqSection, type Faq } from "@/components/landing/faq-section";
-import { useRevealOnView } from "@/hooks/use-reveal-on-view";
-import {
-  templatesCatalog,
-  templateCatalogCategories,
-  templatePrinciples,
-  templateSelectionGuides,
-} from "@/data/templates";
-import { siteRoutes } from "@/lib/site-config";
-import { siteTones } from "@/lib/site-tones";
-import { TemplateCard as AnimatedTemplateCard } from "@/components/landing/explore-builds-section";
-import { TemplateHeroPreview } from "@/components/sections/premium";
-
-const templateBrandTone = siteTones.brand;
+import { templatesCatalog, templateCatalogCategories } from "@/data/templates";
+import { siteRoutes, getTemplateHref } from "@/lib/site-config";
 
 // Templates-specific FAQ — every answer mirrors copy already on this page
-// (pre-defined scopes, "structured starting points, not boxed products",
-// production-ready codebase) or the established Maxwell/service routes.
+// or the established Maxwell/service routes.
 const TEMPLATES_FAQS: Faq[] = [
   {
     question: "Are these finished products I just buy?",
@@ -47,214 +36,198 @@ const TEMPLATES_FAQS: Faq[] = [
   },
 ];
 
-// Icons for the 3 "how templates work" principles (structured start / faster /
-// shaped to the real problem) so the cards aren't text-only.
-const TEMPLATE_PRINCIPLE_ICONS = [LayoutTemplate, Gauge, Shapes] as const;
-
 const LOCALES = ["en", "es", "fr", "de"];
 
 // ============================================================================
-// PAGE
+// PAGE — V0-style templates browser: big title + search, a visual "Browse by
+// category" row, and a clean grid of preview+title cards (the whole card links
+// to the template detail). No heavy summaries/tags/CTAs on the cards.
 // ============================================================================
 
 export function TemplatesContent() {
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
-  const locale = (paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en");
+  const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
   const lp = (href: string) => `/${locale}${href}`;
 
   const t = useTranslations("templates");
 
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const filteredTemplates = useMemo(() => {
-    if (!activeFilter) return templatesCatalog;
-    return templatesCatalog.filter((t) => t.category === activeFilter);
-  }, [activeFilter]);
+  // Representative cover per category for the "Browse by category" row — first
+  // template found in each category, using its real mockup render.
+  const categoryReps = useMemo(
+    () =>
+      templateCatalogCategories.map((category) => {
+        const rep = templatesCatalog.find((tpl) => tpl.category === category);
+        return { category, image: rep?.image ?? "" };
+      }),
+    [],
+  );
 
-  const { ref: headerRef, isVisible: headerVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
-  const { ref: filterRef, isVisible: filterVisible } = useRevealOnView<HTMLDivElement>({ threshold: 0.1 });
+  const filtered = useMemo(() => {
+    let list = activeFilter
+      ? templatesCatalog.filter((tpl) => tpl.category === activeFilter)
+      : templatesCatalog;
+    const q = query.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (tpl) =>
+          tpl.name.toLowerCase().includes(q) ||
+          tpl.category.toLowerCase().includes(q) ||
+          tpl.summary.toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [activeFilter, query]);
 
   return (
     <>
-      {/* Hero */}
-      <section ref={headerRef} className="site-hero-section pb-4 lg:pb-5">
+      {/* Header — big title + subtitle + centered search (V0 model) */}
+      <section className="site-hero-section pb-6 lg:pb-8">
         <div className="site-shell">
-          <div className="rounded-[9px] bg-[#f9f9f9]/95 p-6 text-center shadow-[0_0_0_1px_rgba(0,0,0,0.06)] backdrop-blur-sm dark:bg-[#131313]/92 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)] sm:p-8 lg:p-10">
-            <h1
-              className={`site-hero-title mx-auto mb-5 max-w-4xl transition-all duration-700 ${headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-              style={{ transitionDelay: "100ms" }}
-            >
-              {t("hero.headline")}
-            </h1>
-            <p
-              className={`site-hero-copy mx-auto mb-8 max-w-4xl text-muted-foreground transition-all duration-700 ${headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-              style={{ transitionDelay: "200ms" }}
-            >
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="site-hero-title mb-4">{t("hero.headline")}</h1>
+            <p className="site-hero-copy mx-auto mb-8 max-w-2xl text-muted-foreground">
               {t("hero.description")}
             </p>
-            <div
-              className={`flex flex-wrap justify-center gap-4 transition-all duration-700 ${headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-              style={{ transitionDelay: "300ms" }}
-            >
-              <Link
-                href={lp(siteRoutes.maxwellStudio)}
-                className="group site-primary-action inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
-              >
-                {t("hero.startWithMaxwell")}
-                <ArrowRight className="w-4 h-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
-              </Link>
-              <Link
-                href={lp(siteRoutes.services)}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary"
-              >
-                {t("hero.viewServices")}
-              </Link>
+            <div className="mx-auto flex max-w-lg items-center gap-2.5 rounded-full border border-border bg-background/70 px-4 py-2.5 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors focus-within:border-foreground/30">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search templates…"
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Premium: Template hero preview */}
-      <TemplateHeroPreview className="bg-background" />
-
-      {/* Enrichment — how Noon templates work: real principles + selection
-         guide (templatePrinciples / templateSelectionGuides, previously
-         unrendered). Sets honest expectations: a structured starting point,
-         not a boxed product. */}
-      <section className="site-section">
+      {/* Browse by category — bigger, framed cards (V0-inspired). One large
+         preview per card (we have ~1 template per category, so no 4-up mosaic). */}
+      <section className="site-section py-10 lg:py-14">
         <div className="site-shell">
-          <div className="mb-8 max-w-2xl lg:mb-10">
-            <span className="site-meta-label mb-4 inline-flex items-center gap-3 font-mono text-muted-foreground">
-              <span className="h-px w-8 bg-foreground/30" />
-              How templates work
-            </span>
-            <h2 className="site-section-title">
-              Structured starting points, <span className="text-muted-foreground">not boxed products.</span>
-            </h2>
-          </div>
-
-          {/* the 3 principles — hairline 3-up */}
-          <div className="overflow-hidden border border-foreground/10">
-            <div className="grid gap-px bg-foreground/10 lg:grid-cols-3">
-              {templatePrinciples.map((p, i) => {
-                const Icon = TEMPLATE_PRINCIPLE_ICONS[i] ?? LayoutTemplate;
-                return (
-                <div key={p.title} className="bg-background p-6 lg:p-7">
-                  <span
-                    className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] text-primary"
-                    style={{ backgroundColor: "rgba(18,0,197,0.10)" }}
-                  >
-                    <Icon className="h-4 w-4" strokeWidth={1.75} />
-                  </span>
-                  <h3 className="text-[15px] font-medium leading-snug text-foreground">{p.title}</h3>
-                  <p className="mt-2 text-sm leading-snug text-muted-foreground">{p.description}</p>
-                </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* selection guide — when to use / when not */}
-          <div className="mt-4 overflow-hidden border border-foreground/10">
-            <div className="grid gap-px bg-foreground/10 lg:grid-cols-3">
-              {templateSelectionGuides.map((g, i) => (
-                <div key={g.title} className="flex flex-col bg-background p-6 lg:p-7">
-                  <span
-                    className={`mb-3 flex h-7 w-7 items-center justify-center rounded-[8px] ${
-                      i === 0 ? "text-primary" : "border border-foreground/15 text-muted-foreground"
-                    }`}
-                    style={i === 0 ? { backgroundColor: "rgba(18,0,197,0.10)" } : undefined}
-                  >
-                    {i === 0 ? (
-                      <Check className="h-4 w-4" strokeWidth={2.5} />
-                    ) : (
-                      <Minus className="h-4 w-4" strokeWidth={2.5} />
-                    )}
-                  </span>
-                  <h3 className="text-sm font-medium leading-snug text-foreground">{g.title}</h3>
-                  <p className="mt-1.5 text-sm leading-snug text-muted-foreground">{g.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Templates by category */}
-      <section className="site-section bg-secondary/30">
-        <div className="site-shell">
-          {/* Enhanced: Category filter chips */}
-          <div
-            ref={filterRef}
-            className={`mb-8 transition-all duration-700 ${filterVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-mono uppercase tracking-[0.1em] text-muted-foreground">
-                Filter by category
+          <div className="mb-6 flex items-end justify-between">
+            <div className="space-y-2.5">
+              <span className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                <span className="h-px w-8 bg-foreground/30" />
+                Browse by category
               </span>
+              <h2 className="text-xl font-medium tracking-tight text-foreground lg:text-[1.6rem]">
+                Pick a starting point
+              </h2>
             </div>
-            <div className="flex flex-wrap gap-2">
+            {activeFilter && (
               <button
                 onClick={() => setActiveFilter(null)}
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                  activeFilter === null
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background/60 text-foreground hover:border-primary/50 hover:bg-background"
-                }`}
+                className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
-                All
+                Show all
               </button>
-              {templateCatalogCategories.map((category, index) => (
+            )}
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-3 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {categoryReps.map((c) => {
+              const active = activeFilter === c.category;
+              const count = templatesCatalog.filter((t) => t.category === c.category).length;
+              return (
                 <button
-                  key={category}
-                  onClick={() => setActiveFilter(category)}
-                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
-                    activeFilter === category
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background/60 text-foreground hover:border-primary/50 hover:bg-background"
-                  }`}
-                  style={{
-                    transitionDelay: `${index * 30}ms`,
-                  }}
+                  key={c.category}
+                  onClick={() => setActiveFilter(active ? null : c.category)}
+                  className="group w-[300px] shrink-0 snap-start text-left sm:w-[340px]"
                 >
-                  {category}
+                  <div
+                    className={`overflow-hidden rounded-[14px] border transition-all duration-300 ${
+                      active
+                        ? "border-foreground/70 ring-1 ring-foreground/15"
+                        : "border-foreground/15 group-hover:border-foreground/35"
+                    }`}
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden bg-background">
+                      {c.image ? (
+                        <Image
+                          src={c.image}
+                          alt={c.category}
+                          fill
+                          sizes="340px"
+                          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-secondary" />
+                      )}
+                    </div>
+                    <div className="flex items-baseline justify-between gap-2 border-t border-foreground/10 px-3.5 py-3">
+                      <span
+                        className={`text-base font-medium transition-colors ${
+                          active ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
+                        }`}
+                      >
+                        {c.category}
+                      </span>
+                      <span className="shrink-0 font-mono text-[11px] text-muted-foreground/50">
+                        {count} template{count !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-secondary/40 px-3 py-1 text-xs font-mono text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: templateBrandTone.accent }} />
-              {activeFilter || t("allTemplates")}
-            </h2>
-            <span className="text-xs font-mono" style={{ color: templateBrandTone.accent }}>
-              {filteredTemplates.length} template{filteredTemplates.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredTemplates.map((template, index) => (
-              <div
-                key={template.slug}
-                className="transition-all duration-500"
-                style={{
-                  animation: "reveal-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
-                  animationDelay: `${index * 50}ms`,
-                  opacity: 0,
-                }}
-              >
-                <AnimatedTemplateCard template={template} index={index} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Templates-specific FAQ (per-page depth — see TEMPLATES_FAQS) */}
+      {/* Templates grid — clean cards: preview + title + category; whole card
+         links to the template detail. */}
+      <section className="site-section pt-0">
+        <div className="site-shell">
+          <div className="mb-6 flex items-baseline justify-between border-t border-foreground/8 pt-6">
+            <h2 className="text-base font-medium text-foreground">
+              {activeFilter ?? t("allTemplates")}
+            </h2>
+            <span className="font-mono text-xs text-muted-foreground">
+              {filtered.length} template{filtered.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {filtered.length > 0 ? (
+            <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((template) => (
+                <Link
+                  key={template.slug}
+                  href={lp(getTemplateHref(template.slug))}
+                  className="group block"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-foreground/10 bg-secondary/20 transition-colors duration-300 group-hover:border-foreground/25">
+                    <Image
+                      src={template.image}
+                      alt={template.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <h3 className="text-[15px] font-medium leading-snug text-foreground">
+                      {template.name}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{template.category}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              No templates match “{query}”.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Templates-specific FAQ */}
       <FaqSection items={TEMPLATES_FAQS} />
 
       <SiteCtaBlock
