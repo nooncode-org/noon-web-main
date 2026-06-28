@@ -135,7 +135,6 @@ export function Gallery() {
       <div className="lab-wrap">
         {/* hero */}
         <section className="lab-section">
-          <p className="lab-kicker" style={{ marginBottom: 16 }}>/ Custom software + AI</p>
           <h1 className="lab-display" style={{ maxWidth: 760 }}>Software, reviewed<br />by humans.</h1>
           <p className="lab-lead lab-secondary" style={{ marginTop: 20, maxWidth: 540 }}>
             We pair the speed of AI generation with the judgment of a real engineer — before anything ships. The code is yours.

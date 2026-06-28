@@ -153,7 +153,6 @@ export default async function WorkRedesignPage({ params }: Props) {
         <section className="wr-hero">
           <div className="wr-hero-inner">
             <div>
-              <p className="wr-kicker">/ Selected work</p>
               <h1 className="wr-display" style={{ marginTop: 18 }}>Real software, <span style={{ color: "var(--text-secondary)" }}>shipped and</span> reviewed.</h1>
               <p className="wr-lead wr-hero-lead">
                 Internal platforms, product rebuilds, AI integrations, and audits — across industries.
@@ -178,7 +177,6 @@ export default async function WorkRedesignPage({ params }: Props) {
 
         {/* case studies — two-col text + live mockup (Pathly), alternating */}
         <section className="wr-section">
-          <p className="wr-kicker" style={{ marginBottom: 36 }}>/ Selected case studies</p>
           <div className="wr-cases">
             {CASES.map((c, i) => (
               <article
@@ -253,7 +251,6 @@ export default async function WorkRedesignPage({ params }: Props) {
         {/* closing CTA — the final action */}
         <section className="wr-section">
           <div className="wr-cta">
-            <p className="wr-kicker" style={{ marginBottom: 14 }}>/ Start a build</p>
             <h2 className="wr-h2" style={{ maxWidth: "18ch", margin: "0 auto" }}>Your project <span style={{ color: "var(--text-secondary)" }}>could be</span> next.</h2>
             <p className="wr-lead" style={{ maxWidth: "46ch", margin: "16px auto 0" }}>
               Tell us what you want to build. We&apos;ll scope it with you and ship it as real, human-reviewed software you own.
