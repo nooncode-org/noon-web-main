@@ -17,8 +17,8 @@ import { buildMembershipLifecyclePayload } from "@/lib/noon-app-integration";
 import { projectStatusDataSchema } from "@/lib/maxwell/project-status-types";
 
 describe("membership-billing flag", () => {
-  it("defaults OFF (gated build — flipped by the enablement PR)", () => {
-    expect(MEMBERSHIP_BILLING_ENABLED).toBe(false);
+  it("is ENABLED (flipped 2026-06-22 after the App deployed its M1 half)", () => {
+    expect(MEMBERSHIP_BILLING_ENABLED).toBe(true);
   });
 
   it("bills monthly", () => {

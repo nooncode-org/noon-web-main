@@ -44,6 +44,7 @@ const rows: StudioSessionListItem[] = [
     goalSummary: "Online store",
     updatedAt: "2026-06-17T00:00:00.000Z",
     hasClientWorkspace: true,
+    proposalPublicToken: "tok-with",
   },
   {
     id: "s-without",
@@ -52,6 +53,7 @@ const rows: StudioSessionListItem[] = [
     goalSummary: null,
     updatedAt: "2026-06-16T00:00:00.000Z",
     hasClientWorkspace: false,
+    proposalPublicToken: null,
   },
 ];
 
@@ -92,6 +94,7 @@ describe("GET /api/maxwell/studio/sessions", () => {
         goal_summary: "Online store",
         updated_at: "2026-06-17T00:00:00.000Z",
         has_client_workspace: true,
+        proposal_public_token: "tok-with",
       },
       {
         id: "s-without",
@@ -100,6 +103,7 @@ describe("GET /api/maxwell/studio/sessions", () => {
         goal_summary: null,
         updated_at: "2026-06-16T00:00:00.000Z",
         has_client_workspace: false,
+        proposal_public_token: null,
       },
     ]);
   });
@@ -123,6 +127,7 @@ describe("GET /api/maxwell/studio/sessions", () => {
         "has_client_workspace",
         "id",
         "initial_prompt",
+        "proposal_public_token",
         "status",
         "updated_at",
       ]);

@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ChevronDown,
   CircleDashed,
+  FileText,
   LogOut,
   MessageSquare,
   Monitor,
@@ -146,6 +147,9 @@ export type StudioDraftSession = {
   // Slice 1d (A) — set when the session has a provisioned client workspace;
   // renders an "Open workspace" link on the row. Null/undefined → no link.
   workspaceHref?: string | null;
+  // Set when the session's proposal is viewable + unpaid; renders a "View
+  // proposal" link on the row. Null/undefined → no link.
+  proposalHref?: string | null;
 };
 
 type StudioHeaderProps = {
@@ -268,6 +272,20 @@ export function StudioHeader({
                           {row.updatedAt.slice(0, 10)}
                         </span>
                       </button>
+                      {row.proposalHref && (
+                        // The client's sent proposal — a <Link> (navigates)
+                        // separate from the select button (loads the chat);
+                        // closes the popover on click.
+                        <Link
+                          href={row.proposalHref}
+                          aria-label="View proposal"
+                          title="View proposal"
+                          onClick={() => setDraftsOpen(false)}
+                          className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
                       {row.workspaceHref && (
                         // Slice 1d (A) — re-entry to the client workspace. A
                         // <Link> (navigates) separate from the select button

@@ -151,6 +151,9 @@ type SessionSummary = {
   updated_at: string;
   // Slice 1d — session has a provisioned client workspace (post-payment portal).
   has_client_workspace: boolean;
+  // Owner's public proposal token when the latest proposal is viewable — drives
+  // the chats-list "View proposal" link. Null → no viewable proposal.
+  proposal_public_token: string | null;
 };
 
 type StudioShellProps = {
@@ -211,6 +214,12 @@ export function StudioShell({
   // share (the URL is persisted server-side regardless of the next action).
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareUxState, setShareUxState] = useState<PrototipoShareUxState>({ kind: "idle" });
+  // The session owner's deep-link token to the public proposal page. The
+  // rehydrate endpoint surfaces it ONLY when the proposal is in a publicly
+  // viewable status (see lib/maxwell/proposal-visibility), so it is safe to
+  // pass straight into the "View your proposal" CTA. Null until a sent proposal
+  // exists for this session.
+  const [proposalPublicToken, setProposalPublicToken] = useState<string | null>(null);
 
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -356,6 +365,7 @@ export function StudioShell({
         workspace?: unknown | null;
         workspace_pending?: boolean;
         proposal_status?: string | null;
+        proposal_public_token?: string | null;
       };
 
       setSessionId(data.session.id);
@@ -374,6 +384,9 @@ export function StudioShell({
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
+      // Set explicitly each rehydrate so switching into a session without a
+      // sent proposal clears a stale token from a previously-viewed one.
+      setProposalPublicToken(data.proposal_public_token ?? null);
       // ADR-028 D6 — rehydrate share URL when the session is already in the
       // shared state. Empty string from the server (env-misconfig recovery
       // path) is treated as "no URL" so the CTA falls back to "share again".
@@ -1254,6 +1267,13 @@ export function StudioShell({
     workspaceHref: s.has_client_workspace
       ? `/${locale}/maxwell/workspace/${s.id}`
       : null,
+    // Direct link to the client's sent proposal — only PRE-payment (no workspace
+    // yet). Once paid, the workspace link above is the primary action, so the
+    // row shows one primary affordance at a time.
+    proposalHref:
+      s.proposal_public_token && !s.has_client_workspace
+        ? `/${locale}/maxwell/proposal/${s.proposal_public_token}`
+        : null,
   }));
 
   // Slice 1d (B) — the active session's workspace, for the in-chat banner.
@@ -1377,6 +1397,7 @@ export function StudioShell({
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}
               agentHref={agentHref}
+              proposalToken={proposalPublicToken}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}
               onReplyToMessage={handleReplyToMessage}

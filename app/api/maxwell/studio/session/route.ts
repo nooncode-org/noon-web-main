@@ -9,6 +9,7 @@ import {
   getStudioVersions,
 } from "@/lib/maxwell/repositories";
 import type { MessageType } from "@/lib/maxwell/repositories";
+import { isProposalPubliclyViewable } from "@/lib/maxwell/proposal-visibility";
 import { assertNoInternalFields } from "@/lib/security/project-isolation";
 
 export const runtime = "nodejs";
@@ -88,6 +89,16 @@ export async function GET(request: Request) {
     workspace: workspace ?? null,
     workspace_pending: session.status === "converted" && !workspace,
     proposal_status: proposal?.status ?? null,
+    // Owner-only deep-link token for the Studio "View your proposal" CTA.
+    // Exposed ONLY for statuses the public proposal page actually renders, so
+    // we never hand a token that would 404. The endpoint is already
+    // owner-gated above (viewerOwnsStudioSession → 403), so this never leaks
+    // across clients. `publicToken` is client-facing by design (it ships in
+    // the proposal email) and is absent from INTERNAL_ONLY_FIELDS.
+    proposal_public_token:
+      proposal && isProposalPubliclyViewable(proposal.status)
+        ? proposal.publicToken
+        : null,
   };
 
   // v3 isolation guard (2026-05-19): assert in dev/CI that no

@@ -316,6 +316,8 @@ type StudioChatPaneProps = {
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
   agentHref: string;
+  /** Owner-only deep-link token to the public proposal page (proposal_sent CTA). */
+  proposalToken?: string | null;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
   shareEnabled?: boolean;
@@ -385,6 +387,7 @@ export function StudioChatPane({
   onRequestCorrection,
   onRequestProposal,
   agentHref,
+  proposalToken,
   isWorkspaceVisible,
   shareEnabled,
   shareUrl,
@@ -619,6 +622,7 @@ export function StudioChatPane({
             onRequestCorrection={onRequestCorrection}
             onRequestProposal={onRequestProposal}
             agentHref={agentHref}
+            proposalToken={proposalToken}
             shareEnabled={shareEnabled}
             shareUrl={shareUrl}
             shareUxState={shareUxState}

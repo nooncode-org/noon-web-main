@@ -20,11 +20,12 @@
 /**
  * M1 gate (hard deploy order, same pattern as `attachments.ts` ATTACHMENTS_ENABLED).
  *
- * `false` until the App deploys its `membership-lifecycle` receiver + the
- * sanitized `membership` field on the project-status pull, then this flips to
- * `true` in the enablement PR. Kept as a kill-switch: set back to `false` to
- * instantly fall the checkout back to the M0 one-time path and stop forwarding
- * recurring lifecycle events.
+ * ENABLED 2026-06-22: the App deployed its `membership-lifecycle` receiver (PR
+ * #205 / ADR-046, migration 0098 `project_memberships` applied+verified in prod)
+ * + the sanitized `membership` field on the project-status pull
+ * (docs/2026-06-22-app-to-noonweb-v3-membership-billing-m1-deployed-readiness.md).
+ * Kept as a kill-switch: set back to `false` to instantly fall the checkout back
+ * to the M0 one-time path and stop forwarding recurring lifecycle events.
  *
  * When `false`:
  *   - Checkout ignores `payment_modality:"membership"` for the SUBSCRIPTION path
@@ -33,9 +34,15 @@
  *   - The Stripe webhook returns `ignored` for invoice/subscription events.
  *   - The one-time `checkout.session.completed` path is UNAFFECTED.
  *
+ * Operator dependency for the recurring path: the Stripe webhook endpoint must be
+ * subscribed to `invoice.paid` / `invoice.payment_failed` /
+ * `customer.subscription.updated` / `customer.subscription.deleted` (launch only
+ * had `checkout.session.completed`). Activation works without it; renewals/
+ * cancellations need it.
+ *
  * Typed `boolean` so conditions are not treated as statically known (dead-code).
  */
-export const MEMBERSHIP_BILLING_ENABLED: boolean = false;
+export const MEMBERSHIP_BILLING_ENABLED: boolean = true;
 
 /** Recurring interval for the membership subscription line. */
 export const MEMBERSHIP_INTERVAL = "month" as const;

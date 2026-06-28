@@ -35,6 +35,15 @@ vi.mock("@/lib/maxwell/public-url", () => ({
   buildPublicProposalUrl: mocks.buildPublicProposalUrl,
 }));
 
+// Flag OFF here — this file covers the M0 / kill-switch fallback (a membership
+// checkout stays `mode:"payment"`). The flag-ON subscription path lives in
+// stripe-checkout-membership.test.ts. Since the real constant is now `true`
+// (enabled 2026-06-22), this mock keeps the kill-switch case deterministic.
+vi.mock("@/lib/maxwell/membership-billing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/maxwell/membership-billing")>();
+  return { ...actual, MEMBERSHIP_BILLING_ENABLED: false };
+});
+
 vi.mock("@/lib/stripe/server", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/stripe/server")>();
   return {
