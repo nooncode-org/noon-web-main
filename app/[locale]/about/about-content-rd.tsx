@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, ChevronDown, Code2, Globe, ShieldCheck, Sparkles, Smartphone, Target, Receipt, Milestone, UserCheck, MoveRight } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -137,7 +137,7 @@ function VisualWeb() {
       {/* URL bar */}
       <rect x="48" y="11" width="90" height="10" rx="4" stroke="currentColor" strokeWidth="0.75" opacity="0.28"/>
       {/* Hero area */}
-      <rect x="14" y="36" width="122" height="28" rx="4" fill="currentColor" opacity="0.05" stroke="currentColor" strokeWidth="0.75" opacity="0.2"/>
+      <rect x="14" y="36" width="122" height="28" rx="4" fill="currentColor" fillOpacity="0.05" stroke="currentColor" strokeWidth="0.75" strokeOpacity="0.2"/>
       {/* Content title */}
       <rect x="14" y="36" width="64" height="7" rx="2" fill="currentColor" opacity="0.15" style={{transform: "translateY(10px)"}}/>
       {/* Below fold: text lines */}
@@ -159,7 +159,7 @@ function VisualMobile() {
       <line x1="6" y1="20" x2="66" y2="20" stroke="currentColor" strokeWidth="0.75" opacity="0.35"/>
       <line x1="6" y1="96" x2="66" y2="96" stroke="currentColor" strokeWidth="0.75" opacity="0.35"/>
       {/* Notch */}
-      <rect x="24" y="8" width="24" height="7" rx="3.5" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="0.75" opacity="0.25"/>
+      <rect x="24" y="8" width="24" height="7" rx="3.5" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="0.75" strokeOpacity="0.25"/>
       {/* Home bar */}
       <rect x="26" y="102" width="20" height="3" rx="1.5" fill="currentColor" opacity="0.25"/>
       {/* Content: headline */}
@@ -462,7 +462,7 @@ export function AboutContentRd() {
             {TECH_STACK.map((item) => (
               <span key={item.name} className="abt-stack-logo" title={item.name}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.logo} alt={item.name} style={{ "--s": item.s } as React.CSSProperties} />
+                <img src={item.logo} alt={item.name} style={{ "--s": item.s } as CSSProperties} />
               </span>
             ))}
           </div>
