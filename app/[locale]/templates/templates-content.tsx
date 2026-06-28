@@ -1,48 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutGrid, Search } from "lucide-react";
+import { Search, ArrowRight, LayoutGrid, ChevronLeft, ChevronRight, ChevronDown, Filter, Eye, EyeOff } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
-import { FaqSection, type Faq } from "@/components/landing/faq-section";
 import { templatesCatalog, templateCatalogCategories } from "@/data/templates";
-import { siteRoutes, getTemplateHref } from "@/lib/site-config";
-
-// Templates-specific FAQ — every answer mirrors copy already on this page
-// or the established Maxwell/service routes.
-const TEMPLATES_FAQS: Faq[] = [
-  {
-    question: "Are these finished products I just buy?",
-    answer:
-      "No — they're structured starting points, not boxed products. Each template is a pre-defined scope for a common software type, adapted to your business before anything ships.",
-  },
-  {
-    question: "What exactly do I get?",
-    answer:
-      "A complete, production-ready codebase — real software you can deploy and customize, with foundations like auth and database already in place, delivered as code you own.",
-  },
-  {
-    question: "How do I start from a template?",
-    answer:
-      "Start with Maxwell: pick the closest template, describe your business, and Maxwell turns that starting point into a clear scope — what's in and out, agreed up front — before the build.",
-  },
-  {
-    question: "What if none of them fits?",
-    answer:
-      "That's normal — templates cover common shapes. Anything non-standard is exactly what Custom Development is for: tell us what you need and we'll route it correctly.",
-  },
-];
+import { siteRoutes, getTemplateHref, getStartWithMaxwellHref } from "@/lib/site-config";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
-// ============================================================================
-// PAGE — V0-style templates browser: big title + search, a visual "Browse by
-// category" row, and a clean grid of preview+title cards (the whole card links
-// to the template detail). No heavy summaries/tags/CTAs on the cards.
-// ============================================================================
 
 export function TemplatesContent() {
   const params = useParams();
@@ -50,13 +17,29 @@ export function TemplatesContent() {
   const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
   const lp = (href: string) => `/${locale}${href}`;
 
-  const t = useTranslations("templates");
-
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showAllCats, setShowAllCats] = useState(false);
   const [query, setQuery] = useState("");
+  const catsRef = useRef<HTMLDivElement>(null);
+  const [catsScrolled, setCatsScrolled] = useState(false);
+  const [catsAtEnd, setCatsAtEnd] = useState(false);
 
-  // Representative cover per category for the "Browse by category" row — first
-  // template found in each category, using its real mockup render.
+  useEffect(() => {
+    const el = catsRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setCatsScrolled(el.scrollLeft > 4);
+      setCatsAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollCats = (dir: "left" | "right") => {
+    catsRef.current?.scrollBy({ left: dir === "right" ? 260 : -260, behavior: "smooth" });
+  };
+
   const categoryReps = useMemo(
     () =>
       templateCatalogCategories.map((category) => {
@@ -84,158 +67,197 @@ export function TemplatesContent() {
 
   return (
     <>
-      {/* Header — big title + subtitle + centered search (V0 model) */}
-      <section className="site-hero-section pb-6 lg:pb-8">
-        <div className="site-shell">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="site-hero-title mb-4">{t("hero.headline")}</h1>
-            <p className="site-hero-copy mx-auto mb-8 max-w-2xl text-muted-foreground">
-              {t("hero.description")}
+      {/* ── hero ─────────────────────────────────────────────────────────── */}
+      <section className="tpl-hero">
+        <div className="tpl-wrap">
+          <div className="tpl-hero-inner">
+            <h1 className="tpl-display">
+              Starting points for{" "}
+              <span style={{ color: "var(--text-secondary)" }}>real software.</span>
+            </h1>
+            <p className="tpl-lead tpl-hero-lead">
+              Each template is a pre-defined scope for a common software type — ready to adapt to
+              your business and delivered as production code you own.
             </p>
-            <div className="mx-auto flex max-w-lg items-center gap-2.5 rounded-full border border-border bg-background/70 px-4 py-2.5 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors focus-within:border-foreground/30">
-              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <label className="tpl-search">
+              <Search size={16} aria-hidden />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search templates…"
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
               />
-            </div>
+            </label>
           </div>
         </div>
       </section>
 
-      {/* Browse by category — bigger, framed cards (V0-inspired). One large
-         preview per card (we have ~1 template per category, so no 4-up mosaic). */}
-      <section className="site-section py-10 lg:py-14">
-        <div className="site-shell">
-          <div className="mb-6 flex items-end justify-between">
-            <div className="space-y-2.5">
-              <span className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                <span className="h-px w-8 bg-foreground/30" />
-                Browse by category
-              </span>
-              <h2 className="text-xl font-medium tracking-tight text-foreground lg:text-[1.6rem]">
-                Pick a starting point
-              </h2>
-            </div>
-            {activeFilter && (
-              <button
-                onClick={() => setActiveFilter(null)}
-                className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Show all
-              </button>
-            )}
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-3 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {categoryReps.map((c) => {
-              const active = activeFilter === c.category;
-              const count = templatesCatalog.filter((t) => t.category === c.category).length;
-              return (
+      {/* ── browse by category ────────────────────────────────────────────── */}
+      <section className="tpl-section" style={{ paddingTop: 0, paddingBottom: 32 }}>
+        <div className="tpl-wrap">
+          <div className="tpl-sechead">
+            <h2 className="tpl-h2">Pick a starting point</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {activeFilter && (
                 <button
-                  key={c.category}
-                  onClick={() => setActiveFilter(active ? null : c.category)}
-                  className="group w-[300px] shrink-0 snap-start text-left sm:w-[340px]"
+                  onClick={() => setActiveFilter(null)}
+                  className="tpl-btn tpl-btn-ghost"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                 >
-                  <div
-                    className={`overflow-hidden rounded-[14px] border transition-all duration-300 ${
-                      active
-                        ? "border-foreground/70 ring-1 ring-foreground/15"
-                        : "border-foreground/15 group-hover:border-foreground/35"
-                    }`}
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden bg-background">
-                      {c.image ? (
-                        <Image
-                          src={c.image}
-                          alt={c.category}
-                          fill
-                          sizes="340px"
-                          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-secondary" />
-                      )}
-                    </div>
-                    <div className="flex items-baseline justify-between gap-2 border-t border-foreground/10 px-3.5 py-3">
-                      <span
-                        className={`text-base font-medium transition-colors ${
-                          active ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
-                        }`}
-                      >
-                        {c.category}
-                      </span>
-                      <span className="shrink-0 font-mono text-[11px] text-muted-foreground/50">
-                        {count} template{count !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  </div>
+                  <LayoutGrid size={14} />
+                  Show all
                 </button>
-              );
-            })}
+              )}
+              {!showAllCats && (
+                <div className="tpl-cats-nav">
+                  <button className="tpl-cats-arrow" onClick={() => scrollCats("left")} aria-label="Scroll left">
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button className="tpl-cats-arrow" onClick={() => scrollCats("right")} aria-label="Scroll right">
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!showAllCats ? (
+            <div className={`tpl-cats-wrap${catsScrolled ? " show-left" : ""}${!catsAtEnd ? " show-right" : ""}`}>
+              <div className="tpl-cats" ref={catsRef}>
+                {categoryReps.map((c) => {
+                  const active = activeFilter === c.category;
+                  return (
+                    <button
+                      key={c.category}
+                      className={`tpl-cat-btn${active ? " active" : ""}`}
+                      onClick={() => setActiveFilter(active ? null : c.category)}
+                    >
+                      <div className="tpl-cat-inner">
+                        <div className="tpl-cat-img">
+                          {c.image ? (
+                            <Image src={c.image} alt={c.category} fill sizes="340px" />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", background: "var(--bg-secondary)" }} />
+                          )}
+                        </div>
+                        <div className="tpl-cat-name">{c.category}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="tpl-cats-expanded">
+              {templateCatalogCategories.map((cat) => {
+                const rep = categoryReps.find((c) => c.category === cat);
+                const active = activeFilter === cat;
+                return (
+                  <button
+                    key={cat}
+                    className={`tpl-cat-btn${active ? " active" : ""}`}
+                    onClick={() => { setActiveFilter(active ? null : cat); setShowAllCats(false); }}
+                  >
+                    <div className="tpl-cat-inner">
+                      <div className="tpl-cat-img">
+                        {rep?.image ? (
+                          <Image src={rep.image} alt={cat} fill sizes="340px" />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", background: "var(--bg-secondary)" }} />
+                        )}
+                      </div>
+                      <div className="tpl-cat-name">{cat}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="tpl-browse-all-row">
+            <button className="tpl-browse-all" onClick={() => setShowAllCats((v) => !v)}>
+              {showAllCats ? <Eye size={14} color="#0056FD" /> : <EyeOff size={14} color="#0056FD" />} View All <ChevronDown size={14} style={{ transition: "transform .25s", transform: showAllCats ? "rotate(180deg)" : "none" }} />
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Templates grid — clean cards: preview + title + category; whole card
-         links to the template detail. */}
-      <section className="site-section pt-0">
-        <div className="site-shell">
-          <div className="mb-6 flex items-baseline justify-between border-t border-foreground/8 pt-6">
-            <h2 className="text-base font-medium text-foreground">
-              {activeFilter ?? t("allTemplates")}
+      {/* ── templates grid ────────────────────────────────────────────────── */}
+      <div className="tpl-divider" />
+      <section className="tpl-section" style={{ paddingTop: 0 }}>
+        <div className="tpl-wrap">
+          <div className="tpl-grid-head">
+            <h2 className="tpl-h2" style={{ fontSize: 16, fontWeight: 500 }}>
+              {activeFilter ?? "All Templates"}
             </h2>
-            <span className="font-mono text-xs text-muted-foreground">
-              {filtered.length} template{filtered.length !== 1 ? "s" : ""}
-            </span>
+            <div className="tpl-filter-wrap">
+              <button className="tpl-filter-btn" onClick={() => setShowFilters((v) => !v)} aria-expanded={showFilters}>
+                <Filter size={13} strokeWidth={2} color="#0056FD" />
+                Filters <ChevronDown size={13} strokeWidth={2} style={{ transition: "transform .2s", transform: showFilters ? "rotate(180deg)" : "none" }} />
+              </button>
+              {showFilters && (
+                <div className="tpl-filter-drop">
+                  <button className={`tpl-filter-opt${!activeFilter ? " active" : ""}`} onClick={() => { setActiveFilter(null); setShowFilters(false); }}>All</button>
+                  {templateCatalogCategories.map((cat) => (
+                    <button key={cat} className={`tpl-filter-opt${activeFilter === cat ? " active" : ""}`} onClick={() => { setActiveFilter(cat); setShowFilters(false); }}>{cat}</button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="tpl-grid">
               {filtered.map((template) => (
                 <Link
                   key={template.slug}
                   href={lp(getTemplateHref(template.slug))}
-                  className="group block"
+                  className="tpl-tcard"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] border border-foreground/10 bg-secondary/20 transition-colors duration-300 group-hover:border-foreground/25">
+                  <div className="tpl-tcard-img">
                     <Image
                       src={template.image}
                       alt={template.name}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                      sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className=""
                     />
                   </div>
-                  <div className="mt-3">
-                    <h3 className="text-[15px] font-medium leading-snug text-foreground">
-                      {template.name}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{template.category}</p>
+                  <div className="tpl-tcard-info">
+                    <div className="tpl-tcard-name">{template.name}</div>
+                    <div className="tpl-tcard-cat">{template.category}</div>
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              No templates match “{query}”.
-            </p>
+            <div className="tpl-empty">No templates match &ldquo;{query}&rdquo;.</div>
           )}
         </div>
       </section>
 
-      {/* Templates-specific FAQ */}
-      <FaqSection items={TEMPLATES_FAQS} />
-
-      <SiteCtaBlock
-        title={t("cta.headline")}
-        description={t("cta.description")}
-        blockHref={lp(siteRoutes.maxwellStudio)}
-        className="!pt-8 !pb-10 lg:!pt-10 lg:!pb-12"
-      />
+      {/* ── CTA ───────────────────────────────────────────────────────────── */}
+      <section className="tpl-section" style={{ paddingTop: 0 }}>
+        <div className="tpl-wrap">
+          <div className="tpl-cta">
+            <h2 className="tpl-h2" style={{ maxWidth: "20ch", margin: "0 auto" }}>
+              Don&apos;t see what you need?
+            </h2>
+            <p className="tpl-lead" style={{ maxWidth: "46ch", margin: "14px auto 0" }}>
+              Start with Maxwell and describe what you want to build. We&apos;ll scope it and ship
+              it as real, human-reviewed software you own.
+            </p>
+            <div className="tpl-cta-actions">
+              <Link href={lp(getStartWithMaxwellHref())} className="tpl-btn tpl-btn-primary">
+                Start with Maxwell <ArrowRight size={15} />
+              </Link>
+              <Link href={lp(siteRoutes.services)} className="tpl-btn tpl-btn-secondary">
+                View services
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
