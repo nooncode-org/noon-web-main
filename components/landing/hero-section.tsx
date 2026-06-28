@@ -6,10 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowDown,
-  ArrowRight,
+  ArrowUp,
   Mic,
-  Paperclip,
-  Sparkles,
+  Plus,
   X,
   Upload,
   Github,
@@ -199,19 +198,11 @@ export function HeroSection() {
       <div className="relative z-10 w-full max-w-[750px] mx-auto px-5 lg:px-8">
         <div className="flex flex-col items-center text-center">
           <div className="w-full">
-            {/* Eyebrow */}
-            <div className="mb-4 lg:mb-4 flex justify-center">
-              <span className="liquid-glass-pill inline-flex items-center gap-1.5 text-[9px] lg:text-[10px] font-mono text-muted-foreground px-2 lg:px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                {t("eyebrow")}
-              </span>
-            </div>
-
             {/* Main headline — Instrument Sans (the Figma typeface), matching
                the 4 ported pages instead of the site's default serif display. */}
             <div className="mb-4 lg:mb-5">
               <h1
-                className="text-[1.3rem] sm:text-[1.5rem] lg:text-[clamp(1.5rem,2.35vw,2rem)] leading-[1.1] tracking-tight text-center"
+                className="text-[1.25rem] sm:text-[1.5rem] lg:text-[1.75rem] leading-[1.1] tracking-tight text-center"
                 style={{ fontFamily: "var(--font-instrument)" }}
               >
                 {t("headline")}
@@ -226,7 +217,7 @@ export function HeroSection() {
                   className={`absolute inset-x-0 bottom-0 h-[34px] ${
                     showTemplates ? "rounded-b-none" : "rounded-b-[9px]"
                   } flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-white`}
-                  style={{ background: "#1200C5" }}
+                  style={{ background: "#0056FD" }}
                 >
                   <span className="flex items-center gap-1.5">
                     {t("howItWorks")}
@@ -275,7 +266,7 @@ export function HeroSection() {
                       }}
                       placeholder={isInputFocused ? t("placeholder") : ""}
                       rows={3}
-                      className="min-h-[44px] lg:min-h-[50px] w-full resize-none bg-transparent px-3 lg:px-3.5 py-1.5 text-[16px] leading-relaxed lg:text-[14px] outline-none placeholder:text-muted-foreground/60 text-left"
+                      className="min-h-[44px] lg:min-h-[50px] w-full resize-none bg-transparent px-3 lg:px-3.5 py-1.5 text-[16px] leading-relaxed lg:text-[15px] outline-none placeholder:text-[#a3a3a3]/50 text-left"
                       aria-label={t("placeholder")}
                     />
                     {!inputValue && !isInputFocused && (
@@ -285,7 +276,7 @@ export function HeroSection() {
                       <div className="absolute left-0 right-0 top-0 px-3 lg:px-3.5 py-1.5 pointer-events-none overflow-hidden">
                         <span
                           key={currentSuggestion}
-                          className="block w-full truncate whitespace-nowrap text-[16px] leading-relaxed lg:text-[14px] text-muted-foreground/45 animate-fade-in text-left"
+                          className="block w-full truncate whitespace-nowrap text-[16px] leading-relaxed lg:text-[15px] text-[#a3a3a3]/50 animate-fade-in text-left"
                         >
                           {suggestions[currentSuggestion]?.prompt}
                         </span>
@@ -298,7 +289,7 @@ export function HeroSection() {
                     <div className="px-3 pb-1">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-foreground max-w-full">
                         <span className="truncate">{attachedFile.name}</span>
-                        <button type="button" onClick={() => setAttachedFile(null)} className="shrink-0 text-muted-foreground hover:text-foreground">
+                        <button type="button" onClick={() => setAttachedFile(null)} className="shrink-0 text-[#a3a3a3] hover:text-foreground">
                           <X className="h-3 w-3" />
                         </button>
                       </span>
@@ -309,16 +300,6 @@ export function HeroSection() {
                     {/* Left: tools */}
 
                     <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1 gap-y-1.5">
-                      <button
-                        type="button"
-                        aria-label="Voice input"
-                        title="Voice input is not available yet."
-                        disabled
-                        className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-full bg-secondary/45 text-muted-foreground/60"
-                      >
-                        <Mic className="h-3.5 w-3.5" />
-                      </button>
-
                       <input ref={fileInputRef} type="file" accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
                       <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
 
@@ -326,42 +307,47 @@ export function HeroSection() {
                       <div className="relative" ref={attachMenuRef}>
                         <button
                           type="button"
-                          aria-label="Attach"
+                          aria-label="Add"
                           onClick={() => { setAttachMenuOpen((v) => !v); setUrlInputMode(null); setUrlInputValue(""); }}
-                          className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${attachMenuOpen ? "bg-secondary text-foreground" : "bg-secondary/45 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+                          className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${attachMenuOpen ? "bg-secondary text-foreground" : "bg-secondary/45 text-[#a3a3a3] hover:bg-secondary hover:text-foreground"}`}
                         >
-                          <Paperclip className="h-3.5 w-3.5" />
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
 
                         {attachMenuOpen && (
                           <div className="liquid-glass-card absolute bottom-10 left-0 z-50 w-52 rounded-[10px] overflow-hidden">
                             {!urlInputMode ? (
                               <div className="py-1">
+                                <button type="button" disabled title="Voice input is not available yet." className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#a3a3a3]/60 cursor-not-allowed">
+                                  <Mic className="h-4 w-4 text-[#a3a3a3]/60" />
+                                  Voice input
+                                </button>
+                                <div className="my-1 h-px bg-border" />
                                 <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
-                                  <Upload className="h-4 w-4 text-muted-foreground" />
+                                  <Upload className="h-4 w-4 text-[#a3a3a3]" />
                                   {t("attachMenu.uploadFile")}
                                 </button>
                                 <button type="button" onClick={() => { pdfInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
-                                  <FileText className="h-4 w-4 text-muted-foreground" />
+                                  <FileText className="h-4 w-4 text-[#a3a3a3]" />
                                   {t("attachMenu.uploadPdf")}
                                 </button>
                                 <div className="my-1 h-px bg-border" />
                                 <button type="button" onClick={() => setUrlInputMode("github")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
-                                  <Github className="h-4 w-4 text-muted-foreground" />
+                                  <Github className="h-4 w-4 text-[#a3a3a3]" />
                                   {t("attachMenu.github")}
                                 </button>
                                 <button type="button" onClick={() => setUrlInputMode("vercel")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
-                                  <TriangleIcon className="h-4 w-4 text-muted-foreground" />
+                                  <TriangleIcon className="h-4 w-4 text-[#a3a3a3]" />
                                   {t("attachMenu.vercel")}
                                 </button>
                                 <button type="button" onClick={() => setUrlInputMode("image")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
-                                  <Globe className="h-4 w-4 text-muted-foreground" />
+                                  <Globe className="h-4 w-4 text-[#a3a3a3]" />
                                   {t("attachMenu.imageUrl")}
                                 </button>
                               </div>
                             ) : (
                               <div className="p-3 space-y-2">
-                                <p className="text-xs font-medium text-muted-foreground">{urlInputLabel}</p>
+                                <p className="text-xs font-medium text-[#a3a3a3]">{urlInputLabel}</p>
                                 <input
                                   type="text"
                                   autoFocus
@@ -372,10 +358,10 @@ export function HeroSection() {
                                   className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
                                 />
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors">
+                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-[#0056FD]/90 transition-colors">
                                     {urlInputLoading ? t("importing") : t("import")}
                                   </button>
-                                  <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary transition-colors">
+                                  <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-[#a3a3a3] hover:bg-secondary transition-colors">
                                     {t("cancel")}
                                   </button>
                                 </div>
@@ -385,13 +371,6 @@ export function HeroSection() {
                         )}
                       </div>
 
-                      <Link
-                        href={`/${locale}${siteRoutes.maxwell}`}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-secondary/45 px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                      >
-                        <Sparkles className="h-3 w-3" />
-                        <span className="hidden sm:inline">Maxwell</span>
-                      </Link>
                       {showMyChatsLink ? (
                         <Link
                           href={`/${locale}${getMaxwellStudioHubHref()}`}
@@ -412,9 +391,9 @@ export function HeroSection() {
                       aria-label="Start with Maxwell"
                       onClick={startWithMaxwell}
                       disabled={!inputValue.trim() && !attachedFile}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 w-8 self-center p-0 rounded-[10px] group shrink-0 disabled:opacity-40"
+                      className="!bg-[#0056FD] hover:!bg-[#0056FD]/90 text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
                     >
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                     </Button>
                   </div>
                 </div>{/* end dark card */}
@@ -425,7 +404,7 @@ export function HeroSection() {
 
               {/* Prompt Suggestions */}
               <div className="mt-3 lg:mt-4">
-                <p className="mb-2.5 text-[9px] font-mono uppercase tracking-[0.18em] text-muted-foreground/55 text-center">
+                <p className="mb-2.5 text-[9px] font-mono uppercase tracking-[0.18em] text-[#9ca3af] dark:text-[#6b6b6b] text-center">
                   {t("notSure")}
                 </p>
                 {showAllPrompts ? (
@@ -434,7 +413,7 @@ export function HeroSection() {
                       <button
                         key={index}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition-all duration-300 hover:text-foreground"
+                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
                       >
                         {s.label}
                       </button>
@@ -443,7 +422,7 @@ export function HeroSection() {
                       type="button"
                       onClick={() => setShowAllPrompts(false)}
                       aria-label="Collapse prompts"
-                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground text-base leading-none"
+                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6b7280] dark:text-[#a3a3a3] transition-colors hover:text-[#111827] dark:hover:text-white text-base leading-none"
                     >
                       −
                     </button>
@@ -454,7 +433,7 @@ export function HeroSection() {
                       <button
                         key={index}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition-all duration-300 hover:text-foreground"
+                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
                       >
                         {s.label}
                       </button>
@@ -463,7 +442,7 @@ export function HeroSection() {
                       <button
                         key={index + 3}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill hidden sm:inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] text-muted-foreground transition-all duration-300 hover:text-foreground"
+                        className="liquid-glass-pill hidden sm:inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
                       >
                         {s.label}
                       </button>
@@ -472,7 +451,7 @@ export function HeroSection() {
                       type="button"
                       onClick={() => setShowAllPrompts(true)}
                       aria-label="Show all prompts"
-                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground text-base leading-none"
+                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6b7280] dark:text-[#a3a3a3] transition-colors hover:text-[#111827] dark:hover:text-white text-base leading-none"
                     >
                       +
                     </button>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { templates } from "@/data/templates";
+import { templatesCatalog } from "@/data/templates";
 import { getTemplateHref, siteRoutes } from "@/lib/site-config";
 
 export type HeroTemplatesPanelProps = {
@@ -24,6 +24,16 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const localHref = (href: string) => `/${locale}${href}`;
+
+  // Each template is a visual starting point, so the Home teaser shows ONE card
+  // per category (one visual shape) — no repeated looks. The full catalog (with
+  // every template) lives on /templates.
+  const seenCategories = new Set<string>();
+  const heroTemplates = templatesCatalog.filter((t) => {
+    if (seenCategories.has(t.category)) return false;
+    seenCategories.add(t.category);
+    return true;
+  });
 
   const scrollByCards = (dir: 1 | -1) => {
     const el = scrollRef.current;
@@ -45,13 +55,13 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
           : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
       }`}
     >
-      <div className="overflow-hidden rounded-b-[12px] bg-[#1200C5] px-3.5 pb-3.5 pt-1">
+      <div className="overflow-hidden rounded-b-[12px] bg-[#0056FD] px-3.5 pb-3.5 pt-1">
         {/* Carousel row */}
         <div
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto scroll-smooth pb-2 snap-x text-left [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {templates.map((template) => (
+          {heroTemplates.map((template) => (
             // ----------------------------------------------------------------
             // CARD ACTION — Option 1 (ACTIVE): navigate to the template detail
             // page (`/{locale}/templates/{slug}`).
@@ -68,7 +78,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
             <Link
               key={template.slug}
               href={localHref(getTemplateHref(template.slug))}
-              className="group relative aspect-[3/2] w-[200px] shrink-0 snap-start overflow-hidden rounded-[10px] border border-foreground/8 bg-[#1200C5] sm:w-[230px]"
+              className="group relative aspect-[3/2] w-[200px] shrink-0 snap-start overflow-hidden rounded-[10px] border border-foreground/8 bg-[#0056FD] sm:w-[230px]"
             >
               <Image
                 src={template.image}
@@ -78,8 +88,8 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <span className="absolute inset-x-3 bottom-2.5 text-sm font-medium text-white drop-shadow">
-                {template.name}
+              <span className="absolute inset-x-3 bottom-2.5 text-base font-medium text-white drop-shadow">
+                {template.category}
               </span>
             </Link>
           ))}

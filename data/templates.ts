@@ -1,12 +1,8 @@
 export const templateCategories = [
-  "SaaS",
   "Dashboards",
-  "Internal tools",
-  "AI assistants",
-  "Marketplaces",
-  "Booking platforms",
+  "AI",
+  "Booking",
   "E-commerce",
-  "Mobile apps",
 ] as const;
 
 export const templatePrinciples = [
@@ -48,9 +44,9 @@ export const templateSelectionGuides = [
 export const templates = [
   {
     slug: "client-portal-saas",
-    image: "/templates/client-portal-saas.jpg",
+    image: "/templates/previews/client-portal-saas.jpg",
     name: "Client Portal SaaS",
-    category: "SaaS",
+    category: "Dashboards",
     summary:
       "A production-ready foundation for service businesses that need authenticated users, accounts, billing, and delivery workflows.",
     bestFit: ["Client-facing SaaS", "Subscription services", "Account-based software"],
@@ -66,7 +62,7 @@ export const templates = [
   },
   {
     slug: "operations-command-center",
-    image: "/templates/operations-command-center.jpg",
+    image: "/templates/previews/operations-command-center.jpg",
     name: "Operations Command Center",
     category: "Dashboards",
     summary:
@@ -86,7 +82,7 @@ export const templates = [
     slug: "approval-workflow-tool",
     image: "/templates/approval-workflow-tool.jpg",
     name: "Approval Workflow Tool",
-    category: "Internal tools",
+    category: "Dashboards",
     summary:
       "An internal operational tool for approvals, assignments, escalations, and process visibility.",
     bestFit: ["Internal approvals", "Ops routing", "Admin workflows"],
@@ -102,9 +98,9 @@ export const templates = [
   },
   {
     slug: "customer-support-ai-assistant",
-    image: "/templates/customer-support-ai-assistant.jpg",
+    image: "/templates/previews/customer-support-ai-assistant.jpg",
     name: "Customer Support AI Assistant",
-    category: "AI assistants",
+    category: "AI",
     summary:
       "A structured base for AI-assisted support with escalation paths, human handoff, and operational visibility.",
     bestFit: ["Support automation", "Internal assistants", "Helpdesk acceleration"],
@@ -120,9 +116,9 @@ export const templates = [
   },
   {
     slug: "multi-vendor-marketplace",
-    image: "/templates/multi-vendor-marketplace.jpg",
+    image: "/templates/previews/multi-vendor-marketplace.jpg",
     name: "Multi-Vendor Marketplace",
-    category: "Marketplaces",
+    category: "E-commerce",
     summary:
       "A marketplace starting point with vendor onboarding, catalog structure, and buyer-seller operational flows.",
     bestFit: ["Service marketplaces", "Product marketplaces", "B2B matching platforms"],
@@ -138,9 +134,9 @@ export const templates = [
   },
   {
     slug: "reservation-platform",
-    image: "/templates/reservation-platform.jpg",
+    image: "/templates/previews/reservation-platform.jpg",
     name: "Reservation Platform",
-    category: "Booking platforms",
+    category: "Booking",
     summary:
       "A booking-oriented foundation for businesses that need scheduling, availability, and managed reservations.",
     bestFit: ["Hospitality", "Services scheduling", "Booking operations"],
@@ -156,7 +152,7 @@ export const templates = [
   },
   {
     slug: "commerce-operations-storefront",
-    image: "/templates/commerce-operations-storefront.jpg",
+    image: "/templates/previews/commerce-operations-storefront.jpg",
     name: "Commerce Operations Storefront",
     category: "E-commerce",
     summary:
@@ -176,7 +172,7 @@ export const templates = [
     slug: "field-service-mobile-app",
     image: "/templates/field-service-mobile-app.jpg",
     name: "Field Service Mobile App",
-    category: "Mobile apps",
+    category: "Field service",
     summary:
       "A mobile starting point for operators and field teams who need tasks, statuses, and lightweight operational workflows.",
     bestFit: ["Field teams", "Internal mobile tools", "Service operations"],
@@ -195,20 +191,22 @@ export const templates = [
 export type TemplateItem = (typeof templates)[number];
 
 // ============================================================================
-// CURATED CATALOG (the /templates page) — 7 sharply-distinct baselines.
+// CURATED CATALOG — the real, current template set, used by BOTH the /templates
+// page AND the redesigned Home hero carousel (hero-templates-panel.tsx).
 //
-// `templates` (above, 8 entries) is the source the FROZEN Home hero carousel
-// reads (hero-templates-panel.tsx) and MUST stay untouched. The /templates page
-// instead renders this curated catalog, where "Operations Command Center" and
-// the old standalone "Approval Workflow Tool" are merged into one operations
-// surface (monitor + act). The retired `approval-workflow-tool` slug redirects
-// to `operations-command-center` (see [slug]/page.tsx), so the Home link still
-// resolves. Owner decision 2026-06-12: keep Home at 8, sharpen /templates to 7.
+// `templates` (above, 8 entries) is the ORIGINAL base data this catalog derives
+// from. The catalog drops the retired "Approval Workflow Tool" (merged into
+// "Operations Command Center" — monitor + act), renames "Field Service Mobile
+// App" -> "Field Service Dispatch", and adds newer categories (Sales CRM, AI
+// Operations Agent, Project Management, Marketing Site). The retired
+// `approval-workflow-tool` slug redirects to `operations-command-center` (see
+// [slug]/page.tsx). Owner decisions: 2026-06-12 merged Ops+Approval; 2026-06-27
+// hero now reads THIS catalog (real set + correct names), not the 8.
 // ============================================================================
 
 export type TemplateCatalogItem = {
   slug: string;
-  image?: string;
+  image: string;
   name: string;
   category: string;
   summary: string;
@@ -221,44 +219,22 @@ export type TemplateCatalogItem = {
   prompt: string;
 };
 
-// Operations Command Center + Approval Workflow Tool, merged: one operational
-// surface that pairs live visibility (orders/tasks/KPIs) with the approval
-// queues, assignments, and escalations a team acts on.
-const MERGED_OPERATIONS: TemplateCatalogItem = {
-  slug: "operations-command-center",
-  image: "/templates/operations-command-center.jpg",
-  name: "Operations Command Center",
-  category: "Dashboards",
-  summary:
-    "A central operations surface that pairs live visibility — orders, tasks, KPIs — with the approval queues, assignments, and escalations your team acts on, in one place.",
-  bestFit: ["Ops reporting & visibility", "Internal approvals & routing", "Team & exec dashboards"],
-  includes: [
-    "Dashboard & KPI modules",
-    "Operational lists & queues",
-    "Approval flows — assign, escalate, decide",
-    "Role-based views & an audit-friendly trail",
-  ],
-  extensions: ["Custom reports & alerts", "SLA & escalation logic", "AI routing", "Automation triggers & connectors"],
-  useWhen:
-    "The team needs one operational surface to both see what's happening across the business and act on it — moving fragmented tools and informal approvals into a single control layer.",
-  notIdealWhen:
-    "The real need is a narrow single-purpose tool, or there's no agreed source of truth yet behind the dashboard and the approval steps are still entirely informal.",
-  baselinePromise:
-    "Provides a fast baseline for operational visibility, KPI layout, role-based structure, and approval workflows — assignments, escalation paths, decision states — so the scope can focus on the real data and business rules.",
-  prompt: "Use the Operations Command Center template as a starting point for our operations and approvals software.",
-};
-
 // Retired in the curated catalog → redirects to operations-command-center.
 export const RETIRED_TEMPLATE_SLUGS: Record<string, string> = {
-  "approval-workflow-tool": "operations-command-center",
+  // Removed from the catalog (they reused a sibling's mockup → duplicate cover).
+  // Old URLs redirect to the closest live template so they don't 404.
+  "approval-workflow-tool": "client-portal-saas",
+  "operations-command-center": "client-portal-saas",
+  "multi-vendor-marketplace": "commerce-operations-storefront",
 };
 
 // New category (taxonomy expansion 2026-06-12): a pipeline-first CRM. Distinct
 // from Dashboards (this is where a sales team ACTS on deals, not a metrics view).
 const SALES_CRM: TemplateCatalogItem = {
   slug: "sales-crm",
+  image: "/templates/previews/sales-crm.jpg",
   name: "Sales CRM",
-  category: "CRM & sales",
+  category: "CRM",
   summary:
     "A pipeline-first CRM for teams that need to track contacts, deals, and follow-ups — without drowning in a bloated enterprise tool.",
   bestFit: ["B2B sales teams", "Agencies & services", "Founder-led sales"],
@@ -282,8 +258,9 @@ const SALES_CRM: TemplateCatalogItem = {
 // for human approval on the calls that matter (Noon's human-review wedge, live).
 const AI_AGENT: TemplateCatalogItem = {
   slug: "ai-operations-agent",
+  image: "/templates/previews/ai-operations-agent.jpg",
   name: "AI Operations Agent",
-  category: "AI agents & automation",
+  category: "AI",
   summary:
     "A conversational AI assistant that takes a task, reasons over your data and tools, and produces the work — drafts, analysis, answers — with you reviewing before anything ships.",
   bestFit: ["Ops & analytics", "Knowledge work", "Drafting & research"],
@@ -307,8 +284,9 @@ const AI_AGENT: TemplateCatalogItem = {
 // kanban (bars across dates, not columns).
 const PROJECT_MGMT: TemplateCatalogItem = {
   slug: "project-management",
+  image: "/templates/previews/project-management.jpg",
   name: "Project Management",
-  category: "Project management",
+  category: "Projects",
   summary:
     "A timeline-first project tool — tasks, dependencies, and milestones laid out on a Gantt so the team can see the whole plan and what's due when.",
   bestFit: ["Agencies & client delivery", "Product & engineering teams", "Ops & rollouts"],
@@ -333,8 +311,9 @@ const PROJECT_MGMT: TemplateCatalogItem = {
 // not an app).
 const MARKETING_SITE: TemplateCatalogItem = {
   slug: "marketing-site",
+  image: "/templates/previews/marketing-site.jpg",
   name: "Marketing Site",
-  category: "Marketing & websites",
+  category: "Sites",
   summary:
     "A fast, on-brand marketing site — the pages that convert (home, product, pricing) plus a blog/CMS to publish without a developer.",
   bestFit: ["Product launches", "Company sites", "Content & SEO"],
@@ -356,6 +335,7 @@ const MARKETING_SITE: TemplateCatalogItem = {
 // /templates we render the desktop dispatch console we actually built.
 const FIELD_SERVICE: TemplateCatalogItem = {
   slug: "field-service-mobile-app",
+  image: "/templates/previews/field-service-mobile-app.jpg",
   name: "Field Service Dispatch",
   category: "Field service",
   summary:
@@ -377,16 +357,19 @@ const FIELD_SERVICE: TemplateCatalogItem = {
   prompt: "Use the Field Service Dispatch template as a starting point for our field service software.",
 };
 
+// Operations Command Center and Multi-Vendor Marketplace were dropped (2026-06-27,
+// owner call): both reused a sibling's mockup (Client Portal / Commerce Storefront),
+// so their covers were duplicates. Their categories survive via those siblings
+// (Dashboards → Client Portal, E-commerce → Commerce Storefront). 9 unique templates.
 export const templatesCatalog: TemplateCatalogItem[] = [
   ...templates
-    .filter((t) => t.slug !== "approval-workflow-tool")
-    .map((t) =>
-      t.slug === "operations-command-center"
-        ? MERGED_OPERATIONS
-        : t.slug === "field-service-mobile-app"
-          ? FIELD_SERVICE
-          : t,
-    ),
+    .filter(
+      (t) =>
+        t.slug !== "approval-workflow-tool" &&
+        t.slug !== "operations-command-center" &&
+        t.slug !== "multi-vendor-marketplace",
+    )
+    .map((t) => (t.slug === "field-service-mobile-app" ? FIELD_SERVICE : t)),
   SALES_CRM,
   AI_AGENT,
   PROJECT_MGMT,
@@ -398,10 +381,9 @@ export const templatesCatalog: TemplateCatalogItem[] = [
 export const templateCatalogCategories: string[] = [
   // drop "Internal tools" (unused) and "Mobile apps" (field service moved to its
   // own desktop "Field service" category — see FIELD_SERVICE above).
-  ...templateCategories.filter((c) => c !== "Internal tools" && c !== "Mobile apps"),
-  "CRM & sales",
-  "AI agents & automation",
-  "Project management",
+  ...templateCategories,
+  "CRM",
+  "Projects",
   "Field service",
-  "Marketing & websites",
+  "Sites",
 ];
