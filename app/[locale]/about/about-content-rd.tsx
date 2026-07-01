@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ChevronDown, Code2, Globe, ShieldCheck, Sparkles, Smartphone, Target, Receipt, Milestone, UserCheck, MoveRight } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Code2, ShieldCheck, Target, Receipt, Milestone, UserCheck, MoveRight, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
 
@@ -252,7 +252,6 @@ export function AboutContentRd() {
       <section className="abt-hero">
         <div className="abt-wrap">
           <div className="abt-hero-inner">
-            <p className="abt-kicker" style={{ marginBottom: 20 }}>Company</p>
             <h1 className="abt-display">
               A technology development company{" "}
               <span style={{ color: "var(--text-secondary)" }}>built around real delivery.</span>
@@ -278,19 +277,28 @@ export function AboutContentRd() {
         <div className="abt-wrap">
           <div className="abt-panel">
             <div className="abt-panel-anchor">
-              <p className="abt-kicker">Why Noon</p>
+              <p className="abt-kicker"><span className="abt-kicker-idx">01</span>Why Noon</p>
               <h2 className="abt-h2">
                 What working with us{" "}
                 <span style={{ color: "var(--text-secondary)" }}>looks like.</span>
               </h2>
+              <div className="abt-anchor-meta">
+                <p className="abt-anchor-meta-label">Operating principles</p>
+                <ul className="abt-anchor-spec">
+                  <li><span className="mk">→</span><span>AI handles the speed</span></li>
+                  <li><span className="mk">→</span><span>Humans hold the judgment</span></li>
+                  <li><span className="mk">→</span><span>You hold the code</span></li>
+                </ul>
+              </div>
             </div>
             <div className="abt-why-grid">
-              {COMMITMENTS.map((c) => {
+              {COMMITMENTS.map((c, i) => {
                 const Icon = c.icon;
                 return (
                   <div key={c.title} className="abt-why-card">
+                    <span className="abt-why-idx">{String(i + 1).padStart(2, "0")}</span>
                     <div className="abt-why-icon">
-                      <Icon size={16} strokeWidth={1.75} />
+                      <Icon size={17} strokeWidth={1.75} />
                     </div>
                     <p className="abt-why-title">{c.title}</p>
                     <p className="abt-why-body">{c.body}</p>
@@ -308,9 +316,18 @@ export function AboutContentRd() {
         <div className="abt-wrap">
           <div className="abt-panel">
             <div className="abt-panel-anchor">
-              <p className="abt-kicker">Capabilities</p>
+              <p className="abt-kicker"><span className="abt-kicker-idx">02</span>Capabilities</p>
               <h2 className="abt-h2">What we build.</h2>
               <p className="abt-lead">Software shaped around your problem, not the other way around.</p>
+              <div className="abt-anchor-meta">
+                <p className="abt-anchor-meta-label">Four core areas</p>
+                <ul className="abt-anchor-spec">
+                  <li><span className="num">01</span><span className="lbl">AI &amp; Automation</span></li>
+                  <li><span className="num">02</span><span className="lbl">Web Solutions</span></li>
+                  <li><span className="num">03</span><span className="lbl">Mobile Solutions</span></li>
+                  <li><span className="num">04</span><span className="lbl">Custom Software</span></li>
+                </ul>
+              </div>
             </div>
             <div className="abt-build-grid">
               {WHAT_WE_BUILD.map((item) => {
@@ -348,11 +365,19 @@ export function AboutContentRd() {
         <div className="abt-wrap">
           <div className="abt-panel">
             <div className="abt-panel-anchor">
-              <p className="abt-kicker">Process</p>
+              <p className="abt-kicker"><span className="abt-kicker-idx">03</span>Process</p>
               <h2 className="abt-h2">
                 From idea to launch.{" "}
                 <span style={{ color: "var(--text-secondary)" }}>Reviewed the whole way.</span>
               </h2>
+              <div className="abt-anchor-meta">
+                <p className="abt-anchor-meta-label">At a glance</p>
+                <dl className="abt-anchor-kv">
+                  <div><dt>Stages</dt><dd>5</dd></div>
+                  <div><dt>Human review gate</dt><dd>1</dd></div>
+                  <div><dt>Final output</dt><dd>Yours</dd></div>
+                </dl>
+              </div>
             </div>
             <div className="abt-process-steps">
               {PROCESS_STEPS.map((step) => (
@@ -376,7 +401,7 @@ export function AboutContentRd() {
           <div ref={reviewRef} className={`abt-review${reviewInView ? " in-view" : ""}`}>
             <div className="abt-review-inner">
               <div>
-                <p className="abt-kicker" style={{ marginBottom: 16 }}>Human review gate</p>
+                <p className="abt-kicker" style={{ marginBottom: 16 }}><span className="abt-kicker-idx">04</span>Human review gate</p>
                 <h2 className="abt-h2">
                   AI drafts.{" "}
                   <span style={{ color: "var(--text-secondary)" }}>A person decides.</span>
@@ -384,6 +409,16 @@ export function AboutContentRd() {
                 <p className="abt-lead" style={{ marginTop: 16 }}>
                   Every output — scope, code, architecture decision — is read, corrected, and approved by a senior engineer before it reaches you. That&apos;s the gate that makes the difference.
                 </p>
+                <div className="abt-review-metric">
+                  <svg className="abt-review-donut" viewBox="0 0 36 36" aria-hidden>
+                    <circle className="track" cx="18" cy="18" r="15.5" />
+                    <circle className="value" cx="18" cy="18" r="15.5" />
+                  </svg>
+                  <div className="abt-review-metric-text">
+                    <strong>100%</strong>
+                    <span>of outputs are read by a senior engineer before delivery</span>
+                  </div>
+                </div>
               </div>
               <div className="abt-review-artifact">
                 <div className="abt-review-artifact-head">
@@ -413,19 +448,25 @@ export function AboutContentRd() {
         <div className="abt-wrap">
           <div className="abt-panel">
             <div className="abt-panel-anchor">
-              <p className="abt-kicker">The difference</p>
+              <p className="abt-kicker"><span className="abt-kicker-idx">05</span>The difference</p>
               <h2 className="abt-h2">
                 What Noon is —{" "}
                 <span style={{ color: "var(--text-secondary)" }}>and what it&apos;s not.</span>
               </h2>
+              <div className="abt-anchor-meta">
+                <p className="abt-anchor-meta-label">In short</p>
+                <p className="abt-anchor-note">
+                  We optimize for <strong>real delivery</strong> — substance over polish, on every build.
+                </p>
+              </div>
             </div>
             <div className="abt-diff-inner">
-              <div className="abt-diff-col">
+              <div className="abt-diff-col is-yes">
                 <p className="abt-kicker abt-diff-col-label">Noon</p>
                 <ul className="abt-diff-list">
                   {YES_ITEMS.map((item) => (
                     <li key={item} className="abt-diff-item yes">
-                      <span className="marker">✓</span>
+                      <span className="marker"><Check size={12} strokeWidth={3} /></span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -436,7 +477,7 @@ export function AboutContentRd() {
                 <ul className="abt-diff-list">
                   {NO_ITEMS.map((item) => (
                     <li key={item} className="abt-diff-item no">
-                      <span className="marker">−</span>
+                      <span className="marker"><X size={12} strokeWidth={3} /></span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -452,7 +493,7 @@ export function AboutContentRd() {
       <section className="abt-section">
         <div className="abt-wrap">
           <div className="abt-sechead" style={{ marginBottom: 24 }}>
-            <p className="abt-kicker">Stack</p>
+            <p className="abt-kicker"><span className="abt-kicker-idx">06</span>Stack</p>
             <h2 className="abt-h2" style={{ marginTop: 12 }}>The stack behind every build.</h2>
             <p className="abt-lead" style={{ marginTop: 12 }}>
               Technology choices follow the product, not the other way around. Every project is delivered in code you own and can hand off to any developer.
@@ -480,7 +521,8 @@ export function AboutContentRd() {
             <span className="abt-xhair abt-xhair-br" aria-hidden />
             <p className="abt-statement-text">
               <span style={{ color: "var(--text-secondary)" }}>We don&apos;t build software.</span>{" "}
-              We solve business problems with code.
+              We solve business problems with{" "}
+              <span className="abt-statement-pill"><Code2 className="ic" strokeWidth={2} aria-hidden /> code</span>.
             </p>
           </div>
         </div>
@@ -490,14 +532,23 @@ export function AboutContentRd() {
       <div className="abt-divider" />
       <section className="abt-section">
         <div className="abt-wrap">
-          <div className="abt-sechead" style={{ marginBottom: 32 }}>
-            <p className="abt-kicker">FAQ</p>
-            <h2 className="abt-h2" style={{ marginTop: 12 }}>Common questions.</h2>
-          </div>
-          <div className="abt-faq">
-            {FAQS.map((item) => (
-              <FaqItem key={item.q} q={item.q} a={item.a} />
-            ))}
+          <div className="abt-faq-layout">
+            <div className="abt-faq-aside">
+              <p className="abt-kicker"><span className="abt-kicker-idx">07</span>FAQ</p>
+              <h2 className="abt-h2" style={{ marginTop: 12 }}>Common questions.</h2>
+              <p className="abt-lead" style={{ marginTop: 14 }}>
+                What most people want to know before starting a build.
+              </p>
+              <Link href={lp(siteRoutes.contact)} className="abt-faq-aside-link">
+                Still have a question? Talk to us
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div className="abt-faq">
+              {FAQS.map((item) => (
+                <FaqItem key={item.q} q={item.q} a={item.a} />
+              ))}
+            </div>
           </div>
         </div>
       </section>

@@ -120,6 +120,39 @@ export function getContactTypeOption(inquiry: ContactInquiryKey): ContactTypeOpt
   return "partnership";
 }
 
+/**
+ * The curated, human-readable intents shown in the contact form's single
+ * "What's this about?" dropdown. Each maps to one underlying inquiry key, so the
+ * API / email contract is unchanged and deep-links (?inquiry=...) keep working —
+ * we only curate what is *shown*, not the routing taxonomy.
+ */
+export const primaryContactIntents: { value: ContactInquiryKey; label: string }[] = [
+  { value: "new-project", label: "A new project or build" },
+  { value: "solutions", label: "Help with an existing product" },
+  { value: "general", label: "A general question" },
+  { value: "investor", label: "Partnership or investment" },
+  { value: "developer", label: "Joining the team" },
+];
+
+/**
+ * Resolve any inquiry key to the primary intent shown in the dropdown. An exact
+ * match returns itself; anything else (e.g. a deep-linked `templates` or
+ * `capabilities`) maps to the primary intent sharing its contact type, so the
+ * Select always has a matching option to display.
+ */
+export function resolvePrimaryIntent(inquiry: ContactInquiryKey): ContactInquiryKey {
+  if (primaryContactIntents.some((intent) => intent.value === inquiry)) {
+    return inquiry;
+  }
+
+  const type = getContactTypeOption(inquiry);
+  const match = primaryContactIntents.find(
+    (intent) => getContactTypeOption(intent.value) === type
+  );
+
+  return match?.value ?? "general";
+}
+
 const contactSubmissionShape = {
   inquiry: z.enum(Object.keys(contactInquiryDetails) as [ContactInquiryKey, ...ContactInquiryKey[]]),
   contactType: z.enum(contactTypeOptions),
@@ -154,6 +187,12 @@ const contactSubmissionShape = {
     .string()
     .trim()
     .max(120, "Keep the source under 120 characters.")
+    .optional()
+    .default(""),
+  country: z
+    .string()
+    .trim()
+    .max(100, "Keep the country under 100 characters.")
     .optional()
     .default(""),
 } satisfies z.ZodRawShape;

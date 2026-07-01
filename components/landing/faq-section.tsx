@@ -11,7 +11,7 @@ import { siteTones } from "@/lib/site-tones";
 export type Faq = { question: string; answer: string };
 
 // Default set (About). Pages can pass their own `items` — the audit asks for
-// per-page FAQ depth, and contact's set lives in contact-content.tsx.
+// per-page FAQ depth; contact renders its own inline FAQ list (not this component).
 const DEFAULT_FAQS: Faq[] = [
   {
     question: "How does Noon work?",

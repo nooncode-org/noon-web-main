@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Link as LocaleLink } from "@/lib/navigation";
 import { useMemo, useState } from "react";
 import { ArrowRight, LoaderCircle, Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,15 +20,17 @@ import { cn } from "@/lib/utils";
 import {
   contactInbox,
   contactTypeLabels,
-  contactTypeToInquiryMap,
   formatContactSource,
   getContactInquiryDetail,
   getContactTypeOption,
   normalizeContactInquiry,
+  primaryContactIntents,
+  resolvePrimaryIntent,
   type ContactInquiryKey,
   type ContactTypeOption,
 } from "@/lib/contact";
-import { getStartWithMaxwellHref } from "@/lib/site-config";
+import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
+import { countries } from "@/lib/countries";
 import { siteStatusTones, siteTones } from "@/lib/site-tones";
 
 type ContactIntakeFormProps = {
@@ -41,7 +44,7 @@ type ContactIntakeFormProps = {
 type SubmissionState = "idle" | "loading" | "success" | "error";
 
 type ContactFieldErrors = Partial<
-  Record<"name" | "email" | "brief" | "budget" | "timeline" | "inquiry" | "contactType", string[]>
+  Record<"name" | "email" | "brief" | "budget" | "timeline" | "inquiry" | "contactType" | "country", string[]>
 >;
 
 export function ContactIntakeForm({
@@ -51,11 +54,15 @@ export function ContactIntakeForm({
   layout = "split",
   showGuidance = true,
 }: ContactIntakeFormProps) {
-  const normalizedInitialInquiry = normalizeContactInquiry(initialInquiry) ?? "general";
+  const resolvedInitialInquiry: ContactInquiryKey | null = initialInquiry
+    ? resolvePrimaryIntent(normalizeContactInquiry(initialInquiry) ?? "general")
+    : null;
   const advancedOptionsId = "contact-advanced-options";
-  const [inquiry, setInquiry] = useState<ContactInquiryKey>(normalizedInitialInquiry);
+  const [inquiry, setInquiry] = useState<ContactInquiryKey | "">(
+    resolvedInitialInquiry ?? ""
+  );
   const [contactType, setContactType] = useState<ContactTypeOption>(
-    getContactTypeOption(normalizedInitialInquiry)
+    resolvedInitialInquiry ? getContactTypeOption(resolvedInitialInquiry) : "general"
   );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -63,6 +70,7 @@ export function ContactIntakeForm({
   const [timeline, setTimeline] = useState("");
   const [projectBrief, setProjectBrief] = useState(initialDraft);
   const [companyWebsite, setCompanyWebsite] = useState("");
+  const [country, setCountry] = useState("");
   const [startedAt] = useState(() => Date.now());
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
@@ -71,7 +79,7 @@ export function ContactIntakeForm({
   const [submittedLeadId, setSubmittedLeadId] = useState<string | null>(null);
 
   const formattedSource = formatContactSource(initialSource);
-  const selectedInquiry = getContactInquiryDetail(inquiry);
+  const selectedInquiry = getContactInquiryDetail(inquiry || "general");
   const trimmedProjectBrief = projectBrief.trim();
   const maxwellHref = useMemo(
     () => getStartWithMaxwellHref(trimmedProjectBrief || undefined),
@@ -88,18 +96,9 @@ export function ContactIntakeForm({
     setSubmittedLeadId(null);
   }
 
-  function updateInquiry(nextInquiry: ContactInquiryKey) {
+  function updateIntent(nextInquiry: ContactInquiryKey) {
     setInquiry(nextInquiry);
-    clearSubmissionStatus();
-  }
-
-  function updateContactType(nextType: ContactTypeOption) {
-    setContactType(nextType);
-
-    if (!contactTypeToInquiryMap[nextType].includes(inquiry)) {
-      setInquiry(contactTypeToInquiryMap[nextType][0]);
-    }
-
+    setContactType(getContactTypeOption(nextInquiry));
     clearSubmissionStatus();
   }
 
@@ -129,8 +128,8 @@ export function ContactIntakeForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inquiry,
-          contactType,
+          inquiry: inquiry || "general",
+          contactType: inquiry ? contactType : "general",
           name,
           email,
           brief: projectBrief,
@@ -138,6 +137,7 @@ export function ContactIntakeForm({
           timeline,
           source: initialSource,
           companyWebsite,
+          country,
           startedAt,
         }),
       });
@@ -246,56 +246,28 @@ export function ContactIntakeForm({
               <span className="inline-flex items-center gap-2 rounded-[8px] border border-foreground/15 bg-secondary/40 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
                 <span className="font-medium text-foreground">01</span> Route
               </span>
-              <p className="site-hero-copy mt-3 text-muted-foreground">
-                Choose the closest path. Noon can adjust it after review.
-              </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="contact-type">Request category</Label>
-                <Select value={contactType} onValueChange={(value) => updateContactType(value as ContactTypeOption)}>
-                  <SelectTrigger
-                    id="contact-type"
-                    className="w-full rounded-[8px]"
-                    aria-invalid={Boolean(fieldErrors.contactType?.length)}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(contactTypeLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.contactType?.[0] ? (
-                  <p className="text-xs text-destructive">{fieldErrors.contactType[0]}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="contact-specific-inquiry">Specific route</Label>
-                <Select value={inquiry} onValueChange={(value) => updateInquiry(value as ContactInquiryKey)}>
-                  <SelectTrigger
-                    id="contact-specific-inquiry"
-                    className="w-full rounded-[8px]"
-                    aria-invalid={Boolean(fieldErrors.inquiry?.length)}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contactTypeToInquiryMap[contactType].map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {getContactInquiryDetail(option).label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.inquiry?.[0] ? (
-                  <p className="text-xs text-destructive">{fieldErrors.inquiry[0]}</p>
-                ) : null}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact-intent">What&apos;s this about?</Label>
+              <Select value={inquiry || undefined} onValueChange={(value) => updateIntent(value as ContactInquiryKey)}>
+                <SelectTrigger
+                  id="contact-intent"
+                  className="w-full rounded-[8px]"
+                  aria-invalid={Boolean(fieldErrors.inquiry?.length)}
+                >
+                  <SelectValue placeholder="Choose one..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {primaryContactIntents.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldErrors.inquiry?.[0] ? (
+                <p className="text-xs text-destructive">{fieldErrors.inquiry[0]}</p>
+              ) : null}
             </div>
           </section>
 
@@ -349,17 +321,31 @@ export function ContactIntakeForm({
             </div>
           </section>
 
+          <div className="space-y-2">
+            <Label htmlFor="contact-country">Country</Label>
+            <Select value={country || undefined} onValueChange={(value) => { setCountry(value); clearSubmissionStatus(); }}>
+              <SelectTrigger id="contact-country" className="w-full rounded-[8px]">
+                <SelectValue placeholder="Select your country" />
+              </SelectTrigger>
+              <SelectContent>
+                {countries.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldErrors.country?.[0] ? (
+              <p className="text-xs text-destructive">{fieldErrors.country[0]}</p>
+            ) : null}
+          </div>
+
           <section className="space-y-3">
             <div>
               <span className="inline-flex items-center gap-2 rounded-[8px] border border-foreground/15 bg-secondary/40 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
                 <span className="font-medium text-foreground">03</span> Context
               </span>
-              <p className="site-hero-copy mt-3 text-muted-foreground">
-                Focus on the problem, outcome, and any deadline or constraint.
-              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact-brief">What do you need?</Label>
+              <Label htmlFor="contact-brief">Tell us more</Label>
               <Textarea
                 id="contact-brief"
                 name="brief"
@@ -370,7 +356,7 @@ export function ContactIntakeForm({
                   clearFieldError("brief");
                   clearSubmissionStatus();
                 }}
-                placeholder="Describe the business problem, the desired outcome, and the kind of software or support you need."
+                placeholder="What you're working on or exploring, the outcome you want, and anything that shapes it — timeline, budget, constraints."
                 className="min-h-[118px] rounded-[8px] px-4 py-3 leading-relaxed lg:min-h-[126px]"
                 aria-invalid={Boolean(fieldErrors.brief?.length)}
               />
@@ -470,6 +456,14 @@ export function ContactIntakeForm({
             </Button>
           ) : null}
         </div>
+
+        <p className="site-hero-copy mt-3 text-muted-foreground">
+          We only use your details to respond to you. See our{" "}
+          <LocaleLink className="underline-offset-4 hover:underline" href={siteRoutes.privacyPolicy}>
+            Privacy Policy
+          </LocaleLink>{" "}
+          for how your data is handled.
+        </p>
 
         <p className="site-hero-copy mt-3 text-muted-foreground">
           Prefer email instead? You can still reach Noon directly at{" "}

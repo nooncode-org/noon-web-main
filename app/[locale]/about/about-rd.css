@@ -71,16 +71,15 @@ html.dark .abt-rd {
 .abt-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 60;
   background: var(--bg-base);
-  border-bottom: 1px solid var(--border);
 }
 .abt-nav-inner {
-  padding: 0 24px; height: 60px;
+  padding: 0 24px; height: 60px; position: relative;
   display: flex; align-items: center; justify-content: space-between;
 }
 @media (min-width: 768px) { .abt-nav-inner { padding: 0 28px; } }
 .abt-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
 .abt-nav-links { display: none; gap: 36px; }
-@media (min-width: 768px) { .abt-nav-links { display: flex; } }
+@media (min-width: 768px) { .abt-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
 .abt-nav-links a {
   font-size: 14px; color: var(--text-secondary);
   text-decoration: none; transition: color .2s;
@@ -153,7 +152,10 @@ html.dark .abt-rd {
   content: ''; position: absolute; inset: 0;
   background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
   background-size: 28px 28px;
-  pointer-events: none; z-index: 0; opacity: 0.55;
+  pointer-events: none; z-index: 0; opacity: 0.7;
+  /* Concentrate the grid behind the headline and fade it toward the edges. */
+  -webkit-mask-image: radial-gradient(ellipse 62% 68% at 50% 42%, #000 28%, transparent 76%);
+          mask-image: radial-gradient(ellipse 62% 68% at 50% 42%, #000 28%, transparent 76%);
 }
 .abt-hero-inner {
   max-width: 720px; margin: 0 auto; text-align: center;
@@ -186,7 +188,12 @@ html.dark .abt-rd {
     padding: 40px 32px;
     border-bottom: none;
     border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
   }
+  /* Pin the spec-footer to the bottom of the anchor, killing the empty void.
+     Higher specificity so it wins over the base `.abt-anchor-meta` margin below. */
+  .abt-panel-anchor .abt-anchor-meta { margin-top: auto; }
 }
 .abt-panel-anchor .abt-h2 {
   font-size: clamp(30px, 4.5vw, 52px);   /* aligned to the .abt-display tier */
@@ -209,13 +216,21 @@ html.dark .abt-rd {
 }
 @media (min-width: 1024px) { .abt-why-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
-.abt-why-card { background: var(--bg-base); padding: 32px 28px; }
+.abt-why-card { background: var(--bg-base); padding: 32px 28px; position: relative; transition: background .2s; }
+.abt-why-card:hover { background: var(--bg-secondary); }
+.abt-why-idx {
+  position: absolute; top: 30px; right: 26px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+  color: var(--text-muted); opacity: 0.45;
+}
 .abt-why-icon {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  color: var(--text-muted); margin-bottom: 20px;
+  color: var(--text-secondary); margin-bottom: 20px;
+  transition: border-color .2s, color .2s, background .2s;
 }
+.abt-why-card:hover .abt-why-icon { border-color: var(--brand); color: var(--brand); }
 .abt-why-title { font-size: 15px; font-weight: 500; color: var(--text-primary); line-height: 1.3; margin: 0 0 8px; }
 .abt-why-body { font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
 
@@ -265,21 +280,42 @@ html.dark .abt-rd {
   border-radius: var(--radius-pill); padding: 3px 10px;
 }
 
-/* ── Process (inside panel) ──────────────────────────────────────────────── */
+/* ── Process (inside panel) — vertical timeline spine + circular nodes ────── */
 .abt-process-steps { display: flex; flex-direction: column; }
 .abt-process-step {
   display: grid;
-  grid-template-columns: 40px 1fr;
-  gap: 0 16px;
-  padding: 24px 28px;
+  grid-template-columns: 30px 1fr;
+  gap: 0 18px;
+  padding: 22px 28px;
   border-top: 1px solid var(--border);
   align-items: start;
+  position: relative;
 }
 .abt-process-step:first-child { border-top: none; }
 .abt-process-step.highlight { background: var(--bg-secondary); }
+/* Spine: split into up/down half-segments per step so it threads node centers
+   cleanly and survives the highlighted row's background (no z-index headaches). */
+.abt-process-step::after,
+.abt-process-step::before { content: none; }
+.abt-process-step:not(:last-child)::after {
+  content: ''; position: absolute; z-index: 0;
+  left: 43px; top: 37px; bottom: 0; width: 1px; background: var(--border);
+}
+.abt-process-step:not(:first-child)::before {
+  content: ''; position: absolute; z-index: 0;
+  left: 43px; top: 0; height: 37px; width: 1px; background: var(--border);
+}
 .abt-process-num {
-  font-family: var(--mono); font-size: 12px; font-weight: 500;
-  letter-spacing: 0.06em; color: var(--text-muted); padding-top: 2px; margin: 0;
+  width: 30px; height: 30px; border-radius: 50%; margin: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--text-muted); border: 1px solid var(--border); background: var(--bg-base);
+  position: relative; z-index: 1;
+  transition: border-color .2s, color .2s, box-shadow .2s;
+}
+.abt-process-step.highlight .abt-process-num {
+  border-color: var(--brand); color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(0, 86, 253, 0.12);
 }
 .abt-process-label { font-size: 15px; font-weight: 500; color: var(--text-primary); line-height: 1.3; margin: 0 0 5px; }
 .abt-process-desc { font-size: 13px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
@@ -332,24 +368,31 @@ html.dark .abt-rd {
 .abt-diff-col:last-child { border-top: 1px solid var(--border); }
 @media (min-width: 640px) { .abt-diff-col:last-child { border-top: none; border-left: 1px solid var(--border); } }
 .abt-diff-col-label { margin-bottom: 20px; }
-.abt-diff-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.abt-diff-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.5; color: var(--text-secondary); }
-.abt-diff-item .marker {
-  flex-shrink: 0; margin-top: 3px; width: 16px; height: 16px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-size: 10px;
+.abt-diff-list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+.abt-diff-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 14px; line-height: 1.45; color: var(--text-primary);
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+  transition: padding-left .18s ease;
 }
-.abt-diff-item.yes .marker { background: rgba(0, 86, 253, 0.1); color: var(--brand); }
+.abt-diff-item:last-child { border-bottom: none; }
+.abt-diff-item:hover { padding-left: 5px; }
+.abt-diff-item .marker {
+  flex-shrink: 0; margin-top: 1px; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+}
+.abt-diff-item.yes .marker { background: rgba(0, 86, 253, 0.12); color: var(--brand); }
 .abt-diff-item.no .marker { background: rgba(107, 107, 107, 0.15); color: var(--text-muted); }
-.abt-diff-item span { color: var(--text-primary); }
+.abt-diff-item.no span { color: var(--text-secondary); }   /* muted vs active emphasis */
 
 /* ── Tech Stack ──────────────────────────────────────────────────────────── */
 .abt-stack-row {
-  --logo-base: 22px;              /* base optical height; per-logo `--s` scales it */
+  --logo-base: 24px;              /* base optical height; per-logo `--s` scales it */
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 30px 44px;
+  justify-content: space-between; /* spread edge-to-edge across the full width (logo-wall style) */
+  gap: 32px 40px;
 }
 .abt-stack-logo {
   display: inline-flex; align-items: center; justify-content: center;
@@ -364,6 +407,10 @@ html.dark .abt-rd {
 }
 html.dark .abt-stack-logo img { filter: brightness(0) invert(1); }  /* dark → white */
 
+@media (max-width: 860px) {
+  /* once the 6 marks wrap, center them instead of edge-stretching a short row */
+  .abt-stack-row { justify-content: center; --logo-base: 22px; gap: 28px 44px; }
+}
 @media (max-width: 520px) {
   .abt-stack-row { --logo-base: 19px; gap: 24px 32px; }
 }
@@ -393,10 +440,18 @@ html.dark .abt-stack-logo img { filter: brightness(0) invert(1); }  /* dark → 
   font-size: clamp(28px, 4vw, 52px);
   font-weight: 400;
   letter-spacing: -0.025em;
-  line-height: 1.1;
-  max-width: 22ch;
+  line-height: 1.25;
+  max-width: 24ch;
   margin: 0 auto;
 }
+.abt-statement-pill {
+  display: inline-flex; align-items: center; gap: 0.26em;
+  border: 1px solid var(--border); border-radius: 9999px;
+  padding: 0.02em 0.42em 0.08em 0.34em; margin: 0 0.02em;
+  background: var(--bg-secondary); white-space: nowrap;
+  vertical-align: baseline; transform: translateY(0.08em);
+}
+.abt-statement-pill .ic { width: 0.62em; height: 0.62em; color: var(--brand); flex-shrink: 0; }
 
 /* ── FAQ ─────────────────────────────────────────────────────────────────── */
 .abt-faq { max-width: 720px; }
@@ -470,25 +525,127 @@ html.dark .abt-stack-logo img { filter: brightness(0) invert(1); }  /* dark → 
   flex-shrink: 0;
 }
 
-/* ── footer ──────────────────────────────────────────────────────────────── */
-.abt-footer { border-top: 1px solid var(--border); margin-top: 24px; padding: 56px 0 0; position: relative; z-index: 10; }
-.abt-footer-top { display: grid; gap: 36px; }
-@media (min-width: 760px) { .abt-footer-top { grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 32px; } }
-.abt-footer-brand .tag { margin-top: 16px; font-size: 13px; color: var(--text-muted); max-width: 30ch; line-height: 1.5; }
-.abt-footer-col h4 {
-  font-family: var(--mono); font-size: 11px; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px;
+/* footer moved to the shared <SiteFooterRd /> component + site-footer-rd.css (.rdf-*).
+   NOTE: .abt-divider (near top) is kept — it is also used for section dividers. */
+
+/* ============================================================================
+   EDITORIAL ENRICHMENT LAYER
+   Fills the empty anchor voids, threads a running section index, dramatizes
+   contrast, and adds restrained scroll-in motion — "technical dossier" feel.
+   ============================================================================ */
+
+/* ── Running section index inside kickers (01 · Why Noon) ─────────────────── */
+.abt-kicker-idx { color: var(--text-secondary); }
+.abt-kicker-idx::after {
+  content: '·'; margin: 0 8px; color: var(--text-muted); opacity: 0.55;
 }
-.abt-footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.abt-footer-col a { font-size: 13px; color: var(--text-secondary); text-decoration: none; transition: color .15s; }
-.abt-footer-col a:hover { color: var(--text-primary); }
-.abt-footer-bottom {
-  padding: 16px 0 24px; display: flex; flex-wrap: wrap; gap: 16px;
-  align-items: center; justify-content: space-between;
+
+/* ── Anchor spec-footer (pinned to the bottom of each panel anchor) ───────── */
+.abt-anchor-meta {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
-.abt-status {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted);
+.abt-anchor-meta-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 14px;
 }
-.abt-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
-.abt-footer-copy { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+/* principle / index rows */
+.abt-anchor-spec { display: flex; flex-direction: column; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.abt-anchor-spec li {
+  display: flex; align-items: baseline; gap: 10px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.35; color: var(--text-secondary);
+}
+.abt-anchor-spec .mk { color: var(--brand); flex-shrink: 0; }
+.abt-anchor-spec .num { color: var(--text-muted); flex-shrink: 0; width: 18px; }
+.abt-anchor-spec .lbl { color: var(--text-primary); }
+/* key/value list */
+.abt-anchor-kv { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.abt-anchor-kv > div {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  font-family: var(--mono); font-size: 12px;
+  border-bottom: 1px dotted var(--border); padding-bottom: 10px;
+}
+.abt-anchor-kv > div:last-child { border-bottom: none; padding-bottom: 0; }
+.abt-anchor-kv dt { color: var(--text-muted); margin: 0; }
+.abt-anchor-kv dd { color: var(--text-primary); margin: 0; font-weight: 500; }
+/* short verdict note */
+.abt-anchor-note { font-size: 13px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.abt-anchor-note strong { color: var(--text-primary); font-weight: 500; }
+
+/* ── Hero micro-proof bar ────────────────────────────────────────────────── */
+.abt-hero-proof {
+  margin-top: 30px; display: inline-flex; flex-wrap: wrap;
+  justify-content: center; align-items: center; gap: 10px 14px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.abt-hero-proof .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); opacity: 0.55; }
+
+/* ── Differentiation contrast wash ───────────────────────────────────────── */
+.abt-diff-col.is-yes { background: rgba(0, 86, 253, 0.035); }
+html.dark .abt-diff-col.is-yes { background: rgba(0, 86, 253, 0.07); }
+
+/* ── Statement internal grid (adds depth / gravity) ──────────────────────── */
+.abt-statement-box::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 26px 26px; opacity: 0.55; pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 8%, transparent 70%);
+          mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 8%, transparent 70%);
+}
+.abt-statement-text { position: relative; z-index: 1; }
+
+/* ── Restrained scroll-in motion (no JS; progressive enhancement) ─────────── */
+@keyframes abtRevealUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .abt-build-card, .abt-why-card, .abt-process-step, .abt-diff-item {
+      animation: abtRevealUp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 34%;
+    }
+  }
+}
+
+/* ── FAQ: two-column (sticky heading aside + accordion) ───────────────────── */
+.abt-faq-layout { display: grid; grid-template-columns: 1fr; gap: 32px; }
+.abt-faq-layout .abt-faq { max-width: 100%; }
+@media (min-width: 900px) {
+  .abt-faq-layout { grid-template-columns: 0.85fr 1.15fr; gap: 64px; }
+  .abt-faq-aside { position: sticky; top: 92px; align-self: start; }
+}
+.abt-faq-aside-link {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 22px;
+  font-size: 14px; font-weight: 500; color: var(--brand);
+  text-decoration: none; transition: gap .18s ease;
+}
+.abt-faq-aside-link:hover { gap: 12px; }
+
+/* ── Human-review metric (donut) ──────────────────────────────────────────── */
+.abt-review-metric {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border);
+}
+.abt-review-donut { width: 50px; height: 50px; flex-shrink: 0; transform: rotate(-90deg); }
+.abt-review-donut .track { fill: none; stroke: var(--border); stroke-width: 3; }
+.abt-review-donut .value {
+  fill: none; stroke: var(--brand); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 97.4; stroke-dashoffset: 97.4;
+}
+.abt-review.in-view .abt-review-donut .value {
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s;
+  stroke-dashoffset: 0;
+}
+.abt-review-metric-text strong {
+  display: block; font-size: 22px; font-weight: 500;
+  color: var(--text-primary); letter-spacing: -0.02em; line-height: 1;
+}
+.abt-review-metric-text span {
+  display: block; margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--text-secondary);
+  max-width: 30ch;
+}

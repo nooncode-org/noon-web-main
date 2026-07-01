@@ -4,13 +4,10 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { NoonWordmark } from "@/components/brand/noon-logo";
 import { AboutContentRd } from "./about-content-rd";
-import {
-  siteRoutes,
-  getStartWithMaxwellHref,
-  footerLinkGroups,
-  footerSocialLinks,
-} from "@/lib/site-config";
+import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
+import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./about-rd.css";
+import "@/app/_components/site/site-footer-rd.css";
 
 export const metadata: Metadata = {
   title: "About | Noon",
@@ -48,63 +45,8 @@ export default function AboutPage() {
 
       <AboutContentRd />
 
-      {/* footer */}
-      <footer className="abt-footer">
-        <div className="abt-wrap">
-          <div className="abt-footer-top">
-            <div className="abt-footer-brand">
-              <span style={{ height: 22, display: "inline-flex", color: "var(--text-primary)" }}>
-                <NoonWordmark />
-              </span>
-              <p className="tag">
-                Custom software and AI products — every build reviewed by a human, and the code is yours.
-              </p>
-            </div>
-            <div className="abt-footer-col">
-              <h4>Site</h4>
-              <ul>
-                {footerLinkGroups.Site.map((l) => (
-                  <li key={l.name}>
-                    <Link href={l.href ?? "/"}>{l.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="abt-footer-col">
-              <h4>Legal</h4>
-              <ul>
-                {footerLinkGroups.Legal.map((l) => (
-                  <li key={l.name}>
-                    <Link href={l.href ?? "/"}>{l.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="abt-footer-col">
-              <h4>Connect</h4>
-              <ul>
-                {footerSocialLinks.map((l) => (
-                  <li key={l.name}>
-                    <a href={l.href} target="_blank" rel="noopener noreferrer">
-                      {l.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="abt-divider" style={{ marginTop: 44 }} />
-        <div className="abt-wrap">
-          <div className="abt-footer-bottom">
-            <span className="abt-status">
-              <span className="dot" />
-              Every build, human-reviewed
-            </span>
-            <span className="abt-footer-copy">© 2026 Noon</span>
-          </div>
-        </div>
-      </footer>
+      {/* footer — shared across redesign pages */}
+      <SiteFooterRd />
     </div>
   );
 }

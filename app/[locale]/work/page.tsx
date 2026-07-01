@@ -5,8 +5,10 @@ import { GeistMono } from "geist/font/mono";
 import { ArrowRight } from "lucide-react";
 import { NoonWordmark } from "@/components/brand/noon-logo";
 import { WorkShot } from "@/components/work/work-shot";
-import { siteRoutes, getContactHref, getStartWithMaxwellHref, footerLinkGroups, footerSocialLinks } from "@/lib/site-config";
+import { siteRoutes, getContactHref, getStartWithMaxwellHref } from "@/lib/site-config";
+import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./work-rd.css";
+import "@/app/_components/site/site-footer-rd.css";
 
 export const metadata: Metadata = {
   title: "Work | Noon",
@@ -136,6 +138,7 @@ export default async function WorkRedesignPage({ params }: Props) {
           </Link>
           <nav className="wr-nav-links">
             <Link href={lp(siteRoutes.services)}>Services</Link>
+            <Link href={lp(siteRoutes.work)} className="active">Work</Link>
             <Link href={lp(siteRoutes.about)}>About</Link>
             <Link href={lp(siteRoutes.contact)}>Contact</Link>
           </nav>
@@ -262,33 +265,8 @@ export default async function WorkRedesignPage({ params }: Props) {
         </section>
       </main>
 
-      {/* footer — Vercel-style organized (real link groups from site-config) */}
-      <footer className="wr-footer">
-        <div className="wr-wrap">
-          <div className="wr-footer-top">
-            <div className="wr-footer-brand">
-              <span style={{ height: 22, display: "inline-flex", color: "var(--text-primary)" }}><NoonWordmark /></span>
-              <p className="tag">Custom software and AI products — every build reviewed by a human, and the code is yours.</p>
-            </div>
-            <div className="wr-footer-col">
-              <h4>Site</h4>
-              <ul>{footerLinkGroups.Site.map((l) => <li key={l.name}><Link href={lp(l.href ?? "/")}>{l.name}</Link></li>)}</ul>
-            </div>
-            <div className="wr-footer-col">
-              <h4>Legal</h4>
-              <ul>{footerLinkGroups.Legal.map((l) => <li key={l.name}><Link href={lp(l.href ?? "/")}>{l.name}</Link></li>)}</ul>
-            </div>
-            <div className="wr-footer-col">
-              <h4>Connect</h4>
-              <ul>{footerSocialLinks.map((l) => <li key={l.name}><a href={l.href} target="_blank" rel="noopener noreferrer">{l.name}</a></li>)}</ul>
-            </div>
-          </div>
-          <div className="wr-footer-bottom">
-            <span className="wr-status"><span className="dot" />Every build, human-reviewed</span>
-            <span className="wr-footer-copy">© 2026 Noon</span>
-          </div>
-        </div>
-      </footer>
+      {/* footer — shared across redesign pages */}
+      <SiteFooterRd />
     </div>
   );
 }

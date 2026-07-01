@@ -11,11 +11,11 @@ import { NoonLogo } from "@/components/ui/noon-logo";
 import { UserMenu, type UserMenuViewer } from "@/components/ui/user-menu";
 import { signOutAction } from "@/lib/auth/signout-action";
 
-const NAV_LABELS: Record<string, { services: string; about: string; contact: string; startWithMaxwell: string }> = {
-  en: { services: "Services", about: "About", contact: "Contact", startWithMaxwell: "Start with Maxwell" },
-  es: { services: "Servicios", about: "Nosotros", contact: "Contacto", startWithMaxwell: "Empezar con Maxwell" },
-  fr: { services: "Services", about: "A propos", contact: "Contact", startWithMaxwell: "Commencer avec Maxwell" },
-  de: { services: "Dienste", about: "Uber uns", contact: "Kontakt", startWithMaxwell: "Mit Maxwell starten" },
+const NAV_LABELS: Record<string, { services: string; work: string; about: string; contact: string; startWithMaxwell: string }> = {
+  en: { services: "Services", work: "Work", about: "About", contact: "Contact", startWithMaxwell: "Start with Maxwell" },
+  es: { services: "Servicios", work: "Proyectos", about: "Nosotros", contact: "Contacto", startWithMaxwell: "Empezar con Maxwell" },
+  fr: { services: "Services", work: "Projets", about: "A propos", contact: "Contact", startWithMaxwell: "Commencer avec Maxwell" },
+  de: { services: "Dienste", work: "Projekte", about: "Uber uns", contact: "Kontakt", startWithMaxwell: "Mit Maxwell starten" },
 };
 
 const LOCALES = ["en", "es", "fr", "de"];
@@ -44,6 +44,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
 
   const translatedNav = [
     { name: navLabels.services, href: siteRoutes.services, match: [siteRoutes.services, siteRoutes.upgrade] },
+    { name: navLabels.work, href: siteRoutes.work, match: [siteRoutes.work] },
     { name: navLabels.about, href: siteRoutes.about, match: [siteRoutes.about] },
     { name: navLabels.contact, href: siteRoutes.contact, match: [siteRoutes.contact] },
   ];
@@ -62,30 +63,23 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
          al hacer scroll. Backdrop blur sutil + bg semitransparente para
          enmascarar el contenido que pasa por detrás al scrollear (sin
          volver al pill flotante anterior). */}
-      <header className="fixed top-0 left-3 right-3 z-[60] md:left-5 md:right-5">
-        <nav className="w-full bg-background/70 backdrop-blur-md">
-          <div className="flex h-11 items-center justify-between px-0">
+      <header className="fixed top-0 left-0 right-0 z-[60] bg-background">
+        <nav className="w-full">
+          <div className="relative flex h-[60px] items-center justify-between px-6 md:px-7">
             <Link href={localHref(siteRoutes.home)} className="flex items-center group">
-              <NoonLogo variant="wordmark" height={22} />
+              <NoonLogo variant="wordmark" height={20} />
             </Link>
 
-            <div className="hidden md:flex items-center gap-12">
+            <div className="hidden md:flex items-center gap-9 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               {translatedNav.map((link) => (
                 <Link
                   key={link.name}
                   href={localHref(link.href)}
-                  className={`text-sm transition-colors duration-300 relative group ${
-                    isActiveLink(link.match) ? "" : "text-foreground/70 hover:text-foreground"
+                  className={`text-sm transition-colors duration-200 ${
+                    isActiveLink(link.match) ? "text-foreground" : "text-foreground/70 hover:text-foreground"
                   }`}
-                  style={isActiveLink(link.match) ? { color: navigationTone.accent } : undefined}
                 >
                   {link.name}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-px transition-all duration-300 ${
-                      isActiveLink(link.match) ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                    style={{ backgroundColor: navigationTone.accent }}
-                  />
                 </Link>
               ))}
             </div>

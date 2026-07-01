@@ -1,0 +1,149 @@
+/* ============================================================================
+   Upgrade page — REDESIGN. Self-contained, scoped under .upg-rd so it can't
+   leak into / be leaked into by the live site theme. Follows the locked spine:
+   Geist, mono-forward, flat/mono, pill, hybrid grid. Dark = neutral BLACK,
+   driven by the site's existing html.dark (system pref). Same foundation as
+   work-rd / contact-rd / about-rd / templates-rd.
+   ============================================================================ */
+
+.upg-rd {
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* light (default) */
+  --bg-base: #ffffff;
+  --bg-secondary: #f7f8fc;
+  --surface: #f1f2f7;
+  --border: #e6e8f2;
+  --hover: #eef0ff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --brand: #0056fd;
+  --brand-hover: #3378fd;
+  --success: #00c853;
+  --tint: rgba(17, 24, 39, 0.04);
+
+  font-family: var(--sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .upg-rd {
+  --bg-base: #000000;
+  --bg-secondary: #0c0c0c;
+  --surface: #161616;
+  --border: #262626;
+  --hover: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b6b6b;
+  --tint: rgba(255, 255, 255, 0.05);
+}
+
+/* Re-map the shadcn/global theme tokens *within .upg-rd* so the embedded,
+   logic-untouched product components (UpgradeInput, UpgradeAuditPanel via
+   UpgradeDemo, UpgradeSteps, BeforeAfterScan, UpgradeSessionList — all of
+   which use text-foreground / bg-card / border-foreground / text-primary /
+   etc.) adopt the new system without any JSX changes. Mirrors contact-rd.css. */
+.upg-rd {
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-base);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-secondary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: #e5484d;
+  --input: var(--border);
+  --ring: var(--brand);
+}
+
+/* ── layout ─────────────────────────────────────────────────────────────── */
+.upg-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
+@media (min-width: 768px) { .upg-wrap { padding: 0 32px; } }
+.upg-section { padding: clamp(56px, 7vw, 88px) 0; }
+
+/* ── nav (matches work/about/templates: full-width, fixed, no border-bottom
+   — the frame's own top border provides desktop separation; see the contact
+   nav-border fix this session for why NOT to add one here) ─────────────── */
+.upg-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
+.upg-nav-inner { padding: 0 24px; height: 60px; position: relative; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 768px) { .upg-nav-inner { padding: 0 28px; } }
+.upg-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
+.upg-nav-links { display: none; gap: 36px; }
+@media (min-width: 768px) { .upg-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
+.upg-nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color .2s; }
+.upg-nav-links a:hover, .upg-nav-links a.active { color: var(--text-primary); }
+.upg-nav-cta { display: inline-flex; white-space: nowrap; }
+
+/* ── framed page (decorative border, desktop only — document scroll, NOT an
+   inner-scroll container like contact's) ──────────────────────────────── */
+.upg-frame { display: none; }
+@media (min-width: 768px) {
+  .upg-frame {
+    display: block; position: fixed; top: 60px; left: 12px; right: 12px; bottom: 12px;
+    border: 1px solid var(--border); pointer-events: none; z-index: 30;
+    box-shadow: 0 0 0 9999px var(--bg-base);
+  }
+}
+
+/* ── type ───────────────────────────────────────────────────────────────── */
+.upg-display { font-family: var(--sans); font-size: clamp(34px, 4.6vw, 52px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.08; margin: 0; }
+.upg-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.18; margin: 0; }
+.upg-lead { font-size: clamp(15px, 1.3vw, 17px); font-weight: 400; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.upg-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+.upg-kicker { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
+
+/* ── buttons ────────────────────────────────────────────────────────────── */
+.upg-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; font-family: inherit; }
+.upg-btn-primary { background: var(--text-primary); color: var(--bg-base); }
+.upg-btn-primary:hover { transform: translateY(-1px); }
+.upg-btn-secondary { background: transparent; color: var(--text-primary); border-color: var(--border); }
+.upg-btn-secondary:hover { background: var(--hover); }
+
+/* ── section head (kicker + h2, used by "How it works" / "What you get back") */
+.upg-sechead { text-align: center; margin: 0 auto 36px; max-width: 46ch; }
+.upg-sechead .upg-h2 { margin-top: 10px; }
+
+/* ── hero ───────────────────────────────────────────────────────────────── */
+.upg-hero { padding: clamp(96px, 10vw, 128px) 0 clamp(48px, 6vw, 72px); text-align: center; }
+.upg-hero-inner { max-width: 640px; margin: 0 auto; }
+.upg-hero .upg-lead { max-width: 48ch; margin: 14px auto 0; }
+
+/* Flatten the embedded UpgradeInput's liquid-glass card to the flat/mono
+   system (no blur/shadow/heavy radius) — logic untouched, purely visual. */
+.upg-rd .liquid-glass-card {
+  background: var(--bg-secondary) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  text-align: left;
+}
+.upg-hero-form { margin-top: 28px; }
+.upg-hero-form > * { margin-left: auto; margin-right: auto; }
+
+/* ── FAQ (native <details>, matches contact/about/templates) ──────────── */
+.upg-faq { max-width: 720px; margin: 0 auto; }
+.upg-faq details { border-top: 1px solid var(--border); padding: 18px 0; }
+.upg-faq details:last-child { border-bottom: 1px solid var(--border); }
+.upg-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 15px; font-weight: 500; color: var(--text-primary); list-style: none; }
+.upg-faq summary::-webkit-details-marker { display: none; }
+.upg-faq summary::after { content: "+"; font-family: var(--mono); font-size: 18px; color: var(--text-muted); flex-shrink: 0; transition: transform .2s; }
+.upg-faq details[open] summary::after { transform: rotate(45deg); }
+.upg-faq .upg-faq-a { margin-top: 12px; font-size: 14px; line-height: 1.6; color: var(--text-secondary); max-width: 68ch; }

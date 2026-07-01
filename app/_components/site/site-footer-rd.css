@@ -1,0 +1,28 @@
+/* Shared redesign footer (SiteFooterRd) -- single source of truth.
+   Token-based (var(--border)/var(--mono)/...) so it inherits each page's scoped
+   design tokens and renders identically across contact/work/templates/about.
+   The host page's own wrap (ct-wrap/wr-wrap/tpl-wrap/abt-wrap) is passed in for
+   width, so the columns align to that page while the divider stays full-bleed.
+   Kept in its own small file (not globals.css) so Turbopack recompiles it fast. */
+/* The footer is inset 12px on the sides + bottom on the document-scroll pages
+   (work/templates/about) so its full-bleed parts (border-top + divider) and its bottom
+   stop AT the decorative frame (inset 12px) instead of poking past it to the screen edge.
+   contact already lives inside the .ct-scroll frame → no extra inset (override below).
+   The centered .rdf-wrap absorbs the 12px, so columns/status DON'T move (same x=282). */
+.rdf { border-top: 1px solid var(--border); margin: 24px 12px 12px; padding: 56px 0 0; position: relative; z-index: 10; }
+.ct-scroll .rdf { margin: 24px 0 0; }
+.rdf-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
+@media (min-width: 768px) { .rdf-wrap { padding: 0 32px; } }
+.rdf-top { display: grid; gap: 36px; }
+@media (min-width: 760px) { .rdf-top { grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 32px; } }
+.rdf-tag { margin-top: 16px; font-size: 13px; color: var(--text-muted); max-width: 30ch; line-height: 1.5; }
+.rdf-col h4 { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 12px; }
+.rdf-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rdf-col a { font-size: 13.5px; color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+.rdf-col a:hover { color: var(--text-primary); }
+/* divider fills the (already frame-inset) .rdf, so it stops at the frame on every page */
+.rdf-divider { height: 1px; background: var(--border); }
+.rdf-bottom { padding: 24px 0 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.rdf-status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); }
+.rdf-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+.rdf-copy { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }

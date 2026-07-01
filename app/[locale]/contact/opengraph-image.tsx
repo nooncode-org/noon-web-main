@@ -5,5 +5,5 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 export default function Image() {
-  return buildOg("Tell us the problem. A person reads it.", "Acknowledged within 2 business hours — a substantive reply within 48.");
+  return buildOg("Let's talk.", "Tell us what you need — a real person reads every request.");
 }

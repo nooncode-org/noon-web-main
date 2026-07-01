@@ -52,16 +52,15 @@ html.dark .tpl-rd {
 .tpl-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 60;
   background: var(--bg-base);
-  border-bottom: 1px solid var(--border);
 }
 .tpl-nav-inner {
-  padding: 0 24px; height: 60px;
+  padding: 0 24px; height: 60px; position: relative;
   display: flex; align-items: center; justify-content: space-between;
 }
 @media (min-width: 768px) { .tpl-nav-inner { padding: 0 28px; } }
 .tpl-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
 .tpl-nav-links { display: none; gap: 36px; }
-@media (min-width: 768px) { .tpl-nav-links { display: flex; } }
+@media (min-width: 768px) { .tpl-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
 .tpl-nav-links a {
   font-size: 14px; color: var(--text-secondary);
   text-decoration: none; transition: color .2s;
@@ -406,44 +405,5 @@ html.dark .tpl-rd {
 }
 .tpl-cta-actions { margin-top: 28px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
-/* ── footer ──────────────────────────────────────────────────────────────── */
-.tpl-footer {
-  border-top: 1px solid var(--border);
-  margin-top: 24px;
-  padding: 56px 0 0;
-  position: relative; z-index: 10;
-}
-.tpl-footer-top { display: grid; gap: 36px; }
-@media (min-width: 760px) {
-  .tpl-footer-top { grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 32px; }
-}
-.tpl-footer-brand .tag {
-  margin-top: 16px; font-size: 13px;
-  color: var(--text-muted); max-width: 30ch; line-height: 1.5;
-}
-.tpl-footer-col h4 {
-  font-family: var(--mono); font-size: 11px; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text-muted); margin: 0 0 12px;
-}
-.tpl-footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.tpl-footer-col a {
-  font-size: 13.5px; color: var(--text-secondary);
-  text-decoration: none; transition: color .15s;
-}
-.tpl-footer-col a:hover { color: var(--text-primary); }
-.tpl-footer-bottom {
-  padding: 16px 0 24px;
-  display: flex; flex-wrap: wrap; gap: 16px;
-  align-items: center; justify-content: space-between;
-}
-.tpl-status {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 11px;
-  letter-spacing: 0.04em; color: var(--text-muted);
-}
-.tpl-status .dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--success);
-}
-.tpl-footer-copy { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+/* footer moved to the shared <SiteFooterRd /> component + site-footer-rd.css (.rdf-*).
+   NOTE: .tpl-divider (above) is kept — it is also used by section dividers, not just the footer. */

@@ -9,6 +9,7 @@ import {
   ArrowUp,
   Mic,
   Plus,
+  Minus,
   X,
   Upload,
   Github,
@@ -31,7 +32,7 @@ type AttachedFile = {
 
 type Suggestion = { label: string; prompt: string };
 
-export function HeroSection() {
+export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
   const router = useRouter();
   const params = useParams();
   const locale = (typeof params?.locale === "string" ? params.locale : null) ?? "en";
@@ -195,15 +196,23 @@ export function HeroSection() {
 
   return (
     <section id="hero" className="relative h-full flex flex-col justify-center pt-8 lg:pt-10">
-      <div className="relative z-10 w-full max-w-[750px] mx-auto px-5 lg:px-8">
+      {/* Spectrum accent #3 — ambient iridescent glow behind the card (subtle). */}
+      {spectrum && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[260px] w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-[0.22] blur-[55px]"
+          style={{ background: "linear-gradient(90deg, #ff4d4d 0%, #ff9f1c 17%, #ffd23f 34%, #34c759 51%, #1b9aff 68%, #5b5bff 84%, #b15bff 100%)" }}
+        />
+      )}
+      <div className="relative z-10 w-full max-w-[770px] mx-auto px-5 lg:px-8">
         <div className="flex flex-col items-center text-center">
           <div className="w-full">
             {/* Main headline — Instrument Sans (the Figma typeface), matching
                the 4 ported pages instead of the site's default serif display. */}
             <div className="mb-4 lg:mb-5">
               <h1
-                className="text-[1.25rem] sm:text-[1.5rem] lg:text-[1.75rem] leading-[1.1] tracking-tight text-center"
-                style={{ fontFamily: "var(--font-instrument)" }}
+                className="text-[1.375rem] sm:text-[1.625rem] lg:text-[1.875rem] leading-[1.1] tracking-tight text-center"
+                style={{ fontFamily: "var(--font-geist-sans)" }}
               >
                 {t("headline")}
               </h1>
@@ -216,8 +225,7 @@ export function HeroSection() {
                 <div
                   className={`absolute inset-x-0 bottom-0 h-[34px] ${
                     showTemplates ? "rounded-b-none" : "rounded-b-[9px]"
-                  } flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-white`}
-                  style={{ background: "#0056FD" }}
+                  } flex items-end justify-center px-3.5 pb-1 text-[13px] font-medium text-foreground border-t border-black/[0.05] dark:border-white/[0.06] bg-[#f1f1f1] dark:bg-[#1e1e1e]`}
                 >
                   <span className="flex items-center gap-1.5">
                     {t("howItWorks")}
@@ -250,8 +258,16 @@ export function HeroSection() {
                   </span>
                 </div>
 
-                {/* Dark card — on top, full rounded corners */}
-                <div className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_0_0_1px_rgba(0,0,0,0.06)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]">
+                {/* Dark card — on top, full rounded corners.
+                    Spectrum accent #2 — iridescent focus glow (only while focused). */}
+                <div
+                  className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_0_0_1px_rgba(0,0,0,0.06)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-300"
+                  style={
+                    spectrum && isInputFocused
+                      ? { boxShadow: "0 0 0 1.5px rgba(255,77,77,0.55), 0 0 0 3px rgba(255,210,63,0.32), 0 0 22px -2px rgba(52,199,89,0.5), 0 0 40px -6px rgba(27,154,255,0.5), 0 0 56px -10px rgba(177,91,255,0.5)" }
+                      : undefined
+                  }
+                >
                   <div className="relative min-w-0 overflow-hidden">
                     <textarea
                       value={inputValue}
@@ -266,7 +282,8 @@ export function HeroSection() {
                       }}
                       placeholder={isInputFocused ? t("placeholder") : ""}
                       rows={3}
-                      className="min-h-[44px] lg:min-h-[50px] w-full resize-none bg-transparent px-3 lg:px-3.5 py-1.5 text-[16px] leading-relaxed lg:text-[15px] outline-none placeholder:text-[#a3a3a3]/50 text-left"
+                      className="min-h-[106px] lg:min-h-[102px] w-full resize-none bg-transparent px-3 lg:px-3.5 py-1.5 text-[16px] leading-relaxed lg:text-[15px] outline-none placeholder:text-[#a3a3a3]/50 text-left"
+                      style={spectrum ? { caretColor: "#a78bfa" } : undefined}
                       aria-label={t("placeholder")}
                     />
                     {!inputValue && !isInputFocused && (
@@ -309,9 +326,9 @@ export function HeroSection() {
                           type="button"
                           aria-label="Add"
                           onClick={() => { setAttachMenuOpen((v) => !v); setUrlInputMode(null); setUrlInputValue(""); }}
-                          className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${attachMenuOpen ? "bg-secondary text-foreground" : "bg-secondary/45 text-[#a3a3a3] hover:bg-secondary hover:text-foreground"}`}
+                          className="flex h-8 w-8 items-center justify-center transition-opacity text-foreground hover:opacity-70"
                         >
-                          <Plus className="h-3.5 w-3.5" />
+                          <Plus className="h-4 w-4" />
                         </button>
 
                         {attachMenuOpen && (
@@ -392,6 +409,7 @@ export function HeroSection() {
                       onClick={startWithMaxwell}
                       disabled={!inputValue.trim() && !attachedFile}
                       className="!bg-[#0056FD] hover:!bg-[#0056FD]/90 text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
+                      style={spectrum ? { backgroundImage: "linear-gradient(135deg, #ff4d4d 0%, #ff9f1c 17%, #ffd23f 34%, #34c759 51%, #1b9aff 68%, #5b5bff 84%, #b15bff 100%)" } : undefined}
                     >
                       <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                     </Button>
@@ -404,7 +422,10 @@ export function HeroSection() {
 
               {/* Prompt Suggestions */}
               <div className="mt-3 lg:mt-4">
-                <p className="mb-2.5 text-[9px] font-mono uppercase tracking-[0.18em] text-[#9ca3af] dark:text-[#6b6b6b] text-center">
+                <p
+                  className="mb-2.5 text-[10px] uppercase tracking-[0.12em] text-[#9ca3af] dark:text-[#6b6b6b] text-center"
+                  style={{ fontFamily: "var(--font-geist-mono)" }}
+                >
                   {t("notSure")}
                 </p>
                 {showAllPrompts ? (
@@ -422,9 +443,9 @@ export function HeroSection() {
                       type="button"
                       onClick={() => setShowAllPrompts(false)}
                       aria-label="Collapse prompts"
-                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6b7280] dark:text-[#a3a3a3] transition-colors hover:text-[#111827] dark:hover:text-white text-base leading-none"
+                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#0056FD] transition-opacity hover:opacity-70"
                     >
-                      −
+                      <Minus className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : (
@@ -451,9 +472,9 @@ export function HeroSection() {
                       type="button"
                       onClick={() => setShowAllPrompts(true)}
                       aria-label="Show all prompts"
-                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#6b7280] dark:text-[#a3a3a3] transition-colors hover:text-[#111827] dark:hover:text-white text-base leading-none"
+                      className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#0056FD] transition-opacity hover:opacity-70"
                     >
-                      +
+                      <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 )}

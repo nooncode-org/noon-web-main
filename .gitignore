@@ -5,6 +5,9 @@
 
 # next.js
 /.next/
+# local backup/corrupt copies of the build cache (created when swapping .next
+# to recover from Turbopack cache issues) — never track these
+/.next-*/
 /out/
 
 # production

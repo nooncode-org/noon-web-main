@@ -1078,4 +1078,20 @@
   .tilt-hover:hover {
     transform: rotateX(2deg) rotateY(-2deg);
   }
+
+  /* Home single-screen frame — mirrors the redesign's framed pages
+     (Work / Templates / About): a fixed inset border below the 60px nav.
+     Desktop only. Border color matches the redesign tokens (#e6e8f2/#262626). */
+  .home-frame { display: none; }
+  @media (min-width: 768px) {
+    .home-frame {
+      display: block; position: fixed;
+      top: 60px; left: 12px; right: 12px; bottom: 12px;
+      border: 1px solid #e6e8f2;
+      pointer-events: none; z-index: 30;
+    }
+  }
+  @media (min-width: 768px) and (prefers-color-scheme: dark) {
+    .home-frame { border-color: #262626; }
+  }
 }
