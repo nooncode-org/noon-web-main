@@ -125,11 +125,7 @@ export default async function ApproachPage({ params }: ApproachPageProps) {
             <Link href={lp("/work")} className={chip}>
               our work
             </Link>{" "}
-            , hardened in{" "}
-            <Link href={lp("/security")} className={chip}>
-              security
-            </Link>{" "}
-            , and explained end to end in{" "}
+            and explained end to end in{" "}
             <Link href={lp("/about")} className={chip}>
               how we operate
             </Link>

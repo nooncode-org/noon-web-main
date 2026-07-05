@@ -6,7 +6,6 @@ export const ROUTES = [
   { path: "/services", name: "services" },
   { path: "/approach", name: "approach" },
   { path: "/work", name: "work" },
-  { path: "/security", name: "security" },
   { path: "/opportunities", name: "opportunities" },
   { path: "/templates", name: "templates" },
   { path: "/templates/client-portal-saas", name: "template-detail" },
