@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
-import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
+import { getStartWithMaxwellHref } from "@/lib/site-config";
+import { OppNav } from "./opp-nav";
 import { OpportunitiesContent } from "./opportunities-content";
 import "./opportunities-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -27,24 +26,7 @@ export default async function OpportunitiesPage({ params }: Props) {
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} opp-rd`}>
       {/* nav */}
-      <header className="opp-nav">
-        <div className="opp-nav-inner">
-          <Link href={lp(siteRoutes.home)} className="opp-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="opp-nav-links">
-            <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.work)}>Work</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)}>Contact</Link>
-          </nav>
-          <Link href={maxwellHref} className="opp-nav-cta opp-btn opp-btn-primary">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <OppNav locale={locale} maxwellHref={maxwellHref} />
 
       <div className="opp-frame" aria-hidden />
 

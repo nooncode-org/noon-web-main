@@ -89,7 +89,9 @@ html.dark .opp-rd {
 /* ── layout ─────────────────────────────────────────────────────────────── */
 .opp-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
 @media (min-width: 768px) { .opp-wrap { padding: 0 32px; } }
-.opp-section { padding: clamp(56px, 7vw, 88px) 0; }
+.opp-section { padding: clamp(64px, 8vw, 96px) 0; }
+/* anchor target for the hero "Look at options" jump — clear the fixed 60px nav */
+#opp-tracks { scroll-margin-top: 24px; }
 
 /* ── nav ────────────────────────────────────────────────────────────────── */
 .opp-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
@@ -100,7 +102,44 @@ html.dark .opp-rd {
 @media (min-width: 768px) { .opp-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
 .opp-nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color .2s; }
 .opp-nav-links a:hover, .opp-nav-links a.active { color: var(--text-primary); }
-.opp-nav-cta { display: inline-flex; white-space: nowrap; }
+.opp-nav-cta { white-space: nowrap; }
+/* higher specificity than .opp-btn's display so the mobile hide actually wins */
+.opp-nav-inner .opp-nav-cta { display: none; }
+@media (min-width: 768px) { .opp-nav-inner .opp-nav-cta { display: inline-flex; } }
+
+/* mobile hamburger + drawer (below 768) */
+.opp-nav-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; margin-right: -8px;
+  background: transparent; border: 0; color: var(--text-primary);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background .18s;
+}
+.opp-nav-toggle:hover { background: var(--hover); }
+@media (min-width: 768px) { .opp-nav-toggle { display: none; } }
+.opp-nav-scrim {
+  position: fixed; inset: 60px 0 0; z-index: 54;
+  background: rgba(0, 0, 0, 0.4); cursor: default;
+  opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s;
+}
+.opp-nav-scrim.open { opacity: 1; visibility: visible; }
+@media (min-width: 768px) { .opp-nav-scrim { display: none; } }
+.opp-nav-mobile {
+  position: fixed; top: 60px; left: 0; right: 0; z-index: 55;
+  display: flex; flex-direction: column;
+  padding: 8px 24px 20px;
+  background: var(--bg-base); border-bottom: 1px solid var(--border);
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+.opp-nav-mobile.open { opacity: 1; visibility: visible; transform: none; }
+@media (min-width: 768px) { .opp-nav-mobile { display: none; } }
+.opp-nav-mobile-links { display: flex; flex-direction: column; }
+.opp-nav-mobile-links a {
+  font-size: 16px; color: var(--text-secondary); text-decoration: none;
+  padding: 15px 4px; border-bottom: 1px solid var(--border); transition: color .18s;
+}
+.opp-nav-mobile-links a:hover { color: var(--text-primary); }
+.opp-nav-mobile-cta { width: 100%; justify-content: center; margin-top: 16px; }
 
 /* ── framed page border (desktop only) ────────────────────────────────────── */
 .opp-frame { display: none; }
@@ -113,15 +152,12 @@ html.dark .opp-rd {
 }
 
 /* ── type ───────────────────────────────────────────────────────────────── */
-.opp-display { font-family: var(--sans); font-size: clamp(34px, 4.6vw, 54px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.07; margin: 0; }
+.opp-display { font-family: var(--sans); font-size: clamp(34px, 4.6vw, 54px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.06; margin: 0; }
 .opp-display .dim { color: var(--text-secondary); }
 /* "Noon" in the brand blue — one intentional accent on the wordmark */
 .opp-display .opp-accent { color: var(--brand); }
-.opp-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.18; margin: 0; }
+.opp-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.15; margin: 0; }
 .opp-lead { font-size: clamp(15px, 1.3vw, 17px); font-weight: 400; line-height: 1.55; color: var(--text-secondary); margin: 0; }
-.opp-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
-.opp-kicker { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0; display: inline-flex; align-items: center; gap: 8px; }
-.opp-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
 
 /* ── buttons ────────────────────────────────────────────────────────────── */
 .opp-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; font-family: inherit; }
@@ -132,25 +168,21 @@ html.dark .opp-rd {
 .opp-btn .ic { transition: transform .2s ease; }
 .opp-btn:hover .ic { transform: translateX(2px); }
 
-/* ── hero — ONE framed box with a divider between the text and the globe
-   (mirrors the Contact / Upgrade hero frame). Text + globe both centre inside
-   their cells, so they read as an aligned pair within the frame. ─────────── */
+/* ── hero — ONE framed box, text + sphere split by a divider line ──────────── */
 .opp-hero { padding: clamp(96px, 11vw, 128px) 0 clamp(48px, 6vw, 72px); }
 .opp-hero-frame { border: 1px solid var(--border); }
 .opp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
-/* min-width:0 stops the WebGL canvas's intrinsic width from inflating its grid
-   column (which fed back into the ResizeObserver and pinned it at the max-width). */
 .opp-hero-grid > * { min-width: 0; }
-@media (min-width: 900px) { .opp-hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
+@media (min-width: 768px) { .opp-hero-grid { grid-template-columns: 1.05fr 0.95fr; } .opp-hero-globe .opp-globe-wrap { max-width: 480px; } }
 
-/* text cell — padded, vertically centred, with the divider on its right
-   (desktop split) or bottom (stacked). */
+/* text cell — padded, vertically centred; divider on its right (desktop split)
+   or bottom (stacked). */
 .opp-hero-text {
   display: flex; flex-direction: column; justify-content: center;
   padding: clamp(28px, 4vw, 48px);
   border-bottom: 1px solid var(--border);
 }
-@media (min-width: 900px) { .opp-hero-text { border-bottom: 0; border-right: 1px solid var(--border); } }
+@media (min-width: 768px) { .opp-hero-text { border-bottom: 0; border-right: 1px solid var(--border); } }
 .opp-hero-text > * { animation: oppFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .opp-hero-text > :nth-child(1) { animation-delay: 0.05s; }
 .opp-hero-text > :nth-child(2) { animation-delay: 0.16s; }
@@ -158,12 +190,20 @@ html.dark .opp-rd {
 .opp-hero-lead { margin-top: 20px; max-width: 52ch; }
 .opp-hero-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
 
-@keyframes oppFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-
-/* ── hero signature: wireframe globe — centred inside its (padded) cell ────── */
+/* sphere cell — centred inside its padded cell */
 .opp-hero-globe { padding: clamp(12px, 2vw, 28px); display: flex; align-items: center; justify-content: center; }
-.opp-globe-wrap { width: 100%; max-width: 480px; aspect-ratio: 1 / 1; }
-.opp-globe-wrap canvas { display: block; outline: none; }
+.opp-globe-wrap { position: relative; width: 100%; max-width: 340px; aspect-ratio: 1 / 1; }
+.opp-globe-svg { display: block; width: 100%; height: 100%; stroke: var(--border); stroke-width: 0.4; }
+/* Noon isotype centred in the sphere */
+.opp-globe-logo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.opp-globe-logo svg { width: 5%; height: auto; color: var(--text-primary); }
+/* soft blue pulse travelling along a grid line — SAME width as the base line, a
+   moving gradient (SMIL) so light appears to run through the line itself; the
+   grey base line shows through when the band isn't there. */
+.opp-globe-pulse { stroke-width: 0.4; }
+.opp-pulse-stop { stop-color: var(--brand); }
+
+@keyframes oppFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .opp-hero-text > *, .opp-reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
@@ -200,8 +240,8 @@ html.dark .opp-rd {
   color: var(--text-secondary); background: var(--bg-base);
   transition: border-color .2s, color .2s;
 }
-.opp-area:hover .opp-area-icon { border-color: var(--text-primary); color: var(--text-primary); }
-.opp-area-desc { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 14px 0 0; }
+.opp-area:hover .opp-area-icon { border-color: var(--brand); color: var(--brand); }
+.opp-area-desc { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 14px 0 0; }
 .opp-area-foot { margin-top: auto; padding-top: 20px; }
 .opp-area-cta {
   display: inline-flex; align-items: center; gap: 6px;
@@ -211,23 +251,8 @@ html.dark .opp-rd {
 .opp-area:hover .opp-area-cta { color: var(--text-primary); }
 .opp-area:hover .opp-area-cta .ic { transform: translateX(3px); }
 
-/* ── FAQ (native <details> accordion, -rd styled) ─────────────────────────── */
-.opp-faq { max-width: 760px; }
-.opp-faq-item { border-top: 1px solid var(--border); }
-.opp-faq-item:last-child { border-bottom: 1px solid var(--border); }
-.opp-faq-item summary {
-  list-style: none; cursor: pointer; padding: 20px 4px;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  font-size: 16px; font-weight: 500; color: var(--text-primary); transition: color .15s;
-}
-.opp-faq-item summary::-webkit-details-marker { display: none; }
-.opp-faq-item summary:hover { color: var(--text-secondary); }
-.opp-faq-item summary::after { content: "+"; font-size: 20px; line-height: 1; color: var(--text-muted); transition: transform .2s; }
-.opp-faq-item[open] summary::after { transform: rotate(45deg); }
-.opp-faq-a { padding: 0 4px 22px; font-size: 14px; line-height: 1.65; color: var(--text-secondary); max-width: 62ch; }
-
 /* ── CTA (framed, replaces the old blue SiteCtaBlock) ─────────────────────── */
-.opp-cta { border: 1px solid var(--border); border-radius: var(--radius-md); padding: clamp(36px, 5vw, 56px) clamp(24px, 4vw, 48px); text-align: center; }
+.opp-cta { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); padding: clamp(36px, 5vw, 56px) clamp(24px, 4vw, 48px); text-align: center; }
 .opp-cta .opp-h2 { margin-bottom: 10px; }
 .opp-cta-copy { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 auto 22px; max-width: 48ch; }
 .opp-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }

@@ -46,26 +46,6 @@ const AREAS: EcosystemArea[] = [
   },
 ];
 
-// Answers restate this page's own routing copy — same contact route for every
-// path; the category just routes the conversation; misfits still get reviewed.
-const FAQS = [
-  {
-    question: "Which category should I pick?",
-    answer:
-      "The closest one — it just tells Noon which conversation to start. A wrong guess is fine: every path uses the same contact route, and the routing simply takes one extra step.",
-  },
-  {
-    question: "I don't fit any of the four tracks — can I still reach out?",
-    answer:
-      "Yes. Send it as a general question. The review still happens — a person reads it and routes it to the right conversation.",
-  },
-  {
-    question: "Do all paths get the same attention?",
-    answer:
-      "Yes — investors, sellers, developers, and partners all go through the same route: a person reads the request and starts the right conversation. The category only changes who picks it up.",
-  },
-];
-
 export function OpportunitiesContent() {
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
@@ -78,7 +58,7 @@ export function OpportunitiesContent() {
 
   return (
     <>
-      {/* Hero — framed box, text + globe split by a divider line */}
+      {/* Hero — framed box, text + sphere split by a divider line */}
       <section className="opp-hero" aria-labelledby="opp-title">
         <div className="opp-hero-frame">
           <div className="opp-hero-grid">
@@ -92,13 +72,9 @@ export function OpportunitiesContent() {
                 each have a distinct entry point — structured, practical, and open to the right people.
               </p>
               <div className="opp-hero-actions">
-                <Link href={contactHref} className="opp-btn opp-btn-primary">
-                  Contact Noon
-                  <ArrowRight className="ic" size={16} strokeWidth={2} />
-                </Link>
-                <Link href={maxwellHref} className="opp-btn opp-btn-secondary">
-                  Start with Maxwell
-                </Link>
+                <a href="#opp-tracks" className="opp-btn opp-btn-primary">
+                  Look at options
+                </a>
               </div>
             </div>
             <div className="opp-hero-globe" aria-hidden>
@@ -109,7 +85,7 @@ export function OpportunitiesContent() {
       </section>
 
       {/* Areas — the four entry points, hairline cell grid */}
-      <section className="opp-section" ref={areasRef}>
+      <section className="opp-section" id="opp-tracks" ref={areasRef}>
         <div className={`opp-sechead opp-reveal ${areasVisible ? "in-view" : ""}`}>
           <h2 className="opp-h2">Four ways to work with Noon</h2>
           <p className="opp-lead">
@@ -135,28 +111,13 @@ export function OpportunitiesContent() {
                 <p className="opp-area-desc">{area.description}</p>
                 <div className="opp-area-foot">
                   <span className="opp-area-cta">
-                    Get in touch
+                    See details
                     <ArrowRight className="ic" size={15} strokeWidth={2} />
                   </span>
                 </div>
               </Link>
             );
           })}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="opp-section" style={{ paddingTop: 0 }}>
-        <div className="opp-sechead">
-          <h2 className="opp-h2">Common questions</h2>
-        </div>
-        <div className="opp-faq">
-          {FAQS.map((faq) => (
-            <details className="opp-faq-item" key={faq.question}>
-              <summary>{faq.question}</summary>
-              <div className="opp-faq-a">{faq.answer}</div>
-            </details>
-          ))}
         </div>
       </section>
 
