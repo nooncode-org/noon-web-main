@@ -161,6 +161,18 @@ const nextConfig = {
           },
         ],
       },
+      // /upgrade "before/after" NORR mockups (public/mockups/*.html) — same
+      // reasoning as /work and /templates above.
+      {
+        source: "/mockups/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          {
+            key: "Content-Security-Policy",
+            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+          },
+        ],
+      },
     ]
   },
 }

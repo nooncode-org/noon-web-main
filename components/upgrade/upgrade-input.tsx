@@ -136,22 +136,8 @@ export function UpgradeInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="liquid-glass-card w-full max-w-xl overflow-hidden rounded-[10px] border border-foreground/10 bg-card/80 shadow-[0_24px_80px_-60px_rgba(18,0,197,0.65)]"
+      className="liquid-glass-card w-full"
     >
-      <div className="flex items-center justify-between border-b border-foreground/8 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#ff5f57]" />
-            <span className="h-2 w-2 rounded-full bg-[#ffbd2e]" />
-            <span className="h-2 w-2 rounded-full bg-[#28c840]" />
-          </div>
-          <span className="site-meta-label ml-2 font-mono normal-case tracking-normal text-muted-foreground">upgrade.intake</span>
-        </div>
-        <span className="site-meta-label font-mono text-muted-foreground/70">
-          Maxwell
-        </span>
-      </div>
-
       <div className="space-y-4 p-4">
       {/* URL input */}
       <div className="space-y-2">
@@ -171,7 +157,7 @@ export function UpgradeInput({
             onChange={(e) => setUrl(e.target.value)}
             placeholder="yourwebsite.com"
             autoComplete="url"
-            className="h-11 w-full rounded-[9px] border border-foreground/12 bg-background/70 py-2.5 pl-10 pr-4 font-mono text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
+            className="h-11 w-full rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] py-2.5 pl-10 pr-4 font-mono text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
             disabled={isSubmitting}
           />
         </div>
@@ -187,7 +173,7 @@ export function UpgradeInput({
               className={`flex cursor-pointer items-start gap-3 rounded-[9px] border px-4 py-2.5 transition-colors ${
                 mode === m.value
                   ? "border-primary/70 bg-primary/10"
-                  : "border-foreground/10 bg-background/45 hover:border-foreground/30"
+                  : "border-foreground/10 bg-[var(--bg-secondary)] hover:border-foreground/30"
               }`}
             >
               <input
@@ -218,9 +204,9 @@ export function UpgradeInput({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Add any details you’d like us to consider to improve your upgrade."
-          rows={3}
+          rows={7}
           maxLength={2000}
-          className="w-full resize-none rounded-[9px] border border-foreground/12 bg-background/70 px-4 py-3 text-sm text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
+          className="w-full resize-none rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] px-4 py-3 text-sm text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
           disabled={isSubmitting}
         />
         <p className="text-xs text-muted-foreground text-right">{note.length}/2000</p>

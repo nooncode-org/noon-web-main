@@ -8,34 +8,12 @@ import { NoonWordmark } from "@/components/brand/noon-logo";
 import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
-import { BeforeAfterScan } from "@/components/sections/premium";
-import { UpgradeDemo } from "@/components/marketing/upgrade-demo/UpgradeDemo";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
+import { UpgradeBeforeAfter } from "@/components/upgrade/upgrade-before-after";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
 import "./upgrade-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
-
-// Upgrade-specific FAQ — every answer mirrors copy already on this page (the
-// hero, the scored-audit section) or the Upgrade service block on /services.
-const UPGRADE_FAQS = [
-  {
-    q: "What do I get from the scan?",
-    a: "A clear, scored audit of your site — what's working, critical issues, and prioritized improvements — plus an upgraded version of it generated as real, maintainable code.",
-  },
-  {
-    q: "Do I have to rebuild my whole site?",
-    a: "No. Upgrade targets what's underperforming, unclear, or dated and ships a stronger version of what you already run — it's the opposite of a from-scratch rebuild or a vague redesign.",
-  },
-  {
-    q: "Is the upgraded version ready for production?",
-    a: "The scan produces the upgraded version and the audit; bringing it live runs through the same process as every Noon build — read and signed off by a person before it ships.",
-  },
-  {
-    q: "What happens after the audit?",
-    a: "You decide. Take the prioritized plan and run with it, or have Noon ship the upgrade — the audit is the structured starting point for the Upgrade service.",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Upgrade Your Website | Noon",
@@ -88,70 +66,63 @@ async function UpgradePageContent({ params, searchParams }: Props) {
       <div className="upg-frame" aria-hidden />
 
       <main className="upg-wrap">
-        {/* hero + intake */}
+        {/* hero + intake — one framed box (mirrors Contact's .ct-formsection):
+            aside (headline + before/after proof) left, intake form right,
+            divided by a single border instead of a floating form card. */}
         <section aria-labelledby="upgrade-entry-title" className="upg-hero">
-          <div className="upg-hero-inner">
-            <p className="upg-kicker">Upgrade</p>
-            <h1 id="upgrade-entry-title" className="upg-display" style={{ marginTop: 10 }}>
-              Upgrade a live website with Maxwell.
-            </h1>
-            <p className="upg-lead">
-              Paste your URL — Maxwell audits it, prioritizes what matters, and rebuilds it as
-              real, maintainable code.
-            </p>
-          </div>
+          <div className="upg-hero-frame">
+            <div className="upg-hero-grid">
+              <div className="upg-hero-aside">
+                <div className="upg-hero-inner">
+                  <h1 id="upgrade-entry-title" className="upg-display">
+                    Upgrade a live website with Maxwell.
+                  </h1>
+                  <p className="upg-lead">
+                    Maxwell audits it, prioritizes what matters, and rebuilds it
+                    as real, maintainable code.
+                  </p>
+                </div>
 
-          <div className="upg-hero-form">
-            <UpgradeInput
-              isAuthenticated={isAuthenticated}
-              initialUrl={initialUrl}
-              initialMode={initialMode}
-            />
-            {sessions.length > 0 && (
-              <div style={{ maxWidth: 576, margin: "0 auto" }}>
-                <UpgradeSessionList sessions={sessions} />
+                <div className="upg-hero-proof">
+                  <UpgradeBeforeAfter compact />
+                </div>
               </div>
-            )}
+
+              <div className="upg-hero-form min-w-0">
+                <UpgradeInput
+                  isAuthenticated={isAuthenticated}
+                  initialUrl={initialUrl}
+                  initialMode={initialMode}
+                />
+                {sessions.length > 0 && (
+                  <div style={{ maxWidth: 576, marginTop: 16 }}>
+                    <UpgradeSessionList sessions={sessions} />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
         {/* How it works — process cards */}
         <section className="upg-section" style={{ paddingTop: 0 }}>
-          <div className="upg-sechead">
-            <p className="upg-kicker">How it works</p>
-            <h2 className="upg-h2">Three steps to a better website</h2>
+          <div className="upg-steps-frame">
+            <div className="upg-sechead" style={{ gridColumn: "1 / -1", gridRow: 1 }}>
+              <h2 className="upg-h2">Three steps to a better website</h2>
+            </div>
+            <UpgradeSteps />
+            {/* real grid items spanning both rows (heading + cards) — height
+                comes from the grid's own row sizing, same as everything else
+                here, so it can't drift out of sync the way a separately
+                measured line could. Every sibling here (heading, cards, these
+                dividers) has an EXPLICIT grid-row/column — mixing that with
+                auto-placed items caused the auto-placed ones to dodge these
+                dividers' reserved cells and land in the wrong row entirely. */}
+            <span className="upg-steps-divider" style={{ gridColumn: 2, gridRow: "1 / span 2" }} aria-hidden="true" />
+            <span className="upg-steps-divider" style={{ gridColumn: 3, gridRow: "1 / span 2" }} aria-hidden="true" />
           </div>
-          <UpgradeSteps />
         </section>
 
-        {/* What you get back — faithful representation of the real audit output */}
-        <section className="upg-section" style={{ paddingTop: 0 }}>
-          <div className="upg-sechead">
-            <p className="upg-kicker">What you get back</p>
-            <h2 className="upg-h2">A clear, scored audit of your site</h2>
-          </div>
-          <UpgradeDemo />
-        </section>
-
-        {/* Before/After transformation */}
-        <section className="upg-section" style={{ paddingTop: 0 }}>
-          <BeforeAfterScan />
-        </section>
-
-        {/* FAQ */}
-        <section className="upg-section" style={{ paddingTop: 0 }}>
-          <div className="upg-sechead">
-            <h2 className="upg-h2">Common questions.</h2>
-          </div>
-          <div className="upg-faq">
-            {UPGRADE_FAQS.map((f) => (
-              <details key={f.q}>
-                <summary>{f.q}</summary>
-                <p className="upg-faq-a">{f.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
       </main>
 
       {/* footer — shared across redesign pages */}

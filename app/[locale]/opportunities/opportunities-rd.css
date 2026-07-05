@@ -1,0 +1,237 @@
+/* ============================================================================
+   Opportunities page — REDESIGN. Scoped under .opp-rd. Same locked spine as
+   work/about/contact/upgrade/legal: Geist, mono-forward, flat, sharp frame,
+   hairline grid, neutral-first (blue only where it carries meaning — here the
+   route diagram's convergence). Dark = neutral BLACK via the site's html.dark.
+   ============================================================================ */
+
+.opp-rd {
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* light (default) */
+  --bg-base: #ffffff;
+  --bg-secondary: #f7f8fc;
+  --surface: #f1f2f7;
+  --border: #e6e8f2;
+  --hover: #eef0ff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --brand: #0056fd;
+  --brand-hover: #3378fd;
+  --success: #00c853;
+
+  font-family: var(--sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .opp-rd {
+  --bg-base: #000000;
+  --bg-secondary: #0c0c0c;
+  --surface: #161616;
+  --border: #262626;
+  --hover: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b6b6b;
+}
+
+/* Re-map shadcn base tokens within scope so the embedded, logic-untouched
+   ContactRouteDiagram (uses var(--color-primary), bg-primary, bg-card,
+   bg-secondary, border-foreground, text-muted-foreground) adopts the new
+   system with no JSX change. --color-* (Tailwind v4) reference these base
+   vars, so remapping the base cascades to both. Mirrors upgrade-rd. */
+.opp-rd {
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-base);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-secondary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: #e5484d;
+  --input: var(--border);
+  --ring: var(--brand);
+
+  /* Tailwind v4 --color-* tokens are declared as `var(--primary)` etc. at :root,
+     so descendants INHERIT the already-resolved root value — they do NOT re-run
+     var(--primary) with a scoped override. Redeclare them here so utility classes
+     AND raw `var(--color-primary)` usages (the ContactRouteDiagram's SVG stroke)
+     pick up the redesign brand instead of the old #1200c5. */
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--bg-base);
+  --color-primary: var(--brand);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--text-secondary);
+  --color-border: var(--border);
+  --color-ring: var(--brand);
+}
+
+/* ── layout ─────────────────────────────────────────────────────────────── */
+.opp-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
+@media (min-width: 768px) { .opp-wrap { padding: 0 32px; } }
+.opp-section { padding: clamp(56px, 7vw, 88px) 0; }
+
+/* ── nav ────────────────────────────────────────────────────────────────── */
+.opp-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
+.opp-nav-inner { padding: 0 24px; height: 60px; position: relative; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 768px) { .opp-nav-inner { padding: 0 28px; } }
+.opp-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
+.opp-nav-links { display: none; gap: 36px; }
+@media (min-width: 768px) { .opp-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
+.opp-nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color .2s; }
+.opp-nav-links a:hover, .opp-nav-links a.active { color: var(--text-primary); }
+.opp-nav-cta { display: inline-flex; white-space: nowrap; }
+
+/* ── framed page border (desktop only) ────────────────────────────────────── */
+.opp-frame { display: none; }
+@media (min-width: 768px) {
+  .opp-frame {
+    display: block; position: fixed; top: 60px; left: 12px; right: 12px; bottom: 12px;
+    border: 1px solid var(--border); pointer-events: none; z-index: 30;
+    box-shadow: 0 0 0 9999px var(--bg-base);
+  }
+}
+
+/* ── type ───────────────────────────────────────────────────────────────── */
+.opp-display { font-family: var(--sans); font-size: clamp(34px, 4.6vw, 54px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.07; margin: 0; }
+.opp-display .dim { color: var(--text-secondary); }
+/* "Noon" in the brand blue — one intentional accent on the wordmark */
+.opp-display .opp-accent { color: var(--brand); }
+.opp-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.18; margin: 0; }
+.opp-lead { font-size: clamp(15px, 1.3vw, 17px); font-weight: 400; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.opp-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+.opp-kicker { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0; display: inline-flex; align-items: center; gap: 8px; }
+.opp-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+
+/* ── buttons ────────────────────────────────────────────────────────────── */
+.opp-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; font-family: inherit; }
+.opp-btn-primary { background: var(--text-primary); color: var(--bg-base); }
+.opp-btn-primary:hover { transform: translateY(-1px); }
+.opp-btn-secondary { background: transparent; color: var(--text-primary); border-color: var(--border); }
+.opp-btn-secondary:hover { background: var(--hover); }
+.opp-btn .ic { transition: transform .2s ease; }
+.opp-btn:hover .ic { transform: translateX(2px); }
+
+/* ── hero — ONE framed box with a divider between the text and the globe
+   (mirrors the Contact / Upgrade hero frame). Text + globe both centre inside
+   their cells, so they read as an aligned pair within the frame. ─────────── */
+.opp-hero { padding: clamp(96px, 11vw, 128px) 0 clamp(48px, 6vw, 72px); }
+.opp-hero-frame { border: 1px solid var(--border); }
+.opp-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+/* min-width:0 stops the WebGL canvas's intrinsic width from inflating its grid
+   column (which fed back into the ResizeObserver and pinned it at the max-width). */
+.opp-hero-grid > * { min-width: 0; }
+@media (min-width: 900px) { .opp-hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
+
+/* text cell — padded, vertically centred, with the divider on its right
+   (desktop split) or bottom (stacked). */
+.opp-hero-text {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: clamp(28px, 4vw, 48px);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 900px) { .opp-hero-text { border-bottom: 0; border-right: 1px solid var(--border); } }
+.opp-hero-text > * { animation: oppFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.opp-hero-text > :nth-child(1) { animation-delay: 0.05s; }
+.opp-hero-text > :nth-child(2) { animation-delay: 0.16s; }
+.opp-hero-text > :nth-child(3) { animation-delay: 0.28s; }
+.opp-hero-lead { margin-top: 20px; max-width: 52ch; }
+.opp-hero-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+@keyframes oppFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* ── hero signature: wireframe globe — centred inside its (padded) cell ────── */
+.opp-hero-globe { padding: clamp(12px, 2vw, 28px); display: flex; align-items: center; justify-content: center; }
+.opp-globe-wrap { width: 100%; max-width: 480px; aspect-ratio: 1 / 1; }
+.opp-globe-wrap canvas { display: block; outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .opp-hero-text > *, .opp-reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* ── section head (kicker + h2 + lead) ────────────────────────────────────── */
+.opp-sechead { max-width: 60ch; margin-bottom: clamp(28px, 4vw, 40px); }
+.opp-sechead > :first-child { margin-top: 0; }
+.opp-sechead .opp-h2 { margin-top: 12px; }
+.opp-sechead .opp-lead { margin-top: 12px; }
+
+/* ── Areas — hairline 2×2 cell grid ───────────────────────────────────────── */
+.opp-areas-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  overflow: hidden;
+}
+@media (min-width: 700px) { .opp-areas-grid { grid-template-columns: 1fr 1fr; } }
+/* whole card is the link (big target); the explicit CTA row at the bottom is
+   the visible affordance. */
+.opp-area {
+  background: var(--bg-base); padding: clamp(24px, 3vw, 32px);
+  display: flex; flex-direction: column; transition: background .2s;
+  text-decoration: none; color: inherit;
+}
+.opp-area:hover { background: var(--bg-secondary); }
+.opp-area-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.opp-area-title { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
+.opp-area-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-secondary); background: var(--bg-base);
+  transition: border-color .2s, color .2s;
+}
+.opp-area:hover .opp-area-icon { border-color: var(--text-primary); color: var(--text-primary); }
+.opp-area-desc { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 14px 0 0; }
+.opp-area-foot { margin-top: auto; padding-top: 20px; }
+.opp-area-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary); transition: color .2s;
+}
+.opp-area-cta .ic { transition: transform .2s ease; }
+.opp-area:hover .opp-area-cta { color: var(--text-primary); }
+.opp-area:hover .opp-area-cta .ic { transform: translateX(3px); }
+
+/* ── FAQ (native <details> accordion, -rd styled) ─────────────────────────── */
+.opp-faq { max-width: 760px; }
+.opp-faq-item { border-top: 1px solid var(--border); }
+.opp-faq-item:last-child { border-bottom: 1px solid var(--border); }
+.opp-faq-item summary {
+  list-style: none; cursor: pointer; padding: 20px 4px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  font-size: 16px; font-weight: 500; color: var(--text-primary); transition: color .15s;
+}
+.opp-faq-item summary::-webkit-details-marker { display: none; }
+.opp-faq-item summary:hover { color: var(--text-secondary); }
+.opp-faq-item summary::after { content: "+"; font-size: 20px; line-height: 1; color: var(--text-muted); transition: transform .2s; }
+.opp-faq-item[open] summary::after { transform: rotate(45deg); }
+.opp-faq-a { padding: 0 4px 22px; font-size: 14px; line-height: 1.65; color: var(--text-secondary); max-width: 62ch; }
+
+/* ── CTA (framed, replaces the old blue SiteCtaBlock) ─────────────────────── */
+.opp-cta { border: 1px solid var(--border); border-radius: var(--radius-md); padding: clamp(36px, 5vw, 56px) clamp(24px, 4vw, 48px); text-align: center; }
+.opp-cta .opp-h2 { margin-bottom: 10px; }
+.opp-cta-copy { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 auto 22px; max-width: 48ch; }
+.opp-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+/* ── reveal-on-scroll (progressive; JS toggles .in-view via useRevealOnView) ── */
+.opp-reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.opp-reveal.in-view { opacity: 1; transform: none; }

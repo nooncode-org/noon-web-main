@@ -108,6 +108,14 @@ html.dark .upg-rd {
 .upg-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
 .upg-kicker { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
 
+/* One mono typeface for the whole page. The embedded components (step numbers,
+   the mock browser labels inside the step vizzes, etc.) reach for Tailwind's
+   `font-mono`, which resolves to the GLOBAL --font-mono (JetBrains Mono) — a
+   different monospace than the Geist Mono used by every scoped element
+   (.upg-kicker, the footer). This realigns every `font-mono` inside .upg-rd to
+   Geist Mono so the page speaks in a single mono voice, per the locked spine. */
+.upg-rd .font-mono { font-family: var(--mono); }
+
 /* ── buttons ────────────────────────────────────────────────────────────── */
 .upg-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; font-family: inherit; }
 .upg-btn-primary { background: var(--text-primary); color: var(--bg-base); }
@@ -119,31 +127,133 @@ html.dark .upg-rd {
 .upg-sechead { text-align: center; margin: 0 auto 36px; max-width: 46ch; }
 .upg-sechead .upg-h2 { margin-top: 10px; }
 
-/* ── hero ───────────────────────────────────────────────────────────────── */
-.upg-hero { padding: clamp(96px, 10vw, 128px) 0 clamp(48px, 6vw, 72px); text-align: center; }
-.upg-hero-inner { max-width: 640px; margin: 0 auto; }
-.upg-hero .upg-lead { max-width: 48ch; margin: 14px auto 0; }
+/* Three-steps: heading + the 3 cards are now REAL siblings in ONE grid (the
+   cards render via UpgradeSteps' display:contents wrapper, so they land here
+   as direct grid items). That means every divider — left/right edges AND the
+   2 internal ones between cards — is a real grid item or real border, sized
+   by the grid's own row tracks. Nothing is a separately positioned line with
+   a hand-measured height, so nothing can drift out of alignment at any zoom
+   or viewport width.
+   margin-top/padding-top cancel out using the EXACT same clamp() as
+   .upg-hero's own bottom padding, so the left/right border's top edge always
+   lines up with the hero frame above, automatically — while the heading
+   itself doesn't shift a pixel (moved with position:relative, which doesn't
+   consume flow space). */
+.upg-steps-frame {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  margin-top: calc(-1 * clamp(48px, 6vw, 72px));
+  padding-top: clamp(48px, 6vw, 72px);
+}
+@media (min-width: 768px) {
+  .upg-steps-frame { grid-template-columns: repeat(3, 1fr); }
+}
+.upg-steps-frame .upg-sechead { position: relative; top: -16px; }
 
-/* Flatten the embedded UpgradeInput's liquid-glass card to the flat/mono
-   system (no blur/shadow/heavy radius) — logic untouched, purely visual. */
+/* mobile: cards auto-place into rows 2/3/4 below the heading's row 1 (no
+   dividers exist yet to conflict with, since .upg-steps-divider is display:
+   none below md — display:none removes an item from grid placement
+   entirely). Desktop: explicit column+row on every sibling (see page.tsx's
+   dividers, and .upg-sechead's own gridRow:1 inline style) — mixing
+   auto-placed items with explicitly-placed dividers made the auto-placed
+   ones dodge the dividers' reserved cells and land in the wrong row. */
+@media (min-width: 768px) {
+  .step-card-0 { grid-column: 1; grid-row: 2; }
+  .step-card-1 { grid-column: 2; grid-row: 2; }
+  .step-card-2 { grid-column: 3; grid-row: 2; }
+}
+
+/* the 2 dividers between cards: real grid items spanning grid-row:1/span 2
+   (the heading's row AND the cards' row), so their height is the grid's
+   actual row sizing — never a magic-number height. The negative margin-top
+   is the SAME clamp() as the frame's own padding-top, canceling it out just
+   for these 2 items so they reach the frame's true top edge (where the
+   left/right borders start) instead of stopping at the padding line — same
+   reasoning as the frame's own margin/padding pair, just applied per-item
+   instead of to the whole box. Hidden on mobile: only 1 column track there,
+   nothing to divide — cards stack with their own border-t/b instead. */
+.upg-steps-divider { display: none; }
+@media (min-width: 768px) {
+  .upg-steps-divider {
+    display: block;
+    width: 1px;
+    justify-self: start;
+    margin-top: calc(-1 * clamp(48px, 6vw, 72px));
+    background: var(--border);
+  }
+}
+
+/* ── hero ───────────────────────────────────────────────────────────────── */
+/* Everything (headline, before/after proof, intake form) sits inside ONE
+   framed box — mirrors the Contact page's .ct-formsection: a single sharp-
+   cornered border with a divider between the aside and the form, rather than
+   a floating rounded form card beside plain text. */
+.upg-hero { padding: clamp(96px, 10vw, 128px) 0 clamp(48px, 6vw, 72px); }
+.upg-hero-frame { border: 1px solid var(--border); }
+/* 2-up only from 1024px. Below that the aside+form stack: the split kicks in
+   at 900px before but that left a ~900-1020px dead zone where both columns were
+   too narrow to balance — the dense form stayed tall while the skinny aside ran
+   short, ballooning the lead→proof gap to ~200px. Stacking through that range
+   keeps each column full-width and the rhythm calm until there's genuinely room
+   for two. */
+.upg-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) {
+  .upg-hero-grid { grid-template-columns: 1.1fr 1fr; }
+}
+
+.upg-hero-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: clamp(28px, 4vw, 48px);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 1024px) {
+  .upg-hero-aside { border-bottom: 0; border-right: 1px solid var(--border); }
+}
+
+.upg-hero-inner { max-width: 560px; }
+/* pushes the cards down to use whatever slack is left once the aside is
+   stretched to match the form's (taller) height — text stays put at top,
+   only the cards shift. */
+.upg-hero-proof { min-width: 0; margin-top: auto; }
+.upg-hero .upg-lead { max-width: 48ch; margin: 14px 0 0; }
+
+.upg-hero-form { padding: clamp(24px, 3vw, 40px); background: var(--bg-secondary); }
+
+/* the two mini mockup cards inside .upg-hero-proof: stacked (narrow aside)
+   vs. side-by-side once the aside is wide enough to read comfortably. */
+.upg-hero-proof-cards { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 640px) {
+  .upg-hero-proof-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+}
+
+/* Flatten the embedded UpgradeInput's liquid-glass card — logic untouched,
+   purely visual. No border/radius/shadow of its own anymore: it's now plain
+   content inside .upg-hero-form, which supplies the framing. */
 .upg-rd .liquid-glass-card {
-  background: var(--bg-secondary) !important;
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
-  border-color: var(--border) !important;
-  border-radius: var(--radius-md) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   text-align: left;
 }
-.upg-hero-form { margin-top: 28px; }
-.upg-hero-form > * { margin-left: auto; margin-right: auto; }
 
-/* ── FAQ (native <details>, matches contact/about/templates) ──────────── */
-.upg-faq { max-width: 720px; margin: 0 auto; }
-.upg-faq details { border-top: 1px solid var(--border); padding: 18px 0; }
-.upg-faq details:last-child { border-bottom: 1px solid var(--border); }
-.upg-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 15px; font-weight: 500; color: var(--text-primary); list-style: none; }
-.upg-faq summary::-webkit-details-marker { display: none; }
-.upg-faq summary::after { content: "+"; font-family: var(--mono); font-size: 18px; color: var(--text-muted); flex-shrink: 0; transition: transform .2s; }
-.upg-faq details[open] summary::after { transform: rotate(45deg); }
-.upg-faq .upg-faq-a { margin-top: 12px; font-size: 14px; line-height: 1.6; color: var(--text-secondary); max-width: 68ch; }
+/* The shared primary <Button> colors itself via .site-primary-action, which
+   hardcodes the OLD brand blue (#1200c5). Remap it to the redesign brand in this
+   scope so the intake CTA matches everything else. */
+.upg-rd .site-primary-action {
+  background-color: var(--brand) !important;
+}
+.upg-rd .site-primary-action:hover {
+  background-color: var(--brand-hover) !important;
+  box-shadow: 0 18px 60px rgba(0, 86, 253, 0.18) !important;
+}
+.upg-rd .site-primary-action:active {
+  background-color: #0042c4 !important;
+}

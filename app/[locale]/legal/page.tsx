@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, Shield, Cookie, Scale } from "lucide-react";
-import { SitePageFrame } from "@/app/_components/site/site-page-frame";
-import { getAuthenticatedViewer } from "@/lib/auth/session";
-import { siteRoutes } from "@/lib/site-config";
+import { FileText, Shield, Cookie, Scale, ArrowRight } from "lucide-react";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
+import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
+import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
+import "@/app/_components/site/legal-rd.css";
+import "@/app/_components/site/site-footer-rd.css";
 
 export const metadata: Metadata = {
   title: "Legal | Noon",
@@ -48,70 +52,83 @@ type LegalPageProps = {
 export default async function LegalPage({ params }: LegalPageProps) {
   const { locale } = await params;
   const lp = (href: string) => `/${locale}${href}`;
-  const viewer = await getAuthenticatedViewer();
+  const maxwellHref = lp(getStartWithMaxwellHref());
 
   return (
-    <SitePageFrame viewer={viewer}>
-      <div className="site-shell py-12 lg:py-16">
-        {/* Header */}
-        <div className="mx-auto mb-10 max-w-3xl text-center lg:mb-12">
-          <p className="site-meta-label mb-4 font-mono text-muted-foreground">
-            Legal
-          </p>
-          <h1 className="site-hero-title mb-4">
-            Legal Documents
-          </h1>
-          <p className="site-hero-copy mx-auto max-w-lg text-muted-foreground">
-            Policies and terms that govern our services
-          </p>
-        </div>
-
-        {/* Documents Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {legalDocs.map((doc) => {
-            const Icon = doc.icon;
-            return (
-              <Link
-                key={doc.slug}
-                href={lp(`/${doc.slug}`)}
-                className="group flex gap-4 rounded-xl border border-border bg-card p-6 transition-all hover:border-foreground/20 hover:shadow-lg"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary">
-                  <Icon className="h-6 w-6 text-foreground" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="site-card-title mb-1 group-hover:underline">{doc.title}</h2>
-                  <p className="site-card-copy mb-2 text-muted-foreground">{doc.description}</p>
-                  <p className="text-xs text-muted-foreground/70">Updated {doc.updated}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Contact */}
-        <div className="mt-16 rounded-xl border border-border bg-card p-8 text-center">
-          <h2 className="site-card-title mb-2">Questions?</h2>
-          <p className="site-card-copy mb-4 text-muted-foreground">
-            Contact us at{" "}
-            <a
-              href="mailto:noon.message@gmail.com"
-              className="underline underline-offset-4 hover:text-foreground"
-            >
-              noon.message@gmail.com
-            </a>
-          </p>
-          <p className="site-card-copy text-muted-foreground">
-            Wilmington, Delaware, United States
-          </p>
-          <Link
-            href={lp(siteRoutes.contact)}
-            className="site-primary-action mt-5 inline-flex h-11 items-center rounded-full px-6 text-sm font-medium"
-          >
-            Contact Noon
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      {/* nav */}
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <Link href={lp(siteRoutes.home)} className="lgl-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </Link>
+          <nav className="lgl-nav-links">
+            <Link href={lp(siteRoutes.services)}>Services</Link>
+            <Link href={lp(siteRoutes.work)}>Work</Link>
+            <Link href={lp(siteRoutes.about)}>About</Link>
+            <Link href={lp(siteRoutes.contact)}>Contact</Link>
+          </nav>
+          <Link href={maxwellHref} className="lgl-nav-cta lgl-btn lgl-btn-primary">
+            Start with Maxwell
           </Link>
         </div>
-      </div>
-    </SitePageFrame>
+      </header>
+
+      <div className="lgl-frame" aria-hidden />
+
+      <main className="lgl-wrap">
+        {/* hero */}
+        <section className="lgl-hero">
+          <div className="lgl-hero-inner">
+            <p className="lgl-kicker">Legal</p>
+            <h1 className="lgl-display">Legal documents</h1>
+            <div className="lgl-lead">
+              <p>The policies and terms that govern how Noon works with you — and how we handle your data.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* document grid */}
+        <section className="lgl-section" style={{ paddingTop: 0 }}>
+          <div className="lgl-index-grid">
+            {legalDocs.map((doc) => {
+              const Icon = doc.icon;
+              return (
+                <Link key={doc.slug} href={lp(`/${doc.slug}`)} className="lgl-doc-card">
+                  <span className="lgl-doc-icon">
+                    <Icon size={18} strokeWidth={1.75} />
+                  </span>
+                  <span className="lgl-doc-title">{doc.title}</span>
+                  <span className="lgl-doc-desc">{doc.description}</span>
+                  <span className="lgl-doc-meta">
+                    <span className="lgl-doc-updated">Updated {doc.updated}</span>
+                    <ArrowRight className="lgl-doc-arrow" size={16} strokeWidth={1.75} />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* contact */}
+          <div className="lgl-contact">
+            <h2 className="lgl-h3">Questions about any of this?</h2>
+            <p className="lgl-contact-copy">
+              Write to us at{" "}
+              <a href="mailto:noon.message@gmail.com">noon.message@gmail.com</a> — Wilmington,
+              Delaware, United States.
+            </p>
+            <div className="lgl-contact-actions">
+              <Link href={lp(siteRoutes.contact)} className="lgl-btn lgl-btn-primary">
+                Contact Noon
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooterRd />
+    </div>
   );
 }

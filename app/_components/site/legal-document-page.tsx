@@ -1,7 +1,11 @@
-import { PageHero } from "@/app/_components/site/page-hero";
-import { PageSection } from "@/app/_components/site/page-section";
-import { SitePageFrame } from "@/app/_components/site/site-page-frame";
-import { getContactHref } from "@/lib/site-config";
+import Link from "next/link";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
+import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
+import { siteRoutes, getStartWithMaxwellHref, getContactHref } from "@/lib/site-config";
+import "./legal-rd.css";
+import "./site-footer-rd.css";
 
 export type LegalDocumentDetail = {
   label: string;
@@ -36,115 +40,126 @@ function toSectionId(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * LegalDocumentPage — REDESIGN (.lgl-rd). Renders every legal document
+ * (privacy-policy, terms-and-conditions, cookies-policy, legal-notice) from
+ * structured data. Chrome (nav, decorative frame, shared footer) mirrors the
+ * other redesigned pages; only the data-driven body differs per document.
+ */
 export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPageProps) {
   const lp = (href: string) => (href.startsWith("/") ? `/${locale}${href}` : href);
+  const maxwellHref = lp(getStartWithMaxwellHref());
+  const contactHref = lp(getContactHref("legal"));
 
   return (
-    <SitePageFrame>
-      <PageHero
-        eyebrow="Legal"
-        title={document.title}
-        description={
-          <span className="space-y-2">
-            {document.subtitle ? <span className="block">{document.subtitle}</span> : null}
-            <span className="block">{document.summary}</span>
-          </span>
-        }
-        primaryAction={{ label: "Contact Noon", href: lp(getContactHref("legal")) }}
-      />
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      {/* nav */}
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <Link href={lp(siteRoutes.home)} className="lgl-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </Link>
+          <nav className="lgl-nav-links">
+            <Link href={lp(siteRoutes.services)}>Services</Link>
+            <Link href={lp(siteRoutes.work)}>Work</Link>
+            <Link href={lp(siteRoutes.about)}>About</Link>
+            <Link href={lp(siteRoutes.contact)}>Contact</Link>
+          </nav>
+          <Link href={maxwellHref} className="lgl-nav-cta lgl-btn lgl-btn-primary">
+            Start with Maxwell
+          </Link>
+        </div>
+      </header>
 
-      <PageSection className="pt-0">
-        <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-            <div className="rounded-[10px] border border-border bg-card p-6">
-              <h2 className="mb-4 text-sm font-mono uppercase tracking-[0.16em] text-muted-foreground">
-                Document details
-              </h2>
-              <dl className="space-y-4">
-                {document.details.map((detail) => (
-                  <div key={`${detail.label}-${detail.value}`}>
-                    <dt className="text-xs font-mono uppercase tracking-[0.12em] text-muted-foreground">
-                      {detail.label}
-                    </dt>
-                    <dd className="mt-1 text-sm leading-relaxed text-foreground">
-                      {detail.href ? (
-                        <a className="underline-offset-4 hover:underline" href={detail.href}>
-                          {detail.value}
-                        </a>
-                      ) : (
-                        detail.value
-                      )}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+      <div className="lgl-frame" aria-hidden />
+
+      <main className="lgl-wrap">
+        {/* hero */}
+        <section className="lgl-hero">
+          <div className="lgl-hero-inner">
+            <p className="lgl-kicker">Legal</p>
+            <h1 className="lgl-display">{document.title}</h1>
+            <div className="lgl-lead">
+              {document.subtitle ? <p>{document.subtitle}</p> : null}
+              <p>{document.summary}</p>
             </div>
-
-            <div className="rounded-[10px] border border-border bg-card p-6">
-              <h2 className="mb-4 text-sm font-mono uppercase tracking-[0.16em] text-muted-foreground">
-                On this page
-              </h2>
-              <nav aria-label={`${document.title} sections`}>
-                <ul className="space-y-3 text-sm leading-relaxed">
-                  {document.sections.map((section) => (
-                    <li key={section.title}>
-                      <a
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                        href={`#${toSectionId(section.title)}`}
-                      >
-                        {section.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+            <div className="lgl-hero-actions">
+              <Link href={contactHref} className="lgl-btn lgl-btn-secondary">
+                Contact Noon
+              </Link>
             </div>
           </div>
+        </section>
 
-          <article className="rounded-[10px] border border-border bg-card p-6 lg:p-8">
-            {document.overview?.length ? (
-              <div className="mb-10 rounded-[10px] border border-border/70 bg-background p-5 lg:p-6">
-                <h2 className="mb-4 text-sm font-mono uppercase tracking-[0.16em] text-muted-foreground">
-                  Overview
-                </h2>
-                <div className="space-y-4">
-                  {document.overview.map((paragraph) => (
-                    <p key={paragraph} className="site-section-copy text-muted-foreground">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="space-y-10">
-              {document.sections.map((section) => (
-                <section id={toSectionId(section.title)} key={section.title} className="scroll-mt-32">
-                  <h2 className="site-section-title mb-4">{section.title}</h2>
-                  {section.paragraphs?.length ? (
-                    <div className="space-y-4">
-                      {section.paragraphs.map((paragraph) => (
-                        <p key={paragraph} className="site-section-copy text-muted-foreground">
-                          {paragraph}
-                        </p>
-                      ))}
+        {/* details sidebar + article */}
+        <section className="lgl-section" style={{ paddingTop: 0 }}>
+          <div className="lgl-doc-grid">
+            <aside className="lgl-aside">
+              <div className="lgl-card">
+                <p className="lgl-card-label">Document details</p>
+                <dl>
+                  {document.details.map((detail) => (
+                    <div className="lgl-detail" key={`${detail.label}-${detail.value}`}>
+                      <dt className="lgl-detail-dt">{detail.label}</dt>
+                      <dd className="lgl-detail-dd">
+                        {detail.href ? <a href={detail.href}>{detail.value}</a> : detail.value}
+                      </dd>
                     </div>
-                  ) : null}
-                  {section.bullets?.length ? (
-                    <ul className="site-section-copy mt-4 space-y-3 pl-5 text-muted-foreground">
-                      {section.bullets.map((bullet) => (
-                        <li key={bullet} className="list-disc">
-                          {bullet}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
+                  ))}
+                </dl>
+              </div>
+
+              <div className="lgl-card lgl-toc-card">
+                <p className="lgl-card-label">On this page</p>
+                <nav aria-label={`${document.title} sections`}>
+                  <ul className="lgl-toc">
+                    {document.sections.map((section) => (
+                      <li key={section.title}>
+                        <a href={`#${toSectionId(section.title)}`}>{section.title}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            </aside>
+
+            <article>
+              {document.overview?.length ? (
+                <div className="lgl-overview">
+                  <p className="lgl-card-label">Overview</p>
+                  <div className="lgl-prose">
+                    {document.overview.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {document.sections.map((section) => (
+                <section id={toSectionId(section.title)} key={section.title} className="lgl-sec">
+                  <h2 className="lgl-h2">{section.title}</h2>
+                  <div className="lgl-prose">
+                    {section.paragraphs?.length
+                      ? section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)
+                      : null}
+                    {section.bullets?.length ? (
+                      <ul>
+                        {section.bullets.map((bullet) => (
+                          <li key={bullet}>{bullet}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
                 </section>
               ))}
-            </div>
-          </article>
-        </div>
-      </PageSection>
-    </SitePageFrame>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooterRd />
+    </div>
   );
 }

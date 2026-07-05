@@ -7,6 +7,12 @@
       "runtimeArgs": ["run", "dev"],
       "autoPort": true,
       "port": 3211
+    },
+    {
+      "name": "mockups",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/static-mockup-server.mjs", "8420"],
+      "port": 8420
     }
   ]
 }
