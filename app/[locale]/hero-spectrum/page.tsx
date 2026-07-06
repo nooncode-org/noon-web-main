@@ -10,6 +10,9 @@ import { getAuthenticatedViewer } from "@/lib/auth/session";
  * so the owner can see the accents side-by-side without touching `/`. Delete
  * this route once the direction is decided (adopt → bake into the home, or drop).
  */
+// Internal compare page — keep out of the index (auditoría 2026-07 F5, MED).
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function HeroSpectrum() {
   const viewer = await getAuthenticatedViewer();
 

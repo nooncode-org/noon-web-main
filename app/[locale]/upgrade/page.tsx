@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   title: "Upgrade Your Website | Noon",
   description:
     "Get an AI-powered audit of your website and a fully upgraded version, then bring it to life with Noon.",
+  alternates: { canonical: "/en/upgrade" },
 };
 
 type Props = {

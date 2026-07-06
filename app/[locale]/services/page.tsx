@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import { SitePageFrame } from "@/app/_components/site/site-page-frame";
 import { ServicesContent } from "./services-content";
+
+export const metadata: Metadata = {
+  title: "Services | Noon",
+  description:
+    "Custom development, upgrades, engineering support, and business technology audits — four ways Noon builds and improves software.",
+  alternates: { canonical: "/en/services" },
+};
 
 // Service structured data — mirrors the four service summaries rendered by
 // ServicesContent (keep in sync with its `services` array). Provider stays a

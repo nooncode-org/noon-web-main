@@ -5,6 +5,7 @@ import { cookiesPolicyDocument } from "@/data/legal-documents";
 export const metadata: Metadata = {
   title: "Cookies Policy | Noon",
   description: cookiesPolicyDocument.summary,
+  alternates: { canonical: "/en/cookies-policy" },
 };
 
 type CookiesPolicyPageProps = {

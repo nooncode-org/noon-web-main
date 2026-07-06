@@ -38,6 +38,7 @@ export async function generateMetadata({ params }: TemplateDetailPageProps): Pro
   return {
     title: `${template.name} | Noon Templates`,
     description: template.summary,
+    alternates: { canonical: `/en/templates/${template.slug}` },
   };
 }
 

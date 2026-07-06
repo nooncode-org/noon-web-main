@@ -5,6 +5,7 @@ import { legalNoticeDocument } from "@/data/legal-documents";
 export const metadata: Metadata = {
   title: "Legal Notice | Noon",
   description: legalNoticeDocument.summary,
+  alternates: { canonical: "/en/legal-notice" },
 };
 
 type LegalNoticePageProps = {

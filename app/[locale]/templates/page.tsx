@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Templates | Noon",
   description:
     "Starting points for real software builds — each template is a pre-defined scope for a common software type, adapted to your business.",
+  alternates: { canonical: "/en/templates" },
 };
 
 export default function TemplatesPage() {

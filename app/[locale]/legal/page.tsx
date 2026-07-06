@@ -12,6 +12,7 @@ import "@/app/_components/site/site-footer-rd.css";
 export const metadata: Metadata = {
   title: "Legal | Noon",
   description: "Legal documents, policies, and compliance information.",
+  alternates: { canonical: "/en/legal" },
 };
 
 const legalDocs = [

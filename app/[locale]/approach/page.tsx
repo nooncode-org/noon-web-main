@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "The Noon approach | Noon",
   description:
     "The practices every Noon build runs on: scope before execution, AI as leverage, human review on every change, and code you own — delivered in increments.",
+  alternates: { canonical: "/en/approach" },
 };
 
 // /approach — the editorial manifesto page (Linear /method analog, audit P2):
