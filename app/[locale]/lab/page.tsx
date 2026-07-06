@@ -13,7 +13,11 @@ const schibsted = Schibsted_Grotesk({
   display: "swap",
 });
 
-export const metadata = { title: "Noon — Design System Lab" };
+// Internal design-tool page — keep out of the index (auditoría 2026-07 F5, MED).
+export const metadata = {
+  title: "Noon — Design System Lab",
+  robots: { index: false, follow: false },
+};
 
 export default function LabPage() {
   return (

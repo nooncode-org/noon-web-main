@@ -5,6 +5,7 @@ import { termsAndConditionsDocument } from "@/data/legal-documents";
 export const metadata: Metadata = {
   title: "Terms and Conditions | Noon",
   description: termsAndConditionsDocument.summary,
+  alternates: { canonical: "/en/terms-and-conditions" },
 };
 
 type TermsAndConditionsPageProps = {

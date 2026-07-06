@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Work | Noon",
   description:
     "Real software Noon has shipped — internal platforms, product rebuilds, AI integrations and audits, across e-commerce, SaaS, healthcare, fintech and more. Every build human-reviewed.",
+  alternates: { canonical: "/en/work" },
 };
 
 const STATS = [

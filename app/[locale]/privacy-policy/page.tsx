@@ -5,6 +5,7 @@ import { privacyPolicyDocument } from "@/data/legal-documents";
 export const metadata: Metadata = {
   title: "Privacy Policy | Noon",
   description: privacyPolicyDocument.summary,
+  alternates: { canonical: "/en/privacy-policy" },
 };
 
 type PrivacyPolicyPageProps = {

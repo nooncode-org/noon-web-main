@@ -9,13 +9,17 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+// Owner-only session view (redirects to signin) — never index (auditoría 2026-07 F5, LOW).
+const NOINDEX = { index: false, follow: false } as const;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const session = await getSessionWithDetails(id);
-  if (!session) return { title: "Upgrade Your Website · Noon" };
+  if (!session) return { title: "Upgrade Your Website · Noon", robots: NOINDEX };
 
   return {
     title: `Upgrade ${session.websiteUrlRaw} · Noon`,
+    robots: NOINDEX,
   };
 }
 

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Contact | Noon",
   description:
     "Tell us what you're working on — a person reads every request. Project work, engineering support, a question, or a partnership. We usually respond within 1-2 business days.",
+  alternates: { canonical: "/en/contact" },
 };
 
 const TIMELINE = [

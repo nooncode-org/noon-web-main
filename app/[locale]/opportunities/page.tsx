@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "Opportunities | Noon",
   description:
     "Four ways to be part of the Noon ecosystem — invest, sell, build, or partner. One contact route for every path.",
+  alternates: { canonical: "/en/opportunities" },
 };
 
 type Props = { params: Promise<{ locale: string }> };

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "About | Noon",
   description:
     "A technology development company built around real delivery. We define exactly what to build, build it, and deliver it in code you own.",
+  alternates: { canonical: "/en/about" },
 };
 
 export default function AboutPage() {
