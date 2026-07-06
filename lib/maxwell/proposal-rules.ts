@@ -65,6 +65,13 @@ export type ComplexityTier = keyof typeof COMPLEXITY_TIERS;
 //
 // activation -> fee unico para arrancar el proyecto
 // monthly    -> cuota mensual de membresia
+//
+// CROSS-REPO TWIN: esta tabla es la misma verdad comercial que
+// App-nooncode lib/maxwell/pricing.ts (ACTIVATION/MEMBERSHIP). Ambos repos la
+// fijan contra el snapshot canonico compartido lib/maxwell/pricing-table.v1.json
+// (tests/maxwell/pricing-parity.test.ts aqui; tests/server/maxwell/
+// pricing-parity.test.ts en la App). Cambiar un precio = actualizar el JSON en
+// AMBOS repos + ambas tablas en el mismo cambio cross-repo.
 // ============================================================================
 
 export const PRICING_TABLE: Record<

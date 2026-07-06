@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "currency": "USD",
+  "twins": [
+    "App-nooncode/lib/maxwell/pricing-table.v1.json",
+    "noon-web-main/lib/maxwell/pricing-table.v1.json"
+  ],
+  "note": "Cross-repo canonical pricing snapshot (auditoria 2026-07 F2-05/F7-01). App lib/maxwell/pricing.ts and Web lib/maxwell/proposal-rules.ts must both match this file — enforced by a pricing-parity test in EACH repo. To change pricing: update this file in BOTH repos (byte-identical) plus each repo's local table, in the same cross-repo change. A green parity test with a stale twin is the failure mode this file exists to make visible: diff the twins when in doubt.",
+  "table": {
+    "landing": {
+      "low": { "activation": 49, "monthly": 25 },
+      "medium": { "activation": 79, "monthly": 32 },
+      "high": { "activation": 129, "monthly": 49 }
+    },
+    "ecommerce": {
+      "low": { "activation": 79, "monthly": 39 },
+      "medium": { "activation": 129, "monthly": 55 },
+      "high": { "activation": 199, "monthly": 79 }
+    },
+    "webapp": {
+      "low": { "activation": 99, "monthly": 49 },
+      "medium": { "activation": 179, "monthly": 69 },
+      "high": { "activation": 279, "monthly": 109 }
+    },
+    "mobile": {
+      "low": { "activation": 129, "monthly": 49 },
+      "medium": { "activation": 199, "monthly": 69 },
+      "high": { "activation": 299, "monthly": 109 }
+    },
+    "saas_ai": {
+      "low": { "activation": 129, "monthly": 69 },
+      "medium": { "activation": 229, "monthly": 99 },
+      "high": { "activation": 349, "monthly": 149 }
+    }
+  }
+}
