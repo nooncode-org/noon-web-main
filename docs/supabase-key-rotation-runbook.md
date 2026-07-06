@@ -1,10 +1,21 @@
 # Supabase key rotation runbook
 
+> **✅ EXECUTED 2026-07-06** — DB password reset + JWT secret rotated
+> (anon + service_role) + Vercel envs updated + redeploy + smokes green.
+> The leaked credentials are dead. This runbook stays as the procedure
+> for any future rotation.
+>
+> Execution note for next time: the generated DB password contained a
+> character that broke `decodeURIComponent` in postgres.js
+> (`URIError: URI malformed` at build). Use an ALPHANUMERIC-ONLY
+> password (32+ chars) to avoid the URL-encoding class entirely.
+
 **Deadline:** 2026-07-22 (hard — earlier credentials were exposed in
 a since-redacted history; ops postponed rotation to this date when the
 issue was first triaged).
 
-**Last updated:** 2026-05-19 (sesión cierre FASE 2)
+**Last updated:** 2026-07-06 (pre-rotation review — SEC-H4, auditoría 2026-07: scope
+corrected; `SUPABASE_SERVICE_ROLE_KEY` is now IN scope — see Step 1 warning)
 
 **Owners:** repo owner + ops (rotation is procedural, not automated).
 
@@ -36,8 +47,9 @@ top-to-bottom; do not skip steps.
 |---|---|---|
 | `DATABASE_URL` | `lib/server/db.ts` (postgres.js client) | Server-side reads/writes. Most-used. |
 | `POSTGRES_URL` | Same — fallback alias used by Supabase's own pooler URL convention | Server-side. Same credential as DATABASE_URL in our setup. |
-| `SUPABASE_URL` | `scripts/manual/test-rest.js` (and any future Supabase JS client) | REST surface. Currently only one consumer (a one-off manual smoke script). |
-| `SUPABASE_ANON_KEY` | Same | Public-by-design key. Rotating is still good hygiene because the URL itself is gated by it. |
+| `SUPABASE_URL` | `lib/maxwell/attachment-storage.ts`, `scripts/gdpr-hard-delete.mjs`, `scripts/manual/test-rest.js` | REST + Storage surface. |
+| `SUPABASE_ANON_KEY` | `scripts/manual/test-rest.js` | Public-by-design key. Rotating is still good hygiene because the URL itself is gated by it. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `lib/maxwell/attachment-storage.ts` (v3 attachments — PROD path), `scripts/gdpr-hard-delete.mjs` | **Added to scope 2026-07-06.** The 2026-05-19 revision said "we do not use the service role key" — stale since the v3 attachments slice. If this key is not updated in Vercel after rotation, attachment upload/read and GDPR blob deletion break. |
 
 **NOT in scope (separate rotation):** OpenAI, V0, Resend, Stripe,
 Sentry. These have their own rotation cadence + are not affected by
@@ -93,9 +105,18 @@ a degraded state hides which failures are rotation-caused.
 7. Click "Generate new" next to `anon` public key. Confirm.
 8. **Copy the new `anon` key immediately** — same one-shot
    visibility.
-9. (Service role key) we do not currently use the service role key
-   in this codebase. If Supabase shows it, leave it alone unless ops
-   has a separate reason to rotate.
+9. **Service role key — DO NOT skip (corrected 2026-07-06).** The
+   codebase now uses `SUPABASE_SERVICE_ROLE_KEY` (v3 attachments +
+   GDPR blob deletion). Two cases depending on what the dashboard
+   shows:
+   - **Legacy JWT keys** (`anon` / `service_role` shown as long JWTs
+     under "Project API Keys"): regenerating them resets the project
+     **JWT secret**, which invalidates BOTH keys at once — you cannot
+     rotate `anon` and "leave service role alone". Copy BOTH new keys.
+   - **New API keys** (`sb_publishable_...` / `sb_secret_...`): they
+     rotate independently — rotate both anyway (same leak window).
+   Either way: **copy the new service-role/secret key** and update it
+   in Vercel in Step 2.
 
 ### Step 2 — Update Vercel env vars
 
@@ -114,6 +135,12 @@ Update in this order to minimise the inconsistent-state window:
 3. `SUPABASE_URL` (only if it changed — usually only the password,
    not the URL host, but verify)
 4. `SUPABASE_ANON_KEY`
+5. `SUPABASE_SERVICE_ROLE_KEY` (added 2026-07-06 — attachments + GDPR
+   break if stale)
+
+Gotcha (verified 2026-06): set values via the **Dashboard UI**, not
+`vercel env add` with piped stdin — piped stdin can store an empty
+string, and Sensitive vars read back empty.
 
 ### Step 3 — Force a redeploy
 
@@ -144,6 +171,12 @@ node scripts/check-migrations.mjs --strict
 npm run smoke:gpt-5.5
 # Expected: "OK — all checks passed."
 ```
+
+4. **Service-role surface smoke (added 2026-07-06):** open a client
+   workspace conversation with an existing attachment and confirm the
+   attachment still loads (exercises Supabase Storage via
+   `SUPABASE_SERVICE_ROLE_KEY`). A broken/stale key surfaces here, not
+   in the DB health check.
 
 ### Step 5 — Update local + teammate envs
 
