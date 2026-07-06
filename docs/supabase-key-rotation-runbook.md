@@ -1,5 +1,15 @@
 # Supabase key rotation runbook
 
+> **✅ EXECUTED 2026-07-06** — DB password reset + JWT secret rotated
+> (anon + service_role) + Vercel envs updated + redeploy + smokes green.
+> The leaked credentials are dead. This runbook stays as the procedure
+> for any future rotation.
+>
+> Execution note for next time: the generated DB password contained a
+> character that broke `decodeURIComponent` in postgres.js
+> (`URIError: URI malformed` at build). Use an ALPHANUMERIC-ONLY
+> password (32+ chars) to avoid the URL-encoding class entirely.
+
 **Deadline:** 2026-07-22 (hard — earlier credentials were exposed in
 a since-redacted history; ops postponed rotation to this date when the
 issue was first triaged).

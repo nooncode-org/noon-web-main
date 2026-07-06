@@ -105,7 +105,7 @@ Orden importa: items con `→ desbloquea X` deben ir antes de X.
 
 ### 4.1-bis Antes del primer deploy público a producción (NO ANTES)
 
-- [ ] **Rotar credenciales Supabase** (service role + anon). Filtradas en `App-nooncode/.mcp.json` commit `f433223` (público) desde 2026-04-23. Ver `~/.claude/.../memory/project_nooncode_warnings.md`.
+- [x] **Rotar credenciales Supabase** (service role + anon). Filtradas en `App-nooncode/.mcp.json` commit `f433223` (público) desde 2026-04-23. **EJECUTADO 2026-07-06** (16 días antes del deadline 22-jul, cierra SEC-H4 de la auditoría 2026-07): password de DB reseteada + JWT secret rotado (anon + service_role nuevos) + Vercel actualizado (incl. `SUPABASE_SERVICE_ROLE_KEY`, ver runbook corregido) + redeploy + smoke `/api/health` healthy. Las credenciales filtradas quedaron inválidas.
 
   > **Decisión owner 2026-05-17:** rotación pospuesta hasta justo antes del primer deploy de producción público. Mientras el sitio no esté expuesto al mundo (FASE 1 internal-only por ADR-008), el riesgo es contenido al ámbito interno y compensado por: RLS de Supabase activo en todas las tablas, el `service_role` no es trivialmente descubrible si nadie explora el repo App, y rotación tardía evita coordinar cambio de env vars entre múltiples sandboxes durante desarrollo activo.
   >
@@ -245,7 +245,7 @@ Cambios:
 4. **Configura Sentry + UptimeRobot + Resend DNS** (sección 4.2) — pendiente.
 5. **Decide Bloques 11/12/13** (sección 5) — Bloque 11 + B22 ya cerrados; quedan B14 GDPR + B8 #2/#3.
 6. Coordina cross-repo (4.3) — rename completo de `NOON_APP_WEBHOOK_SECRET` → `NOON_WEBSITE_WEBHOOK_SECRET` en App.
-7. **Rotar credenciales Supabase** (sección 4.1-bis) — deadline 2026-07-22 o primer deploy público.
+7. ~~**Rotar credenciales Supabase**~~ ✅ — ejecutado 2026-07-06 (sección 4.1-bis).
 
 ---
 
