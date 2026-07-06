@@ -15,6 +15,7 @@
  */
 
 import type { PageType } from "./types";
+import { safeFetchPublicUrl } from "./safe-fetch";
 
 // ---------------------------------------------------------------------------
 // Guardrails (internal, not shown to user)
@@ -113,14 +114,16 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, {
+    // SSRF-guarded (SEC-H1): public-address validation on every hop, manual
+    // redirects. UnsafeUrlError rejects → fetchWithRetry treats it as a
+    // failed page, matching the previous best-effort behavior.
+    const res = await safeFetchPublicUrl(url, {
       signal: controller.signal,
       headers: {
         "User-Agent":
           "Mozilla/5.0 (compatible; NoonUpgradeBot/1.0; +https://nooncode.dev)",
         Accept: "text/html,application/xhtml+xml",
       },
-      redirect: "follow",
     });
     return res;
   } finally {
@@ -139,7 +142,9 @@ async function fetchWithRetry(url: string): Promise<string | null> {
 
       const html = await res.text();
       return html;
-    } catch {
+    } catch (err) {
+      // An unsafe URL stays unsafe — retrying it is pointless.
+      if (err instanceof Error && err.name === "UnsafeUrlError") return null;
       if (attempt < MAX_RETRIES - 1) {
         await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt)));
       }

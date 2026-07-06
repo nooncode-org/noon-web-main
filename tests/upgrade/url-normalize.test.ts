@@ -56,6 +56,12 @@ describe("isPrivateIp — IPv4 reserved ranges (SSRF defense)", () => {
     ["0.0.0.0", "this-network 0/8"],
     ["100.64.0.1", "CGNAT 100.64/10 low"],
     ["100.127.255.254", "CGNAT 100.64/10 high"],
+    ["192.0.0.1", "IETF 192.0.0.0/24"],
+    ["198.18.0.1", "benchmarking 198.18/15 low"],
+    ["198.19.255.254", "benchmarking 198.18/15 high"],
+    ["224.0.0.1", "multicast 224/4"],
+    ["240.0.0.1", "reserved 240/4"],
+    ["255.255.255.255", "broadcast"],
   ])("blocks %s (%s)", (ip) => {
     expect(isPrivateIp(ip)).toBe(true);
   });
@@ -71,6 +77,10 @@ describe("isPrivateIp — IPv4 public ranges (must NOT block)", () => {
     "100.63.255.254", // outside CGNAT
     "100.128.0.1", // outside CGNAT
     "192.167.1.1", // outside 192.168/16
+    "192.0.1.1", // outside 192.0.0/24
+    "198.17.255.254", // outside benchmarking
+    "198.20.0.1", // outside benchmarking
+    "223.255.255.254", // just below multicast
   ])("allows %s", (ip) => {
     expect(isPrivateIp(ip)).toBe(false);
   });
@@ -105,6 +115,8 @@ describe("isPrivateIp — IPv6 reserved ranges", () => {
     ["fe80::1", "link-local fe80::/10"],
     ["::ffff:127.0.0.1", "v4-mapped loopback"],
     ["::ffff:10.0.0.1", "v4-mapped private"],
+    ["64:ff9b::192.168.0.1", "NAT64 private"],
+    ["ff02::1", "multicast ff00::/8"],
   ])("blocks %s (%s)", (ip) => {
     expect(isPrivateIp(ip)).toBe(true);
   });
