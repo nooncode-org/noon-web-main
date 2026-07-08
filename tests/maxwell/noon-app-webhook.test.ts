@@ -29,6 +29,9 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   })),
   updateStudioSessionStatus: vi.fn(async () => undefined),
   appendProposalReviewEvent: vi.fn(async () => undefined),
+  // §7.6 idempotency ledger (fresh key by default; tests override for replays).
+  findReceivedProposalReviewDecision: vi.fn(async () => null),
+  recordReceivedProposalReviewDecision: vi.fn(async () => undefined),
 }));
 
 vi.mock("@/lib/maxwell/public-url", () => ({
@@ -92,6 +95,7 @@ function buildSignedRequest(
     omitSignature?: boolean;
     omitTimestamp?: boolean;
     bodyOverride?: string;
+    idempotencyKey?: string;
   } = {},
 ): Request {
   const bodyText = opts.bodyOverride ?? JSON.stringify(body);
@@ -106,6 +110,7 @@ function buildSignedRequest(
   const headers = new Headers({ "content-type": "application/json" });
   if (!opts.omitSignature) headers.set("x-noon-signature", signature);
   if (!opts.omitTimestamp) headers.set("x-noon-timestamp", String(timestamp));
+  if (opts.idempotencyKey) headers.set("x-noon-idempotency-key", opts.idempotencyKey);
 
   return new Request(ROUTE_URL, { method: "POST", headers, body: bodyText });
 }
@@ -682,5 +687,118 @@ describe("Noon App webhook — decline emails", () => {
 
     expect(res.status).toBe(200);
     expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
+  });
+});
+
+// ============================================================================
+// §7.6 idempotency-key dedupe (cross-repo-webhook-v1.md — receiver-side ledger)
+// ============================================================================
+
+describe("Noon App webhook — §7.6 idempotency-key dedupe", () => {
+  it("replays the recorded response body on a duplicate key WITHOUT touching state or emails", async () => {
+    const recorded = {
+      message: "Proposal approved by Noon App and published on website.",
+      decision: "approved",
+      public_url: "https://noon.test/en/maxwell/proposal/public-token-abc",
+    };
+    vi.mocked(repos.findReceivedProposalReviewDecision).mockResolvedValueOnce({
+      responseBody: recorded,
+    });
+
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { idempotencyKey: "proposal-1:approved" },
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(recorded);
+    // The handler NEVER ran: no lookups, no transitions, no emails.
+    expect(repos.getProposalRequest).not.toHaveBeenCalled();
+    expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
+    expect(sendProposalEmail).not.toHaveBeenCalled();
+    expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
+    expect(repos.recordReceivedProposalReviewDecision).not.toHaveBeenCalled();
+  });
+
+  it("records the response body under the key after a fresh successful processing", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { idempotencyKey: "proposal-1:approved" },
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(repos.findReceivedProposalReviewDecision).toHaveBeenCalledWith("proposal-1:approved");
+    expect(repos.recordReceivedProposalReviewDecision).toHaveBeenCalledTimes(1);
+    const recordArgs = vi.mocked(repos.recordReceivedProposalReviewDecision).mock.calls[0][0];
+    expect(recordArgs.idempotencyKey).toBe("proposal-1:approved");
+    expect(recordArgs.externalProposalId).toBe("proposal-1");
+    expect(recordArgs.decision).toBe("approved");
+    // The recorded body is the actual response body (replayable verbatim).
+    expect(recordArgs.responseBody).toEqual(await res.json());
+  });
+
+  it("does NOT record a non-2xx outcome (the App must stay able to retry / dead-letter)", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(null); // → 404
+
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { idempotencyKey: "proposal-1:approved" },
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(404);
+    expect(repos.recordReceivedProposalReviewDecision).not.toHaveBeenCalled();
+  });
+
+  it("a key that does not match the signed payload is ignored (processed without dedupe)", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { idempotencyKey: "OTHER-proposal:approved" },
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    // Never consulted nor recorded — the mismatched key can't poison the ledger.
+    expect(repos.findReceivedProposalReviewDecision).not.toHaveBeenCalled();
+    expect(repos.recordReceivedProposalReviewDecision).not.toHaveBeenCalled();
+    // But the decision itself processed normally.
+    expect(repos.updateProposalRequestStatus).toHaveBeenCalled();
+  });
+
+  it("a missing header (pre-G23 sender) processes exactly as before, without dedupe", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({ ...basePayload, decision: "approved" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(repos.findReceivedProposalReviewDecision).not.toHaveBeenCalled();
+    expect(repos.recordReceivedProposalReviewDecision).not.toHaveBeenCalled();
+  });
+
+  it("a failed ledger record is swallowed — the applied decision still returns its 200 (best-effort)", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.recordReceivedProposalReviewDecision).mockRejectedValueOnce(
+      new Error("db down"),
+    );
+
+    const req = buildSignedRequest(
+      { ...basePayload, decision: "approved" },
+      { idempotencyKey: "proposal-1:approved" },
+    );
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).decision).toBe("approved");
   });
 });

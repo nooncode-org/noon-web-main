@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import type { z } from "zod";
 import {
   appendProposalReviewEvent,
+  findReceivedProposalReviewDecision,
   getProposalRequest,
   getStudioSession,
+  recordReceivedProposalReviewDecision,
   updateProposalDraftContent,
   updateProposalRequestStatus,
   updateStudioSessionStatus,
@@ -50,10 +53,95 @@ async function updateSessionStatusIfNeeded(
   );
 }
 
+const IDEMPOTENCY_HEADER = "x-noon-idempotency-key";
+
+type ReviewDecisionPayload = z.infer<typeof noonAppProposalReviewDecisionPayloadSchema>;
+
+/**
+ * §7.6 receiver-side dedupe: resolve the delivery's idempotency key. The App
+ * emits `X-Noon-Idempotency-Key: <external_proposal_id>:<decision>` on EVERY
+ * POST (first attempt, inline/cron retries, admin replays). A missing header
+ * (pre-G23 sender) processes without dedupe; a key that does not match the
+ * HMAC-authenticated payload is ignored with a warn — the signed payload is
+ * the truth, the header is only a dedupe handle (never let a mismatched key
+ * poison another proposal's ledger row).
+ */
+function resolveIdempotencyKey(
+  request: Request,
+  payload: ReviewDecisionPayload,
+): string | null {
+  const key = request.headers.get(IDEMPOTENCY_HEADER)?.trim();
+  if (!key) return null;
+
+  const expected = `${payload.external_proposal_id}:${payload.decision}`;
+  if (key !== expected) {
+    log.warn(
+      "integrations.noon-app.proposal-review-decision",
+      "Idempotency key does not match the signed payload; processing without dedupe.",
+      { key, expected },
+    );
+    return null;
+  }
+  return key;
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await readSignedNoonAppJson(request, noonAppProposalReviewDecisionPayloadSchema);
 
+    // §7.6 dedupe — AFTER HMAC verification (an unsigned request can never
+    // probe the ledger). A recorded key replays the first successful response
+    // body verbatim: no re-emitted emails, no re-transitioned state.
+    const idempotencyKey = resolveIdempotencyKey(request, payload);
+    if (idempotencyKey) {
+      const prior = await findReceivedProposalReviewDecision(idempotencyKey);
+      if (prior) {
+        return NextResponse.json(prior.responseBody, { status: 200 });
+      }
+    }
+
+    const response = await applyReviewDecision(payload, request);
+
+    if (idempotencyKey && response.ok) {
+      // Best-effort: the decision is already applied; a failed record only
+      // means a future replay re-runs the (state-guarded) handler.
+      try {
+        await recordReceivedProposalReviewDecision({
+          idempotencyKey,
+          externalProposalId: payload.external_proposal_id,
+          decision: payload.decision,
+          responseBody: await response.clone().json(),
+        });
+      } catch (error) {
+        log.error("integrations.noon-app.proposal-review-decision", error, {
+          phase: "idempotency_record",
+          idempotencyKey,
+        });
+      }
+    }
+
+    return response;
+  } catch (error) {
+    if (error instanceof NoonAppIntegrationError) {
+      return NextResponse.json({ message: error.message }, { status: error.status });
+    }
+
+    log.error("integrations.noon-app.proposal-review-decision", error);
+    return NextResponse.json(
+      { message: "Noon App review decision webhook failed." },
+      { status: 500 },
+    );
+  }
+}
+
+// The pre-§7.6 POST body, verbatim (the try/catch stays: a processing error —
+// including the 409 from updateSessionStatusIfNeeded — resolves to its own
+// response here, and a non-2xx is simply never recorded by the caller).
+async function applyReviewDecision(
+  payload: ReviewDecisionPayload,
+  request: Request,
+): Promise<NextResponse> {
+  try {
     if (payload.external_source !== "noon_website") {
       return NextResponse.json({ message: "Unsupported external source." }, { status: 400 });
     }

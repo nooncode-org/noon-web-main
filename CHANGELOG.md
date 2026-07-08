@@ -13,6 +13,35 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-07-08] — §7.6 idempotency-key dedupe on the proposal-review-decision receiver
+
+> **Summary:** Closes the last MEDIUM cross-repo security debt (App audit
+> 2026-07, recorded since G23/ADR-027): the App retries failed
+> `proposal_review_decision` deliveries (inline, cron `*/5`, admin replays), so
+> the same logical decision can reach this receiver more than once. The
+> receiver now implements the §7.6 contract
+> (`App-nooncode/docs/integrations/cross-repo-webhook-v1.md`): it reads
+> `X-Noon-Idempotency-Key: <external_proposal_id>:<decision>` on every POST
+> (after HMAC verification), replays the FIRST successful response body
+> verbatim on a duplicate (no re-emitted emails, no re-transitioned state), and
+> records fresh keys in the new `proposal_review_decision_received` ledger
+> (migration `20260708_031`, UNIQUE on the key, RLS deny-by-default). Only 2xx
+> outcomes are recorded; a mismatched key is ignored (the signed payload is the
+> truth); a missing header (pre-G23 sender) processes exactly as before.
+> **Note:** the F-1 HMAC timestamp fix was ALREADY in place here since
+> 2026-05-18 — the App's risk register was stale on that point.
+
+### Added
+- `supabase/migrations/20260708_031_proposal_review_decision_received.sql` —
+  receiver-side idempotency ledger (§7.6). **Pending apply in prod.**
+- `findReceivedProposalReviewDecision` / `recordReceivedProposalReviewDecision`
+  in `lib/maxwell/repositories.ts`.
+- §7.6 dedupe layer in
+  `app/api/integrations/noon-app/proposal-review-decision/route.ts`
+  (pre-§7.6 handler preserved verbatim as `applyReviewDecision`).
+- 6 new receiver tests (replay-without-side-effects, record-on-success,
+  no-record-on-4xx, mismatched-key, missing-header, best-effort record failure).
+
 ## [2026-06-06] — Capture + forward V0 prototype source code as `generated_html`
 
 > **Summary:** Closes the cross-repo §5 gap (handoff

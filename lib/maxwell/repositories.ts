@@ -2468,3 +2468,47 @@ export async function getAiMvpMilestonesByProjectId(
   `;
   return rows.map(mapAiMvpMilestone);
 }
+
+// ---------------------------------------------------------------------------
+// Proposal-review-decision receiver idempotency ledger (contract §7.6,
+// migration 20260708_031). The App emits `X-Noon-Idempotency-Key:
+// <external_proposal_id>:<decision>` on EVERY delivery (first attempt, retries,
+// admin replays); a duplicate key must replay the first successful response
+// body verbatim without re-running side effects (emails, state transitions).
+// ---------------------------------------------------------------------------
+
+/** The stored first-success response for an idempotency key; null when fresh. */
+export async function findReceivedProposalReviewDecision(
+  idempotencyKey: string,
+): Promise<{ responseBody: unknown } | null> {
+  const sql = getDb();
+  const rows = await sql<{ response_body: unknown }[]>`
+    SELECT response_body FROM proposal_review_decision_received
+    WHERE idempotency_key = ${idempotencyKey}
+    LIMIT 1
+  `;
+  return rows.length > 0 ? { responseBody: rows[0].response_body } : null;
+}
+
+/**
+ * Record a successful (2xx) processing outcome under its idempotency key.
+ * ON CONFLICT DO NOTHING: if a concurrent delivery recorded first, the earlier
+ * body stays authoritative (both processed the same logical decision; the
+ * handler's state-based early-returns make the loser's side effects no-ops).
+ */
+export async function recordReceivedProposalReviewDecision(input: {
+  idempotencyKey: string;
+  externalProposalId: string;
+  decision: string;
+  responseBody: unknown;
+}): Promise<void> {
+  const sql = getDb();
+  await sql`
+    INSERT INTO proposal_review_decision_received
+      (id, idempotency_key, external_proposal_id, decision, response_body, created_at)
+    VALUES
+      (${crypto.randomUUID()}, ${input.idempotencyKey}, ${input.externalProposalId},
+       ${input.decision}, ${JSON.stringify(input.responseBody ?? null)}::jsonb, ${new Date().toISOString()})
+    ON CONFLICT (idempotency_key) DO NOTHING
+  `;
+}
