@@ -162,19 +162,28 @@ describe("resolveClientIdentity", () => {
     return new Request("http://localhost/", { headers });
   }
 
-  it("returns first hop of x-forwarded-for when present", () => {
+  // E2-SEC (MED-1, auditoría 2026-07): orden plataforma-primero. Un
+  // x-forwarded-for suministrado por el cliente NUNCA debe ganarle a los
+  // headers que fija el edge de Vercel — rotarlo bypasearía el anti-scanner.
+  it("prefers platform-set x-real-ip over a client-supplied x-forwarded-for", () => {
+    expect(
+      resolveClientIdentity(
+        req({ "x-forwarded-for": "6.6.6.6, 10.0.0.1", "x-real-ip": "198.51.100.7" }),
+      ),
+    ).toBe("198.51.100.7");
+  });
+
+  it("prefers x-vercel-forwarded-for over x-forwarded-for when x-real-ip is missing", () => {
+    expect(
+      resolveClientIdentity(
+        req({ "x-forwarded-for": "6.6.6.6", "x-vercel-forwarded-for": "192.0.2.1" }),
+      ),
+    ).toBe("192.0.2.1");
+  });
+
+  it("uses first hop of x-forwarded-for only as a last resort", () => {
     expect(resolveClientIdentity(req({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" }))).toBe(
       "203.0.113.5",
-    );
-  });
-
-  it("falls through to x-real-ip when x-forwarded-for is missing", () => {
-    expect(resolveClientIdentity(req({ "x-real-ip": "198.51.100.7" }))).toBe("198.51.100.7");
-  });
-
-  it("falls through to x-vercel-forwarded-for when others are missing", () => {
-    expect(resolveClientIdentity(req({ "x-vercel-forwarded-for": "192.0.2.1" }))).toBe(
-      "192.0.2.1",
     );
   });
 

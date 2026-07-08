@@ -47,17 +47,20 @@ type Props = {
  * `next/headers` because RSCs do not receive a `Request` object directly.
  */
 async function resolveRscClientIdentity(): Promise<string> {
+  // E2-SEC (MED-1): plataforma-primero — x-real-ip/x-vercel-forwarded-for los
+  // fija el edge de Vercel; x-forwarded-for puede traer un primer hop
+  // suministrado por el cliente (rotarlo bypasearía el rate-limit).
   const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
   const real = h.get("x-real-ip");
   if (real?.trim()) return real.trim();
   const vercel = h.get("x-vercel-forwarded-for");
   if (vercel) {
     const first = vercel.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const fwd = h.get("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
     if (first) return first;
   }
   return "anonymous";
@@ -170,7 +173,10 @@ export default async function PublicProposalPage({ params, searchParams }: Props
             <p>
               Valid through: {proposal.expiresAt ? formatDate(proposal.expiresAt) : "15 days from first open"}
             </p>
-            {proposal.deliveryRecipient && <p>Recipient: {proposal.deliveryRecipient}</p>}
+            {/* E2-SEC LOW-1: en la vista expirada no se re-expone el recipient. */}
+            {!effectivelyExpired && proposal.deliveryRecipient && (
+              <p>Recipient: {proposal.deliveryRecipient}</p>
+            )}
           </div>
           {effectivelyExpired && (
             <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">

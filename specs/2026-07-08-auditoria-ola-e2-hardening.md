@@ -125,6 +125,31 @@ throwea, correcto); staff review views (contexto staff, sin engaño).
 7. Protocolo done-notification escrito en ambos contextos core.
 8. Suite verde + gate seguridad + validator + contexto core Web actualizado.
 
+## Gate de seguridad (2026-07-08, sobre el diff de la rama)
+
+Veredicto: **0 CRITICAL / 0 HIGH** — no bloquea COMPLETE. Disposición:
+
+- **MED-1 (CORREGIDO en la rama):** la resolución de IP confiaba primero en
+  `x-forwarded-for` (primer hop spoofeable en Vercel) → rotar el header
+  estrenaba identidad en cada request (bypass del anti-scanner + writes sin
+  bound en `rate_limit_counter`). Fix: orden plataforma-primero
+  (`x-real-ip` → `x-vercel-forwarded-for` → XFF último recurso) en
+  `lib/server/rate-limit.ts` y los dos `resolveRscClientIdentity` de las
+  páginas públicas; tests actualizados. El cap adicional de identidades
+  distintas por ventana se DESCARTA: con identidad platform-trusted, rotar
+  identidades exige IPs reales (botnet), el insert es barato frente a las
+  queries que la página ya hace, y el reaper barre cada hora.
+- **LOW-1 (CORREGIDO):** la vista expirada ya no re-expone `deliveryRecipient`.
+- **LOW-2 (residual ACEPTADO):** el cap SEC-M8 es TOCTOU-racy bajo POSTs
+  concurrentes del owner autenticado (precisión por sesión, no el riesgo core);
+  el drain real del budget global sigue cerrado por `assertBudgetAvailable`
+  (advisory lock + hard-stop $200/mes). Upgrade path si se quiere precisión:
+  check-and-consume atómico (`UPDATE ... WHERE corrections_used < 2 RETURNING`).
+- **INFO-1:** la corrección del re-forward del reaper depende del dedupe
+  App-side por external id (contrato documentado, verificado presente).
+- **INFO-2:** comparación de Bearer no constant-time — mismo patrón que
+  review-sla, impráctico sobre HTTPS con secreto de alta entropía; sin cambio.
+
 ## Lifecycle
 
 Estado: ACTIVA (2026-07-08). Cierra la parte Web de la Ola E (backlog auditoría

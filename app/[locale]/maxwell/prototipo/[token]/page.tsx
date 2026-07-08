@@ -46,17 +46,20 @@ type Props = {
 };
 
 async function resolveRscClientIdentity(): Promise<string> {
+  // E2-SEC (MED-1): plataforma-primero — x-real-ip/x-vercel-forwarded-for los
+  // fija el edge de Vercel; x-forwarded-for puede traer un primer hop
+  // suministrado por el cliente (rotarlo bypasearía el rate-limit).
   const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
   const real = h.get("x-real-ip");
   if (real?.trim()) return real.trim();
   const vercel = h.get("x-vercel-forwarded-for");
   if (vercel) {
     const first = vercel.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const fwd = h.get("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
     if (first) return first;
   }
   return "anonymous";
