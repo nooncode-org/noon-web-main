@@ -217,16 +217,18 @@ html.dark .opp-rd {
 
 /* ── Areas — hairline 2×2 cell grid ───────────────────────────────────────── */
 .opp-areas-grid {
-  display: grid; grid-template-columns: 1fr; gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border); border-radius: var(--radius-md);
+  display: grid; grid-template-columns: 1fr; gap: 0;
+  border-top: 1px solid var(--border); border-left: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 @media (min-width: 700px) { .opp-areas-grid { grid-template-columns: 1fr 1fr; } }
 /* whole card is the link (big target); the explicit CTA row at the bottom is
    the visible affordance. */
 .opp-area {
-  background: var(--bg-base); padding: clamp(24px, 3vw, 32px);
+  background: var(--bg-base);
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: clamp(24px, 3vw, 32px);
   display: flex; flex-direction: column; transition: background .2s;
   text-decoration: none; color: inherit;
 }

@@ -17,7 +17,7 @@
   --border: #e6e8f2;
   --hover: #eef0ff;
   --text-primary: #111827;
-  --text-secondary: #737373;
+  --text-secondary: #6b7280;
   --text-muted: #9ca3af;
   --brand: #0056fd;
   --success: #00c853;
@@ -138,7 +138,7 @@ html.dark .abt-rd {
   text-decoration: none; line-height: 1; font-family: inherit;
 }
 .abt-btn-sm { padding: 8px 16px; font-size: 13px; }
-.abt-btn-primary { background: var(--brand); color: #ffffff; }
+.abt-btn-primary { background: var(--text-primary); color: var(--bg-base); }
 .abt-btn-primary:hover { transform: translateY(-1px); }
 .abt-btn-secondary { background: transparent; color: var(--text-primary); border-color: var(--border); }
 .abt-btn-secondary:hover { background: var(--hover); }
@@ -211,12 +211,21 @@ html.dark .abt-rd {
 .abt-why-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--border);
+  gap: 0;
 }
 @media (min-width: 1024px) { .abt-why-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
 .abt-why-card { background: var(--bg-base); padding: 32px 28px; position: relative; transition: background .2s; }
+/* internal-only hairline dividers as borders (crisp 1px physical, no outer frame).
+   6 cards: 2-col → 3 rows; ≥1024 → 3-col → 2 rows. */
+.abt-why-card:nth-child(odd) { border-right: 1px solid var(--border); }
+.abt-why-card:nth-child(-n + 4) { border-bottom: 1px solid var(--border); }
+@media (min-width: 1024px) {
+  .abt-why-card:nth-child(odd) { border-right: 0; }
+  .abt-why-card:not(:nth-child(3n)) { border-right: 1px solid var(--border); }
+  .abt-why-card:nth-child(-n + 4) { border-bottom: 0; }
+  .abt-why-card:nth-child(-n + 3) { border-bottom: 1px solid var(--border); }
+}
 .abt-why-card:hover { background: var(--bg-secondary); }
 .abt-why-idx {
   position: absolute; top: 30px; right: 26px;
@@ -249,10 +258,12 @@ html.dark .abt-rd {
 .abt-build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--border);
+  gap: 0;
 }
 .abt-build-card { background: var(--bg-base); display: flex; flex-direction: column; }
+/* internal-only dividers (crisp 1px physical); 4 cards in 2 cols → 2 rows */
+.abt-build-card:nth-child(odd) { border-right: 1px solid var(--border); }
+.abt-build-card:nth-child(-n + 2) { border-bottom: 1px solid var(--border); }
 .abt-build-visual {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);

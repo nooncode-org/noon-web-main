@@ -19,7 +19,7 @@
   --border: #e6e8f2;
   --hover: #eef0ff;
   --text-primary: #111827;
-  --text-secondary: #737373;
+  --text-secondary: #6b7280;
   --text-muted: #9ca3af;
   --brand: #0056fd;
   --success: #00c853;
@@ -129,7 +129,7 @@ html.dark .tpl-rd {
   text-decoration: none; line-height: 1;
 }
 .tpl-btn-sm { padding: 8px 16px; font-size: 13px; }
-.tpl-btn-primary { background: var(--brand); color: #ffffff; }
+.tpl-btn-primary { background: var(--text-primary); color: var(--bg-base); }
 .tpl-btn-primary:hover { transform: translateY(-1px); }
 .tpl-btn-secondary {
   background: transparent; color: var(--text-primary);
@@ -399,7 +399,7 @@ html.dark .tpl-rd {
 /* ── CTA block ───────────────────────────────────────────────────────────── */
 .tpl-cta {
   border-radius: var(--radius-md);
-  background: #131313;
+  background: var(--bg-secondary);
   padding: clamp(36px, 5vw, 56px);
   text-align: center;
 }

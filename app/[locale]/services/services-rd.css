@@ -1,0 +1,374 @@
+/* ============================================================================
+   Services page — REDESIGN. Scoped under .svc-rd. Same locked spine as
+   work/about/contact/opportunities/security: Geist, mono-forward, flat, sharp
+   frame, hairline grids, neutral-first (blue only where it carries meaning —
+   the human-review wedge + the Noon column in the comparison). Dark = BLACK.
+   ============================================================================ */
+
+.svc-rd {
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* light (default) */
+  --bg-base: #ffffff;
+  --bg-secondary: #f7f8fc;
+  --surface: #f1f2f7;
+  --border: #e6e8f2;
+  --hover: #eef0ff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --brand: #0056fd;
+  --brand-hover: #3378fd;
+  --brand-tint: rgba(0, 86, 253, 0.06);
+
+  font-family: var(--sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .svc-rd {
+  --bg-base: #000000;
+  --bg-secondary: #0c0c0c;
+  --surface: #161616;
+  --border: #262626;
+  --hover: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #6b6b6b;
+  --brand-tint: rgba(0, 86, 253, 0.09);
+}
+
+/* ── layout ─────────────────────────────────────────────────────────────── */
+.svc-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
+@media (min-width: 768px) { .svc-wrap { padding: 0 32px; } }
+.svc-section { padding: clamp(64px, 8vw, 96px) 0; }
+#services-offer { scroll-margin-top: 24px; }
+
+/* ── nav ────────────────────────────────────────────────────────────────── */
+.svc-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
+.svc-nav-inner { padding: 0 24px; height: 60px; position: relative; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 768px) { .svc-nav-inner { padding: 0 28px; } }
+.svc-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
+.svc-nav-links { display: none; gap: 36px; }
+@media (min-width: 768px) { .svc-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
+.svc-nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color .2s; }
+.svc-nav-links a:hover, .svc-nav-links a.active { color: var(--text-primary); }
+.svc-nav-cta { white-space: nowrap; }
+.svc-nav-inner .svc-nav-cta { display: none; }
+@media (min-width: 768px) { .svc-nav-inner .svc-nav-cta { display: inline-flex; } }
+
+/* mobile hamburger + drawer (below 768) */
+.svc-nav-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; margin-right: -8px;
+  background: transparent; border: 0; color: var(--text-primary);
+  border-radius: var(--radius-sm); cursor: pointer; transition: background .18s;
+}
+.svc-nav-toggle:hover { background: var(--hover); }
+@media (min-width: 768px) { .svc-nav-toggle { display: none; } }
+.svc-nav-scrim {
+  position: fixed; inset: 60px 0 0; z-index: 54;
+  background: rgba(0, 0, 0, 0.4); cursor: default;
+  opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s;
+}
+.svc-nav-scrim.open { opacity: 1; visibility: visible; }
+@media (min-width: 768px) { .svc-nav-scrim { display: none; } }
+.svc-nav-mobile {
+  position: fixed; top: 60px; left: 0; right: 0; z-index: 55;
+  display: flex; flex-direction: column;
+  padding: 8px 24px 20px;
+  background: var(--bg-base); border-bottom: 1px solid var(--border);
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+.svc-nav-mobile.open { opacity: 1; visibility: visible; transform: none; }
+@media (min-width: 768px) { .svc-nav-mobile { display: none; } }
+.svc-nav-mobile-links { display: flex; flex-direction: column; }
+.svc-nav-mobile-links a {
+  font-size: 16px; color: var(--text-secondary); text-decoration: none;
+  padding: 15px 4px; border-bottom: 1px solid var(--border); transition: color .18s;
+}
+.svc-nav-mobile-links a:hover { color: var(--text-primary); }
+.svc-nav-mobile-cta { width: 100%; justify-content: center; margin-top: 16px; }
+
+/* ── framed page border (desktop only) ────────────────────────────────────── */
+.svc-frame { display: none; }
+@media (min-width: 768px) {
+  .svc-frame {
+    display: block; position: fixed; top: 60px; left: 12px; right: 12px; bottom: 12px;
+    border: 1px solid var(--border); pointer-events: none; z-index: 30;
+    box-shadow: 0 0 0 9999px var(--bg-base);
+  }
+}
+
+/* ── type ───────────────────────────────────────────────────────────────── */
+.svc-display { font-family: var(--sans); font-size: clamp(34px, 4.5vw, 52px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.06; margin: 0; }
+.svc-display .dim { color: var(--text-secondary); }
+.svc-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.15; margin: 0; }
+.svc-h2 .dim { color: var(--text-secondary); }
+.svc-lead { font-size: clamp(15px, 1.3vw, 17px); font-weight: 400; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.svc-mono { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ── buttons ────────────────────────────────────────────────────────────── */
+.svc-btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill); padding: 11px 22px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: background .18s, border-color .18s, transform .18s; text-decoration: none; line-height: 1; font-family: inherit; }
+.svc-btn-sm { padding: 8px 16px; font-size: 13px; }
+.svc-btn-primary { background: var(--text-primary); color: var(--bg-base); }
+.svc-btn-primary:hover { transform: translateY(-1px); }
+.svc-btn-secondary { background: transparent; color: var(--text-primary); border-color: var(--border); }
+.svc-btn-secondary:hover { background: var(--hover); }
+.svc-btn .ic { transition: transform .2s ease; }
+.svc-btn:hover .ic { transform: translateX(2px); }
+
+/* ── hero — centred statement + CTAs, faint masked grid backdrop ──────────── */
+.svc-hero { padding: clamp(96px, 11vw, 128px) 0 clamp(48px, 6vw, 72px); }
+.svc-hero-inner { position: relative; max-width: 760px; margin: 0 auto; text-align: center; }
+.svc-hero-inner > * { animation: svcFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.svc-hero-inner > :nth-child(1) { animation-delay: 0.04s; }
+.svc-hero-inner > :nth-child(2) { animation-delay: 0.12s; }
+.svc-hero-inner > :nth-child(3) { animation-delay: 0.2s; }
+.svc-hero-lead { max-width: 56ch; margin: 20px auto 0; }
+.svc-hero-actions { margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+@keyframes svcFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .svc-hero-inner > * { animation: none !important; opacity: 1 !important; transform: none !important; } }
+
+/* ── section head ─────────────────────────────────────────────────────────── */
+.svc-sechead { max-width: 60ch; margin-bottom: clamp(28px, 4vw, 40px); }
+.svc-sechead .svc-lead { margin-top: 12px; }
+.svc-sechead-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: clamp(28px, 4vw, 36px); }
+
+/* ── service blocks — alternating illustration + text, divider-connected ──── */
+/* ── 4-service overview cards (image left of text, 2×2 hairline grid) ──────── */
+/* border-grid: dividers are cell borders (auto-snapped to 1 device px), NOT grid
+   gaps (which render at 1px CSS = 1.25 device px on hi-dpi and look thicker than
+   the frame). Container draws top+left; every cell draws right+bottom → a full
+   uniform hairline grid at every breakpoint. */
+.svc-cards { display: grid; grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border); border-left: 1px solid var(--border); overflow: hidden; }
+@media (min-width: 560px) { .svc-cards { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 960px) { .svc-cards { grid-template-columns: repeat(4, 1fr); } }
+.svc-card { background: var(--bg-base); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: clamp(22px, 2.6vw, 28px); display: flex; flex-direction: row; align-items: flex-start; gap: 16px; text-decoration: none; color: inherit; transition: background .2s; }
+.svc-card:hover { background: var(--bg-secondary); }
+.svc-card-fig { flex-shrink: 0; display: flex; align-items: flex-start; }
+.svc-card-fig img { width: 56px; height: 56px; object-fit: contain; opacity: 0.72; }
+html:not(.dark) .svc-card-fig img { filter: invert(1); }
+.svc-card-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.svc-card-name { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
+.svc-card-desc { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin: 8px 0 0; }
+
+.svc-services { border: 1px solid var(--border); overflow: hidden; }
+
+/* .svc-arch — overview cards, the intro text, and the detailed box, with a BACKGROUND
+   rail that extends the overview card dividers straight DOWN behind the text to the
+   box. The rail is the SAME 4-col grid in the SAME content width as the cards (1px
+   transparent L/R border matches the cards' 1px border), so its lines land exactly
+   on the card dividers. It sits behind (z-index 0); nothing is moved or cut. The
+   opaque page-bg cells hide the rail behind the cards/box, so the lines only show in
+   the gap + behind the intro text. Desktop-only (≥960, where the cards are 4-col). */
+.svc-arch { position: relative; padding-bottom: clamp(28px, 4vw, 40px); }
+.svc-arch > .svc-cards,
+.svc-arch > .svc-sechead { position: relative; z-index: 1; }
+.svc-arch > .svc-cards { margin-bottom: clamp(56px, 8vw, 96px); }
+.svc-arch > .svc-sechead { margin: 0 auto; text-align: center; }
+.svc-arch-rail { display: none; }
+@media (min-width: 960px) {
+  /* mirror the cards EXACTLY: container border-left + every cell border-right,
+     same content width → rail dividers land pixel-exact on the card dividers. */
+  .svc-arch-rail {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr;
+    gap: 0;
+    border-left: 1px solid var(--border);
+  }
+  .svc-arch-rail > span { border-right: 1px solid var(--border); }
+  /* Extend col-1 rail divider (25%) downward into the featured Custom Dev block */
+  .svc-arch::after {
+    content: ''; position: absolute; pointer-events: none;
+    left: 25%; top: 100%;
+    width: 1px; height: 440px;
+    background: var(--border); z-index: 0;
+  }
+}
+.svc-service { border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+.svc-service:first-child { border-top: 0; }
+@media (min-width: 900px) { .svc-service { flex-direction: row; min-height: 300px; } .svc-service.flip { flex-direction: row-reverse; } }
+.svc-service-fig { flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 32px; border-bottom: 1px solid var(--border); }
+@media (min-width: 900px) { .svc-service-fig { width: 280px; border-bottom: 0; border-right: 1px solid var(--border); } .svc-service.flip .svc-service-fig { border-right: 0; border-left: 1px solid var(--border); } }
+.svc-service-fig img { width: 148px; height: 148px; object-fit: contain; opacity: 0.7; }
+html:not(.dark) .svc-service-fig img { filter: invert(1); }
+.svc-service-body { flex: 1; padding: clamp(24px, 3vw, 34px); display: flex; flex-direction: column; }
+.svc-service-name { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; color: var(--text-primary); margin: 0; }
+.svc-service-summary { font-size: 15px; line-height: 1.55; color: var(--text-secondary); margin: 10px 0 0; }
+.svc-service-details { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.svc-service-details li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); }
+.svc-service-details li::before { content: ""; flex-shrink: 0; margin-top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--brand); }
+.svc-service.featured .svc-service-details li { display: block; }
+.svc-service.featured .svc-service-details li::before { display: none; }
+.svc-service-cta { margin-top: auto; padding-top: 20px; }
+.svc-service-cta a { display: inline-flex; align-items: center; gap: 8px; width: fit-content; border-radius: var(--radius-sm); background: var(--text-primary); color: var(--bg-base); padding: 10px 18px; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: transform .18s; }
+.svc-service-cta a:hover { transform: translateY(-1px); }
+.svc-service-cta .ic { transition: transform .2s ease; }
+.svc-service-cta a:hover .ic { transform: translateX(2px); }
+
+/* ── Custom Development — featured block with the live Maxwell chat mockup ─── */
+@media (min-width: 900px) {
+  .svc-service.featured { min-height: 440px; }
+  .svc-service.featured .svc-service-fig { width: 440px; border-left: 0; border-right: 0; }
+}
+/* At ≥960px the col-1 rail divider (25%) is visible — constrain the body to that
+   first column and push the Maxwell chat to the far right with space-between. */
+@media (min-width: 960px) {
+  .svc-service.featured { justify-content: space-between; }
+  .svc-service.featured .svc-service-body { flex: 0 0 25%; max-width: 25%; }
+  .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 140px; padding: 0 24px; }
+}
+@media (max-width: 959px) { .cds-panel { display: none; } }
+
+/* ── Build-progression screens ────────────────────────────────────────────── */
+.cds-stages {
+  position: relative; width: 320px; height: 340px; flex-shrink: 0;
+}
+.cds-frame {
+  position: absolute; width: 268px;
+  border: 1px solid var(--border); border-radius: 9px;
+  background: var(--bg-base); overflow: hidden;
+  box-shadow: 0 12px 40px -10px rgba(0,0,0,0.35);
+}
+.cds-frame:nth-child(1) { top: 0; left: 0; opacity: 0.4; }
+.cds-frame:nth-child(2) { top: 64px; left: 26px; opacity: 0.7; }
+.cds-frame:nth-child(3) { top: 128px; left: 52px; opacity: 1; }
+
+.cds-chrome {
+  display: flex; align-items: center; gap: 4px; padding: 6px 9px;
+  border-bottom: 1px solid var(--border); background: var(--bg-secondary);
+}
+.cds-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); opacity: 0.3; }
+.cds-url { font-family: var(--mono); font-size: 8px; color: var(--text-muted); opacity: 0.5; margin-left: 5px; }
+
+.cds-fbody { padding: 9px 10px; min-height: 68px; }
+
+/* skeleton elements */
+.cds-sk { background: var(--border); border-radius: 3px; animation: cdsSk 1.8s ease-in-out infinite; }
+.cds-sk-row { display: flex; gap: 5px; margin-bottom: 6px; }
+@keyframes cdsSk { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.65; } }
+
+/* stage 3 — live dashboard */
+.cds-db-nav { display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
+.cds-db-logo { width: 10px; height: 10px; border-radius: 2px; background: var(--brand); flex-shrink: 0; }
+.cds-db-link { height: 3px; width: 18px; border-radius: 9999px; background: var(--border); }
+.cds-db-badge { margin-left: auto; font-family: var(--mono); font-size: 7px; background: var(--brand); color: #fff; padding: 1px 4px; border-radius: 9999px; }
+
+.cds-db-stats { display: flex; gap: 4px; margin-bottom: 7px; }
+.cds-db-stat { flex: 1; border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; }
+.cds-db-sv { display: block; font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--text-primary); }
+.cds-db-sl { display: block; font-size: 7px; color: var(--text-muted); }
+
+.cds-db-table { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 7px; }
+.cds-db-tr { display: flex; align-items: center; gap: 5px; padding: 3px 6px; border-bottom: 1px solid var(--border); font-size: 7px; color: var(--text-secondary); }
+.cds-db-tr:last-child { border-bottom: 0; }
+.cds-db-tr > span:first-child { flex: 1; }
+.cds-db-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.cds-ok { background: #22c55e; }
+.cds-low { background: #f59e0b; }
+.cds-out { background: #ef4444; }
+
+.cds-db-prog { height: 2px; background: var(--border); border-radius: 9999px; overflow: hidden; }
+.cds-db-bar { height: 100%; background: var(--brand); border-radius: 9999px; animation: cdsBar 3s ease-in-out infinite alternate; }
+@keyframes cdsBar { from { width: 55%; } to { width: 88%; } }
+.cds-in { animation: cdsIn 0.26s ease both; }
+@keyframes cdsIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.cdc { width: 100%; max-width: 380px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-base); overflow: hidden; box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.55); }
+.cdc-head { display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-bottom: 1px solid var(--border); background: var(--bg-secondary); }
+.cdc-avatar { width: 24px; height: 24px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 7px; background: var(--bg-base); color: var(--text-primary); }
+.cdc-avatar svg { width: 12px; height: auto; }
+.cdc-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.cdc-status { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.cdc-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+.cdc-body { height: 200px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: 14px; }
+.cdc-msg { max-width: 85%; padding: 8px 11px; font-size: 12.5px; line-height: 1.45; }
+.cdc-bot { align-self: flex-start; background: var(--surface); color: var(--text-primary); border-radius: 12px 12px 12px 4px; }
+.cdc-user { align-self: flex-end; background: var(--brand); color: #fff; border-radius: 12px 12px 4px 12px; }
+.cdc-dots { display: inline-flex; align-items: center; gap: 4px; }
+.cdc-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); animation: cdcDot 1.1s ease-in-out infinite; }
+.cdc-dots span:nth-child(2) { animation-delay: .16s; }
+.cdc-dots span:nth-child(3) { animation-delay: .32s; }
+@keyframes cdcDot { 0%, 100% { opacity: .28; } 50% { opacity: 1; } }
+@keyframes cdcIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.cdc-in { animation: cdcIn .28s ease both; }
+.cdc-input { display: flex; align-items: center; gap: 8px; padding: 9px 9px 9px 14px; border-top: 1px solid var(--border); background: var(--bg-secondary); }
+.cdc-field { position: relative; flex: 1; min-width: 0; display: inline-flex; align-items: center; height: 20px; font-size: 12.5px; color: var(--text-primary); white-space: nowrap; overflow: hidden; }
+.cdc-typed { white-space: pre; }
+.cdc-ph { color: var(--text-muted); }
+.cdc-cursor { display: inline-block; width: 1.5px; height: 15px; margin: 0 1px; background: var(--brand); flex-shrink: 0; opacity: 0; }
+.cdc-cursor.on { opacity: 1; }
+.cdc-send { flex-shrink: 0; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: var(--text-primary); color: var(--bg-base); }
+
+/* ── how we work — statement + numbered pillars ───────────────────────────── */
+.svc-statement { max-width: 30ch; margin: 0 0 clamp(40px, 6vw, 64px); font-size: clamp(24px, 3vw, 34px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.3; color: var(--text-primary); }
+.svc-statement .dim { color: var(--text-secondary); }
+.svc-how-grid { display: grid; grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border); border-left: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+@media (min-width: 620px) { .svc-how-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 980px) { .svc-how-grid { grid-template-columns: repeat(4, 1fr); } }
+.svc-step { position: relative; background: var(--bg-base); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: clamp(24px, 3vw, 30px); display: flex; flex-direction: column; }
+.svc-step.on::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--brand); }
+.svc-step-n { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.svc-step.on .svc-step-n { color: var(--brand); }
+.svc-step-label { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 12px 0 0; }
+.svc-step-line { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin: 8px 0 0; }
+.svc-step-badge { margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); background: var(--brand-tint); border-radius: var(--radius-pill); padding: 4px 10px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand); }
+.svc-step-badge .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--brand); }
+
+/* ── comparison — mobile cards (default) → desktop matrix (≥940) ──────────── */
+/* base = mobile cards visible + matrix hidden; the @media at the END flips both
+   (cards→none, grid→grid) so it wins by source order over these base rules. */
+.svc-compare-cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 560px) { .svc-compare-cards { grid-template-columns: 1fr 1fr; } }
+.svc-cmp-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; background: var(--bg-base); }
+.svc-cmp-card.hl { border-color: color-mix(in srgb, var(--brand) 35%, transparent); background: var(--brand-tint); }
+.svc-cmp-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.svc-cmp-card-name { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+.svc-cmp-card.hl .svc-cmp-card-name { color: var(--brand); }
+.svc-cmp-row { padding: 10px 0; border-top: 1px solid var(--border); }
+.svc-cmp-row:first-child { border-top: 0; }
+.svc-cmp-row dt { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.svc-cmp-row dd { margin: 3px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-primary); }
+
+.svc-compare-grid { display: none; }
+/* matrix dividers as cell borders (crisp 1px physical) instead of grid gaps;
+   the wrapper .svc-compare draws the outer frame, so drop the border on the last
+   column (5n) and last row (-n+5) to avoid doubling it. */
+.svc-cmp-cell { background: var(--bg-base); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 15px 16px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+.svc-cmp-cell:nth-child(5n) { border-right: 0; }
+.svc-cmp-cell:nth-last-child(-n + 5) { border-bottom: 0; }
+.svc-cmp-cell.dim { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.svc-cmp-cell.head { display: flex; align-items: center; gap: 10px; font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.svc-cmp-cell.hl { background: var(--brand-tint); color: var(--text-primary); }
+.svc-cmp-cell.hl.head { color: var(--brand); }
+.svc-cmp-ico { width: 26px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: var(--surface); color: var(--text-secondary); }
+.svc-cmp-cell.hl .svc-cmp-ico { background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); }
+
+@media (min-width: 940px) {
+  .svc-compare { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .svc-compare-cards { display: none; }
+  .svc-compare-grid { display: grid; grid-template-columns: 168px repeat(4, 1fr); gap: 0; }
+}
+
+/* ── FAQ — native <details> ───────────────────────────────────────────────── */
+.svc-faq { border-top: 1px solid var(--border); max-width: 760px; }
+.svc-faq details { border-bottom: 1px solid var(--border); }
+.svc-faq summary { list-style: none; cursor: pointer; padding: 20px 4px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 16px; font-weight: 500; color: var(--text-primary); }
+.svc-faq summary::-webkit-details-marker { display: none; }
+.svc-faq summary::after { content: "+"; font-size: 20px; color: var(--text-muted); font-weight: 400; line-height: 1; }
+.svc-faq details[open] summary::after { content: "−"; }
+.svc-faq .ans { padding: 0 4px 20px; font-size: 14px; line-height: 1.65; color: var(--text-secondary); max-width: 660px; }
+
+/* ── CTA close ────────────────────────────────────────────────────────────── */
+.svc-cta { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); padding: clamp(36px, 5vw, 56px) clamp(24px, 4vw, 48px); text-align: center; }
+.svc-cta .svc-h2 { margin: 0 auto 12px; max-width: 22ch; }
+.svc-cta-copy { font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 0 auto 24px; max-width: 50ch; }
