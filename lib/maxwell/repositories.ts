@@ -2512,3 +2512,159 @@ export async function recordReceivedProposalReviewDecision(input: {
     ON CONFLICT (idempotency_key) DO NOTHING
   `;
 }
+
+// ============================================================================
+// F5-05 (auditoría 2026-07) — queries del reaper: sesiones in-flight colgadas
+// y dead-letters del outbox (forwarded_at IS NULL). Los índices parciales
+// *_unforwarded (migraciones 023/024) existían sin consumidor; estas queries
+// son ese consumidor.
+// ============================================================================
+
+export type RevertedStudioSession = { id: string; status: StudioStatus };
+
+/**
+ * Revierte sesiones de studio abandonadas a mitad de generación — el único
+ * revert existente (`revertInFlightSession` en el poll) depende de que el
+ * browser del cliente siga polleando. Mismo mapping que el poll:
+ * `generating_prototype` → `clarifying`; `revision_*` → `prototype_ready`.
+ * El umbral del caller debe superar de sobra el poll budget (~3 min).
+ */
+export async function revertStaleInFlightStudioSessions(
+  cutoffIso: string,
+): Promise<RevertedStudioSession[]> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  return sql<RevertedStudioSession[]>`
+    UPDATE studio_session
+    SET status = CASE
+          WHEN status = 'generating_prototype' THEN 'clarifying'
+          ELSE 'prototype_ready'
+        END,
+        updated_at = ${now}
+    WHERE status IN ('generating_prototype', 'revision_requested', 'revision_applied')
+      AND updated_at < ${cutoffIso}
+      AND deleted_at IS NULL
+    RETURNING id, status
+  `;
+}
+
+export type UnforwardedClientComment = {
+  id: string;
+  body: string;
+  externalCommentId: string;
+  createdAt: string;
+  noonAppProjectId: string;
+};
+
+/** Dead-letters de comment con workspace mapeado a proyecto App (re-forwardeables). */
+export async function listUnforwardedClientComments(
+  cutoffIso: string,
+  limit: number,
+): Promise<UnforwardedClientComment[]> {
+  const sql = getDb();
+  return sql<UnforwardedClientComment[]>`
+    SELECT c.id, c.body, c.external_comment_id AS "externalCommentId",
+           c.created_at AS "createdAt", w.noon_app_project_id AS "noonAppProjectId"
+    FROM client_comment c
+    JOIN client_workspace w ON w.id = c.client_workspace_id
+    WHERE c.forwarded_at IS NULL
+      AND c.created_at < ${cutoffIso}
+      AND w.noon_app_project_id IS NOT NULL
+    ORDER BY c.created_at ASC
+    LIMIT ${limit}
+  `;
+}
+
+export type UnforwardedClientRequest = {
+  id: string;
+  type: ClientRequestType;
+  clientPriority: ClientRequestPriority;
+  body: string;
+  versionRef: number | null;
+  submittedBy: string;
+  externalRequestId: string;
+  createdAt: string;
+  noonAppProjectId: string;
+};
+
+export async function listUnforwardedClientRequests(
+  cutoffIso: string,
+  limit: number,
+): Promise<UnforwardedClientRequest[]> {
+  const sql = getDb();
+  return sql<UnforwardedClientRequest[]>`
+    SELECT r.id, r.type, r.client_priority AS "clientPriority", r.body,
+           r.version_ref::int AS "versionRef", r.submitted_by AS "submittedBy",
+           r.external_request_id AS "externalRequestId", r.created_at AS "createdAt",
+           w.noon_app_project_id AS "noonAppProjectId"
+    FROM client_request r
+    JOIN client_workspace w ON w.id = r.client_workspace_id
+    WHERE r.forwarded_at IS NULL
+      AND r.created_at < ${cutoffIso}
+      AND w.noon_app_project_id IS NOT NULL
+    ORDER BY r.created_at ASC
+    LIMIT ${limit}
+  `;
+}
+
+export type UnforwardedClientRequestUpdate = {
+  id: string;
+  body: string;
+  externalUpdateId: string;
+  createdAt: string;
+  parentExternalRequestId: string;
+};
+
+/**
+ * Solo updates cuyo request padre YA fue forwardeado — la App resuelve el update
+ * por el externalRequestId del padre; si el padre es él mismo un dead-letter,
+ * el forward daría 4xx determinista. El barrido de requests corre antes, así
+ * que el padre se destranca en una pasada anterior (o la misma).
+ */
+export async function listUnforwardedClientRequestUpdates(
+  cutoffIso: string,
+  limit: number,
+): Promise<UnforwardedClientRequestUpdate[]> {
+  const sql = getDb();
+  return sql<UnforwardedClientRequestUpdate[]>`
+    SELECT u.id, u.body, u.external_update_id AS "externalUpdateId",
+           u.created_at AS "createdAt", r.external_request_id AS "parentExternalRequestId"
+    FROM client_request_update u
+    JOIN client_request r ON r.id = u.client_request_id
+    WHERE u.forwarded_at IS NULL
+      AND u.created_at < ${cutoffIso}
+      AND r.forwarded_at IS NOT NULL
+    ORDER BY u.created_at ASC
+    LIMIT ${limit}
+  `;
+}
+
+export type UnforwardedClientRequestAttachment = {
+  id: string;
+  filename: string;
+  mime: string;
+  sizeBytes: number;
+  body: string | null;
+  externalUpdateId: string;
+  createdAt: string;
+  parentExternalRequestId: string;
+};
+
+export async function listUnforwardedClientRequestAttachments(
+  cutoffIso: string,
+  limit: number,
+): Promise<UnforwardedClientRequestAttachment[]> {
+  const sql = getDb();
+  return sql<UnforwardedClientRequestAttachment[]>`
+    SELECT a.id, a.filename, a.mime, a.size_bytes::int AS "sizeBytes", a.body,
+           a.external_update_id AS "externalUpdateId", a.created_at AS "createdAt",
+           r.external_request_id AS "parentExternalRequestId"
+    FROM client_request_attachment a
+    JOIN client_request r ON r.id = a.client_request_id
+    WHERE a.forwarded_at IS NULL
+      AND a.created_at < ${cutoffIso}
+      AND r.forwarded_at IS NOT NULL
+    ORDER BY a.created_at ASC
+    LIMIT ${limit}
+  `;
+}

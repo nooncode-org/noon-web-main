@@ -10,13 +10,13 @@ import {
   markProposalFirstOpened,
 } from "@/lib/maxwell/repositories";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
-import { isProposalPubliclyViewable } from "@/lib/maxwell/proposal-visibility";
+import {
+  isProposalPastCutoff,
+  isProposalPubliclyViewable,
+} from "@/lib/maxwell/proposal-visibility";
 import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import { log } from "@/lib/server/logger";
-import {
-  enforceRateLimit,
-  RateLimitExceededError,
-} from "@/lib/server/rate-limit";
+import { consumeDistributedToken } from "@/lib/server/rate-limit-distributed";
 import { recordProposalAccessSafe } from "@/lib/server/audit/proposal-access";
 
 export const metadata: Metadata = {
@@ -80,30 +80,28 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
   // B19: rate-limit per client IP. Public surface — protects against token-scanner abuse.
   // 30 GETs / 60s allows legitimate browser refreshes / share-link previews while
-  // absorbing burst scans. On exceed we render `notFound()` instead of 429 so a scanner
-  // cannot distinguish a rate-limited token from a non-existent one.
-  try {
-    enforceRateLimit({
-      namespace: "proposal.public",
-      capacity: 30,
-      refillPerSec: 30 / 60,
-      identityKey: clientIp,
+  // absorbing burst scans. SEC-M5: two layers — in-memory bucket + shared Postgres
+  // counter, so the budget holds cross-instance. On exceed we render `notFound()`
+  // instead of 429 so a scanner cannot distinguish a rate-limited token from a
+  // non-existent one.
+  const rate = await consumeDistributedToken({
+    namespace: "proposal.public",
+    identityKey: clientIp,
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (!rate.ok) {
+    log.warn("proposal.public.rate-limited", "Rate limit hit for public proposal page", {
+      retry_after_seconds: rate.retryAfterSeconds,
     });
-  } catch (rateError) {
-    if (rateError instanceof RateLimitExceededError) {
-      log.warn("proposal.public.rate-limited", "Rate limit hit for public proposal page", {
-        retry_after_seconds: rateError.retryAfterSeconds,
-      });
-      await recordProposalAccessSafe({
-        proposalToken: token,
-        action: "page_view_blocked",
-        responseStatus: 404,
-        clientIp,
-        userAgent,
-      });
-      notFound();
-    }
-    throw rateError;
+    await recordProposalAccessSafe({
+      proposalToken: token,
+      action: "page_view_blocked",
+      responseStatus: 404,
+      clientIp,
+      userAgent,
+    });
+    notFound();
   }
 
   let proposal = await getProposalRequestByPublicToken(token);
@@ -135,6 +133,11 @@ export default async function PublicProposalPage({ params, searchParams }: Props
     clientIp,
     userAgent,
   });
+
+  // SEC-M2 (auditoría 2026-07): cutoff duro. Past-cutoff o status expired →
+  // vista expirada SIN contenido de la propuesta ni CTA de pago. Antes el
+  // contenido seguía visible para siempre (token bearer permanente).
+  const effectivelyExpired = proposal.status === "expired" || isProposalPastCutoff(proposal);
 
   const cleanDraft = stripInternalReviewFlags(proposal.draftContent);
 
@@ -169,26 +172,30 @@ export default async function PublicProposalPage({ params, searchParams }: Props
             </p>
             {proposal.deliveryRecipient && <p>Recipient: {proposal.deliveryRecipient}</p>}
           </div>
-          {proposal.status === "expired" && (
+          {effectivelyExpired && (
             <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-              This proposal is currently marked as expired. Contact Noon if you need an updated version.
+              This proposal has expired. Contact Noon if you need an updated version.
             </div>
           )}
         </header>
 
-        <PublicProposalPayment
-          publicToken={proposal.publicToken}
-          status={proposal.status}
-          approvedAmountUsd={proposal.approvedAmountUsd}
-          approvedCurrency={proposal.approvedCurrency}
-          membershipApplicable={commercialProfile?.membershipRecommended ?? false}
-          monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
-          checkoutResult={checkoutResult}
-        />
+        {!effectivelyExpired && (
+          <>
+            <PublicProposalPayment
+              publicToken={proposal.publicToken}
+              status={proposal.status}
+              approvedAmountUsd={proposal.approvedAmountUsd}
+              approvedCurrency={proposal.approvedCurrency}
+              membershipApplicable={commercialProfile?.membershipRecommended ?? false}
+              monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
+              checkoutResult={checkoutResult}
+            />
 
-        <section className="rounded-2xl border border-border bg-card p-6">
-          <ProposalDocument content={cleanDraft} />
-        </section>
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <ProposalDocument content={cleanDraft} />
+            </section>
+          </>
+        )}
       </div>
     </main>
   );

@@ -73,6 +73,23 @@
 - Payment boundary: `app/api/maxwell/payment/route.ts`, `lib/maxwell/payment-activation.ts`.
 - Launch infra: `proxy.ts`, `next.config.mjs`, `vercel.json`, `app/sitemap.ts`, `app/robots.ts`.
 
+## Cross-repo done-notification protocol (F1-01, adoptado 2026-07-08)
+
+La auditoría master 2026-07 encontró que la fuente de sincronización cross-repo
+(este CHANGELOG/context) murió ~2026-06-06 y la App planificó contra registros
+stale. Protocolo obligatorio desde 2026-07-08:
+
+1. Todo merge que cambie un contrato cross-repo o shippee una capacidad que el
+   otro repo espera AÑADE una entrada datada al `CHANGELOG.md` del repo que
+   shippea, en el mismo PR.
+2. Si el cambio requiere acción del otro repo, además se escribe una nota
+   datada `docs/YYYY-MM-DD-<origen>-to-<destino>-<slug>.md` (la convención de
+   handoff ya existente en `docs/`).
+3. Al abrir una sesión formal con trabajo cross-repo, revisar el CHANGELOG del
+   repo hermano desde el último punto de sync antes de planificar.
+
+El espejo de esta regla vive en el context core de App-nooncode.
+
 ## Critical Rules
 
 1. Do not expose source code, repository access, or technical deliverables before payment.
@@ -86,6 +103,22 @@
 
 ## Current Verified Reality
 
+- **Ola E-2 hardening (auditoría master 2026-07, 2026-07-08):** el token público
+  de proposal tiene cutoff duro (`isProposalPastCutoff` en
+  `lib/maxwell/proposal-visibility.ts` — página/checkout/payment lo enforcean;
+  past-cutoff = vista expirada sin contenido ni CTA, 410 en checkout/evidence;
+  HMAC descartado con decisión registrada en la spec). Las superficies públicas
+  de token usan rate-limit de dos capas (`consumeDistributedToken`: bucket
+  in-memory + contador Postgres `rate_limit_counter`, migración `20260708_032`).
+  Regeneraciones de upgrade con versión previa consumen el cap (≤3 generaciones
+  LLM/sesión). `prepare: false` fijado en `lib/server/db.ts`. **Reaper**
+  `/api/maxwell/reaper` (cron horario, `CRON_SECRET`): destranca
+  `studio_session`/`website_upgrade_session` colgadas >30 min, re-forwardea el
+  outbox (comment/request/update/attachment; App dedupe por external id),
+  archiva upgrades 30d y barre ventanas de rate-limit. Badge de workspace:
+  mapeado a App + pull fallido → "Status unavailable" (nunca el
+  `workspace_status` local congelado). Spec:
+  `specs/2026-07-08-auditoria-ola-e2-hardening.md`.
 - CI exists in `.github/workflows`.
 - Noon App review decision webhook tests exist in `tests/maxwell/noon-app-webhook.test.ts`.
 - Private/local URL blocking exists in upgrade URL normalization.

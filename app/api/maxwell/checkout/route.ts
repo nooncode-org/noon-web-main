@@ -9,6 +9,7 @@ import {
   updateProposalRequestStatus,
 } from "@/lib/maxwell/repositories";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
+import { isProposalPastCutoff } from "@/lib/maxwell/proposal-visibility";
 import { MEMBERSHIP_BILLING_ENABLED, MEMBERSHIP_INTERVAL } from "@/lib/maxwell/membership-billing";
 import { buildWebsiteProposalPayload } from "@/lib/noon-app-integration";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
@@ -44,7 +45,9 @@ export async function POST(request: Request) {
       return checkoutStateResponse(409, "This proposal is already paid.", "PROPOSAL_ALREADY_PAID");
     }
 
-    if (proposal.status === "expired") {
+    if (proposal.status === "expired" || isProposalPastCutoff(proposal)) {
+      // SEC-M2: el cutoff duro (expires_at) cierra el checkout aunque nadie haya
+      // flipeado el status a 'expired' todavía.
       return checkoutStateResponse(410, "This proposal has expired.", "PROPOSAL_EXPIRED");
     }
 

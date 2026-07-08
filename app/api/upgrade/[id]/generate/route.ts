@@ -63,8 +63,16 @@ export async function POST(request: Request, { params }: Params) {
 
     const isCorrection = Boolean(correctionNote);
 
+    // SEC-M8 (auditoría 2026-07): toda generación con una versión previa consume
+    // el cap, tenga o no correctionNote. Antes un POST sin body desde
+    // `version_ready` regeneraba gratis en loop y drenaba el budget LLM global.
+    // Retry desde `error` SIN versión previa sigue libre (recuperación legítima).
+    // Total ≤ 3 generaciones LLM por sesión (1 inicial + cap de 2).
+    const hasExistingVersion = (await getNextVersionNumber(id)) > 1;
+    const countsAgainstCap = isCorrection || hasExistingVersion;
+
     // Enforce server-side correction limit (max 2 per session)
-    if (isCorrection && session.correctionsUsed >= 2) {
+    if (countsAgainstCap && session.correctionsUsed >= 2) {
       return NextResponse.json(
         { message: "Correction limit reached for this session." },
         { status: 422 }
@@ -90,7 +98,7 @@ export async function POST(request: Request, { params }: Params) {
     });
 
     // Run generation in same request (maxDuration=60s)
-    runGeneratePipeline(id, session, audit, pages, correctionNote, isCorrection).catch(
+    runGeneratePipeline(id, session, audit, pages, correctionNote, isCorrection, countsAgainstCap).catch(
       (err) => log.error("upgrade.generate.background", err)
     );
 
@@ -113,7 +121,8 @@ async function runGeneratePipeline(
   audit: NonNullable<Awaited<ReturnType<typeof getAuditBySessionId>>>,
   pages: Awaited<ReturnType<typeof getPagesBySessionId>>,
   correctionNote: string | null,
-  isCorrection: boolean
+  isCorrection: boolean,
+  countsAgainstCap: boolean
 ) {
   const result = await generateUpgradedVersion({
     pages,
@@ -142,8 +151,12 @@ async function runGeneratePipeline(
     isCorrection,
   });
 
-  if (isCorrection) {
+  if (countsAgainstCap) {
+    // SEC-M8: las regeneraciones sin nota también consumen el cap.
     await incrementCorrectionsUsed(sessionId);
+  }
+
+  if (isCorrection) {
     await insertUpgradeEvent({
       sessionId,
       eventType: "correction_applied",

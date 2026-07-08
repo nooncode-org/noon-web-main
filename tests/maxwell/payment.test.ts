@@ -384,6 +384,25 @@ describe("payment — mark_payment_pending", () => {
 // ============================================================================
 
 describe("payment — submit_payment_evidence", () => {
+  // SEC-M2 (auditoría 2026-07): cutoff duro por expires_at aunque el status
+  // siga en 'sent' (nadie flipeó a 'expired').
+  it("410 PROPOSAL_EXPIRED cuando la proposal pasó su expires_at", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal({
+      status: "sent",
+      expiresAt: "2020-01-01T00:00:00.000Z",
+    }));
+
+    const res = await POST(postReq({
+      action: "submit_payment_evidence",
+      proposal_request_id: "proposal-1",
+      notes: "too late",
+    }));
+    expect(res.status).toBe(410);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.code).toBe("PROPOSAL_EXPIRED");
+    expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
+  });
+
   it("happy path: pasa a payment_under_verification", async () => {
     vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal({
       approvedAmountUsd: 2500,
