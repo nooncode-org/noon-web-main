@@ -112,7 +112,8 @@ El espejo de esta regla vive en el context core de App-nooncode.
   in-memory + contador Postgres `rate_limit_counter`, migración `20260708_032`).
   Regeneraciones de upgrade con versión previa consumen el cap (≤3 generaciones
   LLM/sesión). `prepare: false` fijado en `lib/server/db.ts`. **Reaper**
-  `/api/maxwell/reaper` (cron horario, `CRON_SECRET`): destranca
+  `/api/maxwell/reaper` (cron diario 09:30 UTC — el plan Vercel rechaza crons
+  sub-diarios —, `CRON_SECRET`): destranca
   `studio_session`/`website_upgrade_session` colgadas >30 min, re-forwardea el
   outbox (comment/request/update/attachment; App dedupe por external id),
   archiva upgrades 30d y barre ventanas de rate-limit. Badge de workspace:

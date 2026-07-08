@@ -59,7 +59,10 @@ UNIQUE(`external_comment_id`), `externalRequestId`, (`externalRequestId`,`update
 4. **SEC-M10 —** `prepare: false` en `db.ts` + documentar en `.env.example`:
    6543 = transaction pooling (requiere prepare:false), 5432 = session. La opción
    es segura en ambos modos.
-5. **F5-05 — reaper único** `app/api/maxwell/reaper/route.ts` (cron Vercel horario,
+5. **F5-05 — reaper único** `app/api/maxwell/reaper/route.ts` (cron Vercel
+   DIARIO 09:30 UTC — se intentó horario y Vercel rechazó el deployment con el
+   link de cron pricing: el plan de la cuenta solo acepta crons diarios, igual
+   que los 9 de la App; upgrade path = plan Pro o GitHub Actions programado,
    auth `CRON_SECRET`, mismo patrón review-sla). Acciones idempotentes, batch
    acotado, cada una con umbral >> peor caso legítimo (~3 min poll / 60s
    maxDuration):

@@ -3,7 +3,12 @@
  *
  * F5-05 (auditoría master 2026-07, Ola E-2): reaper compartido para los
  * pipelines fire-and-forget de Web. Corre por cron (`/api/maxwell/reaper`,
- * vercel.json) y cierra los tres huecos sin retry server-side:
+ * vercel.json, DIARIO 09:30 UTC — el plan Vercel de la cuenta rechaza crons
+ * sub-diarios: el deploy del PR falló con el link de cron pricing hasta
+ * bajarlo a diario; mismo límite que aplanó los crons de la App. Upgrade
+ * path si se necesita cadencia horaria: plan Pro o un workflow programado de
+ * GitHub Actions que haga POST con el Bearer CRON_SECRET) y cierra los tres
+ * huecos sin retry server-side:
  *
  *   1. `studio_session` colgada en `generating_prototype` / `revision_*` —
  *      el único revert existente vive en el poll y depende de que el browser

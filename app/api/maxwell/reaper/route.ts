@@ -1,7 +1,8 @@
 /**
  * GET|POST /api/maxwell/reaper — F5-05 (auditoría 2026-07).
  *
- * Cron horario (vercel.json) que destranca pipelines fire-and-forget: studio
+ * Cron diario 09:30 UTC (vercel.json; el plan Vercel rechaza crons
+ * sub-diarios) que destranca pipelines fire-and-forget: studio
  * sessions colgadas, upgrade sessions colgadas, dead-letters del outbox
  * Web→App, y housekeeping (archive 30d + ventanas viejas del rate-limit).
  * Mismo patrón de auth que review-sla: Bearer CRON_SECRET (o REVIEW_API_SECRET).

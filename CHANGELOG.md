@@ -26,7 +26,9 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 > regeneración de `/api/upgrade/[id]/generate` con versión previa consume el
 > cap — antes el POST sin nota era gratis en loop), SEC-M10 (`prepare: false`
 > en el cliente postgres + puerto pooler documentado en `.env.example`),
-> F5-05 (**reaper** `/api/maxwell/reaper`, cron horario: destranca
+> F5-05 (**reaper** `/api/maxwell/reaper`, cron diario 09:30 UTC — el plan
+> Vercel de la cuenta rechaza crons sub-diarios, mismo límite que los crons de
+> la App: destranca
 > `studio_session` y `website_upgrade_session` colgadas >30 min, re-forwardea
 > dead-letters del outbox comment/request/update/attachment [la App dedupe por
 > external id], cablea `archiveStaleUpgradeSessions` y barre ventanas del
