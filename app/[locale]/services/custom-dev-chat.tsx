@@ -25,25 +25,21 @@ const GEN_SNAP  = 0.5;
 const GEN_BUILD_DONE = (GEN_START + 12 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
 
 function BuildPiece({
-  order, active, slide = false, className, children,
+  order, active, className, children,
 }: {
-  order: number; active: boolean; slide?: boolean; className?: string; children?: ReactNode;
+  order: number; active: boolean; className?: string; children?: ReactNode;
 }) {
   const appearStart = GEN_START + order * GEN_STEP;
   const appearEnd   = appearStart + GEN_SNAP;
   const times       = [0, appearStart / GEN_CYCLE, appearEnd / GEN_CYCLE, 1];
-  const shown       = slide ? { opacity: 1, x: 0 } : { opacity: 1, y: 0, scale: 1 };
-  const keyframes   = slide
-    ? { opacity: [0,0,1,1], x: [-8,-8,0,0] }
-    : { opacity: [0,0,1,1], y: [8,8,0,0], scale: [0.94,0.94,1,1] };
   return (
     <motion.div
       className={className}
       initial={false}
-      animate={active ? keyframes : shown}
+      animate={active ? { opacity: [0, 0, 1, 1] } : { opacity: 1 }}
       transition={active
-        ? { duration: GEN_CYCLE, times, ease: "easeOut" }
-        : { duration: 0.4, ease: "easeOut" }}
+        ? { duration: GEN_CYCLE, times, ease: "linear" }
+        : { duration: 0.3 }}
     >{children}</motion.div>
   );
 }
@@ -71,9 +67,9 @@ function GenerateViz({ active }: { active: boolean }) {
         </BuildPiece>
         <div className="mb-3 flex items-start gap-3">
           <div className="flex-1 space-y-2 pt-0.5">
-            <BuildPiece order={1} active={active} slide className="h-3 w-3/4 rounded-full bg-foreground/30" />
-            <BuildPiece order={2} active={active} slide className="h-1.5 w-1/2 rounded-full bg-foreground/12" />
-            <BuildPiece order={3} active={active} slide className="mt-1.5 h-3 w-14 rounded-full bg-foreground/15" />
+            <BuildPiece order={1} active={active} className="h-3 w-3/4 rounded-full bg-foreground/30" />
+            <BuildPiece order={2} active={active} className="h-1.5 w-1/2 rounded-full bg-foreground/12" />
+            <BuildPiece order={3} active={active} className="mt-1.5 h-3 w-14 rounded-full bg-foreground/15" />
           </div>
           <BuildPiece order={4} active={active} className="h-16 w-20 rounded-lg bg-foreground/[0.07]" />
         </div>
