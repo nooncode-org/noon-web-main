@@ -179,7 +179,8 @@ html:not(.dark) .svc-service-fig img { filter: invert(1); }
 .svc-service-details { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .svc-service-details li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); }
 .svc-service-details li::before { content: ""; flex-shrink: 0; margin-top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--brand); }
-.svc-service.featured .svc-service-details li { display: block; }
+.svc-service.featured .svc-service-name { font-size: clamp(22px, 2.2vw, 28px); line-height: 1.2; }
+.svc-service.featured .svc-service-details li { display: block; font-size: 15px; line-height: 1.6; }
 .svc-service.featured .svc-service-details li::before { display: none; }
 .svc-service-cta { margin-top: auto; padding-top: 20px; }
 .svc-service-cta a { display: inline-flex; align-items: center; gap: 8px; width: fit-content; border-radius: var(--radius-sm); background: var(--text-primary); color: var(--bg-base); padding: 10px 18px; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: transform .18s; }
@@ -192,11 +193,9 @@ html:not(.dark) .svc-service-fig img { filter: invert(1); }
   .svc-service.featured { min-height: 440px; }
   .svc-service.featured .svc-service-fig { width: 440px; border-left: 0; border-right: 0; }
 }
-/* At ≥960px the col-1 rail divider (25%) is visible — constrain the body to that
-   first column and push the Maxwell chat to the far right with space-between. */
 @media (min-width: 960px) {
   .svc-service.featured { justify-content: space-between; }
-  .svc-service.featured .svc-service-body { flex: 0 0 25%; max-width: 25%; }
+  .svc-service.featured .svc-service-body { flex: 0 0 38%; max-width: 38%; }
   .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0 24px; }
 }
 @media (max-width: 959px) { .cds-panel { display: none; } }
