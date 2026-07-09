@@ -26,10 +26,7 @@ import { fetchPrototipoRender } from "@/lib/maxwell/prototipo-render-fetch";
 import { mapRenderResultToUxState } from "@/lib/maxwell/prototipo-render-types";
 import { isPrototipoDecisionRouteEnabled } from "@/lib/maxwell/prototipo-route-flag";
 import { log } from "@/lib/server/logger";
-import {
-  enforceRateLimit,
-  RateLimitExceededError,
-} from "@/lib/server/rate-limit";
+import { consumeDistributedToken } from "@/lib/server/rate-limit-distributed";
 
 import { submitDecisionAction } from "./_actions/submit-decision";
 import { DecisionPanel } from "./_components/decision-panel";
@@ -49,17 +46,20 @@ type Props = {
 };
 
 async function resolveRscClientIdentity(): Promise<string> {
+  // E2-SEC (MED-1): plataforma-primero — x-real-ip/x-vercel-forwarded-for los
+  // fija el edge de Vercel; x-forwarded-for puede traer un primer hop
+  // suministrado por el cliente (rotarlo bypasearía el rate-limit).
   const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
   const real = h.get("x-real-ip");
   if (real?.trim()) return real.trim();
   const vercel = h.get("x-vercel-forwarded-for");
   if (vercel) {
     const first = vercel.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const fwd = h.get("x-forwarded-for");
+  if (fwd) {
+    const first = fwd.split(",")[0]?.trim();
     if (first) return first;
   }
   return "anonymous";
@@ -77,26 +77,23 @@ export default async function PublicPrototipoPage({ params }: Props) {
   const clientIp = await resolveRscClientIdentity();
 
   // Public surface — rate-limit per IP to protect against token-scanner abuse.
-  // 30 GETs / 60s mirrors the proposal/[token] budget. On exceed we render
-  // notFound() so scanners cannot distinguish a rate-limited token from a
-  // non-existent one.
-  try {
-    enforceRateLimit({
-      namespace: "prototipo.public",
-      capacity: 30,
-      refillPerSec: 30 / 60,
-      identityKey: clientIp,
-    });
-  } catch (rateError) {
-    if (rateError instanceof RateLimitExceededError) {
-      log.warn(
-        "prototipo.public.rate-limited",
-        "Rate limit hit for public prototipo page",
-        { retry_after_seconds: rateError.retryAfterSeconds },
-      );
-      notFound();
-    }
-    throw rateError;
+  // 30 GETs / 60s mirrors the proposal/[token] budget. SEC-M5: two layers —
+  // in-memory bucket + shared Postgres counter (cross-instance). On exceed we
+  // render notFound() so scanners cannot distinguish a rate-limited token from
+  // a non-existent one.
+  const rate = await consumeDistributedToken({
+    namespace: "prototipo.public",
+    identityKey: clientIp,
+    limit: 30,
+    windowSeconds: 60,
+  });
+  if (!rate.ok) {
+    log.warn(
+      "prototipo.public.rate-limited",
+      "Rate limit hit for public prototipo page",
+      { retry_after_seconds: rate.retryAfterSeconds },
+    );
+    notFound();
   }
 
   const result = await fetchPrototipoRender(token);

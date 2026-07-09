@@ -13,6 +13,34 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-07-08] — Ola E-2: hardening Web (auditoría master 2026-07, 7 medios residuales)
+
+> **Summary:** Cierra la parte Web de la Ola E de la auditoría master 2026-07:
+> SEC-M2 (cutoff duro del token público de proposal — `expires_at` ahora se
+> ENFORCEA en página/checkout/payment; past-cutoff = vista expirada sin
+> contenido ni CTA, 410 en checkout/evidence; decisión registrada: SIN firma
+> HMAC — no cierra leakage y rompería links vivos), SEC-M5 (rate-limit
+> distribuido: contador fixed-window en Postgres `rate_limit_counter`
+> [migración `20260708_032`, **pending apply in prod**] detrás del bucket
+> in-memory, en las dos superficies públicas de token), SEC-M8 (toda
+> regeneración de `/api/upgrade/[id]/generate` con versión previa consume el
+> cap — antes el POST sin nota era gratis en loop), SEC-M10 (`prepare: false`
+> en el cliente postgres + puerto pooler documentado en `.env.example`),
+> F5-05 (**reaper** `/api/maxwell/reaper`, cron diario 09:30 UTC — el plan
+> Vercel de la cuenta rechaza crons sub-diarios, mismo límite que los crons de
+> la App: destranca
+> `studio_session` y `website_upgrade_session` colgadas >30 min, re-forwardea
+> dead-letters del outbox comment/request/update/attachment [la App dedupe por
+> external id], cablea `archiveStaleUpgradeSessions` y barre ventanas del
+> rate-limit), SEC-M7 (badge del workspace honesto: si está mapeado a la App y
+> el pull falla muestra "Status unavailable", nunca el local congelado) y
+> F1-01 (protocolo done-notification cross-repo adoptado en ambos context
+> cores — esta entrada existe por ese protocolo).
+>
+> **Cross-repo:** el re-forward del reaper reutiliza los senders/contratos
+> existentes sin cambio de wire; la App no necesita acción. Spec:
+> `specs/2026-07-08-auditoria-ola-e2-hardening.md`.
+
 ## [2026-07-08] — §7.6 idempotency-key dedupe on the proposal-review-decision receiver
 
 > **Summary:** Closes the last MEDIUM cross-repo security debt (App audit

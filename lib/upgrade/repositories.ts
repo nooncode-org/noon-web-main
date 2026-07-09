@@ -177,6 +177,37 @@ export async function incrementCorrectionsUsed(id: string): Promise<void> {
   `;
 }
 
+/**
+ * F5-05 (auditoría 2026-07): las rutas de audit/analyze/generate fijan un
+ * estado in-flight y disparan el pipeline sin await; si el lambda muere antes
+ * del estado terminal, la fila queda colgada para siempre. El reaper la mueve
+ * a `error`, desde donde el cliente puede reintentar (las rutas ya aceptan
+ * re-POST desde `error`). El umbral del caller debe superar el maxDuration de
+ * esas rutas (60s) con mucho margen.
+ */
+export async function failStaleInFlightUpgradeSessions(
+  cutoffIso: string,
+): Promise<{ id: string; stuckStatus: UpgradeSessionStatus }[]> {
+  const sql = getDb();
+  const ts = now();
+  // CTE para devolver el estado EN QUE estaba colgada (RETURNING a secas vería
+  // ya el 'error' nuevo); el caller lo usa para elegir el event type.
+  return sql<{ id: string; stuckStatus: UpgradeSessionStatus }[]>`
+    WITH stuck AS (
+      SELECT id, status
+      FROM website_upgrade_session
+      WHERE status IN ('crawling', 'analyzing', 'generating')
+        AND updated_at < ${cutoffIso}
+      FOR UPDATE SKIP LOCKED
+    )
+    UPDATE website_upgrade_session w
+    SET status = 'error', updated_at = ${ts}, last_activity_at = ${ts}
+    FROM stuck
+    WHERE w.id = stuck.id
+    RETURNING w.id, stuck.status AS "stuckStatus"
+  `;
+}
+
 export async function archiveStaleUpgradeSessions(): Promise<number> {
   const sql = getDb();
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

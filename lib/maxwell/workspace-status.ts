@@ -38,3 +38,33 @@ export const WORKSPACE_STATUS_META: Record<
     color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/25",
   },
 };
+
+/**
+ * SEC-M7 (auditoría 2026-07): badge honesto bajo outage de la App. Cuando el
+ * workspace está mapeado a un proyecto App, el estado live es de la App; si el
+ * pull falla NO se muestra el `workspace_status` local (congelado en 'active'
+ * desde el pago) como si fuera actual — se muestra este meta neutro.
+ */
+export const WORKSPACE_STATUS_UNAVAILABLE_META = {
+  label: "Status unavailable",
+  description:
+    "We couldn't refresh your project's live status just now. Your project is unaffected — check back in a few minutes.",
+  color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/25",
+} as const;
+
+export type WorkspaceStatusSource = "app" | "local" | "unavailable";
+
+/**
+ * Decide qué fuente alimenta el badge:
+ *   - pull App OK → estado App (autoritativo).
+ *   - mapeado a App pero pull fallido → "unavailable" (nunca el local congelado).
+ *   - sin mapping App (pre-handoff) → local (es la única verdad que existe).
+ */
+export function resolveWorkspaceStatusSource(input: {
+  linkedToApp: boolean;
+  appPullOk: boolean;
+}): WorkspaceStatusSource {
+  if (input.appPullOk) return "app";
+  if (input.linkedToApp) return "unavailable";
+  return "local";
+}

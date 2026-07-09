@@ -21,7 +21,12 @@ import {
   AI_MVP_MILESTONE_COPY,
   pickCurrentMilestone,
 } from "@/lib/maxwell/ai-mvp-milestone-copy";
-import { WORKSPACE_STATUS_META, type WorkspaceStatus } from "@/lib/maxwell/workspace-status";
+import {
+  WORKSPACE_STATUS_META,
+  WORKSPACE_STATUS_UNAVAILABLE_META,
+  resolveWorkspaceStatusSource,
+  type WorkspaceStatus,
+} from "@/lib/maxwell/workspace-status";
 import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
 import {
   formatProposalAmount,
@@ -387,9 +392,17 @@ export default async function WorkspacePage({ params }: Props) {
 
   const localStatusCfg = WORKSPACE_STATUS_META[workspace.workspaceStatus as WorkspaceStatus];
   // NoonWeb owns the client-facing label (§8.1); map the raw App enum here.
+  // SEC-M7: si el workspace está mapeado a la App y el pull falló, el badge
+  // dice "Status unavailable" en vez de mostrar el local congelado como live.
+  const statusSource = resolveWorkspaceStatusSource({
+    linkedToApp: Boolean(workspace.noonAppProjectId),
+    appPullOk: Boolean(appStatusData),
+  });
   const statusCfg = appStatusData
     ? mapProjectStatusToMeta(appStatusData.project.status)
-    : localStatusCfg;
+    : statusSource === "unavailable"
+      ? WORKSPACE_STATUS_UNAVAILABLE_META
+      : localStatusCfg;
   const appProposal = appStatusData?.proposal ?? null;
   const appLatestUpdate = appStatusData?.latestUpdate ?? null;
   // Slice 2a: version history + live published URL from the App pull. Empty until

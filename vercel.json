@@ -3,6 +3,10 @@
     {
       "path": "/api/maxwell/review-sla",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/maxwell/reaper",
+      "schedule": "30 9 * * *"
     }
   ]
 }

@@ -212,6 +212,65 @@ describe("POST /api/upgrade/[id]/generate", () => {
     );
   });
 
+  // SEC-M8 (auditoría 2026-07): toda generación con versión previa consume el
+  // cap, con o sin correctionNote — antes un POST sin body desde version_ready
+  // regeneraba gratis en loop (cost-exhaustion del budget LLM global).
+  it("SEC-M8: returns 422 for a no-note regeneration once the cap is consumed", async () => {
+    vi.mocked(repos.getUpgradeSessionById).mockResolvedValue(
+      fakeSession({ status: "version_ready", correctionsUsed: 2 }),
+    );
+    vi.mocked(repos.getNextVersionNumber).mockResolvedValue(2);
+
+    const res = await POST(req(), { params });
+    expect(res.status).toBe(422);
+    expect(repos.updateSessionStatus).not.toHaveBeenCalled();
+  });
+
+  it("SEC-M8: a no-note regeneration consumes the cap (incrementCorrectionsUsed)", async () => {
+    vi.mocked(repos.getUpgradeSessionById).mockResolvedValue(
+      fakeSession({ status: "version_ready", correctionsUsed: 1 }),
+    );
+    vi.mocked(repos.getNextVersionNumber).mockResolvedValue(2);
+    const generator = await import("@/lib/upgrade/generator");
+    vi.mocked(generator.generateUpgradedVersion).mockResolvedValue({
+      ok: true,
+      versionJson: {},
+      summary: "regen",
+    } as Awaited<ReturnType<typeof generator.generateUpgradedVersion>>);
+
+    const res = await POST(req(), { params });
+    expect(res.status).toBe(202);
+
+    // El pipeline corre en background: esperar a que consuma el cap.
+    await vi.waitFor(() => expect(repos.incrementCorrectionsUsed).toHaveBeenCalledWith("session-1"));
+    // Sin nota NO es una corrección: no debe emitir correction_applied.
+    const events = vi.mocked(repos.insertUpgradeEvent).mock.calls.map((c) => c[0].eventType);
+    expect(events).not.toContain("correction_applied");
+  });
+
+  it("SEC-M8: retry from 'error' with NO prior version stays free (legit recovery)", async () => {
+    vi.mocked(repos.getUpgradeSessionById).mockResolvedValue(
+      fakeSession({ status: "error", correctionsUsed: 2 }),
+    );
+    vi.mocked(repos.getNextVersionNumber).mockResolvedValue(1);
+    const generator = await import("@/lib/upgrade/generator");
+    vi.mocked(generator.generateUpgradedVersion).mockResolvedValue({
+      ok: true,
+      versionJson: {},
+      summary: "retry",
+    } as Awaited<ReturnType<typeof generator.generateUpgradedVersion>>);
+
+    const res = await POST(req(), { params });
+    expect(res.status).toBe(202);
+
+    await vi.waitFor(() =>
+      expect(repos.insertUpgradeEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ eventType: "generate_completed" }),
+      ),
+    );
+    expect(repos.incrementCorrectionsUsed).not.toHaveBeenCalled();
+  });
+
   it("returns 500 with generic message when updateSessionStatus throws", async () => {
     vi.mocked(repos.updateSessionStatus).mockRejectedValueOnce(new Error("DB exploded"));
     const res = await POST(req(), { params });

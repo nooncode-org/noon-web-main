@@ -138,6 +138,36 @@ describe("POST /api/maxwell/checkout", () => {
     expect(mocks.createCheckoutSession).not.toHaveBeenCalled();
   });
 
+  // SEC-M2 (auditoría 2026-07): el cutoff duro cierra el checkout aunque el
+  // status siga en 'sent' (nadie flipeó a 'expired' manualmente).
+  it("rejects with 410 a 'sent' proposal past its expires_at (hard cutoff)", async () => {
+    mocks.getProposalRequestByPublicToken.mockResolvedValue(
+      proposal({ status: "sent", expiresAt: "2020-01-01T00:00:00.000Z" }),
+    );
+
+    const res = await POST(buildRequest());
+    const body = await res.json();
+
+    expect(res.status).toBe(410);
+    expect(body.code).toBe("PROPOSAL_EXPIRED");
+    expect(mocks.createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("still accepts a 'sent' proposal with a future expires_at", async () => {
+    mocks.getProposalRequestByPublicToken.mockResolvedValue(
+      proposal({ status: "sent", expiresAt: new Date(Date.now() + 86_400_000).toISOString() }),
+    );
+    mocks.getStudioSession.mockResolvedValue(session());
+    mocks.createCheckoutSession.mockResolvedValue({
+      id: "cs_new",
+      status: "open",
+      url: "https://checkout.stripe.test/new",
+    });
+
+    const res = await POST(buildRequest());
+    expect(res.status).toBe(200);
+  });
+
   it("rejects proposals without an approved USD amount", async () => {
     mocks.getProposalRequestByPublicToken.mockResolvedValue(
       proposal({ approvedAmountUsd: null, approvedCurrency: null }),

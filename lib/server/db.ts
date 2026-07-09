@@ -33,6 +33,12 @@ export function getDb(): postgres.Sql {
       max: maxConnections,
       idle_timeout: idleTimeoutSeconds,
       connect_timeout: connectTimeoutSeconds,
+      // SEC-M10 (auditoría 2026-07): Supabase transaction pooling (puerto 6543)
+      // rompe con prepared statements — statements preparados en una conexión
+      // pueden ejecutarse en otra. `prepare: false` es seguro también en session
+      // mode (5432), así que se fija incondicionalmente en vez de depender del
+      // puerto que elija ops. Ver .env.example (DATABASE_URL).
+      prepare: false,
     });
   }
   return globalForDb.postgresClient;

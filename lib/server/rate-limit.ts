@@ -159,21 +159,28 @@ export function enforceRateLimit(opts: RateLimitOptions): void {
 /**
  * Best-effort extraction of the client IP from forwarded headers. Falls back to
  * `"anonymous"` so an unidentified attacker shares one bucket per namespace instead of
- * bypassing the limiter entirely. Order mirrors Vercel + standard CDN conventions.
+ * bypassing the limiter entirely.
+ *
+ * E2-SEC (MED-1, auditoría 2026-07): orden de confianza PLATAFORMA-primero.
+ * En Vercel, `x-real-ip` y `x-vercel-forwarded-for` los fija el edge y no son
+ * spoofeables; `x-forwarded-for` puede conservar como primer hop un valor
+ * suministrado por el cliente — con XFF-first un atacante rotaba el header y
+ * estrenaba bucket/contador en cada request (bypass del anti-scanner). XFF
+ * queda como último recurso para entornos no-Vercel.
  */
 export function resolveClientIdentity(request: Request): string {
   const headers = request.headers;
-  const fwd = headers.get("x-forwarded-for");
-  if (fwd) {
-    // Take the first hop (closest to the client). Forwarded-For is comma-separated.
-    const first = fwd.split(",")[0]?.trim();
-    if (first) return first;
-  }
   const real = headers.get("x-real-ip");
   if (real?.trim()) return real.trim();
   const vercel = headers.get("x-vercel-forwarded-for");
   if (vercel) {
     const first = vercel.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const fwd = headers.get("x-forwarded-for");
+  if (fwd) {
+    // Take the first hop (closest to the client). Forwarded-For is comma-separated.
+    const first = fwd.split(",")[0]?.trim();
     if (first) return first;
   }
   return "anonymous";
