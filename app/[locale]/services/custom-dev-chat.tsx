@@ -31,18 +31,18 @@ function BuildPiece({
 }) {
   const appearStart = GEN_START + order * GEN_STEP;
   const appearEnd   = appearStart + GEN_SNAP;
-  const times       = [0, appearStart / GEN_CYCLE, appearEnd / GEN_CYCLE, 0.86, 0.96, 1];
+  const times       = [0, appearStart / GEN_CYCLE, appearEnd / GEN_CYCLE, 1];
   const shown       = slide ? { opacity: 1, x: 0 } : { opacity: 1, y: 0, scale: 1 };
   const keyframes   = slide
-    ? { opacity: [0,0,1,1,0,0], x: [-8,-8,0,0,0,-8] }
-    : { opacity: [0,0,1,1,0,0], y: [8,8,0,0,0,8], scale: [0.94,0.94,1,1,1,0.94] };
+    ? { opacity: [0,0,1,1], x: [-8,-8,0,0] }
+    : { opacity: [0,0,1,1], y: [8,8,0,0], scale: [0.94,0.94,1,1] };
   return (
     <motion.div
       className={className}
       initial={false}
       animate={active ? keyframes : shown}
       transition={active
-        ? { duration: GEN_CYCLE, times, repeat: Infinity, ease: "easeOut", repeatDelay: 0.4 }
+        ? { duration: GEN_CYCLE, times, ease: "easeOut" }
         : { duration: 0.4, ease: "easeOut" }}
     >{children}</motion.div>
   );
@@ -56,9 +56,9 @@ function GenerateViz({ active }: { active: boolean }) {
         <motion.div
           className="h-full origin-left bg-foreground/55"
           initial={false}
-          animate={active ? { scaleX: [0,1,1,0,0] } : { scaleX: 1 }}
+          animate={active ? { scaleX: [0, 1, 1] } : { scaleX: 1 }}
           transition={active
-            ? { duration: GEN_CYCLE, times: [0, GEN_BUILD_DONE, 0.86, 0.96, 1], repeat: Infinity, ease: "linear", repeatDelay: 0.4 }
+            ? { duration: GEN_CYCLE, times: [0, GEN_BUILD_DONE, 1], ease: "linear" }
             : { duration: 0.4, ease: "linear" }}
         />
       </div>
