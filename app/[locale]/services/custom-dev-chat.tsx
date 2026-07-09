@@ -22,7 +22,7 @@ const GEN_CYCLE = 5;
 const GEN_START = 0.1;
 const GEN_STEP  = 0.28;
 const GEN_SNAP  = 0.5;
-const GEN_BUILD_DONE = (GEN_START + 12 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
+const GEN_BUILD_DONE = (GEN_START + 3 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
 
 function BuildPiece({
   order, active, className, children,
@@ -48,6 +48,7 @@ function BuildPiece({
 function GenerateViz({ active }: { active: boolean }) {
   return (
     <div className="relative h-80 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
+      {/* progress bar */}
       <div className="absolute inset-x-0 top-0 z-30 h-0.5 bg-foreground/10">
         <motion.div
           className="h-full origin-left bg-foreground/55"
@@ -58,55 +59,32 @@ function GenerateViz({ active }: { active: boolean }) {
             : { duration: 0.4, ease: "linear" }}
         />
       </div>
-      <div className="absolute inset-0 p-3">
-        <BuildPiece order={0} active={active} className="mb-3 flex items-center gap-2">
-          <div className="h-2.5 w-8 rounded-full bg-foreground/25" />
-          <div className="ml-auto h-1.5 w-5 rounded-full bg-foreground/12" />
-          <div className="h-1.5 w-5 rounded-full bg-foreground/12" />
-          <div className="h-1.5 w-5 rounded-full bg-foreground/12" />
-        </BuildPiece>
-        <div className="mb-3 flex items-start gap-3">
-          <div className="flex-1 space-y-2 pt-0.5">
-            <BuildPiece order={1} active={active} className="h-3 w-3/4 rounded-full bg-foreground/30" />
-            <BuildPiece order={2} active={active} className="h-1.5 w-1/2 rounded-full bg-foreground/12" />
-            <BuildPiece order={3} active={active} className="mt-1.5 h-3 w-14 rounded-full bg-foreground/15" />
+      {/* bottom dissolve */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20"
+        style={{ height: "58%", background: "linear-gradient(to bottom, transparent, var(--background))" }}
+      />
+      <div className="absolute inset-0 p-4 pt-5">
+        {/* Nav */}
+        <BuildPiece order={0} active={active} className="mb-4 flex items-center gap-2.5">
+          <div className="h-3 w-3 shrink-0 rounded-full bg-foreground/25" />
+          <div className="h-1.5 w-12 rounded-full bg-foreground/20" />
+          <div className="ml-auto flex items-center gap-2">
+            <div className="h-5 w-12 rounded bg-foreground/[0.07]" />
+            <div className="h-5 w-12 rounded bg-foreground/[0.07]" />
+            <div className="h-5 w-12 rounded bg-foreground/[0.07]" />
           </div>
-          <BuildPiece order={4} active={active} className="h-16 w-20 rounded-lg bg-foreground/[0.07]" />
+        </BuildPiece>
+        {/* Two cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <BuildPiece order={1} active={active} className="h-32 rounded-lg bg-foreground/[0.06]" />
+          <BuildPiece order={2} active={active} className="h-44 rounded-lg bg-foreground/[0.06]" />
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[0,1,2].map((i) => (
-            <BuildPiece key={i} order={5+i} active={active} className="space-y-2">
-              <div className="h-10 rounded-md bg-foreground/[0.06]" />
-              <div className="h-1.5 w-3/4 rounded-full bg-foreground/15" />
-            </BuildPiece>
-          ))}
-        </div>
-        <BuildPiece order={8} active={active} className="mt-2 space-y-1.5 rounded-md bg-foreground/[0.03] p-2">
-          <div className="h-1.5 w-full rounded-full bg-foreground/[0.08]" />
-          <div className="h-1.5 w-4/5 rounded-full bg-foreground/[0.08]" />
-        </BuildPiece>
-        <BuildPiece order={9} active={active} className="mt-2 flex items-center gap-2">
-          <div className="h-2.5 w-10 rounded-[2px] bg-foreground/12" />
-          <div className="ml-auto space-y-1">
-            <div className="h-1.5 w-10 rounded-full bg-foreground/[0.08]" />
-            <div className="h-1 w-7 rounded-full bg-foreground/[0.08]" />
-          </div>
-        </BuildPiece>
-        <BuildPiece order={10} active={active} className="mt-2 h-1.5 w-10 rounded-full bg-green-500/70" />
-        <BuildPiece order={11} active={active} className="mt-3 grid grid-cols-3 gap-2">
-          {[0,1,2].map((i) => (
-            <div key={i} className="space-y-1">
-              <div className="h-3.5 w-8 rounded-full bg-foreground/25" />
-              <div className="h-1.5 w-12 rounded-full bg-foreground/10" />
-            </div>
-          ))}
-        </BuildPiece>
-        <BuildPiece order={12} active={active} className="mt-3 flex items-center gap-2 rounded-md bg-foreground/[0.04] p-2.5">
-          <div className="flex-1 space-y-1.5">
-            <div className="h-2 w-3/4 rounded-full bg-foreground/20" />
-            <div className="h-1.5 w-1/2 rounded-full bg-foreground/10" />
-          </div>
-          <div className="h-6 w-14 shrink-0 rounded-full bg-foreground/15" />
+        {/* Bottom wide section with subtle divider */}
+        <BuildPiece order={3} active={active} className="mt-3 flex h-16 w-full overflow-hidden rounded-lg bg-foreground/[0.04]">
+          <div className="flex-1" />
+          <div className="w-px bg-foreground/[0.06]" />
+          <div className="flex-1" />
         </BuildPiece>
       </div>
     </div>
