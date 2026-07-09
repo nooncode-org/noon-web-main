@@ -185,7 +185,7 @@ function ChatPanel({ phase, typed }: { phase: Phase; typed: number }) {
               <div className="h-3 w-3 shrink-0 rounded-full bg-foreground/[0.08] border border-foreground/[0.08] flex items-center justify-center">
                 <NoonMark size={5} />
               </div>
-              <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-foreground/[0.06] border border-foreground/[0.05] px-3 py-2.5">
+              <div className="flex items-center gap-1.5 rounded-full bg-foreground/[0.06] border border-foreground/[0.05] px-4 py-1.5">
                 {[0, 1, 2].map((i) => (
                   <span key={i} className="cds-sk block h-1.5 w-1.5 rounded-full"
                     style={{ animationDelay: `${i * 0.18}s` }} />
