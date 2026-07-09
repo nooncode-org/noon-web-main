@@ -14,14 +14,14 @@ const T_CHAR       = 55;
 const T_SENT       = 650;
 const T_THINKING   = 1600;
 const T_PROCESSING = 1500;
-const T_GENERATING = 8600;
+const T_GENERATING = 5200;
 const T_DONE       = 600;
 
 // ── GenerateViz primitives ────────────────────────────────────────────────────
-const GEN_CYCLE = 8;
-const GEN_START = 0.15;
-const GEN_STEP  = 0.5;
-const GEN_SNAP  = 0.7;
+const GEN_CYCLE = 5;
+const GEN_START = 0.1;
+const GEN_STEP  = 0.28;
+const GEN_SNAP  = 0.5;
 const GEN_BUILD_DONE = (GEN_START + 12 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
 
 function BuildPiece({
@@ -51,7 +51,7 @@ function BuildPiece({
 // ── GenerateViz ───────────────────────────────────────────────────────────────
 function GenerateViz({ active }: { active: boolean }) {
   return (
-    <div className="relative h-72 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
+    <div className="relative h-80 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
       <div className="absolute inset-x-0 top-0 z-30 h-0.5 bg-foreground/10">
         <motion.div
           className="h-full origin-left bg-foreground/55"
@@ -62,55 +62,55 @@ function GenerateViz({ active }: { active: boolean }) {
             : { duration: 0.4, ease: "linear" }}
         />
       </div>
-      <div className="absolute inset-0 p-2.5">
-        <BuildPiece order={0} active={active} className="mb-2.5 flex items-center gap-2">
-          <div className="h-2 w-7 rounded-full bg-foreground/25" />
-          <div className="ml-auto h-1 w-4 rounded-full bg-foreground/12" />
-          <div className="h-1 w-4 rounded-full bg-foreground/12" />
-          <div className="h-1 w-4 rounded-full bg-foreground/12" />
+      <div className="absolute inset-0 p-3">
+        <BuildPiece order={0} active={active} className="mb-3 flex items-center gap-2">
+          <div className="h-2.5 w-8 rounded-full bg-foreground/25" />
+          <div className="ml-auto h-1.5 w-5 rounded-full bg-foreground/12" />
+          <div className="h-1.5 w-5 rounded-full bg-foreground/12" />
+          <div className="h-1.5 w-5 rounded-full bg-foreground/12" />
         </BuildPiece>
-        <div className="mb-2.5 flex items-start gap-2.5">
-          <div className="flex-1 space-y-1.5 pt-0.5">
-            <BuildPiece order={1} active={active} slide className="h-2 w-3/4 rounded-full bg-foreground/30" />
-            <BuildPiece order={2} active={active} slide className="h-1 w-1/2 rounded-full bg-foreground/12" />
-            <BuildPiece order={3} active={active} slide className="mt-1 h-2.5 w-10 rounded-full bg-foreground/15" />
+        <div className="mb-3 flex items-start gap-3">
+          <div className="flex-1 space-y-2 pt-0.5">
+            <BuildPiece order={1} active={active} slide className="h-3 w-3/4 rounded-full bg-foreground/30" />
+            <BuildPiece order={2} active={active} slide className="h-1.5 w-1/2 rounded-full bg-foreground/12" />
+            <BuildPiece order={3} active={active} slide className="mt-1.5 h-3 w-14 rounded-full bg-foreground/15" />
           </div>
-          <BuildPiece order={4} active={active} className="h-12 w-16 rounded-lg bg-foreground/[0.07]" />
+          <BuildPiece order={4} active={active} className="h-16 w-20 rounded-lg bg-foreground/[0.07]" />
         </div>
         <div className="grid grid-cols-3 gap-2">
           {[0,1,2].map((i) => (
-            <BuildPiece key={i} order={5+i} active={active} className="space-y-1.5">
-              <div className="h-6 rounded-md bg-foreground/[0.06]" />
-              <div className="h-1 w-3/4 rounded-full bg-foreground/15" />
+            <BuildPiece key={i} order={5+i} active={active} className="space-y-2">
+              <div className="h-10 rounded-md bg-foreground/[0.06]" />
+              <div className="h-1.5 w-3/4 rounded-full bg-foreground/15" />
             </BuildPiece>
           ))}
         </div>
-        <BuildPiece order={8} active={active} className="mt-1.5 space-y-1 rounded-md bg-foreground/[0.03] p-1.5">
-          <div className="h-1 w-full rounded-full bg-foreground/[0.08]" />
-          <div className="h-1 w-4/5 rounded-full bg-foreground/[0.08]" />
+        <BuildPiece order={8} active={active} className="mt-2 space-y-1.5 rounded-md bg-foreground/[0.03] p-2">
+          <div className="h-1.5 w-full rounded-full bg-foreground/[0.08]" />
+          <div className="h-1.5 w-4/5 rounded-full bg-foreground/[0.08]" />
         </BuildPiece>
-        <BuildPiece order={9} active={active} className="mt-1.5 flex items-start gap-2">
-          <div className="h-2 w-8 rounded-[2px] bg-foreground/12" />
+        <BuildPiece order={9} active={active} className="mt-2 flex items-center gap-2">
+          <div className="h-2.5 w-10 rounded-[2px] bg-foreground/12" />
           <div className="ml-auto space-y-1">
-            <div className="h-1 w-8 rounded-full bg-foreground/[0.08]" />
-            <div className="h-1 w-6 rounded-full bg-foreground/[0.08]" />
+            <div className="h-1.5 w-10 rounded-full bg-foreground/[0.08]" />
+            <div className="h-1 w-7 rounded-full bg-foreground/[0.08]" />
           </div>
         </BuildPiece>
-        <BuildPiece order={10} active={active} className="mt-1.5 h-1 w-9 rounded-full bg-green-500/70" />
-        <BuildPiece order={11} active={active} className="mt-2.5 grid grid-cols-3 gap-2">
+        <BuildPiece order={10} active={active} className="mt-2 h-1.5 w-10 rounded-full bg-green-500/70" />
+        <BuildPiece order={11} active={active} className="mt-3 grid grid-cols-3 gap-2">
           {[0,1,2].map((i) => (
-            <div key={i} className="space-y-0.5">
-              <div className="h-2.5 w-7 rounded-full bg-foreground/25" />
-              <div className="h-1 w-10 rounded-full bg-foreground/10" />
+            <div key={i} className="space-y-1">
+              <div className="h-3.5 w-8 rounded-full bg-foreground/25" />
+              <div className="h-1.5 w-12 rounded-full bg-foreground/10" />
             </div>
           ))}
         </BuildPiece>
-        <BuildPiece order={12} active={active} className="mt-2 flex items-center gap-2 rounded-md bg-foreground/[0.04] p-2">
-          <div className="flex-1 space-y-1">
-            <div className="h-1.5 w-3/4 rounded-full bg-foreground/20" />
-            <div className="h-1 w-1/2 rounded-full bg-foreground/10" />
+        <BuildPiece order={12} active={active} className="mt-3 flex items-center gap-2 rounded-md bg-foreground/[0.04] p-2.5">
+          <div className="flex-1 space-y-1.5">
+            <div className="h-2 w-3/4 rounded-full bg-foreground/20" />
+            <div className="h-1.5 w-1/2 rounded-full bg-foreground/10" />
           </div>
-          <div className="h-5 w-12 shrink-0 rounded-full bg-foreground/15" />
+          <div className="h-6 w-14 shrink-0 rounded-full bg-foreground/15" />
         </BuildPiece>
       </div>
     </div>
@@ -126,7 +126,7 @@ function ChatPanel({ phase, typed }: { phase: Phase; typed: number }) {
   const hasThinking = phase === "thinking";
 
   return (
-    <div className="relative h-72 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex flex-col">
+    <div className="relative h-80 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex flex-col">
       {/* Header */}
       <div className="flex shrink-0 items-center gap-2 border-b border-foreground/[0.07] px-3 py-2.5">
         <div className="h-3 w-3 shrink-0 rounded-sm bg-foreground/15 flex items-center justify-center">
@@ -228,7 +228,7 @@ function ChatPanel({ phase, typed }: { phase: Phase; typed: number }) {
 // ── ProcessingPanel ───────────────────────────────────────────────────────────
 function ProcessingPanel() {
   return (
-    <div className="relative h-72 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex flex-col items-center justify-center gap-5">
+    <div className="relative h-80 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex flex-col items-center justify-center gap-5">
       <div className="w-[66%]">
         <div className="h-px bg-foreground/[0.08]" />
         <motion.div
