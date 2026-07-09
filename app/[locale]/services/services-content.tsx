@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowRight, ShieldCheck, Blocks, UserRound, Building2 } from "lucide-react";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
-import { CustomDevChat, CustomDevScreens, CustomDevChatViz } from "./custom-dev-chat";
+import { CustomDevChat, CustomDevFlow } from "./custom-dev-chat";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
@@ -147,13 +147,6 @@ export function ServicesContent() {
           4-col grid / same wrap, so the lines land exactly on the dividers. */}
       <section className="svc-section" id="services-offer" style={{ paddingTop: 0 }}>
         <div className="svc-wrap">
-          <div className="svc-arch">
-          <div className="svc-arch-rail" aria-hidden>
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
           <div className="svc-cards">
             {services.map((s) => (
               <Link key={s.name} href={s.href} className="svc-card">
@@ -167,14 +160,6 @@ export function ServicesContent() {
               </Link>
             ))}
           </div>
-          <div className="svc-sechead">
-            <h2 className="svc-h2">The service architecture</h2>
-            <p className="svc-lead">
-              The order is intentional: first define whether the work is a new build, an upgrade,
-              ongoing support, or a diagnostic audit.
-            </p>
-          </div>
-          </div>
           <div className="svc-services">
             {services.map((s) => {
               const featured = s.name === "Custom Development";
@@ -187,8 +172,7 @@ export function ServicesContent() {
                 )}
                 {featured && (
                   <div className="cds-panel" aria-hidden>
-                    <CustomDevChatViz />
-                    <CustomDevScreens />
+                    <CustomDevFlow />
                   </div>
                 )}
                 <div className="svc-service-body">

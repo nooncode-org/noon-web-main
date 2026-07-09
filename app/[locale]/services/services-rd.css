@@ -164,37 +164,8 @@ html:not(.dark) .svc-card-fig img { filter: invert(1); }
 
 .svc-services { border: 1px solid var(--border); overflow: hidden; }
 
-/* .svc-arch — overview cards, the intro text, and the detailed box, with a BACKGROUND
-   rail that extends the overview card dividers straight DOWN behind the text to the
-   box. The rail is the SAME 4-col grid in the SAME content width as the cards (1px
-   transparent L/R border matches the cards' 1px border), so its lines land exactly
-   on the card dividers. It sits behind (z-index 0); nothing is moved or cut. The
-   opaque page-bg cells hide the rail behind the cards/box, so the lines only show in
-   the gap + behind the intro text. Desktop-only (≥960, where the cards are 4-col). */
-.svc-arch { position: relative; padding-bottom: clamp(28px, 4vw, 40px); }
-.svc-arch > .svc-cards,
-.svc-arch > .svc-sechead { position: relative; z-index: 1; }
 .svc-arch > .svc-cards { margin-bottom: clamp(56px, 8vw, 96px); }
-.svc-arch > .svc-sechead { margin: 0 auto; text-align: center; }
 .svc-arch-rail { display: none; }
-@media (min-width: 960px) {
-  /* mirror the cards EXACTLY: container border-left + every cell border-right,
-     same content width → rail dividers land pixel-exact on the card dividers. */
-  .svc-arch-rail {
-    position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr;
-    gap: 0;
-    border-left: 1px solid var(--border);
-  }
-  .svc-arch-rail > span { border-right: 1px solid var(--border); }
-  /* Extend col-1 rail divider (25%) downward into the featured Custom Dev block */
-  .svc-arch::after {
-    content: ''; position: absolute; pointer-events: none;
-    left: 25%; top: 100%;
-    width: 1px; height: 440px;
-    background: var(--border); z-index: 0;
-  }
-}
 .svc-service { border-top: 1px solid var(--border); display: flex; flex-direction: column; }
 .svc-service:first-child { border-top: 0; }
 @media (min-width: 900px) { .svc-service { flex-direction: row; min-height: 300px; } .svc-service.flip { flex-direction: row-reverse; } }
@@ -226,7 +197,7 @@ html:not(.dark) .svc-service-fig img { filter: invert(1); }
 @media (min-width: 960px) {
   .svc-service.featured { justify-content: space-between; }
   .svc-service.featured .svc-service-body { flex: 0 0 25%; max-width: 25%; }
-  .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 140px; padding: 0 24px; }
+  .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0 24px; }
 }
 @media (max-width: 959px) { .cds-panel { display: none; } }
 
