@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
 import { TemplateMockup } from "@/components/landing/explore-builds-section";
 import { WorkShot } from "@/components/work/work-shot";
+import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import templateMockups from "@/data/template-mockups.json";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SitePageFrame } from "@/app/_components/site/site-page-frame";
-import { SiteCtaBlock } from "@/app/_components/site/site-cta-block";
 import { templatesCatalog, RETIRED_TEMPLATE_SLUGS } from "@/data/templates";
-import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { getContactHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
-
 import { routing } from "@/i18n/routing";
+import "@/app/_components/site/legal-rd.css";
+import "@/app/_components/site/site-footer-rd.css";
+import "./template-detail-rd.css";
 
 type TemplateDetailPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -30,9 +32,7 @@ export async function generateMetadata({ params }: TemplateDetailPageProps): Pro
   const template = templatesCatalog.find((item) => item.slug === slug);
 
   if (!template) {
-    return {
-      title: "Template Not Found | Noon",
-    };
+    return { title: "Template Not Found | Noon" };
   }
 
   return {
@@ -45,211 +45,185 @@ export async function generateMetadata({ params }: TemplateDetailPageProps): Pro
 export default async function TemplateDetailPage({ params }: TemplateDetailPageProps) {
   const { locale, slug } = await params;
 
-  // Retired slug (e.g. approval-workflow-tool, merged into the operations
-  // command center) → redirect, so the frozen Home carousel's link resolves.
   const redirectTo = RETIRED_TEMPLATE_SLUGS[slug];
   if (redirectTo) {
     redirect(`/${locale}/templates/${redirectTo}`);
   }
 
   const template = templatesCatalog.find((item) => item.slug === slug);
-
-  if (!template) {
-    notFound();
-  }
+  if (!template) notFound();
 
   const t = await getTranslations({ locale, namespace: "templates.detail.cta" });
-  const viewer = await getAuthenticatedViewer();
+  const lp = (href: string) => `/${locale}${href}`;
 
-  // Live product mockup for this template, if one has been built
-  // (data/template-mockups.json, generated from the Claude Design handoffs).
-  // When present, the hero shows the real, interactive product preview; when
-  // not, it falls back to the faithful per-category code mockup.
   const mockups = templateMockups as Record<string, { src: string; w: number; h: number }>;
   const mockup = mockups[template.slug];
 
+  const ctaPrimary = lp(getStartWithMaxwellHref(template.prompt));
+  const ctaContact = lp(getContactHref({ inquiry: "templates", source: `template-${template.slug}` }));
+
   return (
-    <SitePageFrame viewer={viewer}>
-      <div className="mx-auto w-full max-w-5xl px-6 py-12 lg:py-20">
-        {/* Back link */}
-        <Link
-          href={siteRoutes.templates}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          All templates
-        </Link>
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      {/* nav */}
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <Link href={lp("/")} className="lgl-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </Link>
+          <nav className="lgl-nav-links">
+            <Link href={lp(siteRoutes.services)}>Services</Link>
+            <Link href={lp(siteRoutes.about)}>About</Link>
+            <Link href={lp(siteRoutes.contact)}>Contact</Link>
+          </nav>
+          <Link href={ctaPrimary} className="lgl-nav-cta lgl-btn lgl-btn-primary">
+            Start with Maxwell
+          </Link>
+        </div>
+      </header>
 
-        {/* Hero — with a live mockup, a compact info header sits above the
-           full-width interactive product preview; without one, the original
-           two-column layout (info beside the per-category code mockup). */}
-        {mockup ? (
-          <div className="mb-16">
-            <div className="mb-8 max-w-3xl">
-              <span className="mb-3 block text-xs font-mono uppercase tracking-wider text-muted-foreground">
-                {template.category}
-              </span>
-              <h1 className="mb-4 text-3xl font-medium tracking-tight text-foreground lg:text-4xl">
-                {template.name}
-              </h1>
-              <p className="site-hero-copy mb-6 text-muted-foreground">{template.summary}</p>
-              <div className="mb-8 flex flex-wrap gap-2">
-                {template.bestFit.map((fit) => (
-                  <span
-                    key={fit}
-                    className="rounded-full border border-border bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground"
-                  >
-                    {fit}
-                  </span>
-                ))}
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="h-11 rounded-full px-6 text-sm">
-                  <Link href={getStartWithMaxwellHref(template.prompt)}>Use this template</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6 text-sm">
-                  <Link href={getContactHref({ inquiry: "templates", source: `template-${template.slug}` })}>
-                    Contact Noon
-                  </Link>
-                </Button>
-              </div>
-            </div>
+      <div className="lgl-frame" aria-hidden />
 
-            {/* Live, interactive product preview (real mockup, Expand to 1:1) */}
-            <WorkShot
-              frame={{ src: mockup.src, title: `${template.name} — live product preview`, w: mockup.w, h: mockup.h }}
-            />
-            <p className="mt-3 text-xs text-muted-foreground/70">
-              Illustrative preview of a build from this baseline — fictional data. Hover to interact; expand for full
-              size.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 mb-16">
-            {/* Preview — the same faithful product mockup shown on the card grid */}
-            <div className="relative aspect-video overflow-hidden rounded-[10px] border border-border bg-secondary/40">
-              <TemplateMockup category={template.category} />
-            </div>
+      <main className="td-main">
+        <div className="td-wrap">
 
-            {/* Info */}
-            <div className="flex flex-col justify-center">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
-                {template.category}
-              </span>
-              <h1 className="text-3xl font-medium tracking-tight text-foreground lg:text-4xl mb-4">
-                {template.name}
-              </h1>
-              <p className="site-hero-copy mb-6 text-muted-foreground">
-                {template.summary}
-              </p>
+          {/* back */}
+          <Link href={lp(siteRoutes.templates)} className="td-back">
+            <ArrowLeft size={14} />
+            All templates
+          </Link>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-8">
-                {template.bestFit.map((fit) => (
-                  <span
-                    key={fit}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-secondary/40 text-muted-foreground"
-                  >
-                    {fit}
-                  </span>
-                ))}
-              </div>
-
-              {/* CTAs */}
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="h-11 rounded-full px-6 text-sm">
-                  <Link href={getStartWithMaxwellHref(template.prompt)}>
+          {/* ── hero WITH live mockup ── */}
+          {mockup ? (
+            <>
+              <div className="td-hero-meta">
+                <p className="td-category">{template.category}</p>
+                <h1 className="td-title">{template.name}</h1>
+                <p className="td-summary">{template.summary}</p>
+                <div className="td-tags">
+                  {template.bestFit.map((fit) => (
+                    <span key={fit} className="td-tag">{fit}</span>
+                  ))}
+                </div>
+                <div className="td-ctas">
+                  <Link href={ctaPrimary} className="lgl-btn lgl-btn-primary">
                     Use this template
                   </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="h-11 rounded-full px-6 text-sm">
-                  <Link href={getContactHref({ inquiry: "templates", source: `template-${template.slug}` })}>
+                  <Link href={ctaContact} className="lgl-btn lgl-btn-secondary">
                     Contact Noon
                   </Link>
-                </Button>
+                </div>
+              </div>
+
+              <WorkShot
+                frame={{
+                  src: mockup.src,
+                  title: `${template.name} — live product preview`,
+                  w: mockup.w,
+                  h: mockup.h,
+                }}
+              />
+              <p className="td-mockup-caption">
+                Illustrative preview of a build from this baseline — fictional data. Hover to
+                interact; expand for full size.
+              </p>
+            </>
+          ) : (
+            /* ── hero WITHOUT live mockup (two-column) ── */
+            <div className="td-hero-2col">
+              <div className="td-preview">
+                <TemplateMockup category={template.category} />
+              </div>
+              <div className="td-preview-info">
+                <p className="td-category">{template.category}</p>
+                <h1 className="td-title">{template.name}</h1>
+                <p className="td-summary">{template.summary}</p>
+                <div className="td-tags">
+                  {template.bestFit.map((fit) => (
+                    <span key={fit} className="td-tag">{fit}</span>
+                  ))}
+                </div>
+                <div className="td-ctas">
+                  <Link href={ctaPrimary} className="lgl-btn lgl-btn-primary">
+                    Use this template
+                  </Link>
+                  <Link href={ctaContact} className="lgl-btn lgl-btn-secondary">
+                    Contact Noon
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── details grid ── */}
+          <div className="td-section" style={{ marginTop: "clamp(48px, 5vw, 72px)" }}>
+            <div className="td-grid">
+              {/* Included */}
+              <div className="td-cell">
+                <p className="td-cell-title">Included in baseline</p>
+                <ul className="td-item-list">
+                  {template.includes.map((item) => (
+                    <li key={item} className="td-item">
+                      <span className="td-item-icon"><Check size={14} /></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Extensions */}
+              <div className="td-cell">
+                <p className="td-cell-title">Typical extensions</p>
+                <ul className="td-item-list">
+                  {template.extensions.map((item) => (
+                    <li key={item} className="td-item">
+                      <span className="td-item-dot" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Best fit */}
+              <div className="td-cell">
+                <p className="td-cell-title">Best fit</p>
+                <div className="td-use">
+                  <p className="td-use-label"><Check size={12} /> Use when</p>
+                  <p className="td-use-text">{template.useWhen}</p>
+                </div>
+                <div className="td-use">
+                  <p className="td-use-label"><X size={12} /> Not ideal when</p>
+                  <p className="td-use-text">{template.notIdealWhen}</p>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Details Grid */}
-        <div className="grid gap-6 lg:grid-cols-3 mb-16">
-          {/* Included */}
-          <div className="border border-border bg-card p-6">
-            <h2 className="text-sm font-medium text-foreground mb-4">Included in baseline</h2>
-            <ul className="space-y-3">
-              {template.includes.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <Check className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+          {/* ── promise ── */}
+          <div className="td-promise">
+            <p className="td-promise-label">What this baseline delivers</p>
+            <p className="td-promise-text">{template.baselinePromise}</p>
           </div>
 
-          {/* Extensions */}
-          <div className="border border-border bg-card p-6">
-            <h2 className="text-sm font-medium text-foreground mb-4">Typical extensions</h2>
-            <ul className="space-y-3">
-              {template.extensions.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm text-muted-foreground">
-                  <span className="h-4 w-4 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* When to use */}
-          <div className="border border-border bg-card p-6">
-            <h2 className="text-sm font-medium text-foreground mb-4">Best fit</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-medium text-foreground mb-2">
-                  <Check className="h-3.5 w-3.5" />
-                  Use when
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {template.useWhen}
-                </p>
-              </div>
-              <div className="pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-xs font-medium text-foreground mb-2">
-                  <X className="h-3.5 w-3.5" />
-                  Not ideal when
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {template.notIdealWhen}
-                </p>
-              </div>
+          {/* ── CTA ── */}
+          <div className="td-cta">
+            <h2 className="td-cta-title">{t("headline")}</h2>
+            <p className="td-cta-desc">{t("description")}</p>
+            <div className="td-cta-actions">
+              <Link href={ctaPrimary} className="lgl-btn lgl-btn-primary">
+                {t("startWithMaxwell")}
+              </Link>
+              <Link href={lp(siteRoutes.templates)} className="lgl-btn lgl-btn-secondary">
+                {t("browseAll")}
+              </Link>
             </div>
           </div>
+
         </div>
+      </main>
 
-        {/* Promise */}
-        <div className="border border-border bg-secondary/20 p-6 lg:p-8 mb-16">
-          <h2 className="text-sm font-medium text-foreground mb-3">What this baseline delivers</h2>
-          <p className="site-section-copy text-muted-foreground">
-            {template.baselinePromise}
-          </p>
-        </div>
-
-      </div>
-
-      <SiteCtaBlock
-        title={t("headline")}
-        description={t("description")}
-        primaryAction={{
-          label: t("startWithMaxwell"),
-          href: getStartWithMaxwellHref(template.prompt),
-        }}
-        secondaryAction={{
-          label: t("browseAll"),
-          href: siteRoutes.templates,
-        }}
-      />
-    </SitePageFrame>
+      <SiteFooterRd />
+    </div>
   );
 }

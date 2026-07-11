@@ -2,17 +2,15 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { NoonLogo } from "@/components/ui/noon-logo";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
 import { getContactHref } from "@/lib/site-config";
+import "@/app/_components/site/legal-rd.css";
+import "./not-found.css";
 
 // Root-level error boundary for the App Router. Catches errors thrown in any
-// route segment that does not have its own `error.tsx`. The component MUST
-// be a client component — Next.js wires it as a React error boundary.
-//
-// `reset` is the Next-provided callback that retries the rendering of the
-// segment that threw. `error.digest` is a server-generated hash that
-// identifies the error in the platform logs (useful when a user reports the
-// issue and we look it up in Vercel logs).
+// route segment without its own error.tsx. MUST be a client component.
 export default function GlobalErrorBoundary({
   error,
   reset,
@@ -21,69 +19,69 @@ export default function GlobalErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface to Vercel logs. Once Vercel Analytics is mounted (B42) this
-    // also feeds the dashboard. No third-party error tracker is wired —
-    // see roadmap §10.8.3 for the accepted gap.
     console.error("App Router error boundary caught:", error);
   }, [error]);
 
-  const contactHref = getContactHref({
-    inquiry: "general",
-    source: "error-page",
-  });
+  const contactHref = getContactHref({ inquiry: "general", source: "error-page" });
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-border/60 px-6 py-5">
-        <div className="mx-auto flex max-w-3xl items-center">
-          <Link href="/" aria-label="Noon home" className="inline-flex">
-            <NoonLogo variant="lockup" height={24} />
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <Link href="/" className="lgl-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
           </Link>
+          <nav className="lgl-nav-links">
+            <Link href="/en/services">Services</Link>
+            <Link href="/en/about">About</Link>
+            <Link href="/en/contact">Contact</Link>
+          </nav>
         </div>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md text-center">
-          <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Something broke
-          </p>
-          <h1 className="mb-4 font-display text-2xl leading-tight">
-            That didn&apos;t go as planned.
-          </h1>
-          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            We hit an unexpected error. You can try again, head back home, or contact us if it
-            keeps happening — we&apos;ll dig in.
-          </p>
+      <div className="lgl-frame" aria-hidden />
 
+      <main className="nf-main">
+        <div className="nf-center">
+          <h1 className="nf-display">
+            That didn&apos;t go<br />as planned.
+          </h1>
+          <p className="nf-lead">
+            We hit an unexpected error. Try again, head back home, or contact us if it keeps
+            happening — we&apos;ll dig in.
+          </p>
           {error.digest && (
-            <p className="mb-8 inline-block rounded-full border border-border bg-secondary/30 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <p
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.04em",
+                color: "var(--text-muted)",
+                marginBottom: 24,
+              }}
+            >
               Ref {error.digest.slice(0, 8)}
             </p>
           )}
-
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              onClick={reset}
-              className="site-primary-action inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium"
-            >
+          <div className="nf-actions">
+            <button type="button" onClick={reset} className="lgl-btn lgl-btn-primary">
               Try again
             </button>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary/50"
-            >
+            <Link href="/" className="lgl-btn lgl-btn-secondary">
               Back to home
             </Link>
-            <Link
-              href={contactHref}
-              className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary/50"
-            >
+            <Link href={contactHref} className="lgl-btn lgl-btn-secondary">
               Contact Noon
             </Link>
           </div>
         </div>
       </main>
+
+      <footer className="nf-footer">
+        <span>© 2026 Noon</span>
+      </footer>
     </div>
   );
 }

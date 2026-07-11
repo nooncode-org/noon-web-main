@@ -31,7 +31,7 @@ const FAQS = [
   { q: "Do I need a full spec before reaching out?", a: "No. Most projects start with a business problem, not a spec. Describe the problem in plain language and we'll turn it into a clear scope with you — what's in and out, agreed up front — before anything is built." },
   { q: "What happens after I send the form?", a: "We confirm we've received your inquiry within 2 business hours, your request reaches the right specialist within 24, and you get a substantive reply within 48. For a strong fit, we set up a discovery call within the week." },
   { q: "Can you work on something that already exists?", a: "Yes. Upgrade is our improvement path for products that already run, the Business Technology Audit maps what to cut, keep, or build across your stack, and Engineering Support embeds developers directly with your team." },
-  { q: "Is what I share confidential?", a: "Yes — client work is treated as confidential. Anything we showcase publicly is anonymized: names, brands, and data are changed, as on our Work page. Nothing identifiable is published without permission." },
+  { q: "Is what I share confidential?", a: "Yes — client work is treated as confidential. Anything we showcase publicly is anonymized: names, brands, and data are changed. Nothing identifiable is published without permission." },
   { q: "How is pricing handled?", a: "Pricing depends on scope and complexity. You get a transparent quote after the scoping phase — no hidden fees, no hourly billing surprises. You know the full cost before we start building." },
 ];
 
@@ -57,7 +57,6 @@ export default async function ContactRedesignPage({ params, searchParams }: Prop
           </Link>
           <nav className="ct-nav-links">
             <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.work)}>Work</Link>
             <Link href={lp(siteRoutes.about)}>About</Link>
             <Link href={lp(siteRoutes.contact)} className="active">Contact</Link>
           </nav>

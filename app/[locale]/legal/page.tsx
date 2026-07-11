@@ -67,7 +67,6 @@ export default async function LegalPage({ params }: LegalPageProps) {
           </Link>
           <nav className="lgl-nav-links">
             <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.work)}>Work</Link>
             <Link href={lp(siteRoutes.about)}>About</Link>
             <Link href={lp(siteRoutes.contact)}>Contact</Link>
           </nav>

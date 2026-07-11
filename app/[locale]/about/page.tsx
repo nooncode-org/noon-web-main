@@ -31,7 +31,6 @@ export default function AboutPage() {
           </Link>
           <nav className="abt-nav-links">
             <Link href={siteRoutes.services}>Services</Link>
-            <Link href="/work">Work</Link>
             <Link href={siteRoutes.about} className="active">About</Link>
             <Link href={siteRoutes.contact}>Contact</Link>
           </nav>

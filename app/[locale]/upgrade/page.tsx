@@ -54,7 +54,6 @@ async function UpgradePageContent({ params, searchParams }: Props) {
           </Link>
           <nav className="upg-nav-links">
             <Link href={lp(siteRoutes.services)} className="active">Services</Link>
-            <Link href={lp(siteRoutes.work)}>Work</Link>
             <Link href={lp(siteRoutes.about)}>About</Link>
             <Link href={lp(siteRoutes.contact)}>Contact</Link>
           </nav>

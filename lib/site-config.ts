@@ -4,7 +4,6 @@ export const siteRoutes = {
   maxwellStudio: "/maxwell/studio",
   upgrade: "/upgrade",
   services: "/services",
-  work: "/work",
   opportunities: "/opportunities",
   templates: "/templates",
   about: "/about",

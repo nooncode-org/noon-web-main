@@ -31,7 +31,6 @@ export default function TemplatesPage() {
           </Link>
           <nav className="tpl-nav-links">
             <Link href={siteRoutes.services}>Services</Link>
-            <Link href="/work">Work</Link>
             <Link href={siteRoutes.about}>About</Link>
             <Link href={siteRoutes.contact}>Contact</Link>
           </nav>

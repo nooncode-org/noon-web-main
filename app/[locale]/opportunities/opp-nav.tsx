@@ -16,7 +16,6 @@ export function OppNav({ locale, maxwellHref }: OppNavProps) {
   const lp = (href: string) => `/${locale}${href}`;
   const links = [
     { href: lp(siteRoutes.services), label: "Services" },
-    { href: lp(siteRoutes.work), label: "Work" },
     { href: lp(siteRoutes.about), label: "About" },
     { href: lp(siteRoutes.contact), label: "Contact" },
   ];

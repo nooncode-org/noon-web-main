@@ -1,0 +1,61 @@
+/* ── 404 content block (nav / frame / footer come from lgl-rd.css) ───────── */
+
+.nf-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 120px 24px 80px;
+}
+
+.nf-center {
+  max-width: 500px;
+  text-align: center;
+}
+
+.nf-kicker {
+  font-family: var(--sans);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 0 0 22px;
+}
+
+.nf-display {
+  font-family: var(--sans);
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin: 0 0 20px;
+}
+
+.nf-lead {
+  font-size: clamp(14px, 1.2vw, 15px);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0 0 36px;
+  max-width: 42ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nf-footer {
+  padding: 24px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}

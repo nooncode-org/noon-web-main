@@ -40,7 +40,8 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { EASE } from "@/lib/motion";
 import { useRevealMotion } from "@/hooks/use-reveal-motion";
 
-const VIZ = "relative h-48 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70";
+const VIZ_BASE = "relative w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70";
+const VIZ = `${VIZ_BASE} h-48`;
 
 /* ── 01 · a live site being scanned ─────────────────────────────────────── */
 
@@ -75,7 +76,7 @@ function ScanTarget({
   );
 }
 
-function ScanViz({ active }: { active: boolean }) {
+export function ScanViz({ active, className }: { active: boolean; className?: string }) {
   const pageRef = useRef<HTMLDivElement>(null);
   const [targets, setTargets] = useState<ScanRect[]>([]);
   const scrollY = useMotionValue(0);
@@ -186,7 +187,7 @@ function ScanViz({ active }: { active: boolean }) {
   );
 
   return (
-    <div className="relative flex h-48 w-full flex-col overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
+    <div className={`${VIZ_BASE} flex flex-col ${className ?? "h-48"}`}>
       {/* browser chrome + "Analyzing" indicator */}
       <div className="flex shrink-0 items-center gap-1.5 border-b border-foreground/10 bg-foreground/[0.03] px-2.5 py-1.5">
         <span className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
@@ -237,6 +238,7 @@ const DIAGNOSE_ROWS = [
   { label: "Trust & credibility", score: 4, warn: true },
   { label: "Conversion", score: 6, warn: false },
   { label: "Visual design", score: 8, warn: false },
+  { label: "Page speed", score: 3, warn: true },
 ] as const;
 
 function chipClass(score: number) {
@@ -272,9 +274,9 @@ const DIAG_START = 0.2; // when the first row is reviewed
 const DIAG_STEP = 1.1; // gap between rows being reviewed
 const DIAG_FILL = 0.9; // how long a meter takes to fill
 
-function DiagnoseViz({ active }: { active: boolean }) {
+export function DiagnoseViz({ active, className }: { active: boolean; className?: string }) {
   return (
-    <div className={`${VIZ} p-3`}>
+    <div className={`${VIZ_BASE} ${className ?? "h-48"} p-3`}>
       <div className="mb-2.5 flex items-center justify-between">
         <span className="font-mono text-xs text-muted-foreground/50">6 pages · 3 critical issues</span>
         <span className="text-lg font-semibold leading-none tabular-nums text-foreground">
@@ -396,9 +398,9 @@ function BuildPiece({
 // the cycle — the loading bar reaches 100% exactly here.
 const GEN_BUILD_DONE = (GEN_START + 10 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
 
-function GenerateViz({ active }: { active: boolean }) {
+export function GenerateViz({ active, className }: { active: boolean; className?: string }) {
   return (
-    <div className={VIZ}>
+    <div className={`${VIZ_BASE} ${className ?? "h-48"}`}>
       {/* generation loading bar — fills as the pieces are placed, holds full while
           the site is assembled, then drains as it clears to loop */}
       <div className="absolute inset-x-0 top-0 z-30 h-0.5 bg-foreground/10">

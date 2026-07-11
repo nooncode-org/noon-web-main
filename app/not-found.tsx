@@ -1,7 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { NoonLogo } from "@/components/ui/noon-logo";
-import { getContactHref } from "@/lib/site-config";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
+import { getContactHref, getStartWithMaxwellHref } from "@/lib/site-config";
+import "@/app/_components/site/legal-rd.css";
+import "./not-found.css";
 
 export const metadata: Metadata = {
   title: "Page not found — Noon",
@@ -9,49 +13,53 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
-  const contactHref = getContactHref({
-    inquiry: "general",
-    source: "not-found",
-  });
+  const contactHref = `/en${getContactHref({ inquiry: "general", source: "not-found" })}`;
+  const maxwellHref = `/en${getStartWithMaxwellHref()}`;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-border/60 px-6 py-5">
-        <div className="mx-auto flex max-w-3xl items-center">
-          <Link href="/" aria-label="Noon home" className="inline-flex">
-            <NoonLogo variant="lockup" height={24} />
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      {/* nav */}
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <Link href="/" className="lgl-nav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </Link>
+          <nav className="lgl-nav-links">
+            <Link href="/en/services">Services</Link>
+            <Link href="/en/about">About</Link>
+            <Link href="/en/contact">Contact</Link>
+          </nav>
+          <Link href={maxwellHref} className="lgl-nav-cta lgl-btn lgl-btn-primary">
+            Start with Maxwell
           </Link>
         </div>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md text-center">
-          <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            404 — not found
+      <div className="lgl-frame" aria-hidden />
+
+      <main className="nf-main">
+        <div className="nf-center">
+          <p className="nf-kicker">404 — Not found</p>
+          <h1 className="nf-display">We couldn&apos;t find<br />that page.</h1>
+          <p className="nf-lead">
+            The link may be old, or the page may have moved. Go back to the home page or reach out if you were looking for something specific.
           </p>
-          <h1 className="mb-4 font-display text-2xl leading-tight">
-            We couldn&apos;t find that page.
-          </h1>
-          <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-            The link may be old, or the page may have moved. From here you can go back to the
-            home page or reach out if you were looking for something specific.
-          </p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link
-              href="/"
-              className="site-primary-action inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium"
-            >
+          <div className="nf-actions">
+            <Link href="/" className="lgl-btn lgl-btn-primary">
               Back to home
             </Link>
-            <Link
-              href={contactHref}
-              className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary/50"
-            >
+            <Link href={contactHref} className="lgl-btn lgl-btn-secondary">
               Contact Noon
             </Link>
           </div>
         </div>
       </main>
+
+      <footer className="nf-footer">
+        <span>© 2026 Noon</span>
+      </footer>
     </div>
   );
 }
