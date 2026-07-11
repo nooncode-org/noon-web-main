@@ -6,12 +6,16 @@ import {
   ArrowLeft,
   ChevronDown,
   CircleDashed,
+  ExternalLink,
   FileText,
+  Loader2,
   LogOut,
   MessageSquare,
   Monitor,
   PanelRight,
   Plus,
+  RotateCcw,
+  Smartphone,
   Star,
   Trash2,
   Upload,
@@ -34,7 +38,7 @@ import { GeistSans } from "geist/font/sans";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
-import type { StudioPhase, ActiveView } from "./studio-shell";
+import type { StudioPhase, ActiveView, PrototypeVersion } from "./studio-shell";
 
 // ============================================================================
 // Phase label map
@@ -181,6 +185,14 @@ type StudioHeaderProps = {
   onNewDraftChat?: () => void;
   onDeleteDraftSession?: (id: string) => void;
   quotaSnapshot?: PrototypeQuotaSnapshot | null;
+  // Preview controls relocated from the preview pane's top strip into this
+  // single header bar (v0-style). Rendered only when `hasPrototype` is true.
+  previewVersions?: PrototypeVersion[];
+  selectedVersionIndex?: number;
+  onSelectVersion?: (index: number) => void;
+  viewport?: "desktop" | "mobile";
+  onViewportChange?: (v: "desktop" | "mobile") => void;
+  onReloadPreview?: () => void;
 };
 
 export function StudioHeader({
@@ -200,6 +212,12 @@ export function StudioHeader({
   onNewDraftChat,
   onDeleteDraftSession,
   quotaSnapshot = null,
+  previewVersions = [],
+  selectedVersionIndex = 0,
+  onSelectVersion,
+  viewport = "desktop",
+  onViewportChange,
+  onReloadPreview,
 }: StudioHeaderProps) {
   const [draftsOpen, setDraftsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -211,6 +229,16 @@ export function StudioHeader({
   const isProcessing = phaseIsActive(phase);
   const label = phaseLabels[phase];
   const displayName = projectName || "Maxwell Studio";
+
+  // Preview controls (relocated). The selected version drives the "Open full
+  // screen" href + the compact version label; `isRevising` swaps the label for
+  // an "Applying adjustment…" indicator, mirroring the old preview-bar behavior.
+  const previewSelectedVersion =
+    previewVersions[selectedVersionIndex] ??
+    previewVersions[previewVersions.length - 1] ??
+    null;
+  const previewUrl = previewSelectedVersion?.demoUrl ?? null;
+  const isRevising = phase === "revision_requested";
 
   return (
     <>
@@ -341,6 +369,107 @@ export function StudioHeader({
         </Popover>
         </div>
       </div>
+
+      {/* Preview controls — relocated from the preview pane's top strip into
+          this single header bar (v0-style). Desktop-only; shown with a
+          prototype. The preview column below now starts straight at the iframe. */}
+      {hasPrototype && (
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          {isRevising ? (
+            <span className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+              Applying adjustment…
+              <Loader2 className="h-3 w-3 animate-spin" />
+            </span>
+          ) : previewVersions.length > 1 ? (
+            <div className="flex items-center gap-1">
+              {previewVersions.map((v, i) => {
+                const isSelected = i === selectedVersionIndex;
+                const isLatest = i === previewVersions.length - 1;
+                return (
+                  <button
+                    key={v.versionNumber}
+                    type="button"
+                    onClick={() => onSelectVersion?.(i)}
+                    className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
+                    style={
+                      isSelected
+                        ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
+                        : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
+                    }
+                  >
+                    v{v.versionNumber}
+                    {isLatest && (
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: isSelected ? "var(--foreground)" : "var(--muted-foreground)" }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            previewSelectedVersion && (
+              <span className="text-xs font-mono text-muted-foreground">
+                v{previewSelectedVersion.versionNumber}
+              </span>
+            )
+          )}
+
+          <span className="h-4 w-px bg-border" aria-hidden="true" />
+
+          {/* Device preview toggle — previews the iframe at mobile width */}
+          <div className="flex items-center rounded-full border border-border p-0.5">
+            <button
+              type="button"
+              onClick={() => onViewportChange?.("desktop")}
+              title="Desktop preview"
+              aria-label="Desktop preview"
+              aria-pressed={viewport === "desktop"}
+              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Monitor className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onViewportChange?.("mobile")}
+              title="Mobile preview"
+              aria-label="Mobile preview"
+              aria-pressed={viewport === "mobile"}
+              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onReloadPreview?.()}
+            title="Reload the preview (use this if it looks blank)"
+            aria-label="Reload preview"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+
+          {previewUrl && (
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open full screen"
+              aria-label="Open full screen"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="flex min-w-0 items-center justify-end gap-2">
         <div className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">

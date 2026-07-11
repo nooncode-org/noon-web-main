@@ -198,6 +198,12 @@ export function StudioShell({
   const [maxCorrections, setMaxCorrections] = useState(DEFAULT_MAX_CORRECTIONS);
   const [activeView, setActiveView] = useState<ActiveView>("chat");
   const [prototypeFailed, setPrototypeFailed] = useState(false);
+  // Preview controls (device-width toggle + manual reload) were lifted out of
+  // the preview pane so they can live in the single top header bar. `viewport`
+  // sizes the iframe; `previewReloadSignal` is a monotonic counter the header's
+  // Reload button bumps — the pane watches it and replays its own reload logic.
+  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
+  const [previewReloadSignal, setPreviewReloadSignal] = useState(0);
   /**
    * B28 — Timestamp (Date.now ms) cuando arrancó el polling v0. Lo usa
    * `<StudioPreviewPane>` para mostrar contador de tiempo transcurrido +
@@ -1332,6 +1338,12 @@ export function StudioShell({
         onNewDraftChat={handleNewChatFromList}
         onDeleteDraftSession={handleDeleteSessionList}
         quotaSnapshot={quotaSnapshot}
+        previewVersions={prototypeVersions}
+        selectedVersionIndex={selectedVersionIndex}
+        onSelectVersion={setSelectedVersionIndex}
+        viewport={viewport}
+        onViewportChange={setViewport}
+        onReloadPreview={() => setPreviewReloadSignal((n) => n + 1)}
       />
 
       {/*
@@ -1421,7 +1433,6 @@ export function StudioShell({
             <StudioPreviewPane
               prototypeVersions={prototypeVersions}
               selectedVersionIndex={selectedVersionIndex}
-              onSelectVersion={setSelectedVersionIndex}
               phase={phase}
               prototypeFailed={prototypeFailed}
               correctionsUsed={correctionsUsed}
@@ -1439,6 +1450,8 @@ export function StudioShell({
               }}
               agentHref={agentHref}
               activeView={activeView}
+              viewport={viewport}
+              reloadSignal={previewReloadSignal}
             />
           </section>
         )}

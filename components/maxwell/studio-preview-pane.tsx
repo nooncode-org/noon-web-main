@@ -273,55 +273,6 @@ function PreviewFailed({
 }
 
 // ============================================================================
-// VersionSwitcher — chips for v1, v2, v3 Current
-// ============================================================================
-
-function VersionSwitcher({
-  versions,
-  selectedIndex,
-  onSelect,
-}: {
-  versions: PrototypeVersion[];
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-}) {
-  if (versions.length <= 1) return null;
-
-  const latestIndex = versions.length - 1;
-
-  return (
-    <div className="flex items-center gap-1">
-      {versions.map((v, i) => {
-        const isSelected = i === selectedIndex;
-        const isLatest = i === latestIndex;
-
-        return (
-          <button
-            key={v.versionNumber}
-            type="button"
-            onClick={() => onSelect(i)}
-            className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
-            style={
-              isSelected
-                ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
-                : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
-            }
-          >
-            v{v.versionNumber}
-            {isLatest && (
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: isSelected ? "var(--foreground)" : "var(--muted-foreground)" }}
-              />
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ============================================================================
 // CorrectionInput
 // ============================================================================
 
@@ -382,7 +333,6 @@ function CorrectionInput({
 type StudioPreviewPaneProps = {
   prototypeVersions: PrototypeVersion[];
   selectedVersionIndex: number;
-  onSelectVersion: (index: number) => void;
   phase: StudioPhase;
   prototypeFailed: boolean;
   correctionsUsed: number;
@@ -407,12 +357,22 @@ type StudioPreviewPaneProps = {
    * where the chat pane is hidden and this is the sole place to act).
    */
   activeView: "chat" | "preview";
+  /**
+   * Device-preview width. Lifted to the shell so the relocated control in the
+   * StudioHeader can drive it; the pane only reads it to size the iframe.
+   */
+  viewport: "desktop" | "mobile";
+  /**
+   * Monotonic counter bumped by the header's relocated "Reload" control. The
+   * pane still owns all load-recovery state (nonce, watchdog, overlay); this
+   * just replays a manual reload when the value changes.
+   */
+  reloadSignal: number;
 };
 
 export function StudioPreviewPane({
   prototypeVersions,
   selectedVersionIndex,
-  onSelectVersion,
   phase,
   prototypeFailed,
   correctionsUsed,
@@ -424,6 +384,8 @@ export function StudioPreviewPane({
   agentHref,
   pollingStartedAt,
   activeView,
+  viewport,
+  reloadSignal,
 }: StudioPreviewPaneProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
 
@@ -438,10 +400,6 @@ export function StudioPreviewPane({
   const [reloadNonce, setReloadNonce] = useState(0);
   const [autoReloadsUsed, setAutoReloadsUsed] = useState(0);
   const [slowHintShown, setSlowHintShown] = useState(false);
-  // Device preview toggle — lets a desktop user preview the prototype iframe at
-  // mobile width. Desktop-only control (on real mobile the open-in-browser card
-  // shows instead of the iframe).
-  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
 
   // Reset tracking when the previewed URL changes (new / switched version).
   // Done DURING RENDER (React's "adjust state when a prop changes" pattern)
@@ -479,6 +437,20 @@ export function StudioPreviewPane({
     setReloadNonce((n) => n + 1);
   };
 
+  // Header-initiated reload. The "Reload" control now lives in the StudioHeader
+  // (single top bar); it bumps `reloadSignal` and we replay the same manual
+  // reload here. Handled DURING RENDER (same "adjust state when a prop changes"
+  // pattern as the previewUrl reset above) to avoid a synchronous setState in an
+  // effect (react-hooks/set-state-in-effect). Guards against re-firing on mount /
+  // remount when the signal hasn't actually changed.
+  const [trackedReloadSignal, setTrackedReloadSignal] = useState(reloadSignal);
+  if (reloadSignal !== trackedReloadSignal) {
+    setTrackedReloadSignal(reloadSignal);
+    setLoadStatus("loading");
+    setSlowHintShown(false);
+    setReloadNonce((n) => n + 1);
+  }
+
   const overlayState = derivePreviewOverlay(loadStatus, slowHintShown);
 
   const canCorrect =
@@ -504,90 +476,6 @@ export function StudioPreviewPane({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Preview bar */}
-      <div
-        className="flex items-center justify-between px-4 py-2.5 border-b shrink-0 gap-3"
-        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
-      >
-        {/* Left: traffic lights + version switcher or status */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex gap-1.5 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-          </div>
-
-          {isRevising ? (
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-muted-foreground">Applying adjustment...</span>
-              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <VersionSwitcher
-              versions={prototypeVersions}
-              selectedIndex={selectedVersionIndex}
-              onSelect={onSelectVersion}
-            />
-          )}
-
-          {/* Fallback label when only one version and not revising */}
-          {!isRevising && prototypeVersions.length === 1 && (
-            <span className="text-xs font-mono text-muted-foreground">
-              Version {currentVersion.versionNumber}
-            </span>
-          )}
-        </div>
-
-        {/* Right: device toggle + reload + open full screen */}
-        <div className="flex items-center gap-3 shrink-0">
-          {/* Device preview toggle — previews the iframe at mobile width (desktop only) */}
-          <div className="hidden lg:flex items-center rounded-full border border-border p-0.5">
-            <button
-              type="button"
-              onClick={() => setViewport("desktop")}
-              title="Desktop preview"
-              aria-label="Desktop preview"
-              aria-pressed={viewport === "desktop"}
-              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
-                viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Monitor className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewport("mobile")}
-              title="Mobile preview"
-              aria-label="Mobile preview"
-              aria-pressed={viewport === "mobile"}
-              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
-                viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={reloadPreview}
-            title="Reload the preview (use this if it looks blank)"
-            className="hidden items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:flex"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Reload
-          </button>
-          <a
-            href={selectedVersion.demoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Open full screen
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </div>
-
       {/* Corrections exhausted banner */}
       {correctionsExhausted && canApprove && (
         <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-card px-4 py-2.5 text-xs text-muted-foreground">
