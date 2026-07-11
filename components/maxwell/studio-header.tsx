@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { GeistSans } from "geist/font/sans";
+import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
 import type { StudioPhase, ActiveView } from "./studio-shell";
@@ -169,6 +170,7 @@ type StudioHeaderProps = {
   onSelectDraftSession?: (id: string) => void;
   onNewDraftChat?: () => void;
   onDeleteDraftSession?: (id: string) => void;
+  quotaSnapshot?: PrototypeQuotaSnapshot | null;
 };
 
 export function StudioHeader({
@@ -187,6 +189,7 @@ export function StudioHeader({
   onSelectDraftSession,
   onNewDraftChat,
   onDeleteDraftSession,
+  quotaSnapshot = null,
 }: StudioHeaderProps) {
   const [draftsOpen, setDraftsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -346,6 +349,20 @@ export function StudioHeader({
 
         {hasPrototype && (
           <CorrectionCounter used={correctionsUsed} max={maxCorrections} />
+        )}
+
+        {quotaSnapshot && (
+          <span
+            className={`hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-mono lg:inline-flex ${
+              quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth >= quotaSnapshot.userMonthlyInitialLimit ||
+              quotaSnapshot.globalInitialPrototypesThisUtcMonth >= quotaSnapshot.globalMonthlyInitialLimit
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-400/95"
+                : "border-border bg-background/60 text-muted-foreground"
+            }`}
+            title={`Prototype previews this month — you: ${quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/${quotaSnapshot.userMonthlyInitialLimit} · studio total: ${quotaSnapshot.globalInitialPrototypesThisUtcMonth}/${quotaSnapshot.globalMonthlyInitialLimit}`}
+          >
+            {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
+          </span>
         )}
 
         <button

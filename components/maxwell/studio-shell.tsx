@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
-import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { WorkspaceReentryBanner } from "./workspace-reentry-banner";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
@@ -1332,6 +1331,7 @@ export function StudioShell({
         onSelectDraftSession={handleSelectSessionFromList}
         onNewDraftChat={handleNewChatFromList}
         onDeleteDraftSession={handleDeleteSessionList}
+        quotaSnapshot={quotaSnapshot}
       />
 
       {/*
@@ -1377,9 +1377,6 @@ export function StudioShell({
               href={`/${locale}/maxwell/workspace/${sessionId}`}
             />
           )}
-          {/* Prototype quota — scoped to the chat column (generation is a
-              chat-side concern, not the preview's); subtle until near the limit. */}
-          {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
           <div className="min-h-0 flex-1">
             <StudioChatPane
               messages={messages}
