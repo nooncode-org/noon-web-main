@@ -57,6 +57,16 @@ const phaseLabels: Record<StudioPhase, string> = {
 const phaseIsActive = (phase: StudioPhase) =>
   phase === "generating_prototype" || phase === "revision_requested";
 
+// Green = waiting for user input (Maxwell is done, your turn).
+// White+pulse = Maxwell actively working.
+// Muted = neutral / informational state.
+const phaseDotColor = (phase: StudioPhase, isProcessing: boolean): string => {
+  if (isProcessing) return "var(--foreground)";
+  if (phase === "clarifying" || phase === "prototype_ready" || phase === "revision_applied" || phase === "prototype_shared")
+    return "#22c55e"; // green-500
+  return "var(--muted-foreground)";
+};
+
 // ============================================================================
 // CorrectionCounter
 // ============================================================================
@@ -336,7 +346,7 @@ export function StudioHeader({
         <div className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${isProcessing ? "animate-pulse" : ""}`}
-            style={{ backgroundColor: isProcessing ? "var(--foreground)" : "var(--muted-foreground)" }}
+            style={{ backgroundColor: phaseDotColor(phase, isProcessing) }}
           />
           <span className="truncate">{label}</span>
         </div>
