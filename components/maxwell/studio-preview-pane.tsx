@@ -398,6 +398,15 @@ type StudioPreviewPaneProps = {
    * `pollV0Status` completion/error handlers.
    */
   pollingStartedAt: number | null;
+  /**
+   * Which pane the user is focused on. The bottom actions bar (Approve /
+   * Request adjustment / Talk to agent) is a strict subset of the chat-pane
+   * `StudioProposalCta`. In split view (`activeView === "chat"`, desktop) the
+   * chat card already renders those actions, so the bar would duplicate them
+   * on screen — it renders ONLY in preview-only mode (`activeView === "preview"`,
+   * where the chat pane is hidden and this is the sole place to act).
+   */
+  activeView: "chat" | "preview";
 };
 
 export function StudioPreviewPane({
@@ -414,6 +423,7 @@ export function StudioPreviewPane({
   onRetryPrototype,
   agentHref,
   pollingStartedAt,
+  activeView,
 }: StudioPreviewPaneProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
 
@@ -687,8 +697,9 @@ export function StudioPreviewPane({
         </div>
       </div>
 
-      {/* Actions bar */}
-      {(canApprove || canRequestProposal || isPendingReview) && (
+      {/* Actions bar — preview-only mode; in split view the chat-pane
+          StudioProposalCta owns these actions (avoids duplicating them). */}
+      {activeView === "preview" && (canApprove || canRequestProposal || isPendingReview) && (
         <div
           className="shrink-0 border-t"
           style={{ borderColor: "var(--border)" }}

@@ -363,12 +363,7 @@ export function StudioHeader({
 
         {quotaSnapshot && (
           <span
-            className={`hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-mono lg:inline-flex ${
-              quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth >= quotaSnapshot.userMonthlyInitialLimit ||
-              quotaSnapshot.globalInitialPrototypesThisUtcMonth >= quotaSnapshot.globalMonthlyInitialLimit
-                ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-400/95"
-                : "border-border bg-background/60 text-muted-foreground"
-            }`}
+            className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-mono text-muted-foreground lg:inline-flex"
             title={`Prototype previews this month — you: ${quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/${quotaSnapshot.userMonthlyInitialLimit} · studio total: ${quotaSnapshot.globalInitialPrototypesThisUtcMonth}/${quotaSnapshot.globalMonthlyInitialLimit}`}
           >
             {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}

@@ -1438,6 +1438,7 @@ export function StudioShell({
                 void buildPrototype(lastUserMsg, lastAssistantMsg, sessionId);
               }}
               agentHref={agentHref}
+              activeView={activeView}
             />
           </section>
         )}

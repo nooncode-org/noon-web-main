@@ -397,11 +397,12 @@ export function StudioProposalCta({
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
-      {/* Status line */}
+      {/* Status line — the remaining-count lives on the "Request adjustment"
+          badge below, so this line stays count-free and adds what approve does. */}
       <p className="text-xs text-muted-foreground">
         {allUsed
           ? "Adjustments complete — approve to move forward."
-          : `Prototype ready. ${remaining} adjustment${remaining === 1 ? "" : "s"} available.`}
+          : "Prototype ready. Approve to move toward the proposal, or request an adjustment."}
       </p>
 
       {/* Primary actions */}
