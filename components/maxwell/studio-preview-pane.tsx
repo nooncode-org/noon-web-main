@@ -428,6 +428,10 @@ export function StudioPreviewPane({
   const [reloadNonce, setReloadNonce] = useState(0);
   const [autoReloadsUsed, setAutoReloadsUsed] = useState(0);
   const [slowHintShown, setSlowHintShown] = useState(false);
+  // Device preview toggle — lets a desktop user preview the prototype iframe at
+  // mobile width. Desktop-only control (on real mobile the open-in-browser card
+  // shows instead of the iframe).
+  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
 
   // Reset tracking when the previewed URL changes (new / switched version).
   // Done DURING RENDER (React's "adjust state when a prop changes" pattern)
@@ -524,8 +528,35 @@ export function StudioPreviewPane({
           )}
         </div>
 
-        {/* Right: reload + open full screen */}
+        {/* Right: device toggle + reload + open full screen */}
         <div className="flex items-center gap-3 shrink-0">
+          {/* Device preview toggle — previews the iframe at mobile width (desktop only) */}
+          <div className="hidden lg:flex items-center rounded-full border border-border p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewport("desktop")}
+              title="Desktop preview"
+              aria-label="Desktop preview"
+              aria-pressed={viewport === "desktop"}
+              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("mobile")}
+              title="Mobile preview"
+              aria-label="Mobile preview"
+              aria-pressed={viewport === "mobile"}
+              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <button
             type="button"
             onClick={reloadPreview}
@@ -619,7 +650,9 @@ export function StudioPreviewPane({
           src={selectedVersion.demoUrl}
           onLoad={() => setLoadStatus("loaded")}
           onError={() => setLoadStatus("error")}
-          className="hidden lg:block w-full h-full border-0"
+          className={`hidden lg:block h-full border-0 transition-[width] duration-300 ${
+            viewport === "mobile" ? "w-[390px] max-w-full mx-auto border-x border-border/70" : "w-full"
+          }`}
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           referrerPolicy="no-referrer"

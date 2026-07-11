@@ -425,6 +425,40 @@ export function StudioHeader({
           </Link>
         </div>
 
+        {/* Recent chats — surfaces the conversation history here so the drawer
+            is a complete panel (previously the list only lived in the breadcrumb
+            popover). Same data source (draftSessions); select loads the chat. */}
+        {draftSessions.length > 0 && (
+          <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-2">
+            <p className="px-4 pb-1 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+              Recent chats
+            </p>
+            <div className="min-h-0 flex-1 overflow-y-auto pb-2">
+              {draftSessions.map((row) => {
+                const active = row.id === currentSessionId;
+                return (
+                  <button
+                    key={row.id}
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onSelectDraftSession?.(row.id);
+                    }}
+                    className={`flex w-full flex-col gap-0.5 rounded-[8px] px-4 py-2.5 text-left transition-colors ${
+                      active ? "bg-secondary/60" : "hover:bg-secondary/40"
+                    }`}
+                  >
+                    <span className="line-clamp-1 text-sm text-foreground/85">{row.title}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground/70">
+                      {row.updatedAt.slice(0, 10)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Profile section — pushed to bottom */}
         <div className="mt-auto px-4 pb-4 pt-1 space-y-3">
           <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">

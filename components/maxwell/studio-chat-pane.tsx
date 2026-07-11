@@ -30,6 +30,16 @@ import { useHasMounted } from "@/hooks/use-has-mounted";
 // Message sub-components
 // ============================================================================
 
+// Starter prompts shown in the empty intake state — lower the blank-page
+// barrier with a few on-model examples of what Noon builds. Clicking one fills
+// the composer (does not send) so the user can edit before starting.
+const STARTER_PROMPTS = [
+  "A booking system for my business",
+  "An internal operations dashboard",
+  "A customer support AI assistant",
+  "A CRM for my team",
+];
+
 function ThinkingDots() {
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -529,6 +539,18 @@ export function StudioChatPane({
             <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
               Tell me what you want to build and I&apos;ll help turn it into a clear, buildable direction.
             </p>
+          </div>
+          <div className="pointer-events-auto flex max-w-md flex-wrap items-center justify-center gap-2">
+            {STARTER_PROMPTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onInputChange(p)}
+                className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {p}
+              </button>
+            ))}
           </div>
         </div>
       )}
