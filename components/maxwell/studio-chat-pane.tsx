@@ -276,7 +276,7 @@ function AgentCtaNotice({ content, href }: { content: string; href: string }) {
 function UserMessage({ content }: { content: string }) {
   return (
     <div className="flex justify-end">
-      <div className="max-w-[62%] rounded-[18px] rounded-tr-sm bg-[#131313] px-4 py-2 text-[13.5px] leading-relaxed text-foreground shadow-sm whitespace-pre-wrap">
+      <div className="max-w-[62%] rounded-[18px] rounded-tr-sm border border-border bg-secondary px-4 py-2 text-[13.5px] leading-relaxed text-foreground whitespace-pre-wrap">
         {content}
       </div>
     </div>
@@ -426,8 +426,8 @@ export function StudioChatPane({
     ? "shrink-0 px-3 pb-4 pt-2"
     : "shrink-0 px-3 pb-6 pt-3 sm:px-4 sm:pb-7";
   const composerSurfaceClass = isWorkspaceVisible
-    ? "rounded-2xl bg-[#131313] px-3 pb-2.5 pt-3 shadow-sm"
-    : "rounded-[22px] bg-[#131313] px-4 pb-3 pt-4 shadow-sm";
+    ? "rounded-2xl border border-border bg-secondary px-3 pb-2.5 pt-3"
+    : "rounded-[22px] border border-border bg-secondary px-4 pb-3 pt-4";
   const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[52px]" : "min-h-[72px]";
   const composerTextAreaClass = isWorkspaceVisible
     ? "max-h-28 min-h-[38px] w-full resize-none bg-transparent px-1 py-1 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
@@ -524,10 +524,10 @@ export function StudioChatPane({
           </div>
           <div className="text-center">
             <p className="text-[17px] font-medium tracking-tight text-foreground/90">
-              Soy Maxwell, arquitecto de soluciones en Noon.
+              I&apos;m Maxwell, solutions architect at Noon.
             </p>
             <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
-              Cuéntame qué quieres construir y te ayudo a convertirlo en una dirección clara y construible.
+              Tell me what you want to build and I&apos;ll help turn it into a clear, buildable direction.
             </p>
           </div>
         </div>
@@ -698,7 +698,7 @@ export function StudioChatPane({
                     }
                   }}
                   // B40 — Tap target ≥44×44 px (WCAG 2.5.5). Was h-9 w-9 (36px).
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-foreground transition-colors hover:bg-foreground/15 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-foreground/10"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-foreground transition-colors hover:bg-foreground/15 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-foreground/10"
                 >
                   {isThinking ? (
                     <Square className="h-3.5 w-3.5 fill-current" />

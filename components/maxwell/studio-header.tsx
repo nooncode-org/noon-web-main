@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { GeistSans } from "geist/font/sans";
 import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
 import type { StudioPhase, ActiveView } from "./studio-shell";
@@ -225,7 +226,7 @@ export function StudioHeader({
               <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
             </button>
           </PopoverTrigger>
-          <PopoverContent align="center" className="w-80 max-h-[min(320px,50vh)] overflow-hidden p-0">
+          <PopoverContent align="center" className={`${GeistSans.className} w-80 max-h-[min(320px,50vh)] overflow-hidden p-0`}>
             <div className="flex items-center justify-between border-b border-border px-3 py-2">
               <span className="text-[11px] font-mono uppercase tracking-wide text-muted-foreground">
                 Your chats
@@ -462,7 +463,7 @@ export function StudioHeader({
         if (!open) setPendingDelete(null);
       }}
     >
-      <AlertDialogContent>
+      <AlertDialogContent className={GeistSans.className}>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
           <AlertDialogDescription>

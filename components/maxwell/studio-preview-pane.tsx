@@ -95,7 +95,7 @@ function PreviewPlaceholder({
 
         <div className="flex min-h-0 flex-1 items-center justify-center p-5 xl:p-8">
           <div className="grid w-full max-w-5xl gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="overflow-hidden rounded-2xl border border-border/70 bg-[#070707] shadow-2xl shadow-black/30">
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
               <div className="flex h-10 items-center gap-2 border-b border-border/70 px-3">
                 <span className="h-2.5 w-2.5 rounded-full bg-foreground/25" />
                 <span className="h-2.5 w-2.5 rounded-full bg-foreground/18" />
@@ -128,9 +128,9 @@ function PreviewPlaceholder({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-[#0c0c0c] p-5">
+            <div className="rounded-2xl border border-border/70 bg-muted p-5">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-[#131313] text-muted-foreground">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-secondary text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
                 <div>
@@ -181,7 +181,7 @@ function PreviewPlaceholder({
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
       <div
-        className={`w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground transition-all duration-500 ${isGenerating ? "scale-110" : "scale-100"}`}
+        className={`w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground transition-all duration-500 ${isGenerating ? "scale-110" : "scale-100"}`}
       >
         {isGenerating ? (
           <Loader2 className="w-7 h-7 animate-spin" />
@@ -239,7 +239,7 @@ function PreviewFailed({
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
       <div
-        className="w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground"
+        className="w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground"
       >
         <AlertCircle className="w-7 h-7" />
       </div>
@@ -252,7 +252,7 @@ function PreviewFailed({
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+          className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Try again
@@ -303,7 +303,7 @@ function VersionSwitcher({
             className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
             style={
               isSelected
-                ? { backgroundColor: "#131313", color: "var(--foreground)", border: "1px solid var(--border)" }
+                ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
                 : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
             }
           >
@@ -366,7 +366,7 @@ function CorrectionInput({
             }
           }}
           disabled={!value.trim()}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#131313] text-foreground disabled:opacity-40 self-end shrink-0 transition-colors hover:bg-foreground/10"
+          className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary text-foreground disabled:opacity-40 self-end shrink-0 transition-colors hover:bg-foreground/10"
         >
           <ArrowRight className="w-4 h-4" />
         </button>
@@ -493,7 +493,7 @@ export function StudioPreviewPane({
       {/* Preview bar */}
       <div
         className="flex items-center justify-between px-4 py-2.5 border-b shrink-0 gap-3"
-        style={{ backgroundColor: "#050505", borderColor: "var(--border)" }}
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
       >
         {/* Left: traffic lights + version switcher or status */}
         <div className="flex items-center gap-3 min-w-0">
@@ -549,7 +549,7 @@ export function StudioPreviewPane({
 
       {/* Corrections exhausted banner */}
       {correctionsExhausted && canApprove && (
-        <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-[#050505] px-4 py-2.5 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-card px-4 py-2.5 text-xs text-muted-foreground">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
           <span>Adjustments complete — approve to move forward or request the formal proposal.</span>
         </div>
@@ -592,7 +592,7 @@ export function StudioPreviewPane({
                   <button
                     type="button"
                     onClick={reloadPreview}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                    className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                   >
                     <RefreshCw className="h-4 w-4" />
                     Reload preview
@@ -629,7 +629,7 @@ export function StudioPreviewPane({
           className="flex lg:hidden flex-col items-center justify-center h-full px-8 text-center"
         >
           <div
-            className="w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground"
+            className="w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground"
           >
             <Smartphone className="w-7 h-7" />
           </div>
@@ -643,7 +643,7 @@ export function StudioPreviewPane({
             href={selectedVersion.demoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             <ExternalLink className="w-4 h-4" />
             Open prototype
@@ -664,12 +664,12 @@ export function StudioPreviewPane({
           {canApprove && !shouldShowCorrectionInput && (
             <div
               className="flex flex-wrap items-center gap-3 px-4 py-3"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <button
                 type="button"
                 onClick={onApprove}
-                className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Approve prototype
@@ -684,7 +684,7 @@ export function StudioPreviewPane({
                   <RotateCcw className="w-3.5 h-3.5" />
                   Request adjustment
                   <span
-                    className="rounded-full border border-border/70 bg-[#131313] px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+                    className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
                   >
                     {maxCorrections - correctionsUsed} left
                   </span>
@@ -716,7 +716,7 @@ export function StudioPreviewPane({
           {canRequestProposal && (
             <div
               className="px-4 py-4"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <p className="text-sm font-medium mb-1">
                 Prototype approved
@@ -728,7 +728,7 @@ export function StudioPreviewPane({
                 <button
                   type="button"
                   onClick={onRequestProposal}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                  className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   Request formal proposal
@@ -748,10 +748,10 @@ export function StudioPreviewPane({
           {isPendingReview && (
             <div
               className="flex items-start gap-3 px-4 py-4"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-[#131313] text-muted-foreground"
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-secondary text-muted-foreground"
               >
                 <User className="w-4 h-4" />
               </div>
