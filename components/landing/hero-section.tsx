@@ -261,7 +261,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                 {/* Dark card — on top, full rounded corners.
                     Spectrum accent #2 — iridescent focus glow (only while focused). */}
                 <div
-                  className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_0_0_1px_rgba(0,0,0,0.06)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-300"
+                  className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14] transition-shadow duration-300"
                   style={
                     spectrum && isInputFocused
                       ? { boxShadow: "0 0 0 1.5px rgba(255,77,77,0.55), 0 0 0 3px rgba(255,210,63,0.32), 0 0 22px -2px rgba(52,199,89,0.5), 0 0 40px -6px rgba(27,154,255,0.5), 0 0 56px -10px rgba(177,91,255,0.5)" }
