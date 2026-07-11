@@ -1334,8 +1334,6 @@ export function StudioShell({
         onDeleteDraftSession={handleDeleteSessionList}
       />
 
-      {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
-
       {/*
         B22 (Bloque 13) — Mobile fallback banner. The two-pane studio
         workspace (chat + preview) is desktop-first: below `lg` the panes
@@ -1379,6 +1377,9 @@ export function StudioShell({
               href={`/${locale}/maxwell/workspace/${sessionId}`}
             />
           )}
+          {/* Prototype quota — scoped to the chat column (generation is a
+              chat-side concern, not the preview's); subtle until near the limit. */}
+          {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
           <div className="min-h-0 flex-1">
             <StudioChatPane
               messages={messages}
