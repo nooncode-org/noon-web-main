@@ -1366,7 +1366,7 @@ export function StudioShell({
           className={`
             flex min-h-0 flex-col
             ${shouldShowWorkspace ? "w-full shrink-0 border-r border-border/70 bg-background lg:w-[440px] xl:w-[500px]" : "w-full border-r-0"}
-            ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden lg:flex") : "flex"}
+            ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden") : "flex"}
           `}
         >
           {/* Slice 1d (B) — re-entry to the client workspace from the active

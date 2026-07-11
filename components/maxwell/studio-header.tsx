@@ -111,7 +111,7 @@ function ViewToggle({
 }) {
   return (
     <div
-      className="flex lg:hidden items-center rounded-full border border-border p-0.5 text-xs"
+      className="flex items-center rounded-full border border-border p-0.5 text-xs"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       <button
