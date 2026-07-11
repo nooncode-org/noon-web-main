@@ -164,7 +164,6 @@ export default async function WorkRedesignPage({ params }: Props) {
               </p>
               <div className="wr-hero-actions">
                 <Link href={contactHref} className="wr-btn wr-btn-primary">Start a project <ArrowRight size={15} /></Link>
-                <Link href={lp("/approach")} className="wr-btn wr-btn-secondary">How we work</Link>
               </div>
             </div>
             <div className="wr-hero-proof wr-tickframe">
