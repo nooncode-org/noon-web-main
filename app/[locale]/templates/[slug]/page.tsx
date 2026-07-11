@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
 import { TemplateMockup } from "@/components/landing/explore-builds-section";
 import { WorkShot } from "@/components/work/work-shot";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import templateMockups from "@/data/template-mockups.json";
 import { notFound, redirect } from "next/navigation";
@@ -64,24 +64,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      {/* nav */}
-      <header className="lgl-nav">
-        <div className="lgl-nav-inner">
-          <Link href={lp("/")} className="lgl-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="lgl-nav-links">
-            <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)}>Contact</Link>
-          </nav>
-          <Link href={ctaPrimary} className="lgl-nav-cta lgl-btn lgl-btn-primary">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

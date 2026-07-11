@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
-import { getContactHref, getStartWithMaxwellHref } from "@/lib/site-config";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { getContactHref } from "@/lib/site-config";
 import "@/app/_components/site/legal-rd.css";
 import "./not-found.css";
 
@@ -14,28 +14,10 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   const contactHref = `/en${getContactHref({ inquiry: "general", source: "not-found" })}`;
-  const maxwellHref = `/en${getStartWithMaxwellHref()}`;
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      {/* nav */}
-      <header className="lgl-nav">
-        <div className="lgl-nav-inner">
-          <Link href="/" className="lgl-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="lgl-nav-links">
-            <Link href="/en/services">Services</Link>
-            <Link href="/en/about">About</Link>
-            <Link href="/en/contact">Contact</Link>
-          </nav>
-          <Link href={maxwellHref} className="lgl-nav-cta lgl-btn lgl-btn-primary">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale="en" />
 
       <div className="lgl-frame" aria-hidden />
 

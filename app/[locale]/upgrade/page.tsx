@@ -1,17 +1,15 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { auth } from "@/auth";
-import { NoonWordmark } from "@/components/brand/noon-logo";
 import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
 import { UpgradeBeforeAfter } from "@/components/upgrade/upgrade-before-after";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
-import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
 import "./upgrade-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
 
@@ -34,7 +32,6 @@ async function UpgradePageContent({ params, searchParams }: Props) {
     auth(),
   ]);
   const lp = (href: string) => `/${locale}${href}`;
-  const maxwellHref = lp(getStartWithMaxwellHref());
   const isAuthenticated = Boolean(session?.user?.email);
   const sessions = isAuthenticated && session?.user?.email
     ? await listUserSessions(session.user.email)
@@ -46,22 +43,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
-      {/* nav */}
-      <header className="upg-nav">
-        <div className="upg-nav-inner">
-          <Link href={lp(siteRoutes.home)} className="upg-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}><NoonWordmark /></span>
-          </Link>
-          <nav className="upg-nav-links">
-            <Link href={lp(siteRoutes.services)} className="active">Services</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)}>Contact</Link>
-          </nav>
-          <Link href={maxwellHref} className="upg-nav-cta upg-btn upg-btn-primary">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale={locale} active="services" />
 
       <div className="upg-frame" aria-hidden />
 

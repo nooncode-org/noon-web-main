@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import { getContactHref } from "@/lib/site-config";
 import "@/app/_components/site/legal-rd.css";
 import "./not-found.css";
@@ -26,20 +26,7 @@ export default function GlobalErrorBoundary({
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <header className="lgl-nav">
-        <div className="lgl-nav-inner">
-          <Link href="/" className="lgl-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="lgl-nav-links">
-            <Link href="/en/services">Services</Link>
-            <Link href="/en/about">About</Link>
-            <Link href="/en/contact">Contact</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteNavRd locale="en" />
 
       <div className="lgl-frame" aria-hidden />
 

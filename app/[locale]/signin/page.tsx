@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
 import { auth, isGoogleAuthConfigured } from "@/auth";
 import { signInWithGoogleAction } from "./actions";
 import { normalizeInternalRedirect } from "@/lib/auth/redirect";
-import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import "@/app/_components/site/legal-rd.css";
 import "./signin-rd.css";
 
@@ -33,26 +31,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <header className="lgl-nav">
-        <div className="lgl-nav-inner">
-          <Link href={lp("/")} className="lgl-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="lgl-nav-links">
-            <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)}>Contact</Link>
-          </nav>
-          <Link
-            href={lp(getStartWithMaxwellHref())}
-            className="lgl-nav-cta lgl-btn lgl-btn-primary"
-          >
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

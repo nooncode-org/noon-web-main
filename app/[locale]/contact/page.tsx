@@ -3,11 +3,10 @@ import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ArrowRight, Mail } from "lucide-react";
-import { NoonWordmark } from "@/components/brand/noon-logo";
 import { ContactIntakeForm } from "@/app/_components/site/contact-intake-form";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { ContactScroll } from "./contact-scroll";
-import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
 import "./contact-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -43,28 +42,12 @@ type Props = {
 export default async function ContactRedesignPage({ params, searchParams }: Props) {
   const [{ locale }, { inquiry, source, draft }] = await Promise.all([params, searchParams]);
   const lp = (href: string) => `/${locale}${href}`;
-  const maxwellHref = lp(getStartWithMaxwellHref());
   const normalizedInquiry = normalizeContactInquiry(inquiry);
   const trimmedDraft = (draft ?? "").trim();
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} ct-rd`}>
-      {/* nav */}
-      <header className="ct-nav">
-        <div className="ct-nav-inner">
-          <Link href={lp(siteRoutes.home)} className="ct-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}><NoonWordmark /></span>
-          </Link>
-          <nav className="ct-nav-links">
-            <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)} className="active">Contact</Link>
-          </nav>
-          <Link href={maxwellHref} className="ct-nav-cta ct-btn ct-btn-primary ct-btn-sm">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale={locale} active="contact" />
 
       {/* desktop: the framed region is the scroll container (native bar hidden,
           custom 4px overlay thumb floats inside the frame so divider lines stay
