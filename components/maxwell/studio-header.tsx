@@ -179,6 +179,11 @@ type StudioHeaderProps = {
   onSelectDraftSession?: (id: string) => void;
   onNewDraftChat?: () => void;
   onDeleteDraftSession?: (id: string) => void;
+  // Re-fetch the chat list when the drawer opens. The list is loaded once on
+  // mount and never retried, so a failed/slow first fetch left it empty until
+  // some other action refreshed it (e.g. New chat). Refreshing on open recovers
+  // from that silently-failed first load.
+  onRequestChats?: () => void;
   quotaSnapshot?: PrototypeQuotaSnapshot | null;
   // Preview controls relocated from the preview pane's top strip into this
   // single header bar (v0-style). Rendered only when `hasPrototype` is true.
@@ -206,6 +211,7 @@ export function StudioHeader({
   onSelectDraftSession,
   onNewDraftChat,
   onDeleteDraftSession,
+  onRequestChats,
   quotaSnapshot = null,
   previewVersions = [],
   selectedVersionIndex = 0,
@@ -246,7 +252,10 @@ export function StudioHeader({
       <div className="flex min-w-0 items-center gap-2.5">
         <button
           type="button"
-          onClick={() => setMenuOpen(true)}
+          onClick={() => {
+            setMenuOpen(true);
+            onRequestChats?.();
+          }}
           aria-label="Open menu"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
         >

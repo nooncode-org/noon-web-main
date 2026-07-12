@@ -1344,6 +1344,7 @@ export function StudioShell({
         onSelectDraftSession={handleSelectSessionFromList}
         onNewDraftChat={handleNewChatFromList}
         onDeleteDraftSession={handleDeleteSessionList}
+        onRequestChats={refreshSessionSummaries}
         quotaSnapshot={quotaSnapshot}
         previewVersions={prototypeVersions}
         selectedVersionIndex={selectedVersionIndex}
