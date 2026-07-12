@@ -76,3 +76,11 @@ html.dark:has(.mxw-rd) {
 .mxw-rd .site-primary-action:active {
   background-color: #0042c4 !important;
 }
+
+/* ── Cursor ───────────────────────────────────────────────────────────────────
+   Native <button> defaults to the arrow cursor (unlike <a>, which is a pointer),
+   so clickable buttons didn't feel clickable. Give every enabled button on the
+   Maxwell surface a pointer. */
+.mxw-rd button:not(:disabled) {
+  cursor: pointer;
+}
