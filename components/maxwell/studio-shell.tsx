@@ -1260,6 +1260,13 @@ export function StudioShell({
   }
 
   function handleNewChatFromList() {
+    // Clear the session id up front. The sessionId→URL sync effect re-adds
+    // ?session_id=… whenever a sessionId exists but the URL lacks it; since it
+    // runs before the reset effect, a bare router.push(pathname) let it snap the
+    // param (and the whole chat) right back. With sessionId null its guard is
+    // false, so no bounce; the reset effect (initialSessionId → undefined) then
+    // clears messages/prototype/phase/etc. for a fresh chat.
+    setSessionId(null);
     router.push(pathname);
   }
 
