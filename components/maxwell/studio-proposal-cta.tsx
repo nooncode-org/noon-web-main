@@ -319,7 +319,7 @@ export function StudioProposalCta({
                 value={shareUrl}
                 readOnly
                 aria-label="Shareable prototype link"
-                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono text-foreground/85 outline-none focus:border-foreground/20"
+                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground/85 outline-none focus:border-foreground/20"
                 onFocus={(e) => e.currentTarget.select()}
               />
               <button
@@ -442,7 +442,7 @@ export function StudioProposalCta({
             <RotateCcw className="w-3.5 h-3.5" />
             Request adjustment
             <span
-              className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+              className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground"
             >
               {remaining}
             </span>

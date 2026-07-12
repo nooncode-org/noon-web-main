@@ -59,7 +59,7 @@ function renderBlock(block: ProposalBlock, index: number): ReactNode {
       return (
         <h3
           key={index}
-          className="pt-1 text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground"
+          className="pt-1 text-[11px] uppercase tracking-[0.24em] text-muted-foreground"
         >
           {block.text}
         </h3>

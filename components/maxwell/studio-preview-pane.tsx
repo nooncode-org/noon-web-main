@@ -55,7 +55,7 @@ function ElapsedPollingBadge({ startedAt }: { startedAt: number }) {
       }`}
     >
       <span className="truncate">{pollingStatusText(phase)}</span>
-      <span className="shrink-0 font-mono tabular-nums">{formatElapsed(seconds)}</span>
+      <span className="shrink-0 tabular-nums">{formatElapsed(seconds)}</span>
     </div>
   );
 }
@@ -217,7 +217,7 @@ function PreviewPlaceholder({
       )}
 
       {!isGenerating && (
-        <p className="text-xs text-muted-foreground mt-4 font-mono opacity-50">
+        <p className="text-xs text-muted-foreground mt-4 opacity-50">
           preview · waiting
         </p>
       )}
@@ -265,7 +265,7 @@ function PreviewFailed({
           Talk to agent
         </Link>
       </div>
-      <p className="text-xs text-muted-foreground mt-6 font-mono opacity-50">
+      <p className="text-xs text-muted-foreground mt-6 opacity-50">
         preview · unavailable
       </p>
     </div>
@@ -579,7 +579,7 @@ export function StudioPreviewPane({
             <ExternalLink className="w-4 h-4" />
             Open prototype
           </a>
-          <p className="text-xs text-muted-foreground mt-4 font-mono opacity-50">
+          <p className="text-xs text-muted-foreground mt-4 opacity-50">
             opens in a new tab
           </p>
         </div>
@@ -616,7 +616,7 @@ export function StudioPreviewPane({
                   <RotateCcw className="w-3.5 h-3.5" />
                   Request adjustment
                   <span
-                    className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+                    className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground"
                   >
                     {maxCorrections - correctionsUsed} left
                   </span>

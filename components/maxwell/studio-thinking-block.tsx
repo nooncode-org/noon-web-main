@@ -28,7 +28,7 @@ export function StudioThinkingBlock({ content }: StudioThinkingBlockProps) {
         </button>
 
         {expanded && (
-          <div className="mt-2 max-w-[68ch] whitespace-pre-wrap border-l border-border/70 pl-4 font-mono text-[11px] leading-6 text-muted-foreground/80">
+          <div className="mt-2 max-w-[68ch] whitespace-pre-wrap border-l border-border/70 pl-4 text-[11px] leading-6 text-muted-foreground/80">
             {content}
           </div>
         )}
