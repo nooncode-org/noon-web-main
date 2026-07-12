@@ -3,6 +3,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4's Preflight dropped the default pointer cursor on <button>, so
+   clickable buttons showed the arrow. Restore it for pressable buttons only —
+   enabled and not aria-disabled; disabled/aria-disabled keep the default arrow.
+   Placed in `base` so a per-element `cursor-*` utility can still override it. */
+@layer base {
+  button:not(:disabled):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 * {
   scrollbar-width: none;
 }
