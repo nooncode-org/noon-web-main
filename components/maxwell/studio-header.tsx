@@ -452,16 +452,18 @@ export function StudioHeader({
             delete) migrated with it so nothing is lost. */}
         {draftSessions.length > 0 && (
           <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-3">
-            <div className="relative px-1 pb-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/70" />
-              <input
-                type="text"
-                value={chatQuery}
-                onChange={(e) => setChatQuery(e.target.value)}
-                placeholder="Search chats"
-                aria-label="Search chats"
-                className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
-              />
+            <div className="px-1 pb-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
+                <input
+                  type="text"
+                  value={chatQuery}
+                  onChange={(e) => setChatQuery(e.target.value)}
+                  placeholder="Search chats"
+                  aria-label="Search chats"
+                  className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
+                />
+              </div>
             </div>
             <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
               Recent chats
