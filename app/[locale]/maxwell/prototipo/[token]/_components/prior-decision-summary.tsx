@@ -5,8 +5,11 @@
  * prototipo (`decision.status === 'accepted' | 'rejected'`). Renders alongside
  * `PrototipoFrame` so the client can still review the artifact.
  *
- * Copy is editorial — neutral Spanish, owner-approved 2026-06-25 (D-slice plan §11).
+ * Copy comes from the `prototipo.priorDecision` message catalog; the decision
+ * date is formatted in the active locale.
  */
+
+import { getLocale, getTranslations } from "next-intl/server";
 
 import type { PrototipoRenderData } from "@/lib/maxwell/prototipo-render-types";
 
@@ -14,10 +17,10 @@ type Props = {
   data: PrototipoRenderData;
 };
 
-function formatDecidedAt(iso: string | null) {
+function formatDecidedAt(iso: string | null, locale: string) {
   if (!iso) return null;
   try {
-    return new Intl.DateTimeFormat("es", {
+    return new Intl.DateTimeFormat(locale, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -29,9 +32,11 @@ function formatDecidedAt(iso: string | null) {
   }
 }
 
-export function PriorDecisionSummary({ data }: Props) {
+export async function PriorDecisionSummary({ data }: Props) {
+  const t = await getTranslations("prototipo.priorDecision");
+  const locale = await getLocale();
   const { decision } = data;
-  const decidedAt = formatDecidedAt(decision.decidedAt);
+  const decidedAt = formatDecidedAt(decision.decidedAt, locale);
 
   if (decision.status === "accepted") {
     return (
@@ -40,10 +45,10 @@ export function PriorDecisionSummary({ data }: Props) {
         aria-live="polite"
         className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-5 text-sm text-emerald-900 dark:text-emerald-100"
       >
-        <p className="font-medium">Ya aceptaste este prototipo.</p>
+        <p className="font-medium">{t("acceptedTitle")}</p>
         <p className="mt-1 text-emerald-900/80 dark:text-emerald-100/80">
-          El vendedor recibió tu aceptación y te va a contactar con la propuesta detallada.
-          {decidedAt && <> Decisión registrada el {decidedAt}.</>}
+          {t("acceptedBody")}
+          {decidedAt && <> {t("decidedAt", { date: decidedAt })}</>}
         </p>
       </aside>
     );
@@ -56,10 +61,10 @@ export function PriorDecisionSummary({ data }: Props) {
         aria-live="polite"
         className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-6 py-5 text-sm text-amber-900 dark:text-amber-100"
       >
-        <p className="font-medium">Rechazaste este prototipo.</p>
+        <p className="font-medium">{t("rejectedTitle")}</p>
         <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-          El vendedor lo va a tomar en cuenta para generar una nueva versión.
-          {decidedAt && <> Decisión registrada el {decidedAt}.</>}
+          {t("rejectedBody")}
+          {decidedAt && <> {t("decidedAt", { date: decidedAt })}</>}
         </p>
         {decision.notes && (
           <blockquote className="mt-3 border-l-2 border-amber-500/40 pl-3 italic">

@@ -13,27 +13,33 @@
  * appears blank.
  */
 
+import { getTranslations } from "next-intl/server";
+
 import type { PrototipoRenderData } from "@/lib/maxwell/prototipo-render-types";
 
 type Props = {
   data: PrototipoRenderData;
 };
 
-export function PrototipoFrame({ data }: Props) {
+export async function PrototipoFrame({ data }: Props) {
+  const t = await getTranslations("prototipo.frame");
   const { prototype, workspace, leadContext } = data;
   const hasDeployedUrl = Boolean(prototype.deployedUrl);
   const hasGeneratedHtml = Boolean(prototype.generatedHtml);
-  const iframeTitle = `Prototipo para ${leadContext.businessName} — Versión ${workspace.version}`;
+  const iframeTitle = t("iframeTitle", {
+    business: leadContext.businessName,
+    version: workspace.version,
+  });
 
   return (
     <section
-      aria-label="Vista previa del prototipo"
+      aria-label={t("previewAria")}
       className="rounded-2xl border border-border bg-card overflow-hidden"
     >
       <header className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
         <div>
           <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
-            Versión {workspace.version}
+            {t("version", { version: workspace.version })}
           </p>
           <h2 className="mt-1 text-sm font-medium text-foreground">
             {leadContext.businessName} — {leadContext.projectTypeLabel}
@@ -46,7 +52,7 @@ export function PrototipoFrame({ data }: Props) {
             rel="noopener noreferrer"
             className="text-xs font-medium text-primary underline-offset-4 hover:underline"
           >
-            Abrir en nueva pestaña
+            {t("openInNewTab")}
           </a>
         )}
       </header>
@@ -69,10 +75,7 @@ export function PrototipoFrame({ data }: Props) {
           />
         ) : (
           <div className="flex h-[40vh] items-center justify-center px-6 text-center text-sm text-muted-foreground">
-            <p>
-              Estamos preparando tu prototipo. Esto puede tardar unos minutos —
-              recargá la página en un rato.
-            </p>
+            <p>{t("notReady")}</p>
           </div>
         )}
       </div>

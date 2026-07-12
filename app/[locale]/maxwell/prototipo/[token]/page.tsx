@@ -21,6 +21,7 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { fetchPrototipoRender } from "@/lib/maxwell/prototipo-render-fetch";
 import { mapRenderResultToUxState } from "@/lib/maxwell/prototipo-render-types";
@@ -34,10 +35,13 @@ import { ErrorStates } from "./_components/error-states";
 import { PriorDecisionSummary } from "./_components/prior-decision-summary";
 import { PrototipoFrame } from "./_components/prototipo-frame";
 
-export const metadata: Metadata = {
-  title: "Tu prototipo - Noon",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("prototipo");
+  return {
+    title: `${t("titleReady")} - Noon`,
+    robots: { index: false, follow: false },
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -98,6 +102,7 @@ export default async function PublicPrototipoPage({ params }: Props) {
 
   const result = await fetchPrototipoRender(token);
   const state = mapRenderResultToUxState(result);
+  const t = await getTranslations("prototipo");
 
   // Log the App-side requestId on every fetch so cross-repo trace joins are
   // possible. Errors log at warn; successes log at info with the kind only.
@@ -126,10 +131,10 @@ export default async function PublicPrototipoPage({ params }: Props) {
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <header className="space-y-2">
           <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
-            Noon Prototipo
+            {t("kicker")}
           </p>
           <h1 className="text-2xl font-display md:text-3xl">
-            {isReady ? `Tu prototipo` : `Prototipo`}
+            {isReady ? t("titleReady") : t("title")}
           </h1>
         </header>
 
@@ -155,11 +160,8 @@ export default async function PublicPrototipoPage({ params }: Props) {
                 aria-live="polite"
                 className="rounded-2xl border border-border bg-card px-6 py-5 text-sm text-muted-foreground"
               >
-                <p className="font-medium text-foreground">Preparando tu prototipo</p>
-                <p className="mt-1">
-                  Estamos terminando de generar la vista previa. Recargá la página en unos
-                  minutos.
-                </p>
+                <p className="font-medium text-foreground">{t("preparingTitle")}</p>
+                <p className="mt-1">{t("preparingBody")}</p>
               </aside>
             )}
           </>
