@@ -74,7 +74,7 @@ function CorrectionCounter({ used, max }: { used: number; max: number }) {
   const allUsed = used >= max;
 
   return (
-    <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs font-mono text-muted-foreground transition-colors duration-300">
+    <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-muted-foreground transition-colors duration-300">
       {allUsed ? (
         "Adjustments complete"
       ) : (
@@ -300,7 +300,7 @@ export function StudioHeader({
                         key={v.versionNumber}
                         type="button"
                         onClick={() => onSelectVersion?.(i)}
-                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
+                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-all"
                         style={
                           isSelected
                             ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
@@ -320,7 +320,7 @@ export function StudioHeader({
                 </div>
               ) : (
                 previewSelectedVersion && (
-                  <span className="text-xs font-mono text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     v{previewSelectedVersion.versionNumber}
                   </span>
                 )
@@ -463,7 +463,7 @@ export function StudioHeader({
                 className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
               />
             </div>
-            <p className="px-4 pb-1 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+            <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
               Recent chats
             </p>
             <div className="min-h-0 flex-1 overflow-y-auto pb-2">
@@ -490,7 +490,7 @@ export function StudioHeader({
                         className="min-w-0 flex-1 rounded-[8px] px-4 py-2.5 text-left"
                       >
                         <span className="line-clamp-1 text-sm text-foreground/85">{row.title}</span>
-                        <span className="font-mono text-[10px] text-muted-foreground/70">
+                        <span className="text-[10px] text-muted-foreground/70">
                           {row.updatedAt.slice(0, 10)}
                         </span>
                       </button>
@@ -544,10 +544,10 @@ export function StudioHeader({
           {/* Prototype quota — neutral/informational, not an alarm. */}
           {quotaSnapshot && (
             <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
-              <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
                 Prototype previews this month
               </p>
-              <p className="mt-0.5 font-mono text-xs text-foreground">
+              <p className="mt-0.5 text-xs text-foreground">
                 {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
                 <span className="ml-2 text-muted-foreground/70">
                   studio {quotaSnapshot.globalInitialPrototypesThisUtcMonth}/{quotaSnapshot.globalMonthlyInitialLimit}
