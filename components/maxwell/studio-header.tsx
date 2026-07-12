@@ -5,10 +5,8 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ChevronDown,
-  CircleDashed,
   ExternalLink,
   FileText,
-  Loader2,
   LogOut,
   MessageSquare,
   Monitor,
@@ -18,7 +16,6 @@ import {
   Smartphone,
   Star,
   Trash2,
-  Upload,
   User,
   X,
 } from "lucide-react";
@@ -231,19 +228,18 @@ export function StudioHeader({
   const displayName = projectName || "Maxwell Studio";
 
   // Preview controls (relocated). The selected version drives the "Open full
-  // screen" href + the compact version label; `isRevising` swaps the label for
-  // an "Applying adjustment…" indicator, mirroring the old preview-bar behavior.
+  // screen" href + the compact version label. Processing/revising is shown
+  // once — by the status pill on the right — so the center controls stay static.
   const previewSelectedVersion =
     previewVersions[selectedVersionIndex] ??
     previewVersions[previewVersions.length - 1] ??
     null;
   const previewUrl = previewSelectedVersion?.demoUrl ?? null;
-  const isRevising = phase === "revision_requested";
 
   return (
     <>
-    <header className="flex items-center justify-between border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
-      <div className="flex min-w-0 items-center gap-2.5">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
+      <div className="col-start-1 flex min-w-0 items-center gap-2.5">
         <Link
           href={siteRoutes.home}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
@@ -252,7 +248,6 @@ export function StudioHeader({
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex">
-        <CircleDashed className={`h-3.5 w-3.5 ${isProcessing ? "animate-spin" : ""}`} />
         <Popover open={draftsOpen} onOpenChange={setDraftsOpen}>
           <PopoverTrigger asChild>
             <button
@@ -368,19 +363,20 @@ export function StudioHeader({
           </PopoverContent>
         </Popover>
         </div>
+        <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
+        <ViewToggle
+          activeView={activeView}
+          onToggle={onToggleView}
+          hasWorkspace={hasWorkspace}
+        />
       </div>
 
       {/* Preview controls — relocated from the preview pane's top strip into
           this single header bar (v0-style). Desktop-only; shown with a
           prototype. The preview column below now starts straight at the iframe. */}
       {hasPrototype && (
-        <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          {isRevising ? (
-            <span className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
-              Applying adjustment…
-              <Loader2 className="h-3 w-3 animate-spin" />
-            </span>
-          ) : previewVersions.length > 1 ? (
+        <div className="col-start-2 hidden shrink-0 items-center gap-2 justify-self-center lg:flex">
+          {previewVersions.length > 1 ? (
             <div className="flex items-center gap-1">
               {previewVersions.map((v, i) => {
                 const isSelected = i === selectedVersionIndex;
@@ -471,7 +467,7 @@ export function StudioHeader({
         </div>
       )}
 
-      <div className="flex min-w-0 items-center justify-end gap-2">
+      <div className="col-start-3 flex min-w-0 items-center justify-end gap-2">
         <div className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${isProcessing ? "animate-pulse" : ""}`}
@@ -480,32 +476,12 @@ export function StudioHeader({
           <span className="truncate">{label}</span>
         </div>
 
-        <ViewToggle
-          activeView={activeView}
-          onToggle={onToggleView}
-          hasWorkspace={hasWorkspace}
-        />
-
         {hasPrototype && (
           <CorrectionCounter used={correctionsUsed} max={maxCorrections} />
         )}
 
-        {quotaSnapshot && (
-          <span
-            className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-mono text-muted-foreground lg:inline-flex"
-            title={`Prototype previews this month — you: ${quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/${quotaSnapshot.userMonthlyInitialLimit} · studio total: ${quotaSnapshot.globalInitialPrototypesThisUtcMonth}/${quotaSnapshot.globalMonthlyInitialLimit}`}
-          >
-            {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
-          </span>
-        )}
+        <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
 
-        <button
-          type="button"
-          aria-label="Share"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-        >
-          <Upload className="h-4 w-4" />
-        </button>
         <button
           type="button"
           onClick={() => setMenuOpen(true)}
@@ -623,6 +599,21 @@ export function StudioHeader({
               {viewerEmail}
             </p>
           </div>
+          {/* Prototype quota — relocated here from the header bar so the top
+              strip stays uncluttered. Neutral/informational, not an alarm. */}
+          {quotaSnapshot && (
+            <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
+              <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
+                Prototype previews this month
+              </p>
+              <p className="mt-0.5 font-mono text-xs text-foreground">
+                {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
+                <span className="ml-2 text-muted-foreground/70">
+                  studio {quotaSnapshot.globalInitialPrototypesThisUtcMonth}/{quotaSnapshot.globalMonthlyInitialLimit}
+                </span>
+              </p>
+            </div>
+          )}
           <form action={signOutAction} onSubmit={() => setMenuOpen(false)}>
             <button
               type="submit"
