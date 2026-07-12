@@ -238,8 +238,8 @@ export function StudioHeader({
 
   return (
     <>
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
-      <div className="col-start-1 flex min-w-0 items-center gap-2.5">
+    <header className="flex items-center justify-between gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
+      <div className="flex min-w-0 items-center gap-2.5">
         <Link
           href={siteRoutes.home}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
@@ -371,103 +371,7 @@ export function StudioHeader({
         />
       </div>
 
-      {/* Preview controls — relocated from the preview pane's top strip into
-          this single header bar (v0-style). Desktop-only; shown with a
-          prototype. The preview column below now starts straight at the iframe. */}
-      {hasPrototype && (
-        <div className="col-start-2 hidden shrink-0 items-center gap-2 justify-self-center lg:flex">
-          {previewVersions.length > 1 ? (
-            <div className="flex items-center gap-1">
-              {previewVersions.map((v, i) => {
-                const isSelected = i === selectedVersionIndex;
-                const isLatest = i === previewVersions.length - 1;
-                return (
-                  <button
-                    key={v.versionNumber}
-                    type="button"
-                    onClick={() => onSelectVersion?.(i)}
-                    className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
-                    style={
-                      isSelected
-                        ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
-                        : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
-                    }
-                  >
-                    v{v.versionNumber}
-                    {isLatest && (
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: isSelected ? "var(--foreground)" : "var(--muted-foreground)" }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            previewSelectedVersion && (
-              <span className="text-xs font-mono text-muted-foreground">
-                v{previewSelectedVersion.versionNumber}
-              </span>
-            )
-          )}
-
-          <span className="h-4 w-px bg-border" aria-hidden="true" />
-
-          {/* Device preview toggle — previews the iframe at mobile width */}
-          <div className="flex items-center rounded-full border border-border p-0.5">
-            <button
-              type="button"
-              onClick={() => onViewportChange?.("desktop")}
-              title="Desktop preview"
-              aria-label="Desktop preview"
-              aria-pressed={viewport === "desktop"}
-              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
-                viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Monitor className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewportChange?.("mobile")}
-              title="Mobile preview"
-              aria-label="Mobile preview"
-              aria-pressed={viewport === "mobile"}
-              className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
-                viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Smartphone className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onReloadPreview?.()}
-            title="Reload the preview (use this if it looks blank)"
-            aria-label="Reload preview"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-
-          {previewUrl && (
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Open full screen"
-              aria-label="Open full screen"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          )}
-        </div>
-      )}
-
-      <div className="col-start-3 flex min-w-0 items-center justify-end gap-2">
+      <div className="flex min-w-0 items-center justify-end gap-2">
         <div className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${isProcessing ? "animate-pulse" : ""}`}
@@ -480,8 +384,6 @@ export function StudioHeader({
           <CorrectionCounter used={correctionsUsed} max={maxCorrections} />
         )}
 
-        <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
-
         <button
           type="button"
           onClick={() => setMenuOpen(true)}
@@ -490,6 +392,104 @@ export function StudioHeader({
         >
           <PanelRight className="h-4 w-4" />
         </button>
+
+        {/* Preview controls — moved to the far right of the bar (owner:
+            rightmost, past the menu). Desktop-only; shown with a prototype. */}
+        {hasPrototype && (
+          <>
+            <span className="hidden h-4 w-px bg-border lg:block" aria-hidden="true" />
+            <div className="hidden shrink-0 items-center gap-2 lg:flex">
+              {previewVersions.length > 1 ? (
+                <div className="flex items-center gap-1">
+                  {previewVersions.map((v, i) => {
+                    const isSelected = i === selectedVersionIndex;
+                    const isLatest = i === previewVersions.length - 1;
+                    return (
+                      <button
+                        key={v.versionNumber}
+                        type="button"
+                        onClick={() => onSelectVersion?.(i)}
+                        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
+                        style={
+                          isSelected
+                            ? { backgroundColor: "var(--secondary)", color: "var(--foreground)", border: "1px solid var(--border)" }
+                            : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
+                        }
+                      >
+                        v{v.versionNumber}
+                        {isLatest && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ backgroundColor: isSelected ? "var(--foreground)" : "var(--muted-foreground)" }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                previewSelectedVersion && (
+                  <span className="text-xs font-mono text-muted-foreground">
+                    v{previewSelectedVersion.versionNumber}
+                  </span>
+                )
+              )}
+
+              <span className="h-4 w-px bg-border" aria-hidden="true" />
+
+              {/* Device preview toggle — previews the iframe at mobile width */}
+              <div className="flex items-center rounded-full border border-border p-0.5">
+                <button
+                  type="button"
+                  onClick={() => onViewportChange?.("desktop")}
+                  title="Desktop preview"
+                  aria-label="Desktop preview"
+                  aria-pressed={viewport === "desktop"}
+                  className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                    viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Monitor className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onViewportChange?.("mobile")}
+                  title="Mobile preview"
+                  aria-label="Mobile preview"
+                  aria-pressed={viewport === "mobile"}
+                  className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
+                    viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Smartphone className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onReloadPreview?.()}
+                title="Reload the preview (use this if it looks blank)"
+                aria-label="Reload preview"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+
+              {previewUrl && (
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open full screen"
+                  aria-label="Open full screen"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </header>
 
