@@ -35,6 +35,13 @@ export type ChatMessage = {
 
 export type MessageFeedback = "up" | "down";
 
+export type AttachedFile = {
+  name: string;
+  mimeType: string;
+  dataUrl: string;
+  textContent?: string;
+};
+
 export type ReplyTarget = {
   messageId: string;
   excerpt: string;
@@ -192,6 +199,7 @@ export function StudioShell({
   const [stopNotice, setStopNotice] = useState<string | null>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [prototypeVersions, setPrototypeVersions] = useState<PrototypeVersion[]>([]);
   const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
   const [correctionsUsed, setCorrectionsUsed] = useState(0);
@@ -439,6 +447,7 @@ export function StudioShell({
       replyTarget?: ReplyTarget | null;
       regenerateAssistantMessageId?: string;
       localUserMessageId?: string;
+      attachedFile?: AttachedFile | null;
     },
   ) {
     const requestStartedAt = performance.now();
@@ -450,28 +459,27 @@ export function StudioShell({
     let imageUrl: string | undefined;
     let effectiveMessage = userMessage;
 
-    if (isFirstMessage && !sessionId) {
+    // Attachment: from the chat composer (any message) or, for the very first
+    // message started from the home hero, from sessionStorage.
+    let file: AttachedFile | null = options?.attachedFile ?? null;
+    if (!file && isFirstMessage && !sessionId) {
       try {
         const stored = sessionStorage.getItem("maxwell_attached_file");
         if (stored) {
           sessionStorage.removeItem("maxwell_attached_file");
-          const file = JSON.parse(stored) as {
-            name: string;
-            mimeType: string;
-            dataUrl: string;
-            textContent?: string;
-          };
-
-          if ((file.mimeType.startsWith("image/") || file.mimeType === "image/url") && file.dataUrl) {
-            imageUrl = file.dataUrl;
-          } else if (file.textContent) {
-            effectiveMessage = `[Attached file: ${file.name}]\n${file.textContent}\n\n${effectiveMessage}`;
-          } else {
-            effectiveMessage = `[Attached file: ${file.name}]\n\n${effectiveMessage}`;
-          }
+          file = JSON.parse(stored) as AttachedFile;
         }
       } catch {
         // sessionStorage unavailable; continue without attachment context.
+      }
+    }
+    if (file) {
+      if ((file.mimeType.startsWith("image/") || file.mimeType === "image/url") && file.dataUrl) {
+        imageUrl = file.dataUrl;
+      } else if (file.textContent) {
+        effectiveMessage = `[Attached file: ${file.name}]\n${file.textContent}\n\n${effectiveMessage}`;
+      } else {
+        effectiveMessage = `[Attached file: ${file.name}]\n\n${effectiveMessage}`;
       }
     }
 
@@ -625,17 +633,21 @@ export function StudioShell({
 
   function handleSend() {
     const msg = input.trim();
-    if (!msg || isThinking) return;
+    if ((!msg && !attachedFile) || isThinking) return;
 
     const currentReplyTarget = replyTarget;
-    const localUserMessage = createMessage({ role: "user", content: msg });
+    const currentAttachedFile = attachedFile;
+    const displayContent = msg || (currentAttachedFile ? `Attached: ${currentAttachedFile.name}` : "");
+    const localUserMessage = createMessage({ role: "user", content: displayContent });
     setInput("");
     setReplyTarget(null);
     setStopNotice(null);
+    setAttachedFile(null);
     setMessages((prev) => [...prev, localUserMessage]);
     void sendToMaxwell(msg, !sessionId && messages.length === 0, {
       replyTarget: currentReplyTarget,
       localUserMessageId: localUserMessage.id,
+      attachedFile: currentAttachedFile,
     });
   }
 
@@ -1404,6 +1416,8 @@ export function StudioShell({
               input={input}
               onInputChange={setInput}
               onSend={handleSend}
+              attachedFile={attachedFile}
+              onAttachChange={setAttachedFile}
               onStop={handleStopThinking}
               inputRef={inputRef}
               canSend={canSendMessage}
