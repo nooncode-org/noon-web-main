@@ -521,10 +521,10 @@ export function StudioChatPane({
   // 3-side shadow border instead of a solid border).
   const composerSurfaceClass =
     "rounded-[9px] p-1.5 bg-[#f9f9f9] dark:bg-[#131313] shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14]";
-  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[52px]" : "min-h-[72px]";
+  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[80px]" : "min-h-[112px]";
   const composerTextAreaClass = isWorkspaceVisible
-    ? "max-h-28 min-h-[38px] w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
-    : "max-h-36 min-h-[56px] w-full resize-none bg-transparent px-3 py-1.5 text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
+    ? "max-h-40 min-h-[64px] w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
+    : "max-h-52 min-h-[96px] w-full resize-none bg-transparent px-3 py-1.5 text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
   const latestAssistantIndex = messages.findLastIndex(
     (message) => message.role === "assistant" && (!message.type || message.type === "chat"),
   );
