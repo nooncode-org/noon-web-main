@@ -3,21 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  ChevronDown,
   ExternalLink,
   FileText,
+  Home,
   LogOut,
   MessageSquare,
   Monitor,
-  PanelRight,
+  PanelLeft,
   Plus,
   RotateCcw,
+  Search,
   Smartphone,
   Star,
   Trash2,
   User,
-  X,
 } from "lucide-react";
 import { signOutAction } from "@/lib/auth/signout-action";
 import {
@@ -30,7 +29,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { GeistSans } from "geist/font/sans";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { siteRoutes } from "@/lib/site-config";
@@ -216,8 +214,8 @@ export function StudioHeader({
   onViewportChange,
   onReloadPreview,
 }: StudioHeaderProps) {
-  const [draftsOpen, setDraftsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [chatQuery, setChatQuery] = useState("");
   // B31 — Track the row staged for deletion. Single-row state is enough: the
   // AlertDialog is modal so only one delete prompt can be open at a time. We
   // keep the row's title around so the dialog can name what is being deleted
@@ -226,6 +224,12 @@ export function StudioHeader({
   const isProcessing = phaseIsActive(phase);
   const label = phaseLabels[phase];
   const displayName = projectName || "Maxwell Studio";
+
+  // Client-side filter for the drawer's chat search input.
+  const chatQueryTrimmed = chatQuery.trim().toLowerCase();
+  const filteredSessions = chatQueryTrimmed
+    ? draftSessions.filter((s) => s.title.toLowerCase().includes(chatQueryTrimmed))
+    : draftSessions;
 
   // Preview controls (relocated). The selected version drives the "Open full
   // screen" href + the compact version label. Processing/revising is shown
@@ -240,128 +244,24 @@ export function StudioHeader({
     <>
     <header className="flex items-center justify-between gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
       <div className="flex min-w-0 items-center gap-2.5">
-        <Link
-          href={siteRoutes.home}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-          aria-label="Back to Noon"
+        <button
+          type="button"
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
+          <PanelLeft className="h-4 w-4" />
+        </button>
+        {/* Current chat name — plain text. The chat switcher now lives in the
+            left drawer (v0-style), so this is no longer a dropdown. */}
         <div className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex">
-        <Popover open={draftsOpen} onOpenChange={setDraftsOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex max-w-[min(280px,42vw)] items-center gap-1 truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-secondary hover:text-foreground"
-              title="Conversations"
-            >
-              <span className="shrink-0">Drafts</span>
-              <span className="text-muted-foreground/50">/</span>
-              <Star className="h-3 w-3 shrink-0 text-muted-foreground/70" />
-              <span className="truncate font-medium text-foreground/90">{displayName}</span>
-              <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="center" className={`${GeistSans.className} w-80 max-h-[min(320px,50vh)] overflow-hidden p-0`}>
-            <div className="flex items-center justify-between border-b border-border px-3 py-2">
-              <span className="text-[11px] font-mono uppercase tracking-wide text-muted-foreground">
-                Your chats
-              </span>
-              {onNewDraftChat && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDraftsOpen(false);
-                    onNewDraftChat();
-                  }}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-foreground transition-colors hover:bg-secondary"
-                >
-                  <Plus className="h-3 w-3" />
-                  New chat
-                </button>
-              )}
-            </div>
-            <ul className="max-h-[min(260px,42vh)] overflow-y-auto py-1">
-              {draftSessions.length === 0 ? (
-                <li className="px-3 py-6 text-center text-xs text-muted-foreground">
-                  No saved conversations yet. Start a new chat or return tomorrow to pick up where you left off.
-                </li>
-              ) : (
-                draftSessions.map((row) => {
-                  const active = row.id === currentSessionId;
-                  return (
-                    <li
-                      key={row.id}
-                      className={`flex items-stretch gap-0.5 border-b border-border/40 last:border-b-0 ${
-                        active ? "bg-secondary/60" : ""
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDraftsOpen(false);
-                          onSelectDraftSession?.(row.id);
-                        }}
-                        className="min-w-0 flex-1 px-3 py-2.5 text-left text-xs transition-colors hover:bg-secondary/80"
-                      >
-                        <span className="line-clamp-2 text-foreground">{row.title}</span>
-                        <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground/80">
-                          {row.updatedAt.slice(0, 10)}
-                        </span>
-                      </button>
-                      {row.proposalHref && (
-                        // The client's sent proposal — a <Link> (navigates)
-                        // separate from the select button (loads the chat);
-                        // closes the popover on click.
-                        <Link
-                          href={row.proposalHref}
-                          aria-label="View proposal"
-                          title="View proposal"
-                          onClick={() => setDraftsOpen(false)}
-                          className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                        </Link>
-                      )}
-                      {row.workspaceHref && (
-                        // Slice 1d (A) — re-entry to the client workspace. A
-                        // <Link> (navigates) separate from the select button
-                        // (loads the chat); closes the popover on click.
-                        <Link
-                          href={row.workspaceHref}
-                          aria-label="Open workspace"
-                          title="Open workspace"
-                          onClick={() => setDraftsOpen(false)}
-                          className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                        >
-                          <Monitor className="h-3.5 w-3.5" />
-                        </Link>
-                      )}
-                      {onDeleteDraftSession && (
-                        // B31 — Stage the row for a confirm-dialog instead of
-                        // firing the destructive action on the first click.
-                        // The popover closes immediately so the dialog has the
-                        // foreground and can name the row being deleted.
-                        <button
-                          type="button"
-                          aria-label="Delete conversation"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDraftsOpen(false);
-                            setPendingDelete({ id: row.id, title: row.title });
-                          }}
-                          className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          </PopoverContent>
-        </Popover>
+          <Star className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+          <span
+            className="max-w-[min(280px,42vw)] truncate font-medium text-foreground/90"
+            title={displayName}
+          >
+            {displayName}
+          </span>
         </div>
         <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
         <ViewToggle
@@ -372,7 +272,7 @@ export function StudioHeader({
       </div>
 
       <div className="flex min-w-0 items-center justify-end gap-2">
-        <div className="hidden items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
+        <div className="hidden items-center gap-1.5 rounded-full bg-background/60 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${isProcessing ? "animate-pulse" : ""}`}
             style={{ backgroundColor: phaseDotColor(phase, isProcessing) }}
@@ -384,17 +284,8 @@ export function StudioHeader({
           <CorrectionCounter used={correctionsUsed} max={maxCorrections} />
         )}
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-        >
-          <PanelRight className="h-4 w-4" />
-        </button>
-
-        {/* Preview controls — moved to the far right of the bar (owner:
-            rightmost, past the menu). Desktop-only; shown with a prototype. */}
+        {/* Preview controls — far right of the bar. Desktop-only; shown with a
+            prototype. */}
         {hasPrototype && (
           <>
             <span className="hidden h-4 w-px bg-border lg:block" aria-hidden="true" />
@@ -494,7 +385,8 @@ export function StudioHeader({
     </header>
 
     {/* Mobile-nav-style side drawer (reused from landing/navigation.tsx so the
-        studio uses the same Noon profile panel). Opens from the right. */}
+        studio uses the same Noon profile panel). Opens from the LEFT — the ▢
+        menu button sits on the left of the header (v0-style). */}
     <div
       className={`fixed inset-0 z-[998] transition-all duration-300 ${
         menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
@@ -503,27 +395,29 @@ export function StudioHeader({
       onClick={() => setMenuOpen(false)}
     />
     <div
-      className={`fixed top-1.5 right-1.5 bottom-1.5 z-[999] w-72 transition-all duration-300 ${
-        menuOpen ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 translate-x-full pointer-events-none"
+      className={`fixed top-1.5 left-1.5 bottom-1.5 z-[999] w-72 transition-all duration-300 ${
+        menuOpen ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 -translate-x-full pointer-events-none"
       }`}
     >
       <div className="h-full rounded-[10px] border border-foreground/10 bg-background/95 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
-        {/* Header — Noon wordmark + close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-foreground/8">
-          <Link
-            href={siteRoutes.home}
-            className="text-base font-display tracking-tight text-foreground"
-            onClick={() => setMenuOpen(false)}
+        {/* Header — account identity (avatar + email) + close, v0-style. */}
+        <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-foreground/8">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
+            {viewerEmail.charAt(0) || "?"}
+          </span>
+          <span
+            className="min-w-0 flex-1 truncate text-sm font-medium text-foreground"
+            title={viewerEmail}
           >
-            noon
-          </Link>
+            {viewerEmail}
+          </span>
           <button
             type="button"
             onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center w-7 h-7 rounded-[6px] border border-foreground/10 bg-secondary/50 text-muted-foreground"
+            className="flex items-center justify-center w-7 h-7 shrink-0 rounded-[6px] text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Close menu"
           >
-            <X className="w-3.5 h-3.5" />
+            <PanelLeft className="w-4 h-4" />
           </button>
         </div>
 
@@ -552,55 +446,102 @@ export function StudioHeader({
           </Link>
         </div>
 
-        {/* Recent chats — surfaces the conversation history here so the drawer
-            is a complete panel (previously the list only lived in the breadcrumb
-            popover). Same data source (draftSessions); select loads the chat. */}
+        {/* Chat switcher — search + recent chats, moved here from the breadcrumb
+            popover so the drawer is the single v0-style panel. Same data source
+            (draftSessions); the per-row actions (view proposal / open workspace /
+            delete) migrated with it so nothing is lost. */}
         {draftSessions.length > 0 && (
-          <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-2">
+          <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-3">
+            <div className="relative px-1 pb-2">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/70" />
+              <input
+                type="text"
+                value={chatQuery}
+                onChange={(e) => setChatQuery(e.target.value)}
+                placeholder="Search chats"
+                aria-label="Search chats"
+                className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
+              />
+            </div>
             <p className="px-4 pb-1 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
               Recent chats
             </p>
             <div className="min-h-0 flex-1 overflow-y-auto pb-2">
-              {draftSessions.map((row) => {
-                const active = row.id === currentSessionId;
-                return (
-                  <button
-                    key={row.id}
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onSelectDraftSession?.(row.id);
-                    }}
-                    className={`flex w-full flex-col gap-0.5 rounded-[8px] px-4 py-2.5 text-left transition-colors ${
-                      active ? "bg-secondary/60" : "hover:bg-secondary/40"
-                    }`}
-                  >
-                    <span className="line-clamp-1 text-sm text-foreground/85">{row.title}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground/70">
-                      {row.updatedAt.slice(0, 10)}
-                    </span>
-                  </button>
-                );
-              })}
+              {filteredSessions.length === 0 ? (
+                <p className="px-4 py-3 text-xs text-muted-foreground/70">
+                  No chats match “{chatQuery}”.
+                </p>
+              ) : (
+                filteredSessions.map((row) => {
+                  const active = row.id === currentSessionId;
+                  return (
+                    <div
+                      key={row.id}
+                      className={`flex items-stretch gap-0.5 rounded-[8px] ${
+                        active ? "bg-secondary/60" : "hover:bg-secondary/40"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onSelectDraftSession?.(row.id);
+                        }}
+                        className="min-w-0 flex-1 rounded-[8px] px-4 py-2.5 text-left"
+                      >
+                        <span className="line-clamp-1 text-sm text-foreground/85">{row.title}</span>
+                        <span className="font-mono text-[10px] text-muted-foreground/70">
+                          {row.updatedAt.slice(0, 10)}
+                        </span>
+                      </button>
+                      {row.proposalHref && (
+                        <Link
+                          href={row.proposalHref}
+                          aria-label="View proposal"
+                          title="View proposal"
+                          onClick={() => setMenuOpen(false)}
+                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
+                      {row.workspaceHref && (
+                        <Link
+                          href={row.workspaceHref}
+                          aria-label="Open workspace"
+                          title="Open workspace"
+                          onClick={() => setMenuOpen(false)}
+                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        >
+                          <Monitor className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
+                      {onDeleteDraftSession && (
+                        <button
+                          type="button"
+                          aria-label="Delete conversation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpen(false);
+                            setPendingDelete({ id: row.id, title: row.title });
+                          }}
+                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}
 
-        {/* Profile section — pushed to bottom */}
+        {/* Footer — quota + sign out. The account email now lives in the drawer
+            header, so it isn't repeated here. */}
         <div className="mt-auto px-4 pb-4 pt-1 space-y-3">
-          <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
-            <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
-              Signed in as
-            </p>
-            <p
-              className="mt-0.5 truncate text-xs font-mono text-foreground"
-              title={viewerEmail}
-            >
-              {viewerEmail}
-            </p>
-          </div>
-          {/* Prototype quota — relocated here from the header bar so the top
-              strip stays uncluttered. Neutral/informational, not an alarm. */}
+          {/* Prototype quota — neutral/informational, not an alarm. */}
           {quotaSnapshot && (
             <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
               <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/80">
@@ -614,15 +555,26 @@ export function StudioHeader({
               </p>
             </div>
           )}
-          <form action={signOutAction} onSubmit={() => setMenuOpen(false)}>
-            <button
-              type="submit"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
+          <div className="flex items-center gap-2">
+            <form action={signOutAction} onSubmit={() => setMenuOpen(false)} className="flex-1">
+              <button
+                type="submit"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </form>
+            <Link
+              href={siteRoutes.home}
+              onClick={() => setMenuOpen(false)}
+              aria-label="Home"
+              title="Home"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60"
             >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </button>
-          </form>
+              <Home className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
