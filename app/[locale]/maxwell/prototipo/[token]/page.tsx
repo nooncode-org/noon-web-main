@@ -123,7 +123,7 @@ export default async function PublicPrototipoPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto flex max-w-4xl flex-col gap-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <header className="space-y-2">
           <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
             Noon Prototipo

@@ -57,3 +57,22 @@ html.dark:has(.mxw-rd) {
   --color-accent-foreground: #ffffff;
   --color-muted-foreground: #a3a3a3;
 }
+
+/* ── Primary button ──────────────────────────────────────────────────────────
+   The shared primary <Button> (default variant) colors itself via the bespoke
+   `.site-primary-action` class in globals.css, which HARDCODES the OLD brand
+   blue #1200c5 — so the --primary remap above never reaches it. Remap the class
+   to the -rd brand in this scope so every primary CTA on a Maxwell surface
+   (prototipo "Aceptar prototipo", review/workspace actions, …) matches the rest
+   of the redesign. Mirrors the upgrade-rd.css fix; `!important` because the
+   source class lives inside an @layer. */
+.mxw-rd .site-primary-action {
+  background-color: #0056fd !important;
+}
+.mxw-rd .site-primary-action:hover {
+  background-color: #3378fd !important;
+  box-shadow: 0 18px 60px rgba(0, 86, 253, 0.18) !important;
+}
+.mxw-rd .site-primary-action:active {
+  background-color: #0042c4 !important;
+}
