@@ -206,6 +206,10 @@ export function StudioShell({
   const [maxCorrections, setMaxCorrections] = useState(DEFAULT_MAX_CORRECTIONS);
   const [activeView, setActiveView] = useState<ActiveView>("chat");
   const [prototypeFailed, setPrototypeFailed] = useState(false);
+  // Why the preview failed: "quota" = the monthly prototype allowance is used
+  // (a deliberate limit) → the preview explains it and drops "Try again";
+  // "error" = a real generation failure → the transient copy + retry.
+  const [prototypeFailedReason, setPrototypeFailedReason] = useState<"error" | "quota">("error");
   // Preview controls (device-width toggle + manual reload) were lifted out of
   // the preview pane so they can live in the single top header bar. `viewport`
   // sizes the iframe; `previewReloadSignal` is a monotonic counter the header's
@@ -393,6 +397,7 @@ export function StudioShell({
       // Set explicitly (not carried over) so switching away from a failed/
       // generating session into a healthy one clears the stale state too.
       setPrototypeFailed(rehydratedView.prototypeFailed);
+      setPrototypeFailedReason("error");
       setPollingStartedAt(null);
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
@@ -683,6 +688,7 @@ export function StudioShell({
   ) {
     setPhase("generating_prototype");
     setPrototypeFailed(false);
+    setPrototypeFailedReason("error");
     // B28 — Marca el inicio del polling para que el preview pane muestre
     // tiempo transcurrido. Se limpia en handlePollSuccess / handlePollError.
     setPollingStartedAt(Date.now());
@@ -730,6 +736,7 @@ export function StudioShell({
       if (res.status === 403) {
         setPhase("clarifying");
         setPrototypeFailed(true);
+        setPrototypeFailedReason(Boolean(data.contact_agent) ? "quota" : "error");
         const msg =
           typeof data.message === "string"
             ? data.message
@@ -1457,6 +1464,7 @@ export function StudioShell({
               selectedVersionIndex={selectedVersionIndex}
               phase={phase}
               prototypeFailed={prototypeFailed}
+              prototypeFailedReason={prototypeFailedReason}
               correctionsUsed={correctionsUsed}
               maxCorrections={maxCorrections}
               pollingStartedAt={pollingStartedAt}

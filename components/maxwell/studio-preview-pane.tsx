@@ -232,10 +232,17 @@ function PreviewPlaceholder({
 function PreviewFailed({
   onRetry,
   agentHref,
+  reason = "error",
 }: {
   onRetry: () => void;
   agentHref: string;
+  // "quota" = the monthly prototype allowance is used (a deliberate limit, not
+  // a transient failure) → explain the once-a-month-per-user rule and offer only
+  // "Talk to agent" (retrying would just hit the quota again). "error" = a real
+  // generation failure → the transient copy + a retry.
+  reason?: "error" | "quota";
 }) {
+  const isQuota = reason === "quota";
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
       <div
@@ -243,20 +250,25 @@ function PreviewFailed({
       >
         <AlertCircle className="w-7 h-7" />
       </div>
-      <p className="text-base font-display mb-2">Preview not available</p>
+      <p className="text-base font-display mb-2">
+        {isQuota ? "Monthly prototype used" : "Preview not available"}
+      </p>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-        The interactive preview could not be generated right now. This is usually temporary.
-        You can try again or continue chatting to refine the idea.
+        {isQuota
+          ? "Each account gets one interactive prototype per month, and you've used it. To explore another product direction, talk with a Noon agent."
+          : "The interactive preview could not be generated right now. This is usually temporary. You can try again or continue chatting to refine the idea."}
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Try again
-        </button>
+        {!isQuota && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Try again
+          </button>
+        )}
         <Link
           href={agentHref}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
@@ -266,7 +278,7 @@ function PreviewFailed({
         </Link>
       </div>
       <p className="text-xs text-muted-foreground mt-6 opacity-50">
-        preview · unavailable
+        {isQuota ? "prototype · monthly limit reached" : "preview · unavailable"}
       </p>
     </div>
   );
@@ -335,6 +347,7 @@ type StudioPreviewPaneProps = {
   selectedVersionIndex: number;
   phase: StudioPhase;
   prototypeFailed: boolean;
+  prototypeFailedReason?: "error" | "quota" | null;
   correctionsUsed: number;
   maxCorrections: number;
   onApprove: () => void;
@@ -375,6 +388,7 @@ export function StudioPreviewPane({
   selectedVersionIndex,
   phase,
   prototypeFailed,
+  prototypeFailedReason,
   correctionsUsed,
   maxCorrections,
   onApprove,
@@ -466,7 +480,7 @@ export function StudioPreviewPane({
     return (
       <div className="h-full">
         {prototypeFailed ? (
-          <PreviewFailed onRetry={onRetryPrototype} agentHref={agentHref} />
+          <PreviewFailed onRetry={onRetryPrototype} agentHref={agentHref} reason={prototypeFailedReason ?? "error"} />
         ) : (
           <PreviewPlaceholder phase={phase} pollingStartedAt={pollingStartedAt} />
         )}
