@@ -4,18 +4,20 @@ interface NoonLogoProps {
   height?: number;
 }
 
+import { NoonMark } from "@/components/brand/noon-logo";
+
 // The logo is above-the-fold on every public surface (header, signin, landing),
 // so both variants avoid next/image's lazy-load wrapper to protect LCP.
 // - Wordmark: inline SVG with fill=currentColor — one official vector that
 //   adapts to light/dark automatically (no PNG srcSet swap), stays crisp at any
 //   size, and costs zero network requests since it ships inline in the HTML.
-// - Icon: static PNG with explicit width/height (no vector source yet).
+// - Icon: the official isotipo (brand/noon-logo NoonMark), same currentColor
+//   contract as the wordmark. /logo-icon.png stays only as the raster for
+//   favicon/apple-touch/JSON-LD in app/layout.tsx.
 
 function LogoIcon({ height, className }: { height: number; className?: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src="/logo-icon.png" alt="" height={height} width={height} className={className} />
-  );
+  const width = Math.round(height * (236.53 / 250.16));
+  return <NoonMark height={height} width={width} className={className} />;
 }
 
 function LogoWordmark({ height, className }: { height: number; className?: string }) {

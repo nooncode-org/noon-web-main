@@ -478,16 +478,20 @@ export async function sendPaymentConfirmedToNoonApp(input: {
 }
 
 /**
- * Client-comment write-back (v3 client portal, Slice 1b). Forwards a client's
- * workspace comment to App's interim receiver
- * (`POST /api/integrations/website/client-comment`).
+ * Client-comment write-back (v3 client portal). A workspace comment is a
+ * first-class §9 request since the App's B.6 fold (`client_requests` with
+ * `type='comment'`), so it POSTs to the CANONICAL `client-request` receiver —
+ * the interim `client-comment` shim URL is retired (Q-7 follow-up, 2026-07-13).
  *
- * camelCase wire — the v3 family, NOT the legacy snake_case POST webhooks (see
- * the co-signed casing rule in docs/v3-client-portal-plan.md §3.1). App de-dupes
- * on `externalCommentId` and replies `{ idempotent, commentId, requestId }` with
- * HTTP 200 on both first-write and replay.
- *
- * Contract: App-nooncode specs/v3-client-portal-comment-receiver.md §A.
+ * Mapping (byte-equivalent to what the App's fold shim wrote): the outbox
+ * `externalCommentId` (a UUID, = the `client_comment` row id) rides as
+ * `externalRequestId` — the SAME `client_requests.external_request_id` UNIQUE
+ * the shim keyed on, so pre-switch forwards and post-switch retries de-dupe
+ * against each other. `submittedBy='client'`, `clientPriority='normal'` (the
+ * fold's constants). App replies the flat §9 create ack
+ * `{ idempotent, clientRequestId, requestId }` with HTTP 200 on both
+ * first-write and replay; `clientRequestId` is the same `client_requests.id`
+ * the shim returned as `commentId`.
  */
 export function buildClientCommentPayload(input: {
   projectId: string;
@@ -495,19 +499,23 @@ export function buildClientCommentPayload(input: {
   body: string;
   at?: string;
 }) {
-  return {
+  return buildClientRequestPayload({
     projectId: input.projectId,
-    externalCommentId: input.externalCommentId,
-    author: "client" as const,
+    externalRequestId: input.externalCommentId,
+    submittedBy: "client",
+    type: "comment",
+    clientPriority: "normal",
     body: input.body,
-    at: input.at ?? new Date().toISOString(),
-  };
+    at: input.at,
+  });
 }
 
 /**
- * Best-effort extraction of App's `{ idempotent, commentId }` from the receiver
- * reply. Returns nulls/false for any shape we don't recognise so a contract
- * drift degrades the audit trail gracefully instead of throwing in the action.
+ * Best-effort extraction of App's `{ idempotent, clientRequestId }` from the
+ * §9 create ack. Returns nulls/false for any shape we don't recognise so a
+ * contract drift degrades the audit trail gracefully instead of throwing in
+ * the action. Kept as `commentId` for the callers' audit column
+ * (`client_comment.noon_app_comment_id`) — same underlying id as before.
  */
 export function extractNoonAppCommentId(response: unknown): {
   commentId: string | null;
@@ -516,10 +524,12 @@ export function extractNoonAppCommentId(response: unknown): {
   if (!response || typeof response !== "object") {
     return { commentId: null, idempotent: false };
   }
-  const obj = response as { commentId?: unknown; idempotent?: unknown };
+  const obj = response as { clientRequestId?: unknown; idempotent?: unknown };
   return {
     commentId:
-      typeof obj.commentId === "string" && obj.commentId.trim() ? obj.commentId : null,
+      typeof obj.clientRequestId === "string" && obj.clientRequestId.trim()
+        ? obj.clientRequestId
+        : null,
     idempotent: obj.idempotent === true,
   };
 }
@@ -531,7 +541,7 @@ export async function sendClientCommentToNoonApp(input: {
   at?: string;
 }) {
   return postNoonAppWebhook(
-    "/api/integrations/website/client-comment",
+    "/api/integrations/website/client-request",
     buildClientCommentPayload(input),
   );
 }

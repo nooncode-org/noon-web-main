@@ -25,11 +25,21 @@ export function NoonWordmark({ className }: { className?: string }) {
   );
 }
 
-export function NoonMark({ className }: { className?: string }) {
+export function NoonMark({
+  className,
+  height,
+  width,
+}: {
+  className?: string;
+  height?: number;
+  width?: number;
+}) {
   return (
     <svg
       viewBox="0 0 236.53 250.16"
       className={className}
+      height={height}
+      width={width}
       fill="currentColor"
       role="img"
       aria-label="Noon"

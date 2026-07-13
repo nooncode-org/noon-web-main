@@ -16,7 +16,7 @@ import {
 } from "@/lib/noon-app-integration";
 
 describe("buildClientCommentPayload", () => {
-  it("builds the frozen camelCase shape with author=client", () => {
+  it("builds the canonical §9 client-request shape (type=comment, submittedBy=client)", () => {
     const payload = buildClientCommentPayload({
       projectId: "proj-1",
       externalCommentId: "ext-1",
@@ -24,9 +24,11 @@ describe("buildClientCommentPayload", () => {
       at: "2026-06-15T12:00:00.000Z",
     });
     expect(payload).toEqual({
+      externalRequestId: "ext-1",
       projectId: "proj-1",
-      externalCommentId: "ext-1",
-      author: "client",
+      submittedBy: "client",
+      type: "comment",
+      clientPriority: "normal",
       body: "Looks great!",
       at: "2026-06-15T12:00:00.000Z",
     });
@@ -43,26 +45,35 @@ describe("buildClientCommentPayload", () => {
 });
 
 describe("extractNoonAppCommentId", () => {
-  it("extracts a first-write reply", () => {
-    expect(extractNoonAppCommentId({ idempotent: false, commentId: "c-1", requestId: "r" })).toEqual({
+  it("extracts a first-write §9 create ack", () => {
+    expect(
+      extractNoonAppCommentId({ idempotent: false, clientRequestId: "c-1", requestId: "r" }),
+    ).toEqual({
       commentId: "c-1",
       idempotent: false,
     });
   });
 
-  it("extracts an idempotent replay reply", () => {
-    expect(extractNoonAppCommentId({ idempotent: true, commentId: "c-1" })).toEqual({
+  it("extracts an idempotent replay ack", () => {
+    expect(extractNoonAppCommentId({ idempotent: true, clientRequestId: "c-1" })).toEqual({
       commentId: "c-1",
       idempotent: true,
     });
   });
 
-  it.each([null, undefined, "string", 42, {}, { commentId: 7 }, { commentId: "  " }])(
-    "degrades unknown shapes to null/false (%s)",
-    (input) => {
-      expect(extractNoonAppCommentId(input)).toEqual({ commentId: null, idempotent: false });
-    },
-  );
+  it.each([
+    null,
+    undefined,
+    "string",
+    42,
+    {},
+    { clientRequestId: 7 },
+    { clientRequestId: "  " },
+    // the retired shim's reply shape must degrade, not be silently accepted
+    { idempotent: false, commentId: "c-1" },
+  ])("degrades unknown shapes to null/false (%s)", (input) => {
+    expect(extractNoonAppCommentId(input)).toEqual({ commentId: null, idempotent: false });
+  });
 });
 
 describe("sendClientCommentToNoonApp", () => {
@@ -105,32 +116,38 @@ describe("sendClientCommentToNoonApp", () => {
     return promise;
   }
 
-  it("POSTs the camelCase payload to the client-comment path and returns the parsed reply", async () => {
+  it("POSTs the §9 payload to the canonical client-request path and returns the parsed ack", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(okResponse({ idempotent: false, commentId: "c-1", requestId: "r" }));
+      .mockResolvedValueOnce(
+        okResponse({ idempotent: false, clientRequestId: "c-1", requestId: "r" }),
+      );
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await runSend();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe("https://noon-app.test/api/integrations/website/client-comment");
+    expect(url).toBe("https://noon-app.test/api/integrations/website/client-request");
     expect((init as RequestInit).method).toBe("POST");
     expect(JSON.parse((init as RequestInit).body as string)).toEqual({
+      externalRequestId: "ext-1",
       projectId: "proj-1",
-      externalCommentId: "ext-1",
-      author: "client",
+      submittedBy: "client",
+      type: "comment",
+      clientPriority: "normal",
       body: "Looks great!",
       at: "2026-06-15T12:00:00.000Z",
     });
     expect(extractNoonAppCommentId(result)).toEqual({ commentId: "c-1", idempotent: false });
   });
 
-  it("surfaces an idempotent replay reply (same commentId)", async () => {
+  it("surfaces an idempotent replay ack (same clientRequestId)", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(okResponse({ idempotent: true, commentId: "c-1", requestId: "r" }));
+      .mockResolvedValueOnce(
+        okResponse({ idempotent: true, clientRequestId: "c-1", requestId: "r" }),
+      );
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await runSend();
@@ -142,7 +159,7 @@ describe("sendClientCommentToNoonApp", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(errorResponse(503))
-      .mockResolvedValueOnce(okResponse({ idempotent: false, commentId: "c-2" }));
+      .mockResolvedValueOnce(okResponse({ idempotent: false, clientRequestId: "c-2" }));
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await runSend();

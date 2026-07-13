@@ -402,15 +402,17 @@ const STEPS = [
 
 export function UpgradeFlow() {
   const [index, setIndex]   = useState(0);
-  const [active, setActive] = useState(false);
-  const firstRender          = useRef(true);
-  useEffect(() => { firstRender.current = false; }, []);
+  // active arranca true y se re-eleva junto con el avance de indice (nunca un
+  // setState sincrono dentro del efecto — regla de cascading renders del lint).
+  const [active, setActive] = useState(true);
 
   useEffect(() => {
-    setActive(true);
     const id = setTimeout(() => {
       setActive(false);
-      setTimeout(() => setIndex((i) => (i + 1) % STEPS.length), 350);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % STEPS.length);
+        setActive(true);
+      }, 350);
     }, STEPS[index].duration);
     return () => clearTimeout(id);
   }, [index]);
@@ -426,10 +428,12 @@ export function UpgradeFlow() {
           style={{ background: "linear-gradient(to bottom, transparent, var(--background))", zIndex: 50 }}
         />
         <div style={{ marginTop: 84 }}>
-          <AnimatePresence mode="wait">
+          {/* initial={false} = sin animacion de entrada SOLO en el primer mount
+              (reemplaza el ref firstRender leido en render, que rompia lint) */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={step.key}
-              initial={firstRender.current ? false : { opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
