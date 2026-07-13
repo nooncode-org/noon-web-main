@@ -29,7 +29,7 @@
   --card-foreground: #000000;
   --popover: oklch(1 0 0);
   --popover-foreground: #000000;
-  --primary: #1200c5;
+  --primary: #0056fd;
   --primary-foreground: #ffffff;
   --secondary: #f2f5fb;
   --secondary-foreground: #000000;
@@ -41,21 +41,21 @@
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: #dbe3ef;
   --input: #dfe6f1;
-  --ring: #1200c5;
+  --ring: #0056fd;
   --chart-1: #000000;
-  --chart-2: #1200c5;
+  --chart-2: #0056fd;
   --chart-3: #4155ef;
   --chart-4: #90a2ff;
   --chart-5: #dce5ff;
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: #000000;
-  --sidebar-primary: #1200c5;
+  --sidebar-primary: #0056fd;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #edf1ff;
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #dbe3ef;
-  --sidebar-ring: #1200c5;
+  --sidebar-ring: #0056fd;
 
   /* Pipeline code-editor syntax — light (GitHub-light family) */
   --code-kw: #cf222e;
@@ -125,7 +125,7 @@
     --card-foreground: #e8edf7;
     --popover: #080808;
     --popover-foreground: #e8edf7;
-    --primary: #1200c5;
+    --primary: #0056fd;
     --primary-foreground: #ffffff;
     --secondary: #101010;
     --secondary-foreground: #e8edf7;
@@ -137,20 +137,20 @@
     --destructive-foreground: #ffffff;
     --border: #262626;
     --input: #262626;
-    --ring: #1200c5;
+    --ring: #0056fd;
     --chart-1: #e8edf7;
-    --chart-2: #1200c5;
+    --chart-2: #0056fd;
     --chart-3: #7b93ff;
     --chart-4: #a8baff;
     --chart-5: #141414;
     --sidebar: #000000;
     --sidebar-foreground: #e8edf7;
-    --sidebar-primary: #1200c5;
+    --sidebar-primary: #0056fd;
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: #141414;
     --sidebar-accent-foreground: #e8edf7;
     --sidebar-border: #262626;
-    --sidebar-ring: #1200c5;
+    --sidebar-ring: #0056fd;
 
     /* Pipeline code-editor syntax — dark (GitHub-dark family) */
     --code-kw: #ff7b72;
@@ -240,7 +240,7 @@
   }
 
   .site-primary-action {
-    background-color: #1200c5;
+    background-color: #0056fd;
     color: #ffffff;
     transition-property: background-color, box-shadow;
     transition-duration: 140ms;

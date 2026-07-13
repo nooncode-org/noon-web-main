@@ -65,7 +65,7 @@ export function SiteCtaBlock({
             {primaryAction ? (
               <Link
                 href={primaryAction.href}
-                className="group/btn inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-[#1200c5] transition-colors duration-300 ease-out hover:bg-white/90 active:bg-white/80"
+                className="group/btn inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-[#0056fd] transition-colors duration-300 ease-out hover:bg-white/90 active:bg-white/80"
               >
                 {primaryAction.label}
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5" />
