@@ -2,6 +2,8 @@ import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { NoonWordmark, NoonMark } from "@/components/brand/noon-logo";
+import { normalizeInternalRedirect } from "@/lib/auth/redirect";
+import { signInWithGoogleAction } from "./actions";
 
 export type AuthMode = "signup" | "signin";
 
@@ -63,6 +65,8 @@ export function AuthMethodsScreen({
   // Preserve the intended post-auth destination as the user crosses between the
   // sign-up and sign-in screens.
   const rt = redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : "";
+  // Google is the only wired provider; hand it the sanitized post-auth target.
+  const resolvedRedirect = normalizeInternalRedirect(redirectTo, "/maxwell/studio");
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd sic-rd`}>
@@ -84,8 +88,8 @@ export function AuthMethodsScreen({
           <h1 className="sic-title">{copy.heading}</h1>
           <p className="sic-sub">{copy.sub}</p>
 
-          {/* Auth is intentionally not wired yet (follow-up); these are the v0-style
-              method options as a visual step. */}
+          {/* Only Google is wired (Noon's sole real provider). Email + Apple have no
+              backend yet, so they render disabled/greyed as a visual step. */}
           <form className="sic-form">
             <input
               type="email"
@@ -93,8 +97,9 @@ export function AuthMethodsScreen({
               placeholder="name@work-email.com"
               autoComplete="email"
               aria-label="Email address"
+              disabled
             />
-            <button type="button" className="lgl-btn lgl-btn-primary sic-btn">
+            <button type="button" className="lgl-btn lgl-btn-primary sic-btn" disabled>
               Continue with Email
             </button>
           </form>
@@ -102,11 +107,14 @@ export function AuthMethodsScreen({
           <div className="sic-divider" aria-hidden="true" />
 
           <div className="sic-providers">
-            <button type="button" className="lgl-btn lgl-btn-secondary sic-btn">
-              <GoogleGlyph />
-              Continue with Google
-            </button>
-            <button type="button" className="lgl-btn lgl-btn-secondary sic-btn">
+            <form action={signInWithGoogleAction} className="sic-provider-form">
+              <input type="hidden" name="redirectTo" value={resolvedRedirect} />
+              <button type="submit" className="lgl-btn lgl-btn-secondary sic-btn">
+                <GoogleGlyph />
+                Continue with Google
+              </button>
+            </form>
+            <button type="button" className="lgl-btn lgl-btn-secondary sic-btn" disabled>
               <AppleGlyph />
               Continue with Apple
             </button>
