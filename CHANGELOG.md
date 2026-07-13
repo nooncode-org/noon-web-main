@@ -17,7 +17,9 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 > **Summary:** (1) Marca oficial en todas las superficies: el raster
 > `public/logo-icon.png` (favicon/apple-touch/JSON-LD) ahora es el isotipo
-> oficial (tile azul `#1200C5` + mark blanco, mismo asset que la App); el
+> oficial (mark blanco sobre tile azul `#0056fd` — el azul Web unificado el
+> 2026-07-12; decisión del owner 2026-07-13: Web usa su azul, la App conserva
+> el tile `#1200C5` del asset original); el
 > `LogoIcon` de `components/ui/noon-logo.tsx` renderiza el `NoonMark`
 > vectorial (currentColor) en vez del PNG monograma legacy (el
 > `ContactRouteDiagram` que también lo usaba fue borrado en main como
