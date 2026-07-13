@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { DollarSign, Layers, Settings, ShoppingCart } from "lucide-react";
 import { EASE } from "@/lib/motion";
+import { NoonMark } from "@/components/brand/noon-logo";
 
 // ============================================================================
 // ContactRouteDiagram — /opportunities "one contact route for all paths" made
@@ -82,8 +83,7 @@ export function ContactRouteDiagram() {
           transition={{ duration: 0.45, delay: 0.45, ease: EASE }}
         >
           <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-icon.png" alt="" className="h-7 w-7" style={{ filter: "brightness(0) invert(1)" }} />
+            <NoonMark className="h-7 w-7" />
             <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 text-[11px] font-semibold text-foreground">
               Noon
             </span>
