@@ -1345,6 +1345,23 @@ export function StudioShell({
     prototypeFailed ||
     prototypeVersions.length > 0;
 
+  // The preview's failure copy must distinguish a transient generation error
+  // from the deliberate monthly-quota block. The 403 handler sets
+  // `prototypeFailedReason` to "quota", but that flag is fragile: it is reset to
+  // "error" on rehydrate (a reloaded session loses it) and depends on the server
+  // echoing `contact_agent`. The quota snapshot is refetched on every session and
+  // is the source of truth for "this account has already used its monthly
+  // prototype", so treat any failed preview as a quota block whenever the account
+  // is at its monthly limit and this session has no prototype of its own.
+  const monthlyPrototypeUsed = Boolean(
+    quotaSnapshot &&
+      quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth >=
+        quotaSnapshot.userMonthlyInitialLimit &&
+      !quotaSnapshot.currentSessionHasAnyVersion,
+  );
+  const effectivePrototypeFailedReason: "error" | "quota" =
+    prototypeFailedReason === "quota" || monthlyPrototypeUsed ? "quota" : "error";
+
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-background">
       <StudioHeader
@@ -1464,7 +1481,7 @@ export function StudioShell({
               selectedVersionIndex={selectedVersionIndex}
               phase={phase}
               prototypeFailed={prototypeFailed}
-              prototypeFailedReason={prototypeFailedReason}
+              prototypeFailedReason={effectivePrototypeFailedReason}
               correctionsUsed={correctionsUsed}
               maxCorrections={maxCorrections}
               pollingStartedAt={pollingStartedAt}
