@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { ArrowUp, Plus } from "lucide-react";
 import { NoonMark } from "@/components/brand/noon-logo";
@@ -172,8 +172,6 @@ export function CustomDevFlow() {
   const [phase, setPhase]     = useState<Phase>("idle");
   const [typed, setTyped]     = useState(0);
   const [genActive, setGenActive] = useState(false);
-  const firstRender = useRef(true);
-  useEffect(() => { firstRender.current = false; }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -225,10 +223,12 @@ export function CustomDevFlow() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48"
           style={{ background: "linear-gradient(to bottom, transparent, var(--background))", zIndex: 50 }} />
         <div style={{ marginTop: 84 }}>
-          <AnimatePresence mode="wait">
+          {/* initial={false} = sin animacion de entrada SOLO en el primer mount
+              (reemplaza el ref firstRender leido en render, que rompia lint) */}
+          <AnimatePresence mode="wait" initial={false}>
             {isChatPhase && (
               <motion.div key="chat"
-                initial={firstRender.current ? false : { opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10, scale: 0.98 }}
                 transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
