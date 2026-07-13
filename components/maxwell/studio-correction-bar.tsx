@@ -21,9 +21,9 @@ export function StudioCorrectionBar({
   const remaining = maxCorrections - correctionsUsed;
 
   return (
-    <div className="flex items-center gap-3 border-y border-border/70 bg-[#050505] px-4 py-2.5 text-xs">
+    <div className="flex items-center gap-3 border-y border-border/70 bg-card px-4 py-2.5 text-xs">
       {/* Version badge */}
-      <span className="shrink-0 rounded-md border border-border/70 bg-[#131313] px-2 py-0.5 font-mono text-muted-foreground">
+      <span className="shrink-0 rounded-md border border-border/70 bg-secondary px-2 py-0.5 text-muted-foreground">
         v{versionNumber}
       </span>
 

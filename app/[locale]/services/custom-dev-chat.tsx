@@ -1,285 +1,278 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { motion, MotionConfig } from "framer-motion";
-import { ArrowUp } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
+import { ArrowUp, Plus } from "lucide-react";
 import { NoonMark } from "@/components/brand/noon-logo";
-import { EASE } from "@/lib/motion";
 
-const PROMPT = "What do you want to build?";
+// ── Shared constants ──────────────────────────────────────────────────────────
 const BRIEF = "An inventory tool for our 3 warehouses.";
-const REPLY =
-  "Got it — a real-time inventory dashboard synced across all three, with low-stock alerts and role-based access. Scoping it now…";
 
-// ── GenerateViz (copied from upgrade-steps.tsx) ───────────────────────────
-// Animates a site assembling itself piece by piece, then clears and loops.
-const GEN_CYCLE = 8;
-const GEN_START = 0.15;
-const GEN_STEP  = 0.5;
-const GEN_SNAP  = 0.7;
+// Phase timing (ms)
+const T_IDLE       = 1200;
+const T_CHAR       = 55;
+const T_SENT       = 500;
+const T_PROCESSING = 1500;
+const T_GENERATING = 5200;
+const T_DONE       = 600;
+
+// ── GenerateViz primitives ────────────────────────────────────────────────────
+const GEN_CYCLE = 5;
+const GEN_START = 0.1;
+const GEN_STEP  = 0.28;
+const GEN_SNAP  = 0.5;
+const GEN_BUILD_DONE = (GEN_START + 12 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
 
 function BuildPiece({
-  order, active, slide = false, className, children,
+  order, active, className, children,
 }: {
-  order: number; active: boolean; slide?: boolean; className?: string; children?: ReactNode;
+  order: number; active: boolean; className?: string; children?: ReactNode;
 }) {
   const appearStart = GEN_START + order * GEN_STEP;
   const appearEnd   = appearStart + GEN_SNAP;
-  const times       = [0, appearStart / GEN_CYCLE, appearEnd / GEN_CYCLE, 0.86, 0.96, 1];
-  const shown     = slide ? { opacity: 1, x: 0 } : { opacity: 1, y: 0, scale: 1 };
-  const keyframes = slide
-    ? { opacity: [0,0,1,1,0,0], x: [-8,-8,0,0,0,-8] }
-    : { opacity: [0,0,1,1,0,0], y: [8,8,0,0,0,8], scale: [0.94,0.94,1,1,1,0.94] };
+  const times       = [0, appearStart / GEN_CYCLE, appearEnd / GEN_CYCLE, 1];
   return (
     <motion.div
       className={className}
       initial={false}
-      animate={active ? keyframes : shown}
+      animate={active ? { opacity: [0, 0, 1, 1] } : { opacity: 1 }}
       transition={active
-        ? { duration: GEN_CYCLE, times, repeat: Infinity, ease: "easeOut", repeatDelay: 0.4 }
-        : { duration: 0.4, ease: "easeOut" }}
+        ? { duration: GEN_CYCLE, times, ease: "linear" }
+        : { duration: 0.3 }}
     >{children}</motion.div>
   );
 }
 
-const GEN_BUILD_DONE = (GEN_START + 12 * GEN_STEP + GEN_SNAP) / GEN_CYCLE;
-
+// ── GenerateViz ───────────────────────────────────────────────────────────────
 function GenerateViz({ active }: { active: boolean }) {
   return (
-    <div className="relative h-72 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
-      {/* generation loading bar */}
-      <div className="absolute inset-x-0 top-0 z-30 h-0.5 bg-foreground/10">
-        <motion.div
-          className="h-full origin-left bg-foreground/55"
-          initial={false}
-          animate={active ? { scaleX: [0,1,1,0,0] } : { scaleX: 1 }}
-          transition={active
-            ? { duration: GEN_CYCLE, times: [0, GEN_BUILD_DONE, 0.86, 0.96, 1], repeat: Infinity, ease: "linear", repeatDelay: 0.4 }
-            : { duration: 0.4, ease: "linear" }}
-        />
-      </div>
-
-      <div className="absolute inset-0 p-2.5">
-        {/* nav */}
-        <BuildPiece order={0} active={active} className="mb-2.5 flex items-center gap-2">
-          <div className="h-2 w-7 rounded-full bg-foreground/25" />
-          <div className="ml-auto h-1 w-4 rounded-full bg-foreground/12" />
-          <div className="h-1 w-4 rounded-full bg-foreground/12" />
-          <div className="h-1 w-4 rounded-full bg-foreground/12" />
+    <div className="relative h-[380px] w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
+      <div className="absolute inset-0 p-5">
+        <BuildPiece order={0} active={active} className="mb-4 flex items-center gap-2">
+          <div className="h-3 w-10 rounded-full bg-foreground/25" />
+          <div className="ml-auto h-2 w-6 rounded-full bg-foreground/12" />
+          <div className="h-2 w-6 rounded-full bg-foreground/12" />
+          <div className="h-2 w-6 rounded-full bg-foreground/12" />
         </BuildPiece>
-        {/* hero text + media */}
-        <div className="mb-2.5 flex items-start gap-2.5">
-          <div className="flex-1 space-y-1.5 pt-0.5">
-            <BuildPiece order={1} active={active} slide className="h-2 w-3/4 rounded-full bg-foreground/30" />
-            <BuildPiece order={2} active={active} slide className="h-1 w-1/2 rounded-full bg-foreground/12" />
-            <BuildPiece order={3} active={active} slide className="mt-1 h-2.5 w-10 rounded-full bg-foreground/15" />
+        <div className="mb-4 flex items-start gap-4">
+          <div className="flex-1 space-y-2.5 pt-0.5">
+            <BuildPiece order={1} active={active} className="h-4 w-3/4 rounded-full bg-foreground/30" />
+            <BuildPiece order={2} active={active} className="h-2 w-1/2 rounded-full bg-foreground/12" />
+            <BuildPiece order={3} active={active} className="mt-2 h-3.5 w-16 rounded-full bg-foreground/15" />
           </div>
-          <BuildPiece order={4} active={active} className="h-12 w-16 rounded-lg bg-foreground/[0.07]" />
+          <BuildPiece order={4} active={active} className="h-20 w-24 rounded-md bg-foreground/[0.07]" />
         </div>
-        {/* product cards */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {[0,1,2].map((i) => (
-            <BuildPiece key={i} order={5+i} active={active} className="space-y-1.5">
-              <div className="h-6 rounded-md bg-foreground/[0.06]" />
-              <div className="h-1 w-3/4 rounded-full bg-foreground/15" />
+            <BuildPiece key={i} order={5+i} active={active} className="space-y-2.5">
+              <div className="h-12 rounded bg-foreground/[0.06]" />
+              <div className="h-2 w-3/4 rounded-full bg-foreground/15" />
             </BuildPiece>
           ))}
         </div>
-        {/* testimonial */}
-        <BuildPiece order={8} active={active} className="mt-1.5 space-y-1 rounded-md bg-foreground/[0.03] p-1.5">
-          <div className="h-1 w-full rounded-full bg-foreground/[0.08]" />
-          <div className="h-1 w-4/5 rounded-full bg-foreground/[0.08]" />
+        <BuildPiece order={8} active={active} className="mt-3 space-y-2 rounded bg-foreground/[0.03] p-2.5">
+          <div className="h-2 w-full rounded-full bg-foreground/[0.08]" />
+          <div className="h-2 w-4/5 rounded-full bg-foreground/[0.08]" />
         </BuildPiece>
-        {/* footer */}
-        <BuildPiece order={9} active={active} className="mt-1.5 flex items-start gap-2">
-          <div className="h-2 w-8 rounded-[2px] bg-foreground/12" />
-          <div className="ml-auto space-y-1">
-            <div className="h-1 w-8 rounded-full bg-foreground/[0.08]" />
-            <div className="h-1 w-6 rounded-full bg-foreground/[0.08]" />
+        <BuildPiece order={9} active={active} className="mt-3 flex items-center gap-2">
+          <div className="h-3 w-12 rounded-[2px] bg-foreground/12" />
+          <div className="ml-auto space-y-1.5">
+            <div className="h-2 w-12 rounded-full bg-foreground/[0.08]" />
+            <div className="h-1.5 w-8 rounded-full bg-foreground/[0.08]" />
           </div>
         </BuildPiece>
-        {/* accent */}
-        <BuildPiece order={10} active={active} className="mt-1.5 h-1 w-9 rounded-full bg-green-500/70" />
-        {/* stats row */}
-        <BuildPiece order={11} active={active} className="mt-2.5 grid grid-cols-3 gap-2">
+        <BuildPiece order={10} active={active} className="mt-3 h-2 w-12 rounded-full bg-green-500/70" />
+        <BuildPiece order={11} active={active} className="mt-4 grid grid-cols-3 gap-3">
           {[0,1,2].map((i) => (
-            <div key={i} className="space-y-0.5">
-              <div className="h-2.5 w-7 rounded-full bg-foreground/25" />
-              <div className="h-1 w-10 rounded-full bg-foreground/10" />
+            <div key={i} className="space-y-1.5">
+              <div className="h-4 w-10 rounded-full bg-foreground/25" />
+              <div className="h-2 w-14 rounded-full bg-foreground/10" />
             </div>
           ))}
         </BuildPiece>
-        {/* CTA block */}
-        <BuildPiece order={12} active={active} className="mt-2 flex items-center gap-2 rounded-md bg-foreground/[0.04] p-2">
-          <div className="flex-1 space-y-1">
-            <div className="h-1.5 w-3/4 rounded-full bg-foreground/20" />
-            <div className="h-1 w-1/2 rounded-full bg-foreground/10" />
+        <BuildPiece order={12} active={active} className="mt-4 flex items-center gap-3 rounded bg-foreground/[0.04] p-3">
+          <div className="flex-1 space-y-2">
+            <div className="h-2.5 w-3/4 rounded-full bg-foreground/20" />
+            <div className="h-2 w-1/2 rounded-full bg-foreground/10" />
           </div>
-          <div className="h-5 w-12 shrink-0 rounded-full bg-foreground/15" />
+          <div className="h-7 w-16 shrink-0 rounded-full bg-foreground/15" />
         </BuildPiece>
       </div>
     </div>
   );
 }
 
-// ── ChatViz ────────────────────────────────────────────────────────────────
-// Wireframe chat: cursor → typing grows → user bubble → dots → bot reply.
-function ChatViz() {
-  type Phase = "idle" | "typing" | "sent" | "thinking" | "reply";
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [pct, setPct] = useState(0);
+// ── Phase type ────────────────────────────────────────────────────────────────
+type Phase = "idle" | "typing" | "sent" | "processing" | "generating" | "done";
+
+// ── InputPanel ────────────────────────────────────────────────────────────────
+function InputPanel({ phase, typed }: { phase: Phase; typed: number }) {
+  const text = BRIEF.slice(0, typed);
+  const isReady = typed >= BRIEF.length;
+
+  return (
+    <div className="relative h-[380px] w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex flex-col">
+      {/* Centered content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5">
+        {/* Input card */}
+        <div className="w-full rounded-[9px] border border-foreground/[0.08] bg-foreground/[0.03] p-1.5">
+          <div className="min-h-[80px] px-3 py-2 text-[13px] leading-relaxed">
+            {text ? (
+              <>
+                <span className="text-foreground/82">{text}</span>
+                {phase === "typing" && (
+                  <span className="inline-block h-[13px] w-px bg-foreground/55 ml-0.5 align-middle"
+                    style={{ animation: "cdsSk 0.9s ease-in-out infinite" }} />
+                )}
+              </>
+            ) : (
+              <span className="text-foreground/28">Describe what you need built…</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between px-1 pb-1 pt-1.5">
+            <div className="h-7 w-7 flex items-center justify-center text-foreground/25">
+              <Plus className="h-3.5 w-3.5" />
+            </div>
+            <motion.div
+              className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center"
+              animate={{ backgroundColor: isReady ? "#0056FD" : "rgba(128,128,128,0.12)" }}
+              transition={{ duration: 0.22 }}
+            >
+              <ArrowUp className="w-3 h-3"
+                style={{ color: isReady ? "#fff" : "rgba(128,128,128,0.4)" }} />
+            </motion.div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ── ProcessingPanel ───────────────────────────────────────────────────────────
+function ProcessingPanel() {
+  return (
+    <div className="relative h-[380px] w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70 flex items-center justify-center">
+      <div className="flex items-center gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="h-1 w-1 rounded-full bg-foreground/55"
+            animate={{ opacity: [0.2, 0.9, 0.2], scale: [0.8, 1, 0.8] }}
+            transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity, delay: i * 0.22 }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── CustomDevFlow — unified write → send → process → generate experience ──────
+export function CustomDevFlow() {
+  const [phase, setPhase]     = useState<Phase>("idle");
+  const [typed, setTyped]     = useState(0);
+  const [genActive, setGenActive] = useState(false);
+  const firstRender = useRef(true);
+  useEffect(() => { firstRender.current = false; }, []);
 
   useEffect(() => {
-    let alive = true;
-    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-    (async function loop() {
-      while (alive) {
-        setPhase("idle"); setPct(0);
-        await sleep(900);
+    let cancelled = false;
+    const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+    async function run() {
+      while (!cancelled) {
+        setPhase("idle"); setTyped(0); setGenActive(false);
+        await delay(T_IDLE);
+        if (cancelled) break;
+
         setPhase("typing");
-        for (let i = 0; i <= 100; i += 5) {
-          if (!alive) return;
-          setPct(i);
-          await sleep(38 + Math.random() * 28);
+        for (let i = 1; i <= BRIEF.length; i++) {
+          if (cancelled) break;
+          setTyped(i);
+          await delay(T_CHAR + (Math.random() > 0.85 ? 80 : 0));
         }
-        await sleep(280);
-        if (!alive) return;
-        setPhase("sent"); setPct(0);
-        await sleep(560);
-        if (!alive) return;
-        setPhase("thinking");
-        await sleep(1300);
-        if (!alive) return;
-        setPhase("reply");
-        await sleep(3400);
+        if (cancelled) break;
+
+        setPhase("sent");
+        await delay(T_SENT);
+        if (cancelled) break;
+
+        setPhase("processing"); setTyped(0);
+        await delay(T_PROCESSING);
+        if (cancelled) break;
+
+        setPhase("generating");
+        requestAnimationFrame(() => { if (!cancelled) setGenActive(true); });
+        await delay(T_GENERATING);
+        if (cancelled) break;
+
+        setPhase("done"); setGenActive(false);
+        await delay(T_DONE);
       }
-    })();
-    return () => { alive = false; };
+    }
+
+    run();
+    return () => { cancelled = true; };
   }, []);
 
-  const after = (...ps: Phase[]) => ps.includes(phase);
+  const isChatPhase = phase === "idle" || phase === "typing" || phase === "sent";
+  const isProcessing = phase === "processing";
+  const isGenPhase   = phase === "generating" || phase === "done";
 
-  return (
-    <div className="relative h-72 w-full overflow-hidden rounded-[10px] border border-foreground/10 bg-background/70">
-      {/* header */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-foreground/10 bg-foreground/[0.03] px-3 py-2">
-        <div className="h-4 w-4 shrink-0 rounded-[3px] bg-foreground/20" />
-        <div className="h-2 w-14 rounded-full bg-foreground/20" />
-        <span className="ml-auto flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-500/60" />
-          <span className="h-1 w-8 rounded-full bg-foreground/12 inline-block" />
-        </span>
-      </div>
-
-      {/* messages */}
-      <div className="flex flex-col gap-2.5 p-3 pb-14">
-        {/* bot message — static context */}
-        <div className="flex items-end gap-1.5">
-          <div className="h-4 w-4 shrink-0 rounded-[3px] bg-foreground/15" />
-          <div className="max-w-[72%] space-y-1 rounded-xl rounded-bl-sm bg-foreground/[0.07] px-2.5 py-2">
-            <div className="h-1 w-24 rounded-full bg-foreground/20" />
-            <div className="h-1 w-20 rounded-full bg-foreground/12" />
-          </div>
-        </div>
-
-        {/* user bubble */}
-        {after("sent","thinking","reply") && (
-          <div className="flex justify-end cds-in">
-            <div className="max-w-[72%] space-y-1 rounded-xl rounded-br-sm bg-foreground/[0.18] px-2.5 py-2">
-              <div className="h-1 w-28 rounded-full bg-foreground/30" />
-              <div className="h-1 w-20 rounded-full bg-foreground/22" />
-            </div>
-          </div>
-        )}
-
-        {/* typing dots */}
-        {phase === "thinking" && (
-          <div className="flex items-center gap-1.5 cds-in">
-            <div className="h-4 w-4 shrink-0 rounded-[3px] bg-foreground/15" />
-            <div className="flex gap-1 rounded-xl rounded-bl-sm bg-foreground/[0.07] px-3 py-2.5">
-              {[0,1,2].map((i) => (
-                <span key={i} className="block h-1.5 w-1.5 rounded-full bg-foreground/40"
-                  style={{ animation: `cdsSk 1s ease-in-out ${i * 0.2}s infinite` }} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* bot reply */}
-        {phase === "reply" && (
-          <div className="flex items-end gap-1.5 cds-in">
-            <div className="h-4 w-4 shrink-0 rounded-[3px] bg-foreground/15" />
-            <div className="max-w-[72%] space-y-1 rounded-xl rounded-bl-sm bg-foreground/[0.07] px-2.5 py-2">
-              <div className="h-1 w-32 rounded-full bg-foreground/20" />
-              <div className="h-1 w-28 rounded-full bg-foreground/12" />
-              <div className="h-1 w-20 rounded-full bg-foreground/12" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* input */}
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-foreground/10 bg-foreground/[0.02] px-3 py-2">
-        <div className="flex h-7 flex-1 items-center gap-1 overflow-hidden rounded-full bg-foreground/[0.06] px-3">
-          {phase === "typing" && (
-            <div className="h-1 rounded-full bg-foreground/25 transition-all duration-75"
-              style={{ width: `${pct * 0.6}%` }} />
-          )}
-          {after("idle","typing") && (
-            <div className="h-3.5 w-px shrink-0 bg-foreground/40"
-              style={{ animation: "cdsSk 0.9s ease-in-out infinite" }} />
-          )}
-          {!after("typing") && phase !== "idle" && (
-            <div className="h-1 w-14 rounded-full bg-foreground/10" />
-          )}
-        </div>
-        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground/20">
-          <div className="h-2.5 w-2.5 rounded-sm bg-foreground/35" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function CustomDevChatViz() {
-  return (
-    <div style={{ flex: 1, minWidth: 0, maxWidth: 380 }}>
-      <ChatViz />
-    </div>
-  );
-}
-
-// Wraps GenerateViz for the Custom Dev featured block panel.
-// Mounts with active=false so framer-motion establishes the resting state,
-// then flips to true on the next frame so the loop animation fires correctly.
-export function CustomDevScreens() {
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setActive(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
   return (
     <MotionConfig reducedMotion="never">
-      <div style={{ flex: 1, minWidth: 0, maxWidth: 380 }}>
-        <GenerateViz active={active} />
+      <div style={{ flex: 1, minWidth: 0, maxWidth: 560, height: 420, overflow: "hidden", position: "relative" }}>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48"
+          style={{ background: "linear-gradient(to bottom, transparent, var(--background))", zIndex: 50 }} />
+        <div style={{ marginTop: 84 }}>
+          <AnimatePresence mode="wait">
+            {isChatPhase && (
+              <motion.div key="chat"
+                initial={firstRender.current ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <InputPanel phase={phase} typed={typed} />
+              </motion.div>
+            )}
+            {isProcessing && (
+              <motion.div key="processing"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+              >
+                <ProcessingPanel />
+              </motion.div>
+            )}
+            {isGenPhase && (
+              <motion.div key="generating"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.38, ease: "easeOut" }}
+              >
+                <GenerateViz active={genActive} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </MotionConfig>
   );
 }
 
-// Looping chat mockup for the Custom Development card — a live Maxwell scoping
-// conversation. JS-driven (not CSS keyframes) so it animates even under a
-// prefers-reduced-motion reset; the motion is the whole point. Scene machine:
-// type the brief into the input → send it as a bubble → Maxwell "thinks" →
-// streams a scoped reply → hold → loop.
+// ── CustomDevChat — original looping chat (saved, not rendered in the panel) ──
 export function CustomDevChat() {
-  const [typed, setTyped] = useState("");
-  const [sent, setSent] = useState(false);
+  const [typed, setTyped]     = useState("");
+  const [sent, setSent]       = useState(false);
   const [thinking, setThinking] = useState(false);
-  const [reply, setReply] = useState("");
-  const [cursor, setCursor] = useState(true);
+  const [reply, setReply]     = useState("");
+  const [cursor, setCursor]   = useState(true);
+  const PROMPT = "What do you want to build?";
+  const REPLY  = "Got it — a real-time inventory dashboard synced across all three, with low-stock alerts and role-based access. Scoping it now…";
 
-  // blinking caret (JS so the reduced-motion CSS reset can't freeze it)
   useEffect(() => {
     const id = setInterval(() => setCursor((c) => !c), 520);
     return () => clearInterval(id);
@@ -288,7 +281,7 @@ export function CustomDevChat() {
   useEffect(() => {
     let alive = true;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    const type = async (setter: (s: string) => void, text: string, base: number) => {
+    const type  = async (setter: (s: string) => void, text: string, base: number) => {
       for (let i = 1; i <= text.length; i++) {
         if (!alive) return;
         setter(text.slice(0, i));
@@ -297,65 +290,50 @@ export function CustomDevChat() {
     };
     (async function loop() {
       while (alive) {
-        setTyped("");
-        setSent(false);
-        setThinking(false);
-        setReply("");
+        setTyped(""); setSent(false); setThinking(false); setReply("");
         await sleep(1100);
-        await type(setTyped, BRIEF, 42); // type the brief into the input
+        await type(setTyped, BRIEF, 42);
         await sleep(650);
         if (!alive) return;
-        setSent(true); // "send" — becomes a user bubble
-        setTyped("");
+        setSent(true); setTyped("");
         await sleep(550);
-        setThinking(true); // Maxwell thinking…
+        setThinking(true);
         await sleep(1150);
         if (!alive) return;
         setThinking(false);
-        await type(setReply, REPLY, 18); // stream the scoped reply
-        await sleep(3400); // hold, then loop
+        await type(setReply, REPLY, 18);
+        await sleep(3400);
       }
     })();
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
   return (
     <div className="cdc" aria-hidden>
       <div className="cdc-head">
-        <span className="cdc-avatar">
-          <NoonMark />
-        </span>
+        <span className="cdc-avatar"><NoonMark /></span>
         <span className="cdc-name">Maxwell</span>
         <span className="cdc-status">
-          <span className="cdc-status-dot" />
-          online
+          <span className="cdc-status-dot" />online
         </span>
       </div>
-
       <div className="cdc-body">
         <div className="cdc-msg cdc-bot">{PROMPT}</div>
         {sent && <div className="cdc-msg cdc-user cdc-in">{BRIEF}</div>}
         {thinking && (
           <div className="cdc-msg cdc-bot cdc-dots cdc-in" aria-label="Maxwell is typing">
-            <span />
-            <span />
-            <span />
+            <span /><span /><span />
           </div>
         )}
         {reply && <div className="cdc-msg cdc-bot cdc-in">{reply}</div>}
       </div>
-
       <div className="cdc-input">
         <span className="cdc-field">
           <span className="cdc-typed">{typed}</span>
           <span className={`cdc-cursor ${cursor ? "on" : ""}`} />
           {!typed && <span className="cdc-ph">Describe what you want to build…</span>}
         </span>
-        <span className="cdc-send">
-          <ArrowUp size={14} strokeWidth={2.25} />
-        </span>
+        <span className="cdc-send"><ArrowUp size={14} strokeWidth={2.25} /></span>
       </div>
     </div>
   );

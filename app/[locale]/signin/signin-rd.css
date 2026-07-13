@@ -1,0 +1,124 @@
+/* Sign-in page — scoped under .lgl-rd; inherits tokens from legal-rd.css */
+
+.si-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 100px 24px 80px;
+}
+
+.si-card { width: 100%; max-width: 440px; }
+
+.si-heading {
+  font-family: var(--sans);
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin: 0 0 18px;
+}
+
+.si-body {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0 0 28px;
+  max-width: 40ch;
+}
+
+.si-info {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  background: var(--bg-secondary);
+}
+
+.si-info-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+}
+
+.si-info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.si-info-list li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  padding-left: 16px;
+  position: relative;
+}
+
+.si-info-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+.si-error {
+  border: 1px solid rgb(239 68 68 / 0.3);
+  background: rgb(239 68 68 / 0.06);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #dc2626;
+  margin-bottom: 20px;
+}
+
+html.dark .si-error {
+  color: #f87171;
+  background: rgb(239 68 68 / 0.08);
+  border-color: rgb(239 68 68 / 0.2);
+}
+
+.si-form { display: flex; flex-direction: column; }
+
+.si-submit {
+  width: 100%;
+  justify-content: center;
+  height: 46px;
+  font-size: 15px;
+}
+
+.si-dev-warning {
+  border: 1px solid rgb(245 158 11 / 0.3);
+  background: rgb(245 158 11 / 0.06);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.si-dev-warning code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--surface);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.si-footer {
+  padding: 24px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}

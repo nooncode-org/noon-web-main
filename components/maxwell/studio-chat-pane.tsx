@@ -5,30 +5,47 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   AlertCircle,
-  ArrowRight,
+  ArrowUp,
   Check,
   CheckCircle2,
   Copy,
+  FileText,
+  Github,
+  Globe,
   Loader2,
+  Mic,
+  Plus,
   RefreshCw,
   Reply,
   Sparkles,
   Square,
   ThumbsDown,
   ThumbsUp,
+  TriangleIcon,
+  Upload,
   User,
   X,
 } from "lucide-react";
 import { StudioThinkingBlock } from "./studio-thinking-block";
 import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
-import type { ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
+import type { AttachedFile, ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
 // ============================================================================
 // Message sub-components
 // ============================================================================
+
+// Starter prompts shown in the empty intake state — lower the blank-page
+// barrier with a few on-model examples of what Noon builds. Clicking one fills
+// the composer (does not send) so the user can edit before starting.
+const STARTER_PROMPTS = [
+  "A booking system for my business",
+  "An internal operations dashboard",
+  "A customer support AI assistant",
+  "A CRM for my team",
+];
 
 function ThinkingDots() {
   return (
@@ -276,7 +293,7 @@ function AgentCtaNotice({ content, href }: { content: string; href: string }) {
 function UserMessage({ content }: { content: string }) {
   return (
     <div className="flex justify-end">
-      <div className="max-w-[62%] rounded-[18px] rounded-tr-sm bg-[#131313] px-4 py-2 text-[13.5px] leading-relaxed text-foreground shadow-sm whitespace-pre-wrap">
+      <div className="max-w-[62%] rounded-[18px] rounded-tr-sm border border-border bg-secondary px-4 py-2 text-[13.5px] leading-relaxed text-foreground whitespace-pre-wrap">
         {content}
       </div>
     </div>
@@ -299,6 +316,8 @@ type StudioChatPaneProps = {
   input: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
+  attachedFile: AttachedFile | null;
+  onAttachChange: (file: AttachedFile | null) => void;
   onStop: () => void;
   replyTarget: ReplyTarget | null;
   onReplyToMessage: (target: ReplyTarget) => void;
@@ -371,6 +390,8 @@ export function StudioChatPane({
   input,
   onInputChange,
   onSend,
+  attachedFile,
+  onAttachChange,
   onStop,
   replyTarget,
   onReplyToMessage,
@@ -404,6 +425,77 @@ export function StudioChatPane({
     Record<string, MessageFeedback | null>
   >({});
 
+  // Composer attach menu — ported from the home hero composer. `attachedFile`
+  // is lifted to the shell (sent with the next message); the menu's open/url
+  // state is local UI. Icons/behavior mirror the hero composer.
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  const [urlInputMode, setUrlInputMode] = useState<"github" | "vercel" | "image" | null>(null);
+  const [urlInputValue, setUrlInputValue] = useState("");
+  const [urlInputLoading, setUrlInputLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
+        setAttachMenuOpen(false);
+        setUrlInputMode(null);
+        setUrlInputValue("");
+      }
+    }
+    if (attachMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [attachMenuOpen]);
+
+  async function handleUrlImport() {
+    if (!urlInputValue.trim()) return;
+    setUrlInputLoading(true);
+    try {
+      if (urlInputMode === "github") {
+        const match = urlInputValue.match(/github\.com\/([^/]+\/[^/]+)/);
+        const repo = match ? match[1].replace(/\.git$/, "") : urlInputValue;
+        const res = await fetch(`https://api.github.com/repos/${repo}/readme`, {
+          headers: { Accept: "application/vnd.github.raw+json" },
+        });
+        if (res.ok) {
+          const text = await res.text();
+          onAttachChange({ name: `${repo} (README.md)`, mimeType: "text/plain", dataUrl: "", textContent: text.slice(0, 8000) });
+        } else {
+          onAttachChange({ name: `GitHub: ${repo}`, mimeType: "text/plain", dataUrl: "" });
+        }
+      } else if (urlInputMode === "vercel") {
+        onAttachChange({ name: `Vercel: ${urlInputValue}`, mimeType: "text/plain", dataUrl: "", textContent: `Vercel project URL: ${urlInputValue}` });
+      } else if (urlInputMode === "image") {
+        onAttachChange({ name: urlInputValue, mimeType: "image/url", dataUrl: urlInputValue });
+      }
+    } catch {
+      onAttachChange({ name: urlInputValue, mimeType: "text/plain", dataUrl: "" });
+    } finally {
+      setUrlInputLoading(false);
+      setAttachMenuOpen(false);
+      setUrlInputMode(null);
+      setUrlInputValue("");
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => onAttachChange({ name: file.name, mimeType: file.type, dataUrl: reader.result as string });
+      reader.readAsDataURL(file);
+    } else if (file.type.startsWith("text/") || file.name.endsWith(".md") || file.name.endsWith(".csv") || file.name.endsWith(".json")) {
+      const reader = new FileReader();
+      reader.onload = () => onAttachChange({ name: file.name, mimeType: file.type, dataUrl: "", textContent: reader.result as string });
+      reader.readAsText(file);
+    } else {
+      onAttachChange({ name: file.name, mimeType: file.type, dataUrl: "" });
+    }
+  }
+
   const showActionZone =
     phase === "prototype_ready" ||
     phase === "prototype_shared" ||
@@ -418,20 +510,21 @@ export function StudioChatPane({
       phase === "approved_for_proposal");
   const contentFrameClass = isWorkspaceVisible ? "w-full" : "mx-auto w-full max-w-[720px]";
   const hasDraft = input.trim().length > 0;
-  const canSubmit = hasDraft && !isThinking;
+  const canSubmit = (hasDraft || !!attachedFile) && !isThinking;
   const messageStackClass = isWorkspaceVisible
     ? `${contentFrameClass} space-y-5 pb-5 pt-5`
     : `${contentFrameClass} flex min-h-full flex-col justify-end gap-5 pb-10 pt-20 sm:pb-12 sm:pt-24`;
   const composerShellClass = isWorkspaceVisible
     ? "shrink-0 px-3 pb-4 pt-2"
     : "shrink-0 px-3 pb-6 pt-3 sm:px-4 sm:pb-7";
-  const composerSurfaceClass = isWorkspaceVisible
-    ? "rounded-2xl bg-[#131313] px-3 pb-2.5 pt-3 shadow-sm"
-    : "rounded-[22px] bg-[#131313] px-4 pb-3 pt-4 shadow-sm";
-  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[52px]" : "min-h-[72px]";
+  // Composer surface — matches the home hero composer (tight 9px card, subtle
+  // 3-side shadow border instead of a solid border).
+  const composerSurfaceClass =
+    "rounded-[9px] p-1.5 bg-[#f9f9f9] dark:bg-[#131313] shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14]";
+  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[80px]" : "min-h-[112px]";
   const composerTextAreaClass = isWorkspaceVisible
-    ? "max-h-28 min-h-[38px] w-full resize-none bg-transparent px-1 py-1 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
-    : "max-h-36 min-h-[56px] w-full resize-none bg-transparent px-1 py-1 text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
+    ? "max-h-40 min-h-[64px] w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
+    : "max-h-52 min-h-[96px] w-full resize-none bg-transparent px-3 py-1.5 text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
   const latestAssistantIndex = messages.findLastIndex(
     (message) => message.role === "assistant" && (!message.type || message.type === "chat"),
   );
@@ -524,11 +617,23 @@ export function StudioChatPane({
           </div>
           <div className="text-center">
             <p className="text-[17px] font-medium tracking-tight text-foreground/90">
-              Soy Maxwell, arquitecto de soluciones en Noon.
+              I&apos;m Maxwell, solutions architect at Noon.
             </p>
             <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
-              Cuéntame qué quieres construir y te ayudo a convertirlo en una dirección clara y construible.
+              Tell me what you want to build and I&apos;ll help turn it into a clear, buildable direction.
             </p>
+          </div>
+          <div className="pointer-events-auto flex max-w-md flex-wrap items-center justify-center gap-2">
+            {STARTER_PROMPTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onInputChange(p)}
+                className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {p}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -670,21 +775,102 @@ export function StudioChatPane({
                   className={composerTextAreaClass}
                 />
               </div>
-              {/*
-                B29 — FASE 1 is internal-only (ADR-008). The Plus "Add context"
-                button had no behavior beyond focusing the input, and the Mic
-                empty-state on the send button suggested a voice-input feature
-                we have not built. Both removed; the Maxwell branding pill goes
-                with them since the row was only there to host that trio.
+              {/* Attached file badge (ported from the home hero composer). */}
+              {attachedFile && (
+                <div className="px-1.5 pb-1">
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                    <span className="truncate">{attachedFile.name}</span>
+                    <button
+                      type="button"
+                      aria-label="Remove attachment"
+                      onClick={() => onAttachChange(null)}
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                </div>
+              )}
 
-                B30 — Always-visible send: the send button is always rendered
-                (the row no longer collapses on mobile) and shows a disabled
-                ArrowRight when the input is empty. On touch devices the
-                Enter-to-send keyboard shortcut is intentionally skipped (see
-                the textarea's onKeyDown above) so users always discover send
-                via this visible button.
-              */}
-              <div className="mt-1 flex items-center justify-end">
+              {/* Bottom row — attach menu (left) + send (right), home-style. */}
+              <div className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5 pt-1">
+                <div className="relative" ref={attachMenuRef}>
+                  <input ref={fileInputRef} type="file" accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
+                  <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                  <button
+                    type="button"
+                    aria-label="Add"
+                    onClick={() => {
+                      setAttachMenuOpen((v) => !v);
+                      setUrlInputMode(null);
+                      setUrlInputValue("");
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  {attachMenuOpen && (
+                    <div className="liquid-glass-card absolute bottom-10 left-0 z-50 w-52 overflow-hidden rounded-[10px]">
+                      {!urlInputMode ? (
+                        <div className="py-1">
+                          <button type="button" disabled title="Voice input is not available yet." className="flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground/60">
+                            <Mic className="h-4 w-4 text-muted-foreground/60" />
+                            Voice input
+                          </button>
+                          <div className="my-1 h-px bg-border" />
+                          <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Upload className="h-4 w-4 text-muted-foreground" />
+                            Upload file
+                          </button>
+                          <button type="button" onClick={() => { pdfInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            Upload PDF
+                          </button>
+                          <div className="my-1 h-px bg-border" />
+                          <button type="button" onClick={() => setUrlInputMode("github")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Github className="h-4 w-4 text-muted-foreground" />
+                            Import from GitHub
+                          </button>
+                          <button type="button" onClick={() => setUrlInputMode("vercel")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <TriangleIcon className="h-4 w-4 text-muted-foreground" />
+                            Import from Vercel
+                          </button>
+                          <button type="button" onClick={() => setUrlInputMode("image")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Globe className="h-4 w-4 text-muted-foreground" />
+                            Image URL
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 p-3">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {urlInputMode === "github" ? "GitHub repository" : urlInputMode === "vercel" ? "Vercel project" : "Image URL"}
+                          </p>
+                          <input
+                            type="text"
+                            autoFocus
+                            value={urlInputValue}
+                            onChange={(e) => setUrlInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void handleUrlImport();
+                              if (e.key === "Escape") { setUrlInputMode(null); setUrlInputValue(""); }
+                            }}
+                            placeholder={urlInputMode === "github" ? "github.com/user/repo" : urlInputMode === "vercel" ? "vercel.com/project" : "https://..."}
+                            className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
+                          />
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40">
+                              {urlInputLoading ? "Importing…" : "Import"}
+                            </button>
+                            <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   aria-label={isThinking ? "Stop response" : "Send message"}
@@ -697,13 +883,12 @@ export function StudioChatPane({
                       onSend();
                     }
                   }}
-                  // B40 — Tap target ≥44×44 px (WCAG 2.5.5). Was h-9 w-9 (36px).
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/10 text-foreground transition-colors hover:bg-foreground/15 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-foreground/10"
+                  className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
                   {isThinking ? (
-                    <Square className="h-3.5 w-3.5 fill-current" />
+                    <Square className="h-3 w-3 fill-current" />
                   ) : (
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
                   )}
                 </button>
               </div>

@@ -22,8 +22,9 @@
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
   --brand: #0056fd;
-  --brand-hover: #3378fd;
+  --brand-hover: #0047e0;
   --brand-tint: rgba(0, 86, 253, 0.06);
+  --success: #22c55e;
 
   font-family: var(--sans);
   background: var(--bg-base);
@@ -49,7 +50,7 @@ html.dark .svc-rd {
 .svc-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 10; }
 @media (min-width: 768px) { .svc-wrap { padding: 0 32px; } }
 .svc-section { padding: clamp(64px, 8vw, 96px) 0; }
-#services-offer { scroll-margin-top: 24px; }
+#services-offer { scroll-margin-top: 24px; padding-top: calc(clamp(64px, 8vw, 96px) - 80px); }
 
 /* ── nav ────────────────────────────────────────────────────────────────── */
 .svc-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
@@ -111,6 +112,7 @@ html.dark .svc-rd {
 /* ── type ───────────────────────────────────────────────────────────────── */
 .svc-display { font-family: var(--sans); font-size: clamp(34px, 4.5vw, 52px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.06; margin: 0; }
 .svc-display .dim { color: var(--text-secondary); }
+.svc-display .accent { color: var(--brand); }
 .svc-h2 { font-size: clamp(24px, 2.4vw, 30px); font-weight: 400; letter-spacing: -0.015em; line-height: 1.15; margin: 0; }
 .svc-h2 .dim { color: var(--text-secondary); }
 .svc-lead { font-size: clamp(15px, 1.3vw, 17px); font-weight: 400; line-height: 1.55; color: var(--text-secondary); margin: 0; }
@@ -150,51 +152,80 @@ html.dark .svc-rd {
    gaps (which render at 1px CSS = 1.25 device px on hi-dpi and look thicker than
    the frame). Container draws top+left; every cell draws right+bottom → a full
    uniform hairline grid at every breakpoint. */
-.svc-cards { display: grid; grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border); border-left: 1px solid var(--border); overflow: hidden; }
-@media (min-width: 560px) { .svc-cards { grid-template-columns: 1fr 1fr; } }
+/* --pin-h drives the needle height, the horizontal rule position, and the badge anchor —
+   all three read the same var so they can never drift apart. */
+.svc-cards { --pin-h: 0px; position: relative; display: grid; grid-template-columns: 1fr; gap: 0; border-left: 1px solid var(--border); overflow: visible; }
+@media (min-width: 560px) { .svc-cards { --pin-h: 260px; grid-template-columns: 1fr 1fr; } }
 @media (min-width: 960px) { .svc-cards { grid-template-columns: repeat(4, 1fr); } }
+/* horizontal rule: stretches edge-to-edge at the pin/card boundary */
+@media (min-width: 560px) {
+  .svc-cards::before {
+    content: ''; position: absolute;
+    left: -9999px; right: -9999px; top: var(--pin-h); height: 0;
+    border-top: 1px solid var(--border); z-index: 12;
+  }
+}
+/* pin cells: real grid items at the same column position as the cards below */
+.svc-pin-cell { height: 0; border-right: 0; }
+@media (min-width: 560px) { .svc-pin-cell { height: var(--pin-h); } }
+@media (min-width: 960px) { .svc-pin-cell { grid-column: span 2; } }
+/* rainbow needle: first pin cell, ::after at its right edge (same column line as card borders) */
+.svc-cards > .svc-pin-cell:first-child { position: relative; }
+@media (min-width: 560px) {
+  .svc-cards > .svc-pin-cell:first-child::after {
+    content: ''; position: absolute; right: 0; top: 0;
+    width: 1px; height: 100%;
+    background: linear-gradient(
+      to bottom,
+      hsl(220, 78%, 55%),
+      hsl(242, 72%, 52%),
+      hsl(262, 67%, 50%),
+      hsl(272, 62%, 50%),
+      transparent
+    );
+    z-index: 2;
+  }
+}
+.svc-cards > .svc-pin-cell:nth-child(2) { border-right: 0; }
+@media (min-width: 560px) {
+  .svc-cards::after {
+    content: ''; position: absolute;
+    left: -1px; top: 0; width: 1px; height: var(--pin-h);
+    background: var(--bg-base); z-index: 1;
+  }
+}
+/* badge: anchored at the top of .svc-cards via the same --pin-h = 0 at top */
+.svc-cards-pin {
+  position: absolute; left: 50%; top: 0;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--bg-base), var(--bg-base)) padding-box,
+    linear-gradient(135deg,
+      hsl(220, 78%, 55%),
+      hsl(242, 72%, 52%),
+      hsl(262, 67%, 50%),
+      hsl(272, 62%, 50%)
+    ) border-box;
+  display: none; align-items: center; justify-content: center; z-index: 13;
+}
+.svc-cards-pin svg { width: 20px; height: 20px; }
+@media (min-width: 560px) { .svc-cards-pin { display: flex; } }
 .svc-card { background: var(--bg-base); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: clamp(22px, 2.6vw, 28px); display: flex; flex-direction: row; align-items: flex-start; gap: 16px; text-decoration: none; color: inherit; transition: background .2s; }
 .svc-card:hover { background: var(--bg-secondary); }
 .svc-card-fig { flex-shrink: 0; display: flex; align-items: flex-start; }
-.svc-card-fig img { width: 56px; height: 56px; object-fit: contain; opacity: 0.72; }
+.svc-card-fig img { width: 56px; height: 56px; object-fit: contain; opacity: 0.70; }
 html:not(.dark) .svc-card-fig img { filter: invert(1); }
 .svc-card-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .svc-card-name { font-size: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
 .svc-card-desc { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin: 8px 0 0; }
 
-.svc-services { border: 1px solid var(--border); overflow: hidden; }
+.svc-services { border: 1px solid var(--border); border-top: 0; overflow: hidden; }
 
-/* .svc-arch — overview cards, the intro text, and the detailed box, with a BACKGROUND
-   rail that extends the overview card dividers straight DOWN behind the text to the
-   box. The rail is the SAME 4-col grid in the SAME content width as the cards (1px
-   transparent L/R border matches the cards' 1px border), so its lines land exactly
-   on the card dividers. It sits behind (z-index 0); nothing is moved or cut. The
-   opaque page-bg cells hide the rail behind the cards/box, so the lines only show in
-   the gap + behind the intro text. Desktop-only (≥960, where the cards are 4-col). */
-.svc-arch { position: relative; padding-bottom: clamp(28px, 4vw, 40px); }
-.svc-arch > .svc-cards,
-.svc-arch > .svc-sechead { position: relative; z-index: 1; }
 .svc-arch > .svc-cards { margin-bottom: clamp(56px, 8vw, 96px); }
-.svc-arch > .svc-sechead { margin: 0 auto; text-align: center; }
 .svc-arch-rail { display: none; }
-@media (min-width: 960px) {
-  /* mirror the cards EXACTLY: container border-left + every cell border-right,
-     same content width → rail dividers land pixel-exact on the card dividers. */
-  .svc-arch-rail {
-    position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr;
-    gap: 0;
-    border-left: 1px solid var(--border);
-  }
-  .svc-arch-rail > span { border-right: 1px solid var(--border); }
-  /* Extend col-1 rail divider (25%) downward into the featured Custom Dev block */
-  .svc-arch::after {
-    content: ''; position: absolute; pointer-events: none;
-    left: 25%; top: 100%;
-    width: 1px; height: 440px;
-    background: var(--border); z-index: 0;
-  }
-}
 .svc-service { border-top: 1px solid var(--border); display: flex; flex-direction: column; }
 .svc-service:first-child { border-top: 0; }
 @media (min-width: 900px) { .svc-service { flex-direction: row; min-height: 300px; } .svc-service.flip { flex-direction: row-reverse; } }
@@ -203,30 +234,29 @@ html:not(.dark) .svc-card-fig img { filter: invert(1); }
 .svc-service-fig img { width: 148px; height: 148px; object-fit: contain; opacity: 0.7; }
 html:not(.dark) .svc-service-fig img { filter: invert(1); }
 .svc-service-body { flex: 1; padding: clamp(24px, 3vw, 34px); display: flex; flex-direction: column; }
-.svc-service-name { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; color: var(--text-primary); margin: 0; }
+.svc-service-name { font-size: clamp(17px, 1.6vw, 20px); font-weight: 500; letter-spacing: -0.015em; color: var(--text-primary); margin: 0; }
 .svc-service-summary { font-size: 15px; line-height: 1.55; color: var(--text-secondary); margin: 10px 0 0; }
 .svc-service-details { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .svc-service-details li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); }
 .svc-service-details li::before { content: ""; flex-shrink: 0; margin-top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--brand); }
-.svc-service.featured .svc-service-details li { display: block; }
+.svc-service.featured .svc-service-name { font-size: clamp(26px, 2.8vw, 36px); line-height: 1.15; }
+.svc-service.featured .svc-service-details li { display: block; font-size: 16px; line-height: 1.6; }
 .svc-service.featured .svc-service-details li::before { display: none; }
 .svc-service-cta { margin-top: auto; padding-top: 20px; }
-.svc-service-cta a { display: inline-flex; align-items: center; gap: 8px; width: fit-content; border-radius: var(--radius-sm); background: var(--text-primary); color: var(--bg-base); padding: 10px 18px; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: transform .18s; }
+.svc-service-cta a { display: inline-flex; align-items: center; gap: 8px; width: fit-content; border-radius: var(--radius-pill); background: var(--text-primary); color: var(--bg-base); padding: 10px 20px; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: transform .18s; }
 .svc-service-cta a:hover { transform: translateY(-1px); }
 .svc-service-cta .ic { transition: transform .2s ease; }
 .svc-service-cta a:hover .ic { transform: translateX(2px); }
 
 /* ── Custom Development — featured block with the live Maxwell chat mockup ─── */
 @media (min-width: 900px) {
-  .svc-service.featured { min-height: 440px; }
+  .svc-service.featured { min-height: 420px; }
   .svc-service.featured .svc-service-fig { width: 440px; border-left: 0; border-right: 0; }
 }
-/* At ≥960px the col-1 rail divider (25%) is visible — constrain the body to that
-   first column and push the Maxwell chat to the far right with space-between. */
 @media (min-width: 960px) {
   .svc-service.featured { justify-content: space-between; }
-  .svc-service.featured .svc-service-body { flex: 0 0 25%; max-width: 25%; }
-  .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 140px; padding: 0 24px; }
+  .svc-service.featured .svc-service-body { flex: 0 0 38%; max-width: 38%; }
+  .cds-panel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 0 24px; }
 }
 @media (max-width: 959px) { .cds-panel { display: none; } }
 
@@ -312,14 +342,14 @@ html:not(.dark) .svc-service-fig img { filter: invert(1); }
 /* ── how we work — statement + numbered pillars ───────────────────────────── */
 .svc-statement { max-width: 30ch; margin: 0 0 clamp(40px, 6vw, 64px); font-size: clamp(24px, 3vw, 34px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.3; color: var(--text-primary); }
 .svc-statement .dim { color: var(--text-secondary); }
-.svc-how-grid { display: grid; grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border); border-left: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.svc-how-grid { display: grid; grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
 @media (min-width: 620px) { .svc-how-grid { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 980px) { .svc-how-grid { grid-template-columns: repeat(4, 1fr); } }
 .svc-step { position: relative; background: var(--bg-base); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: clamp(24px, 3vw, 30px); display: flex; flex-direction: column; }
 .svc-step.on::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--brand); }
-.svc-step-n { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.svc-step-n { font-family: var(--sans); font-size: 13px; color: var(--text-muted); position: absolute; top: clamp(24px, 3vw, 30px); right: clamp(24px, 3vw, 30px); }
 .svc-step.on .svc-step-n { color: var(--brand); }
-.svc-step-label { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 12px 0 0; }
+.svc-step-label { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-primary); margin: 0; }
 .svc-step-line { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin: 8px 0 0; }
 .svc-step-badge { margin-top: 16px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); background: var(--brand-tint); border-radius: var(--radius-pill); padding: 4px 10px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand); }
 .svc-step-badge .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--brand); }

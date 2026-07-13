@@ -18,9 +18,10 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 > **Summary:** (1) Marca oficial en todas las superficies: el raster
 > `public/logo-icon.png` (favicon/apple-touch/JSON-LD) ahora es el isotipo
 > oficial (tile azul `#1200C5` + mark blanco, mismo asset que la App); el
-> `LogoIcon` de `components/ui/noon-logo.tsx` y el hub del
-> `ContactRouteDiagram` renderizan el `NoonMark` vectorial (currentColor) en
-> vez del PNG monograma legacy; borrados los 5 placeholders v0 sin referencias
+> `LogoIcon` de `components/ui/noon-logo.tsx` renderiza el `NoonMark`
+> vectorial (currentColor) en vez del PNG monograma legacy (el
+> `ContactRouteDiagram` que también lo usaba fue borrado en main como
+> old-design sin uso); borrados los 5 placeholders v0 sin referencias
 > (espeja App PR #165). (2) **Cross-repo:** el emisor de comentarios de
 > workspace (`sendClientCommentToNoonApp`, inline + reaper) ahora POSTea al
 > receptor CANÓNICO `POST /api/integrations/website/client-request` con

@@ -37,7 +37,7 @@ function createTone(
 }
 
 export const siteTones = {
-  brand: createTone("#1200c5", [18, 0, 197], {
+  brand: createTone("#0056fd", [0, 86, 253], {
     borderAlpha: 0.34,
     surfaceAlpha: 0.14,
     mutedSurfaceAlpha: 0.08,

@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowRight, ShieldCheck, Blocks, UserRound, Building2 } from "lucide-react";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
-import { CustomDevChat, CustomDevScreens, CustomDevChatViz } from "./custom-dev-chat";
+import { NoonMark } from "@/components/brand/noon-logo";
+import { CustomDevChat, CustomDevFlow } from "./custom-dev-chat";
+import { UpgradeFlow } from "./upgrade-flow";
 
 const LOCALES = ["en", "es", "fr", "de"];
 
 const HOW_STEPS = [
   { n: "01", label: "Scope", line: "Maxwell scopes the real problem with you — before a line of code." },
-  { n: "02", label: "Build", line: "Senior engineers own the build in a real, production codebase." },
+  { n: "02", label: "Build", line: "AI builds it fast in a real, production codebase — structured and ready to review." },
   { n: "03", label: "Human review", line: "Every change is read and reviewed by a person before it ships.", on: true },
   { n: "04", label: "Ship", line: "Working software your team operates — reviewed, and made to last." },
 ];
@@ -54,6 +56,10 @@ const CARD_TAGLINES: Record<string, string> = {
   "Business Technology Audit": "A diagnosis before you commit.",
 };
 
+function UpgradePanel() {
+  return <UpgradeFlow />;
+}
+
 export function ServicesContent() {
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
@@ -77,39 +83,34 @@ export function ServicesContent() {
     },
     {
       name: "Upgrade",
-      summary: "Improve an existing website or product surface when the current version is underperforming, unclear, or dated.",
+      summary: "Optimize your website to achieve better results.",
       details: [
-        "Use this when you already have something live and need a stronger version, not a vague redesign request.",
-        "The existing Upgrade flow remains available as the structured starting point for this service.",
+        "Enter your website URL and instantly receive an improved version optimized for design, user experience, and performance.",
       ],
       href: lp(siteRoutes.upgrade),
       linkLabel: "Open Upgrade",
       illustration: "/figma/card-upgrade.svg",
-      flip: true,
+      flip: false,
     },
     {
       name: "Engineering Support",
       summary: "Technical support capacity for software, hardware, infrastructure, and technology operations.",
-      details: [
-        "Support can involve one person or several, depending on the need and scope.",
-        "Engagements may be remote, on-site, or hybrid. Physical interventions are handled by request and availability.",
-      ],
+      details: [],
       href: lp(getContactHref({ inquiry: "general", source: "engineering-support" })),
       linkLabel: "Contact Noon",
       illustration: "/figma/card-engineering-support.svg",
       flip: false,
+      showBlock: false,
     },
     {
       name: "Business Technology Audit",
       summary: "A diagnostic review of the business technology and operational setup before deciding what should change.",
-      details: [
-        "Best when the problem is real but the right technical move is not yet clear.",
-        "The audit looks at technology, operations, constraints, and practical next steps. It uses the general contact route.",
-      ],
+      details: [],
       href: lp(getContactHref({ inquiry: "general", source: "business-technology-audit" })),
       linkLabel: "Request an audit conversation",
       illustration: "/figma/card-audit.svg",
       flip: true,
+      showBlock: false,
     },
   ];
 
@@ -120,23 +121,9 @@ export function ServicesContent() {
         <div className="svc-wrap">
           <div className="svc-hero-inner">
             <h1 className="svc-display">
-              Four ways Noon helps teams move from <span className="dim">problem</span> to working
-              software.
+              <span className="dim">Four ways </span><span className="accent">Noon </span>drives better outcomes{" "}
+              <span className="dim">with solutions built to scale.</span>
             </h1>
-            <p className="svc-lead svc-hero-lead">
-              Noon covers four primary needs: building new software, upgrading what already exists,
-              supporting the technology operation, and auditing the business technology stack before
-              decisions are made.
-            </p>
-            <div className="svc-hero-actions">
-              <a href="#services-offer" className="svc-btn svc-btn-primary">
-                Review services
-                <ArrowRight className="ic" size={16} strokeWidth={2} />
-              </a>
-              <Link href={contactHref} className="svc-btn svc-btn-secondary">
-                Contact Noon
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -145,16 +132,14 @@ export function ServicesContent() {
           blocks (original order, nothing moved). A background rail extends the
           overview card dividers straight DOWN behind the text to the box — same
           4-col grid / same wrap, so the lines land exactly on the dividers. */}
-      <section className="svc-section" id="services-offer" style={{ paddingTop: 0 }}>
+      <section className="svc-section" id="services-offer">
         <div className="svc-wrap">
-          <div className="svc-arch">
-          <div className="svc-arch-rail" aria-hidden>
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
           <div className="svc-cards">
+            {/* 2 pin cells: real grid items whose border-right at 50% is the same
+                column border as the service cards — no separate overlay needed */}
+            <div className="svc-pin-cell" />
+            <div className="svc-pin-cell" />
+            <div className="svc-cards-pin"><NoonMark /></div>
             {services.map((s) => (
               <Link key={s.name} href={s.href} className="svc-card">
                 <div className="svc-card-fig">
@@ -167,46 +152,42 @@ export function ServicesContent() {
               </Link>
             ))}
           </div>
-          <div className="svc-sechead">
-            <h2 className="svc-h2">The service architecture</h2>
-            <p className="svc-lead">
-              The order is intentional: first define whether the work is a new build, an upgrade,
-              ongoing support, or a diagnostic audit.
-            </p>
-          </div>
-          </div>
           <div className="svc-services">
-            {services.map((s) => {
+            {services.filter((s) => s.showBlock !== false).map((s) => {
               const featured = s.name === "Custom Development";
+              const isUpgrade = s.name === "Upgrade";
+              const isBig = featured || isUpgrade;
               return (
-              <article key={s.name} className={`svc-service ${s.flip ? "flip" : ""} ${featured ? "featured" : ""}`}>
-                {!featured && (
+              <article key={s.name} className={`svc-service ${s.flip ? "flip" : ""} ${isBig ? "featured" : ""}`}>
+                {!isBig && (
                   <div className="svc-service-fig">
                     <Image src={s.illustration} alt="" width={148} height={148} unoptimized />
                   </div>
                 )}
                 {featured && (
                   <div className="cds-panel" aria-hidden>
-                    <CustomDevChatViz />
-                    <CustomDevScreens />
+                    <CustomDevFlow />
+                  </div>
+                )}
+                {isUpgrade && (
+                  <div className="cds-panel" aria-hidden>
+                    <UpgradePanel />
                   </div>
                 )}
                 <div className="svc-service-body">
-                  <h3 className="svc-service-name">{featured ? s.summary : s.name}</h3>
-                  {!featured && <p className="svc-service-summary">{s.summary}</p>}
+                  <h3 className="svc-service-name">{isBig ? s.summary : s.name}</h3>
+                  {!isBig && <p className="svc-service-summary">{s.summary}</p>}
                   <ul className="svc-service-details">
                     {s.details.map((d) => (
                       <li key={d}>{d}</li>
                     ))}
                   </ul>
-                  {!featured && (
-                    <div className="svc-service-cta">
-                      <Link href={s.href}>
-                        {s.linkLabel}
-                        <ArrowRight className="ic" size={15} strokeWidth={2} />
-                      </Link>
-                    </div>
-                  )}
+                  <div className="svc-service-cta">
+                    <Link href={s.href}>
+                      {s.linkLabel}
+                      <ArrowRight className="ic" size={15} strokeWidth={2} />
+                    </Link>
+                  </div>
                 </div>
               </article>
               );
@@ -228,98 +209,13 @@ export function ServicesContent() {
                 <span className="svc-step-n">{step.n}</span>
                 <h3 className="svc-step-label">{step.label}</h3>
                 <p className="svc-step-line">{step.line}</p>
-                {step.on && (
-                  <span className="svc-step-badge">
-                    <span className="dot" />
-                    The Noon difference
-                  </span>
-                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* the honest comparison */}
-      <section className="svc-section" style={{ paddingTop: 0 }}>
-        <div className="svc-wrap">
-          <div className="svc-sechead">
-            <h2 className="svc-h2">Four ways to get software built.</h2>
-            <p className="svc-lead">
-              Each one is right for someone. Here&apos;s where each fits — and where Noon does.
-            </p>
-          </div>
-          <div className="svc-compare">
-            {/* desktop matrix */}
-            <div className="svc-compare-grid">
-              <div className="svc-cmp-cell" />
-              {CMP_OPTIONS.map((o) => {
-                const Icon = o.icon;
-                return (
-                  <div key={o.name} className={`svc-cmp-cell head ${o.hl ? "hl" : ""}`}>
-                    <span className="svc-cmp-ico">
-                      <Icon size={15} strokeWidth={1.75} />
-                    </span>
-                    {o.name}
-                  </div>
-                );
-              })}
-              {CMP_DIMENSIONS.map((dim, di) => (
-                <div key={dim} style={{ display: "contents" }}>
-                  <div className="svc-cmp-cell dim">{dim}</div>
-                  {CMP_OPTIONS.map((o) => (
-                    <div key={o.name + dim} className={`svc-cmp-cell ${o.hl ? "hl" : ""}`}>
-                      {o.values[di]}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-            {/* mobile cards */}
-            <div className="svc-compare-cards">
-              {CMP_OPTIONS.map((o) => {
-                const Icon = o.icon;
-                return (
-                  <div key={o.name} className={`svc-cmp-card ${o.hl ? "hl" : ""}`}>
-                    <div className="svc-cmp-card-head">
-                      <span className="svc-cmp-ico">
-                        <Icon size={15} strokeWidth={1.75} />
-                      </span>
-                      <span className="svc-cmp-card-name">{o.name}</span>
-                    </div>
-                    <dl>
-                      {CMP_DIMENSIONS.map((dim, di) => (
-                        <div key={dim} className="svc-cmp-row">
-                          <dt>{dim}</dt>
-                          <dd>{o.values[di]}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* FAQ */}
-      <section className="svc-section" style={{ paddingTop: 0 }}>
-        <div className="svc-wrap">
-          <div className="svc-sechead-row">
-            <h2 className="svc-h2">Questions</h2>
-            <span className="svc-mono">FAQ</span>
-          </div>
-          <div className="svc-faq">
-            {FAQS.map((f) => (
-              <details key={f.q}>
-                <summary>{f.q}</summary>
-                <div className="ans">{f.a}</div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="svc-section" style={{ paddingTop: 0 }}>

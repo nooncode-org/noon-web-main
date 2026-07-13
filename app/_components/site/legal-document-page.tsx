@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { NoonWordmark } from "@/components/brand/noon-logo";
+import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
-import { siteRoutes, getStartWithMaxwellHref, getContactHref } from "@/lib/site-config";
+import { getContactHref } from "@/lib/site-config";
 import "./legal-rd.css";
 import "./site-footer-rd.css";
 
@@ -48,30 +48,11 @@ function toSectionId(title: string) {
  */
 export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPageProps) {
   const lp = (href: string) => (href.startsWith("/") ? `/${locale}${href}` : href);
-  const maxwellHref = lp(getStartWithMaxwellHref());
   const contactHref = lp(getContactHref("legal"));
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      {/* nav */}
-      <header className="lgl-nav">
-        <div className="lgl-nav-inner">
-          <Link href={lp(siteRoutes.home)} className="lgl-nav-logo" aria-label="Noon — home">
-            <span style={{ height: 20, display: "inline-flex" }}>
-              <NoonWordmark />
-            </span>
-          </Link>
-          <nav className="lgl-nav-links">
-            <Link href={lp(siteRoutes.services)}>Services</Link>
-            <Link href={lp(siteRoutes.work)}>Work</Link>
-            <Link href={lp(siteRoutes.about)}>About</Link>
-            <Link href={lp(siteRoutes.contact)}>Contact</Link>
-          </nav>
-          <Link href={maxwellHref} className="lgl-nav-cta lgl-btn lgl-btn-primary">
-            Start with Maxwell
-          </Link>
-        </div>
-      </header>
+      <SiteNavRd locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

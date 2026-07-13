@@ -261,7 +261,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                 {/* Dark card — on top, full rounded corners.
                     Spectrum accent #2 — iridescent focus glow (only while focused). */}
                 <div
-                  className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_0_0_1px_rgba(0,0,0,0.06)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-shadow duration-300"
+                  className="relative z-10 bg-[#f9f9f9] dark:bg-[#131313] rounded-[9px] p-1.5 shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14] transition-shadow duration-300"
                   style={
                     spectrum && isInputFocused
                       ? { boxShadow: "0 0 0 1.5px rgba(255,77,77,0.55), 0 0 0 3px rgba(255,210,63,0.32), 0 0 22px -2px rgba(52,199,89,0.5), 0 0 40px -6px rgba(27,154,255,0.5), 0 0 56px -10px rgba(177,91,255,0.5)" }
@@ -375,7 +375,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                                   className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
                                 />
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-[#0056FD]/90 transition-colors">
+                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-[#0047e0] transition-colors">
                                     {urlInputLoading ? t("importing") : t("import")}
                                   </button>
                                   <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-[#a3a3a3] hover:bg-secondary transition-colors">
@@ -408,7 +408,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                       aria-label="Start with Maxwell"
                       onClick={startWithMaxwell}
                       disabled={!inputValue.trim() && !attachedFile}
-                      className="!bg-[#0056FD] hover:!bg-[#0056FD]/90 text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
+                      className="!bg-[#0056FD] hover:!bg-[#0047e0] text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
                       style={spectrum ? { backgroundImage: "linear-gradient(135deg, #ff4d4d 0%, #ff9f1c 17%, #ffd23f 34%, #34c759 51%, #1b9aff 68%, #5b5bff 84%, #b15bff 100%)" } : undefined}
                     >
                       <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />

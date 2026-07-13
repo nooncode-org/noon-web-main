@@ -103,7 +103,7 @@ const nextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self'",
-      // 'self' → the /work live product mockups (public/work/mockups/*.html)
+      // 'self' → the /templates live product mockups (public/templates/mockups/*.html)
       // embedded as same-origin iframes; the rest are v0 preview hosts.
       "frame-src 'self' https://*.vercel.app https://*.vusercontent.net",
       "form-action 'self' https://checkout.stripe.com",
@@ -136,21 +136,11 @@ const nextConfig = {
           { key: "Content-Security-Policy", value: csp },
         ],
       },
-      // /work + /templates live product mockups (static, self-contained HTML in
+      // /templates live product mockups (static, self-contained HTML in
       // /public) are embedded by our own pages as same-origin iframes — they
       // need frame-ancestors 'self' / SAMEORIGIN. Scoped override: later
       // matching entries win per header key; everything else inherits the
       // strict set.
-      {
-        source: "/work/mockups/:path*",
-        headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          {
-            key: "Content-Security-Policy",
-            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
-          },
-        ],
-      },
       {
         source: "/templates/mockups/:path*",
         headers: [
@@ -162,7 +152,7 @@ const nextConfig = {
         ],
       },
       // /upgrade "before/after" NORR mockups (public/mockups/*.html) — same
-      // reasoning as /work and /templates above.
+      // reasoning as /templates above.
       {
         source: "/mockups/:path*",
         headers: [

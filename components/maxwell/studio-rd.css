@@ -1,0 +1,78 @@
+/* ============================================================================
+   Maxwell Studio — visual alignment to the -rd redesign.
+
+   Applied to EVERY Maxwell route via `app/[locale]/maxwell/layout.tsx`, which
+   wraps children in `.mxw-rd` + Geist. This stylesheet only shifts the VISUAL
+   layer — no logic touched. Two things were off vs -rd: the FONT (the old
+   Instrument Sans, and `font-display`/`font-mono` mapping to Instrument/JetBrains)
+   and the TEXT/ACCENT tokens (the global palette tints text blue and still
+   carries the OLD v3 blue #1200c5).
+   ============================================================================ */
+
+/* ── Font ─────────────────────────────────────────────────────────────────── */
+.mxw-rd {
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  font-family: var(--sans);
+}
+/* `font-mono` (default JetBrains) and `font-display` (default Instrument Sans)
+   set font-family explicitly, so they override the inherited Geist even inside
+   .mxw-rd. Re-point both to Geist — the -rd system uses ONE sans (Geist). */
+.mxw-rd .font-mono { font-family: var(--mono); }
+.mxw-rd .font-display { font-family: var(--sans); }
+
+/* ── Token neutralization — theme-aware ──────────────────────────────────────
+   The global palette tints text blue (dark --foreground #e8edf7,
+   --card/popover-foreground #e8edf7, --muted-foreground #7a8aaa; light
+   --muted-foreground #66738b) and BOTH themes carry the OLD v3 blue for
+   --primary/--ring (#1200c5). -rd = neutral text (#fff / #a3a3a3 dark,
+   #000 / #6b7280 light) + brand #0056fd.
+
+   Set on `.mxw-rd` ITSELF (the subtree inherits these, overriding the blue
+   :root values regardless of stylesheet load order — the earlier
+   `:root:has()`-only version lost the cascade on some routes) AND ALSO on
+   `:root:has(.mxw-rd)` so they reach shadcn Popover/AlertDialog content that
+   portals to <body> outside .mxw-rd. Remap base tokens + Tailwind-v4 --color-*. */
+.mxw-rd,
+:root:has(.mxw-rd) {
+  --muted-foreground: #6b7280;
+  --primary: #0056fd;
+  --ring: #0056fd;
+  --color-muted-foreground: #6b7280;
+  --color-primary: #0056fd;
+  --color-ring: #0056fd;
+}
+html.dark .mxw-rd,
+html.dark:has(.mxw-rd) {
+  --foreground: #ffffff;
+  --secondary-foreground: #ffffff;
+  --card-foreground: #ffffff;
+  --popover-foreground: #ffffff;
+  --accent-foreground: #ffffff;
+  --muted-foreground: #a3a3a3;
+  --color-foreground: #ffffff;
+  --color-secondary-foreground: #ffffff;
+  --color-card-foreground: #ffffff;
+  --color-popover-foreground: #ffffff;
+  --color-accent-foreground: #ffffff;
+  --color-muted-foreground: #a3a3a3;
+}
+
+/* ── Primary button ──────────────────────────────────────────────────────────
+   The shared primary <Button> (default variant) colors itself via the bespoke
+   `.site-primary-action` class in globals.css, which HARDCODES the OLD brand
+   blue #1200c5 — so the --primary remap above never reaches it. Remap the class
+   to the -rd brand in this scope so every primary CTA on a Maxwell surface
+   (prototipo "Aceptar prototipo", review/workspace actions, …) matches the rest
+   of the redesign. Mirrors the upgrade-rd.css fix; `!important` because the
+   source class lives inside an @layer. */
+.mxw-rd .site-primary-action {
+  background-color: #0056fd !important;
+}
+.mxw-rd .site-primary-action:hover {
+  background-color: #0047e0 !important;
+  box-shadow: 0 18px 60px rgba(0, 86, 253, 0.18) !important;
+}
+.mxw-rd .site-primary-action:active {
+  background-color: #0042c4 !important;
+}

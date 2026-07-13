@@ -55,7 +55,7 @@ function ElapsedPollingBadge({ startedAt }: { startedAt: number }) {
       }`}
     >
       <span className="truncate">{pollingStatusText(phase)}</span>
-      <span className="shrink-0 font-mono tabular-nums">{formatElapsed(seconds)}</span>
+      <span className="shrink-0 tabular-nums">{formatElapsed(seconds)}</span>
     </div>
   );
 }
@@ -95,7 +95,7 @@ function PreviewPlaceholder({
 
         <div className="flex min-h-0 flex-1 items-center justify-center p-5 xl:p-8">
           <div className="grid w-full max-w-5xl gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="overflow-hidden rounded-2xl border border-border/70 bg-[#070707] shadow-2xl shadow-black/30">
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
               <div className="flex h-10 items-center gap-2 border-b border-border/70 px-3">
                 <span className="h-2.5 w-2.5 rounded-full bg-foreground/25" />
                 <span className="h-2.5 w-2.5 rounded-full bg-foreground/18" />
@@ -128,9 +128,9 @@ function PreviewPlaceholder({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-[#0c0c0c] p-5">
+            <div className="rounded-2xl border border-border/70 bg-muted p-5">
               <div className="mb-5 flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-[#131313] text-muted-foreground">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-secondary text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
                 <div>
@@ -181,7 +181,7 @@ function PreviewPlaceholder({
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
       <div
-        className={`w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground transition-all duration-500 ${isGenerating ? "scale-110" : "scale-100"}`}
+        className={`w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground transition-all duration-500 ${isGenerating ? "scale-110" : "scale-100"}`}
       >
         {isGenerating ? (
           <Loader2 className="w-7 h-7 animate-spin" />
@@ -217,7 +217,7 @@ function PreviewPlaceholder({
       )}
 
       {!isGenerating && (
-        <p className="text-xs text-muted-foreground mt-4 font-mono opacity-50">
+        <p className="text-xs text-muted-foreground mt-4 opacity-50">
           preview · waiting
         </p>
       )}
@@ -232,31 +232,43 @@ function PreviewPlaceholder({
 function PreviewFailed({
   onRetry,
   agentHref,
+  reason = "error",
 }: {
   onRetry: () => void;
   agentHref: string;
+  // "quota" = the monthly prototype allowance is used (a deliberate limit, not
+  // a transient failure) → explain the once-a-month-per-user rule and offer only
+  // "Talk to agent" (retrying would just hit the quota again). "error" = a real
+  // generation failure → the transient copy + a retry.
+  reason?: "error" | "quota";
 }) {
+  const isQuota = reason === "quota";
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
       <div
-        className="w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground"
+        className="w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground"
       >
         <AlertCircle className="w-7 h-7" />
       </div>
-      <p className="text-base font-display mb-2">Preview not available</p>
+      <p className="text-base font-display mb-2">
+        {isQuota ? "Monthly prototype used" : "Preview not available"}
+      </p>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-        The interactive preview could not be generated right now. This is usually temporary.
-        You can try again or continue chatting to refine the idea.
+        {isQuota
+          ? "Each account gets one interactive prototype per month, and you've used it. To explore another product direction, talk with a Noon agent."
+          : "The interactive preview could not be generated right now. This is usually temporary. You can try again or continue chatting to refine the idea."}
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Try again
-        </button>
+        {!isQuota && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Try again
+          </button>
+        )}
         <Link
           href={agentHref}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
@@ -265,58 +277,9 @@ function PreviewFailed({
           Talk to agent
         </Link>
       </div>
-      <p className="text-xs text-muted-foreground mt-6 font-mono opacity-50">
-        preview · unavailable
+      <p className="text-xs text-muted-foreground mt-6 opacity-50">
+        {isQuota ? "prototype · monthly limit reached" : "preview · unavailable"}
       </p>
-    </div>
-  );
-}
-
-// ============================================================================
-// VersionSwitcher — chips for v1, v2, v3 Current
-// ============================================================================
-
-function VersionSwitcher({
-  versions,
-  selectedIndex,
-  onSelect,
-}: {
-  versions: PrototypeVersion[];
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-}) {
-  if (versions.length <= 1) return null;
-
-  const latestIndex = versions.length - 1;
-
-  return (
-    <div className="flex items-center gap-1">
-      {versions.map((v, i) => {
-        const isSelected = i === selectedIndex;
-        const isLatest = i === latestIndex;
-
-        return (
-          <button
-            key={v.versionNumber}
-            type="button"
-            onClick={() => onSelect(i)}
-            className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono transition-all"
-            style={
-              isSelected
-                ? { backgroundColor: "#131313", color: "var(--foreground)", border: "1px solid var(--border)" }
-                : { backgroundColor: "transparent", color: "var(--muted-foreground)", border: "1px solid var(--border)" }
-            }
-          >
-            v{v.versionNumber}
-            {isLatest && (
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: isSelected ? "var(--foreground)" : "var(--muted-foreground)" }}
-              />
-            )}
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -366,7 +329,7 @@ function CorrectionInput({
             }
           }}
           disabled={!value.trim()}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#131313] text-foreground disabled:opacity-40 self-end shrink-0 transition-colors hover:bg-foreground/10"
+          className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary text-foreground disabled:opacity-40 self-end shrink-0 transition-colors hover:bg-foreground/10"
         >
           <ArrowRight className="w-4 h-4" />
         </button>
@@ -382,9 +345,9 @@ function CorrectionInput({
 type StudioPreviewPaneProps = {
   prototypeVersions: PrototypeVersion[];
   selectedVersionIndex: number;
-  onSelectVersion: (index: number) => void;
   phase: StudioPhase;
   prototypeFailed: boolean;
+  prototypeFailedReason?: "error" | "quota" | null;
   correctionsUsed: number;
   maxCorrections: number;
   onApprove: () => void;
@@ -398,14 +361,34 @@ type StudioPreviewPaneProps = {
    * `pollV0Status` completion/error handlers.
    */
   pollingStartedAt: number | null;
+  /**
+   * Which pane the user is focused on. The bottom actions bar (Approve /
+   * Request adjustment / Talk to agent) is a strict subset of the chat-pane
+   * `StudioProposalCta`. In split view (`activeView === "chat"`, desktop) the
+   * chat card already renders those actions, so the bar would duplicate them
+   * on screen — it renders ONLY in preview-only mode (`activeView === "preview"`,
+   * where the chat pane is hidden and this is the sole place to act).
+   */
+  activeView: "chat" | "preview";
+  /**
+   * Device-preview width. Lifted to the shell so the relocated control in the
+   * StudioHeader can drive it; the pane only reads it to size the iframe.
+   */
+  viewport: "desktop" | "mobile";
+  /**
+   * Monotonic counter bumped by the header's relocated "Reload" control. The
+   * pane still owns all load-recovery state (nonce, watchdog, overlay); this
+   * just replays a manual reload when the value changes.
+   */
+  reloadSignal: number;
 };
 
 export function StudioPreviewPane({
   prototypeVersions,
   selectedVersionIndex,
-  onSelectVersion,
   phase,
   prototypeFailed,
+  prototypeFailedReason,
   correctionsUsed,
   maxCorrections,
   onApprove,
@@ -414,6 +397,9 @@ export function StudioPreviewPane({
   onRetryPrototype,
   agentHref,
   pollingStartedAt,
+  activeView,
+  viewport,
+  reloadSignal,
 }: StudioPreviewPaneProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
 
@@ -465,6 +451,20 @@ export function StudioPreviewPane({
     setReloadNonce((n) => n + 1);
   };
 
+  // Header-initiated reload. The "Reload" control now lives in the StudioHeader
+  // (single top bar); it bumps `reloadSignal` and we replay the same manual
+  // reload here. Handled DURING RENDER (same "adjust state when a prop changes"
+  // pattern as the previewUrl reset above) to avoid a synchronous setState in an
+  // effect (react-hooks/set-state-in-effect). Guards against re-firing on mount /
+  // remount when the signal hasn't actually changed.
+  const [trackedReloadSignal, setTrackedReloadSignal] = useState(reloadSignal);
+  if (reloadSignal !== trackedReloadSignal) {
+    setTrackedReloadSignal(reloadSignal);
+    setLoadStatus("loading");
+    setSlowHintShown(false);
+    setReloadNonce((n) => n + 1);
+  }
+
   const overlayState = derivePreviewOverlay(loadStatus, slowHintShown);
 
   const canCorrect =
@@ -480,7 +480,7 @@ export function StudioPreviewPane({
     return (
       <div className="h-full">
         {prototypeFailed ? (
-          <PreviewFailed onRetry={onRetryPrototype} agentHref={agentHref} />
+          <PreviewFailed onRetry={onRetryPrototype} agentHref={agentHref} reason={prototypeFailedReason ?? "error"} />
         ) : (
           <PreviewPlaceholder phase={phase} pollingStartedAt={pollingStartedAt} />
         )}
@@ -490,66 +490,9 @@ export function StudioPreviewPane({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Preview bar */}
-      <div
-        className="flex items-center justify-between px-4 py-2.5 border-b shrink-0 gap-3"
-        style={{ backgroundColor: "#050505", borderColor: "var(--border)" }}
-      >
-        {/* Left: traffic lights + version switcher or status */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex gap-1.5 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-          </div>
-
-          {isRevising ? (
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-muted-foreground">Applying adjustment...</span>
-              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <VersionSwitcher
-              versions={prototypeVersions}
-              selectedIndex={selectedVersionIndex}
-              onSelect={onSelectVersion}
-            />
-          )}
-
-          {/* Fallback label when only one version and not revising */}
-          {!isRevising && prototypeVersions.length === 1 && (
-            <span className="text-xs font-mono text-muted-foreground">
-              Version {currentVersion.versionNumber}
-            </span>
-          )}
-        </div>
-
-        {/* Right: reload + open full screen */}
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={reloadPreview}
-            title="Reload the preview (use this if it looks blank)"
-            className="hidden items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:flex"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Reload
-          </button>
-          <a
-            href={selectedVersion.demoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Open full screen
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </div>
-
       {/* Corrections exhausted banner */}
       {correctionsExhausted && canApprove && (
-        <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-[#050505] px-4 py-2.5 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-card px-4 py-2.5 text-xs text-muted-foreground">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
           <span>Adjustments complete — approve to move forward or request the formal proposal.</span>
         </div>
@@ -592,7 +535,7 @@ export function StudioPreviewPane({
                   <button
                     type="button"
                     onClick={reloadPreview}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                    className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                   >
                     <RefreshCw className="h-4 w-4" />
                     Reload preview
@@ -619,7 +562,9 @@ export function StudioPreviewPane({
           src={selectedVersion.demoUrl}
           onLoad={() => setLoadStatus("loaded")}
           onError={() => setLoadStatus("error")}
-          className="hidden lg:block w-full h-full border-0"
+          className={`hidden lg:block h-full border-0 transition-[width] duration-300 ${
+            viewport === "mobile" ? "w-[390px] max-w-full mx-auto border-x border-border/70" : "w-full"
+          }`}
           title={`Maxwell prototype version ${selectedVersion.versionNumber}`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           referrerPolicy="no-referrer"
@@ -629,7 +574,7 @@ export function StudioPreviewPane({
           className="flex lg:hidden flex-col items-center justify-center h-full px-8 text-center"
         >
           <div
-            className="w-16 h-16 rounded-2xl border border-border/70 bg-[#131313] flex items-center justify-center mb-5 text-muted-foreground"
+            className="w-16 h-16 rounded-2xl border border-border/70 bg-secondary flex items-center justify-center mb-5 text-muted-foreground"
           >
             <Smartphone className="w-7 h-7" />
           </div>
@@ -643,19 +588,20 @@ export function StudioPreviewPane({
             href={selectedVersion.demoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             <ExternalLink className="w-4 h-4" />
             Open prototype
           </a>
-          <p className="text-xs text-muted-foreground mt-4 font-mono opacity-50">
+          <p className="text-xs text-muted-foreground mt-4 opacity-50">
             opens in a new tab
           </p>
         </div>
       </div>
 
-      {/* Actions bar */}
-      {(canApprove || canRequestProposal || isPendingReview) && (
+      {/* Actions bar — preview-only mode; in split view the chat-pane
+          StudioProposalCta owns these actions (avoids duplicating them). */}
+      {activeView === "preview" && (canApprove || canRequestProposal || isPendingReview) && (
         <div
           className="shrink-0 border-t"
           style={{ borderColor: "var(--border)" }}
@@ -664,12 +610,12 @@ export function StudioPreviewPane({
           {canApprove && !shouldShowCorrectionInput && (
             <div
               className="flex flex-wrap items-center gap-3 px-4 py-3"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <button
                 type="button"
                 onClick={onApprove}
-                className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Approve prototype
@@ -684,7 +630,7 @@ export function StudioPreviewPane({
                   <RotateCcw className="w-3.5 h-3.5" />
                   Request adjustment
                   <span
-                    className="rounded-full border border-border/70 bg-[#131313] px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+                    className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground"
                   >
                     {maxCorrections - correctionsUsed} left
                   </span>
@@ -716,7 +662,7 @@ export function StudioPreviewPane({
           {canRequestProposal && (
             <div
               className="px-4 py-4"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <p className="text-sm font-medium mb-1">
                 Prototype approved
@@ -728,7 +674,7 @@ export function StudioPreviewPane({
                 <button
                   type="button"
                   onClick={onRequestProposal}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+                  className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   Request formal proposal
@@ -748,10 +694,10 @@ export function StudioPreviewPane({
           {isPendingReview && (
             <div
               className="flex items-start gap-3 px-4 py-4"
-              style={{ backgroundColor: "#050505" }}
+              style={{ backgroundColor: "var(--card)" }}
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-[#131313] text-muted-foreground"
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-secondary text-muted-foreground"
               >
                 <User className="w-4 h-4" />
               </div>

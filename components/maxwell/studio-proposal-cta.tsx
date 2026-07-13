@@ -88,7 +88,7 @@ function InlineCorrectionInput({
             type="button"
             onClick={() => value.trim() && onSubmit(value.trim())}
             disabled={!value.trim()}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-[#131313] text-foreground disabled:opacity-40 transition-colors hover:bg-foreground/10"
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary text-foreground disabled:opacity-40 transition-colors hover:bg-foreground/10"
           >
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -181,7 +181,7 @@ export function StudioProposalCta({
 
   if (phase === "generating_prototype" || phase === "revision_requested") {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-[#050505] p-4">
+      <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-4">
         <Loader2 className="w-4 h-4 animate-spin shrink-0 text-muted-foreground" />
         <p className="text-sm text-foreground/90">
           {phase === "generating_prototype"
@@ -196,8 +196,8 @@ export function StudioProposalCta({
 
   if (phase === "proposal_pending_review") {
     return (
-      <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-[#050505] p-4">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-muted-foreground">
+      <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card p-4">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-muted-foreground">
           <Clock className="w-3.5 h-3.5" />
         </div>
         <div className="min-w-0">
@@ -221,9 +221,9 @@ export function StudioProposalCta({
 
   if (phase === "proposal_sent") {
     return (
-      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-foreground">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-foreground">
             <FileText className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -240,7 +240,7 @@ export function StudioProposalCta({
           {proposalToken ? (
             <Link
               href={`/maxwell/proposal/${proposalToken}`}
-              className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+              className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
             >
               <FileText className="w-3.5 h-3.5" />
               View your proposal
@@ -263,7 +263,7 @@ export function StudioProposalCta({
 
   if (phase === "approved_for_proposal") {
     return (
-      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
         <div>
           <p className="text-sm font-medium mb-0.5">
             Prototype approved
@@ -276,7 +276,7 @@ export function StudioProposalCta({
           <button
             type="button"
             onClick={onRequestProposal}
-            className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             <FileText className="w-3.5 h-3.5" />
             Request formal proposal
@@ -297,9 +297,9 @@ export function StudioProposalCta({
 
   if (phase === "prototype_shared") {
     return (
-      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-[#131313] text-muted-foreground">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-muted-foreground">
             <Share2 className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -319,13 +319,13 @@ export function StudioProposalCta({
                 value={shareUrl}
                 readOnly
                 aria-label="Shareable prototype link"
-                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs font-mono text-foreground/85 outline-none focus:border-foreground/20"
+                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground/85 outline-none focus:border-foreground/20"
                 onFocus={(e) => e.currentTarget.select()}
               />
               <button
                 type="button"
                 onClick={() => void handleCopyShareUrl(shareUrl)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-[#131313] px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
                 aria-label={linkCopied ? "Link copied" : "Copy link"}
               >
                 {linkCopied ? (
@@ -382,7 +382,7 @@ export function StudioProposalCta({
   // Correction input open
   if (showCorrectionInput) {
     return (
-      <div className="rounded-2xl border border-border/70 bg-[#050505] p-4">
+      <div className="rounded-2xl border border-border/70 bg-card p-4">
         <InlineCorrectionInput
           remaining={remaining}
           onSubmit={(text) => {
@@ -396,12 +396,13 @@ export function StudioProposalCta({
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-[#050505] p-4 space-y-3">
-      {/* Status line */}
+    <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
+      {/* Status line — the remaining-count lives on the "Request adjustment"
+          badge below, so this line stays count-free and adds what approve does. */}
       <p className="text-xs text-muted-foreground">
         {allUsed
           ? "Adjustments complete — approve to move forward."
-          : `Prototype ready. ${remaining} adjustment${remaining === 1 ? "" : "s"} available.`}
+          : "Prototype ready. Approve to move toward the proposal, or request an adjustment."}
       </p>
 
       {/* Primary actions */}
@@ -411,7 +412,7 @@ export function StudioProposalCta({
             type="button"
             onClick={onShare}
             disabled={isSharing}
-            className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 disabled:opacity-50"
             aria-busy={isSharing}
           >
             {isSharing ? (
@@ -426,7 +427,7 @@ export function StudioProposalCta({
         <button
           type="button"
           onClick={onApprove}
-          className="inline-flex items-center gap-2 rounded-full bg-[#131313] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
+          className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
         >
           <CheckCircle className="w-3.5 h-3.5" />
           Approve prototype
@@ -441,7 +442,7 @@ export function StudioProposalCta({
             <RotateCcw className="w-3.5 h-3.5" />
             Request adjustment
             <span
-              className="rounded-full border border-border/70 bg-[#131313] px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+              className="rounded-full border border-border/70 bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground"
             >
               {remaining}
             </span>

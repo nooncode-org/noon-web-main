@@ -1,34 +1,57 @@
-import { NoonLogo } from "@/components/ui/noon-logo";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { NoonWordmark } from "@/components/brand/noon-logo";
+import "@/app/_components/site/legal-rd.css";
 
-// Top-level loading skeleton shown while the App Router resolves the page.
-// Branded and minimal — should appear for ~100-400ms during route transitions.
-// Keeps the chrome (logo + page background) so the jump to the final page
-// doesn't flash a white screen.
 export default function Loading() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-border/60 px-6 py-5">
-        <div className="mx-auto flex max-w-3xl items-center">
-          <NoonLogo variant="lockup" height={24} />
+    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
+      <header className="lgl-nav">
+        <div className="lgl-nav-inner">
+          <span className="lgl-nav-logo" aria-label="Noon">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </span>
         </div>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-6 py-16">
-        <div className="w-full max-w-md">
-          <div className="mb-6 flex items-center justify-center gap-2">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground/40"
-                style={{ animationDelay: `${i * 180}ms` }}
-              />
-            ))}
-          </div>
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Loading
-          </p>
+      <div className="lgl-frame" aria-hidden />
+
+      <main
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: "var(--text-muted)",
+                display: "inline-block",
+                animation: "nf-pulse 1.2s ease-in-out infinite",
+                animationDelay: `${i * 180}ms`,
+              }}
+            />
+          ))}
         </div>
       </main>
+
+      <style>{`
+        @keyframes nf-pulse {
+          0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+          40% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 }

@@ -94,7 +94,7 @@ const TYPE = [
 const WEIGHTS = [["Regular", 400], ["Medium", 500], ["Semibold", 600], ["Bold", 700]] as const;
 const SPACING = [4, 8, 12, 16, 24, 32, 48, 64, 96, 128];
 const SWATCHES = [
-  ["Brand", "var(--brand)", "#0056FD"], ["Brand hover", "var(--brand-hover)", "#3378FD"], ["Accent", "var(--accent)", "#00D4FF"],
+  ["Brand", "var(--brand)", "#0056FD"], ["Brand hover", "var(--brand-hover)", "#0047E0"], ["Accent", "var(--accent)", "#00D4FF"],
   ["Text", "var(--text-primary)", "primary"], ["Surface", "var(--surface)", "surface"], ["Border", "var(--border)", "border"],
   ["Success", "var(--success)", "#00C853"], ["Warning", "var(--warning)", "#FFB300"], ["Error", "var(--error)", "#FF3B6E"],
 ];

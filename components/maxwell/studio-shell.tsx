@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
-import { PrototypeQuotaStrip } from "./prototype-quota-strip";
 import { WorkspaceReentryBanner } from "./workspace-reentry-banner";
 import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
@@ -35,6 +34,13 @@ export type ChatMessage = {
 };
 
 export type MessageFeedback = "up" | "down";
+
+export type AttachedFile = {
+  name: string;
+  mimeType: string;
+  dataUrl: string;
+  textContent?: string;
+};
 
 export type ReplyTarget = {
   messageId: string;
@@ -193,12 +199,23 @@ export function StudioShell({
   const [stopNotice, setStopNotice] = useState<string | null>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [prototypeVersions, setPrototypeVersions] = useState<PrototypeVersion[]>([]);
   const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
   const [correctionsUsed, setCorrectionsUsed] = useState(0);
   const [maxCorrections, setMaxCorrections] = useState(DEFAULT_MAX_CORRECTIONS);
   const [activeView, setActiveView] = useState<ActiveView>("chat");
   const [prototypeFailed, setPrototypeFailed] = useState(false);
+  // Why the preview failed: "quota" = the monthly prototype allowance is used
+  // (a deliberate limit) → the preview explains it and drops "Try again";
+  // "error" = a real generation failure → the transient copy + retry.
+  const [prototypeFailedReason, setPrototypeFailedReason] = useState<"error" | "quota">("error");
+  // Preview controls (device-width toggle + manual reload) were lifted out of
+  // the preview pane so they can live in the single top header bar. `viewport`
+  // sizes the iframe; `previewReloadSignal` is a monotonic counter the header's
+  // Reload button bumps — the pane watches it and replays its own reload logic.
+  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
+  const [previewReloadSignal, setPreviewReloadSignal] = useState(0);
   /**
    * B28 — Timestamp (Date.now ms) cuando arrancó el polling v0. Lo usa
    * `<StudioPreviewPane>` para mostrar contador de tiempo transcurrido +
@@ -380,6 +397,7 @@ export function StudioShell({
       // Set explicitly (not carried over) so switching away from a failed/
       // generating session into a healthy one clears the stale state too.
       setPrototypeFailed(rehydratedView.prototypeFailed);
+      setPrototypeFailedReason("error");
       setPollingStartedAt(null);
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
@@ -434,6 +452,7 @@ export function StudioShell({
       replyTarget?: ReplyTarget | null;
       regenerateAssistantMessageId?: string;
       localUserMessageId?: string;
+      attachedFile?: AttachedFile | null;
     },
   ) {
     const requestStartedAt = performance.now();
@@ -445,28 +464,27 @@ export function StudioShell({
     let imageUrl: string | undefined;
     let effectiveMessage = userMessage;
 
-    if (isFirstMessage && !sessionId) {
+    // Attachment: from the chat composer (any message) or, for the very first
+    // message started from the home hero, from sessionStorage.
+    let file: AttachedFile | null = options?.attachedFile ?? null;
+    if (!file && isFirstMessage && !sessionId) {
       try {
         const stored = sessionStorage.getItem("maxwell_attached_file");
         if (stored) {
           sessionStorage.removeItem("maxwell_attached_file");
-          const file = JSON.parse(stored) as {
-            name: string;
-            mimeType: string;
-            dataUrl: string;
-            textContent?: string;
-          };
-
-          if ((file.mimeType.startsWith("image/") || file.mimeType === "image/url") && file.dataUrl) {
-            imageUrl = file.dataUrl;
-          } else if (file.textContent) {
-            effectiveMessage = `[Attached file: ${file.name}]\n${file.textContent}\n\n${effectiveMessage}`;
-          } else {
-            effectiveMessage = `[Attached file: ${file.name}]\n\n${effectiveMessage}`;
-          }
+          file = JSON.parse(stored) as AttachedFile;
         }
       } catch {
         // sessionStorage unavailable; continue without attachment context.
+      }
+    }
+    if (file) {
+      if ((file.mimeType.startsWith("image/") || file.mimeType === "image/url") && file.dataUrl) {
+        imageUrl = file.dataUrl;
+      } else if (file.textContent) {
+        effectiveMessage = `[Attached file: ${file.name}]\n${file.textContent}\n\n${effectiveMessage}`;
+      } else {
+        effectiveMessage = `[Attached file: ${file.name}]\n\n${effectiveMessage}`;
       }
     }
 
@@ -620,17 +638,21 @@ export function StudioShell({
 
   function handleSend() {
     const msg = input.trim();
-    if (!msg || isThinking) return;
+    if ((!msg && !attachedFile) || isThinking) return;
 
     const currentReplyTarget = replyTarget;
-    const localUserMessage = createMessage({ role: "user", content: msg });
+    const currentAttachedFile = attachedFile;
+    const displayContent = msg || (currentAttachedFile ? `Attached: ${currentAttachedFile.name}` : "");
+    const localUserMessage = createMessage({ role: "user", content: displayContent });
     setInput("");
     setReplyTarget(null);
     setStopNotice(null);
+    setAttachedFile(null);
     setMessages((prev) => [...prev, localUserMessage]);
     void sendToMaxwell(msg, !sessionId && messages.length === 0, {
       replyTarget: currentReplyTarget,
       localUserMessageId: localUserMessage.id,
+      attachedFile: currentAttachedFile,
     });
   }
 
@@ -666,6 +688,7 @@ export function StudioShell({
   ) {
     setPhase("generating_prototype");
     setPrototypeFailed(false);
+    setPrototypeFailedReason("error");
     // B28 — Marca el inicio del polling para que el preview pane muestre
     // tiempo transcurrido. Se limpia en handlePollSuccess / handlePollError.
     setPollingStartedAt(Date.now());
@@ -713,6 +736,7 @@ export function StudioShell({
       if (res.status === 403) {
         setPhase("clarifying");
         setPrototypeFailed(true);
+        setPrototypeFailedReason(Boolean(data.contact_agent) ? "quota" : "error");
         const msg =
           typeof data.message === "string"
             ? data.message
@@ -1255,6 +1279,13 @@ export function StudioShell({
   }
 
   function handleNewChatFromList() {
+    // Clear the session id up front. The sessionId→URL sync effect re-adds
+    // ?session_id=… whenever a sessionId exists but the URL lacks it; since it
+    // runs before the reset effect, a bare router.push(pathname) let it snap the
+    // param (and the whole chat) right back. With sessionId null its guard is
+    // false, so no bounce; the reset effect (initialSessionId → undefined) then
+    // clears messages/prototype/phase/etc. for a fresh chat.
+    setSessionId(null);
     router.push(pathname);
   }
 
@@ -1314,6 +1345,23 @@ export function StudioShell({
     prototypeFailed ||
     prototypeVersions.length > 0;
 
+  // The preview's failure copy must distinguish a transient generation error
+  // from the deliberate monthly-quota block. The 403 handler sets
+  // `prototypeFailedReason` to "quota", but that flag is fragile: it is reset to
+  // "error" on rehydrate (a reloaded session loses it) and depends on the server
+  // echoing `contact_agent`. The quota snapshot is refetched on every session and
+  // is the source of truth for "this account has already used its monthly
+  // prototype", so treat any failed preview as a quota block whenever the account
+  // is at its monthly limit and this session has no prototype of its own.
+  const monthlyPrototypeUsed = Boolean(
+    quotaSnapshot &&
+      quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth >=
+        quotaSnapshot.userMonthlyInitialLimit &&
+      !quotaSnapshot.currentSessionHasAnyVersion,
+  );
+  const effectivePrototypeFailedReason: "error" | "quota" =
+    prototypeFailedReason === "quota" || monthlyPrototypeUsed ? "quota" : "error";
+
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-background">
       <StudioHeader
@@ -1332,9 +1380,15 @@ export function StudioShell({
         onSelectDraftSession={handleSelectSessionFromList}
         onNewDraftChat={handleNewChatFromList}
         onDeleteDraftSession={handleDeleteSessionList}
+        onRequestChats={refreshSessionSummaries}
+        quotaSnapshot={quotaSnapshot}
+        previewVersions={prototypeVersions}
+        selectedVersionIndex={selectedVersionIndex}
+        onSelectVersion={setSelectedVersionIndex}
+        viewport={viewport}
+        onViewportChange={setViewport}
+        onReloadPreview={() => setPreviewReloadSignal((n) => n + 1)}
       />
-
-      {quotaSnapshot ? <PrototypeQuotaStrip snapshot={quotaSnapshot} /> : null}
 
       {/*
         B22 (Bloque 13) — Mobile fallback banner. The two-pane studio
@@ -1368,7 +1422,7 @@ export function StudioShell({
           className={`
             flex min-h-0 flex-col
             ${shouldShowWorkspace ? "w-full shrink-0 border-r border-border/70 bg-background lg:w-[440px] xl:w-[500px]" : "w-full border-r-0"}
-            ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden lg:flex") : "flex"}
+            ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden") : "flex"}
           `}
         >
           {/* Slice 1d (B) — re-entry to the client workspace from the active
@@ -1386,6 +1440,8 @@ export function StudioShell({
               input={input}
               onInputChange={setInput}
               onSend={handleSend}
+              attachedFile={attachedFile}
+              onAttachChange={setAttachedFile}
               onStop={handleStopThinking}
               inputRef={inputRef}
               canSend={canSendMessage}
@@ -1423,9 +1479,9 @@ export function StudioShell({
             <StudioPreviewPane
               prototypeVersions={prototypeVersions}
               selectedVersionIndex={selectedVersionIndex}
-              onSelectVersion={setSelectedVersionIndex}
               phase={phase}
               prototypeFailed={prototypeFailed}
+              prototypeFailedReason={effectivePrototypeFailedReason}
               correctionsUsed={correctionsUsed}
               maxCorrections={maxCorrections}
               pollingStartedAt={pollingStartedAt}
@@ -1440,6 +1496,9 @@ export function StudioShell({
                 void buildPrototype(lastUserMsg, lastAssistantMsg, sessionId);
               }}
               agentHref={agentHref}
+              activeView={activeView}
+              viewport={viewport}
+              reloadSignal={previewReloadSignal}
             />
           </section>
         )}
