@@ -858,7 +858,7 @@ export function StudioChatPane({
                             className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
                           />
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0056FD]/90 disabled:opacity-40">
+                            <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40">
                               {urlInputLoading ? "Importing…" : "Import"}
                             </button>
                             <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary">
@@ -883,7 +883,7 @@ export function StudioChatPane({
                       onSend();
                     }
                   }}
-                  className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0056FD]/90 disabled:opacity-40"
+                  className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
                   {isThinking ? (
                     <Square className="h-3 w-3 fill-current" />

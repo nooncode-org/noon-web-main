@@ -240,8 +240,8 @@
   }
 
   /* Brand CTA. Base + hover + active track the #0056fd brand family
-     (hover #3378fd, active #0042c4), kept in sync with the -rd scope
-     overrides in studio-rd.css / upgrade-rd.css. */
+     (hover #0047e0, active #0042c4), kept in sync with the -rd scope
+     overrides in studio-rd.css / upgrade-rd.css. Hover stays deep. */
   .site-primary-action {
     background-color: #0056fd;
     color: #ffffff;
@@ -251,7 +251,7 @@
   }
 
   .site-primary-action:hover {
-    background-color: #3378fd;
+    background-color: #0047e0;
     box-shadow: 0 18px 60px rgba(0, 86, 253, 0.18);
   }
 

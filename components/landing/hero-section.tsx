@@ -375,7 +375,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                                   className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
                                 />
                                 <div className="flex gap-2">
-                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-[#0056FD]/90 transition-colors">
+                                  <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40 hover:bg-[#0047e0] transition-colors">
                                     {urlInputLoading ? t("importing") : t("import")}
                                   </button>
                                   <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-[#a3a3a3] hover:bg-secondary transition-colors">
@@ -408,7 +408,7 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                       aria-label="Start with Maxwell"
                       onClick={startWithMaxwell}
                       disabled={!inputValue.trim() && !attachedFile}
-                      className="!bg-[#0056FD] hover:!bg-[#0056FD]/90 text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
+                      className="!bg-[#0056FD] hover:!bg-[#0047e0] text-primary-foreground h-8 w-8 self-center p-0 rounded-full group shrink-0 disabled:opacity-40"
                       style={spectrum ? { backgroundImage: "linear-gradient(135deg, #ff4d4d 0%, #ff9f1c 17%, #ffd23f 34%, #34c759 51%, #1b9aff 68%, #5b5bff 84%, #b15bff 100%)" } : undefined}
                     >
                       <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
