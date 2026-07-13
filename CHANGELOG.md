@@ -13,6 +13,25 @@ see `docs/handoff-fase2.md`. For the architectural state, see
 
 ---
 
+## [2026-07-13] — Logo oficial + retiro del emisor `client-comment` (shim Q-7)
+
+> **Summary:** (1) Marca oficial en todas las superficies: el raster
+> `public/logo-icon.png` (favicon/apple-touch/JSON-LD) ahora es el isotipo
+> oficial (tile azul `#1200C5` + mark blanco, mismo asset que la App); el
+> `LogoIcon` de `components/ui/noon-logo.tsx` y el hub del
+> `ContactRouteDiagram` renderizan el `NoonMark` vectorial (currentColor) en
+> vez del PNG monograma legacy; borrados los 5 placeholders v0 sin referencias
+> (espeja App PR #165). (2) **Cross-repo:** el emisor de comentarios de
+> workspace (`sendClientCommentToNoonApp`, inline + reaper) ahora POSTea al
+> receptor CANÓNICO `POST /api/integrations/website/client-request` con
+> `type='comment'`/`submittedBy='client'`/`clientPriority='normal'` —
+> `externalCommentId` (UUID) viaja como `externalRequestId`, el MISMO unique
+> que el shim mapeaba, así que dedupe pre/post-switch se preserva; el ack §9
+> `{ idempotent, clientRequestId }` se audita en `noon_app_comment_id` (mismo
+> id que el `commentId` del shim). **Acción App requerida (post-deploy Web):**
+> borrar la ruta shim `/api/integrations/website/client-comment` (B.6-followup)
+> — ver `docs/2026-07-13-noonweb-to-app-client-comment-shim-retirement.md`.
+
 ## [2026-07-08] — Ola E-2: hardening Web (auditoría master 2026-07, 7 medios residuales)
 
 > **Summary:** Cierra la parte Web de la Ola E de la auditoría master 2026-07:
