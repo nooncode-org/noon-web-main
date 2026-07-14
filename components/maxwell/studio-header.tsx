@@ -144,6 +144,8 @@ type StudioHeaderProps = {
   maxCorrections: number;
   agentHref: string;
   viewerEmail: string;
+  /** Current locale — forwarded to the drawer's StudioSidebar nav links. */
+  locale: string;
   activeView: ActiveView;
   onToggleView: (v: ActiveView) => void;
   hasPrototype: boolean;
@@ -181,6 +183,7 @@ export function StudioHeader({
   maxCorrections,
   agentHref,
   viewerEmail,
+  locale,
   activeView,
   onToggleView,
   hasPrototype,
@@ -395,6 +398,7 @@ export function StudioHeader({
     >
       <StudioSidebar
         viewerEmail={viewerEmail}
+        locale={locale}
         agentHref={agentHref}
         draftSessions={draftSessions}
         currentSessionId={currentSessionId}

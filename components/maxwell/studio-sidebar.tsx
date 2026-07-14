@@ -5,10 +5,12 @@ import Link from "next/link";
 import {
   FileText,
   Home,
+  LayoutTemplate,
   LogOut,
   Monitor,
   PanelLeft,
   Plus,
+  Rocket,
   Search,
   Trash2,
   User,
@@ -53,6 +55,8 @@ export type StudioDraftSession = {
 
 type StudioSidebarProps = {
   viewerEmail: string;
+  /** Current locale — prefixes the Templates / Upgrade nav links. */
+  locale: string;
   agentHref: string;
   draftSessions?: StudioDraftSession[];
   currentSessionId?: string | null;
@@ -71,10 +75,16 @@ type StudioSidebarProps = {
   onNavigate?: () => void;
   /** Container chrome from the mount (rounded overlay card vs flat rail). */
   className?: string;
+  /**
+   * Footer "Home" link. From the chat it means "back to the dashboard";
+   * the dashboard itself IS the home, so it passes `false` (redundant there).
+   */
+  showHome?: boolean;
 };
 
 export function StudioSidebar({
   viewerEmail,
+  locale,
   agentHref,
   draftSessions = [],
   currentSessionId = null,
@@ -85,6 +95,7 @@ export function StudioSidebar({
   onClose,
   onNavigate,
   className = "",
+  showHome = true,
 }: StudioSidebarProps) {
   const [chatQuery, setChatQuery] = useState("");
   // B31 — Track the row staged for deletion. Single-row state is enough: the
@@ -97,6 +108,10 @@ export function StudioSidebar({
   const filteredSessions = chatQueryTrimmed
     ? draftSessions.filter((s) => s.title.toLowerCase().includes(chatQueryTrimmed))
     : draftSessions;
+
+  // Client portal — sessions with a provisioned workspace (post-payment).
+  // Derived from the same list; usually 0 or 1 entries.
+  const portalRows = draftSessions.filter((s) => s.workspaceHref);
 
   return (
     <>
@@ -140,6 +155,22 @@ export function StudioSidebar({
             </button>
           )}
           <Link
+            href={`/${locale}${siteRoutes.templates}`}
+            onClick={() => onNavigate?.()}
+            className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+          >
+            <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+            Templates
+          </Link>
+          <Link
+            href={`/${locale}${siteRoutes.upgrade}`}
+            onClick={() => onNavigate?.()}
+            className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+          >
+            <Rocket className="h-4 w-4 text-muted-foreground" />
+            Upgrade your website
+          </Link>
+          <Link
             href={agentHref}
             onClick={() => onNavigate?.()}
             className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
@@ -148,6 +179,27 @@ export function StudioSidebar({
             Talk to agent
           </Link>
         </div>
+
+        {/* Client portal — the live project workspace(s), post-payment. More
+            prominent than the chats list: it's the client's active project. */}
+        {portalRows.length > 0 && (
+          <div className="border-t border-border/60 px-3 pt-3 pb-2">
+            <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
+              Client portal
+            </p>
+            {portalRows.map((row) => (
+              <Link
+                key={row.id}
+                href={row.workspaceHref!}
+                onClick={() => onNavigate?.()}
+                className="flex items-center gap-2.5 rounded-[8px] px-4 py-2.5 text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+              >
+                <Monitor className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="line-clamp-1">{row.title}</span>
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Chat switcher — search + recent chats. Same data source as always
             (draftSessions); per-row actions (view proposal / open workspace /
@@ -269,15 +321,17 @@ export function StudioSidebar({
                 Sign out
               </button>
             </form>
-            <Link
-              href={siteRoutes.home}
-              onClick={() => onNavigate?.()}
-              aria-label="Home"
-              title="Home"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
+            {showHome && (
+              <Link
+                href={siteRoutes.home}
+                onClick={() => onNavigate?.()}
+                aria-label="Home"
+                title="Home"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60"
+              >
+                <Home className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         </div>
       </div>

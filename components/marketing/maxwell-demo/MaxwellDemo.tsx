@@ -47,6 +47,7 @@ export function MaxwellDemo({ className = "" }: { className?: string }) {
         maxCorrections={2}
         agentHref={agentHref}
         viewerEmail={DEMO_VIEWER_EMAIL}
+        locale={locale}
         activeView="chat"
         onToggleView={noop}
         hasPrototype={true}

@@ -1389,6 +1389,7 @@ export function StudioShell({
         maxCorrections={maxCorrections}
         agentHref={agentHref}
         viewerEmail={viewerEmail}
+        locale={locale}
         activeView={activeView}
         onToggleView={setActiveView}
         hasPrototype={prototypeVersions.length > 0}
@@ -1450,6 +1451,7 @@ export function StudioShell({
           <div className="hidden min-h-0 w-72 shrink-0 border-r border-border/70 lg:flex">
             <StudioSidebar
               viewerEmail={viewerEmail}
+              locale={locale}
               agentHref={agentHref}
               draftSessions={draftSessionsForHeader}
               currentSessionId={sessionId}

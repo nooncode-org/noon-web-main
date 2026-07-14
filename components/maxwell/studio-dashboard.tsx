@@ -105,6 +105,7 @@ export function StudioDashboard({
   // active session; the real quota shows inside the chat (/maxwell).
   const sidebarProps = {
     viewerEmail,
+    locale,
     agentHref,
     draftSessions,
     currentSessionId: null,
@@ -113,40 +114,43 @@ export function StudioDashboard({
     onNewDraftChat: () => router.push(maxwellHref()),
     onDeleteDraftSession: handleDelete,
     quotaSnapshot: null,
+    // The dashboard IS the home — a Home link here would point at itself.
+    showHome: false,
   };
 
   return (
     <div
-      className={`${GeistSans.variable} ${GeistMono.variable} mxw-rd flex h-[100dvh] flex-col overflow-hidden bg-background`}
+      className={`${GeistSans.variable} ${GeistMono.variable} mxw-rd relative flex h-[100dvh] overflow-hidden bg-background`}
       style={{ fontFamily: "var(--font-geist-sans)" }}
     >
-      <header className="flex items-center gap-2 border-b border-border/70 px-4 py-2.5 shrink-0">
-        {/* Mobile: open the drawer. */}
+      {/* Open affordance — floats top-left. Mobile: opens the drawer. Desktop:
+          only shown when the rail is collapsed (reopen). When the rail is open
+          the sidebar's own button collapses it, so there's a single panel icon
+          at a time — no duplicate toggles. */}
+      <button
+        type="button"
+        onClick={() => {
+          setMenuOpen(true);
+          void refresh();
+        }}
+        aria-label="Open menu"
+        className="absolute left-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+      >
+        <PanelLeft className="h-4 w-4" />
+      </button>
+      {!sidebarOpen && (
         <button
           type="button"
           onClick={() => {
-            setMenuOpen(true);
             void refresh();
+            setSidebarOpen(true);
           }}
-          aria-label="Open menu"
-          className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+          aria-label="Expand sidebar"
+          className="absolute left-3 top-3 z-20 hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
         >
           <PanelLeft className="h-4 w-4" />
         </button>
-        {/* Desktop: toggle the persistent rail. */}
-        <button
-          type="button"
-          onClick={() => {
-            if (!sidebarOpen) void refresh();
-            setSidebarOpen((v) => !v);
-          }}
-          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          aria-expanded={sidebarOpen}
-          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
-        >
-          <PanelLeft className="h-4 w-4" />
-        </button>
-      </header>
+      )}
 
       <main className="flex min-h-0 flex-1 overflow-hidden">
         {/* Desktop rail — the same StudioSidebar the chat uses. */}
