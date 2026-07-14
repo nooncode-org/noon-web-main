@@ -337,7 +337,7 @@ export function StudioDashboard({
                   placeholder={isInputFocused ? t("placeholder") : ""}
                   rows={3}
                   aria-label={t("placeholder")}
-                  className="max-h-52 min-h-[84px] w-full resize-none bg-transparent px-3 py-1.5 text-[16px] leading-relaxed text-foreground outline-none placeholder:text-[#a3a3a3]/50 text-left lg:px-3.5 lg:text-[15px]"
+                  className="max-h-52 min-h-[106px] lg:min-h-[102px] w-full resize-none bg-transparent px-3 py-1.5 text-[16px] leading-relaxed text-foreground outline-none placeholder:text-[#a3a3a3]/50 text-left lg:px-3.5 lg:text-[15px]"
                 />
                 {!input && !isInputFocused && (
                   // Rotating suggestion — matches the textarea's font-size and
