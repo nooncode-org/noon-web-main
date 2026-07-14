@@ -116,8 +116,10 @@ export function StudioSidebar({
   return (
     <>
       <div className={`flex h-full min-h-0 w-full flex-col overflow-hidden ${className}`}>
-        {/* Header — account identity (avatar + email) + close/collapse, v0-style. */}
-        <div className="flex h-[55px] items-center gap-2.5 px-4 border-b border-border/70">
+        {/* Header — account identity (avatar + email) + close/collapse, v0-style.
+            h-14 must match the studio header so the top hairline is one
+            continuous line across the sidebar/header seam (any font/DPI). */}
+        <div className="flex h-14 items-center gap-2.5 px-4 border-b border-border/70">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
             {viewerEmail.charAt(0) || "?"}
           </span>

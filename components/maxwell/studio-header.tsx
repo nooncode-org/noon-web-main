@@ -220,7 +220,9 @@ export function StudioHeader({
 
   return (
     <>
-    <header className="flex items-center justify-between gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
+    {/* h-14 is fixed (not content-driven) so the bottom hairline lands on the
+        exact same row as the sidebar account header — keep both at h-14. */}
+    <header className="flex h-14 items-center justify-between gap-2 border-b border-border/70 bg-background/95 px-4 shrink-0">
       <div className="flex min-w-0 items-center gap-2.5">
         {/* Panel trigger — one per breakpoint. Mobile opens the overlay
             drawer; desktop (lg+) toggles the persistent rail the shell mounts
