@@ -106,7 +106,7 @@ export function MaxwellDemo({ className = "" }: { className?: string }) {
           This is the real Maxwell studio — interactive demo with sample data.
         </span>
         <Link
-          href={`/${locale}/studio`}
+          href={`/${locale}/maxwell`}
           className="text-foreground/85 underline-offset-4 hover:underline"
         >
           Open the real studio →

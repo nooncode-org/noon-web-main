@@ -119,7 +119,7 @@ export function UpgradeShell({ initialSession }: Props) {
         return;
       }
       startTransition(() => {
-        router.push(data.redirectTo ?? "/studio");
+        router.push(data.redirectTo ?? "/maxwell");
       });
     } catch {
       setActionError("Connection error. Please try again.");
@@ -316,7 +316,7 @@ export function UpgradeShell({ initialSession }: Props) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/studio")}
+                onClick={() => router.push("/maxwell")}
               >
                 Go to Maxwell Studio →
               </Button>

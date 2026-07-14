@@ -66,7 +66,7 @@ export function AuthMethodsScreen({
   // sign-up and sign-in screens.
   const rt = redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : "";
   // Google is the only wired provider; hand it the sanitized post-auth target.
-  const resolvedRedirect = normalizeInternalRedirect(redirectTo, "/studio");
+  const resolvedRedirect = normalizeInternalRedirect(redirectTo, `/${locale}`);
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd sic-rd`}>

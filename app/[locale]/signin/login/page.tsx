@@ -17,7 +17,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
     auth(),
   ]);
 
-  const redirectTo = normalizeInternalRedirect(rawRedirectTo, "/studio");
+  const redirectTo = normalizeInternalRedirect(rawRedirectTo, `/${locale}`);
   if (session?.user?.email) {
     redirect(redirectTo);
   }

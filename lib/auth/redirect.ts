@@ -1,6 +1,6 @@
 export function normalizeInternalRedirect(
   value: string | null | undefined,
-  fallback = "/studio",
+  fallback = "/maxwell",
 ) {
   if (!value) return fallback;
 

@@ -126,7 +126,7 @@ export async function POST(_req: Request, { params }: Params) {
     });
 
     return NextResponse.json(
-      { studioSessionId, redirectTo: `/studio` },
+      { studioSessionId, redirectTo: `/maxwell` },
       { status: 200 }
     );
   } catch (error) {

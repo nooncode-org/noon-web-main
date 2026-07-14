@@ -1,5 +1,5 @@
 /**
- * app/[locale]/studio/_actions/share-prototype.ts
+ * app/[locale]/maxwell/_actions/share-prototype.ts
  *
  * Server Action invoked by the studio CTA when the seller clicks
  * "Compartir prototipo con el cliente". Wraps the outbound helper
@@ -257,7 +257,7 @@ export async function sharePrototypeAction(
 
   // Locale-agnostic revalidation — the studio path is locale-prefixed but
   // both the seller and the client may reload concurrently.
-  revalidatePath("/[locale]/studio", "page");
+  revalidatePath("/[locale]/maxwell", "page");
 
   return { uxState: mapShareResultToUxState(result, shareUrl) };
 }

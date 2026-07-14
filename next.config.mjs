@@ -54,12 +54,12 @@ const nextConfig = {
         destination: "/en/maxwell",
         permanent: true,
       },
-      // Studio moved from /maxwell/studio → /studio (2026-07). These must sit
+      // Studio moved from /maxwell/studio → /maxwell (2026-07). These must sit
       // BEFORE the /maxwell/:path* catch-alls below — first match wins, and
       // the catch-all would otherwise swallow the old studio URL. Query
       // strings (?session_id=, ?prompt=) are preserved automatically.
-      { source: "/:locale(en|es|fr|de)/maxwell/studio", destination: "/:locale/studio", permanent: false },
-      { source: "/maxwell/studio", destination: "/en/studio", permanent: false },
+      { source: "/:locale(en|es|fr|de)/maxwell/studio", destination: "/:locale/maxwell", permanent: false },
+      { source: "/maxwell/studio", destination: "/en/maxwell", permanent: false },
       // Legacy non-locale paths → redirect to /en/ version
       { source: "/maxwell", destination: "/en/maxwell", permanent: false },
       { source: "/maxwell/:path*", destination: "/en/maxwell/:path*", permanent: false },

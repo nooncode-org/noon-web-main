@@ -11,7 +11,7 @@ import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
 import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
-import { sharePrototypeAction } from "@/app/[locale]/studio/_actions/share-prototype";
+import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================

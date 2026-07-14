@@ -9,7 +9,7 @@
  *   - `phase === "prototype_shared"` → shareable URL + "Copiar" button +
  *     status badge + secondary Pedir cambios / Enviar propuesta detallada.
  *
- * **Currently deferred.** The studio route at `/[locale]/studio`
+ * **Currently deferred.** The studio route at `/[locale]/maxwell`
  * requires an authenticated viewer (RSC `auth()` redirects to `/signin`
  * when there is no session). No Playwright auth-bypass fixture exists in
  * this project today, so a full route-level scan would require either:

@@ -1,7 +1,7 @@
 export const siteRoutes = {
   home: "/",
   maxwell: "/maxwell",
-  maxwellStudio: "/studio",
+  maxwellStudio: "/maxwell",
   upgrade: "/upgrade",
   services: "/services",
   opportunities: "/opportunities",
@@ -102,11 +102,6 @@ type ContactHrefOptions =
 
 export function getStartWithMaxwellHref(prompt?: string) {
   return withSearchParams(siteRoutes.maxwellStudio, { prompt });
-}
-
-/** Maxwell Studio without a prompt — hub for saved conversations (requires sign-in). */
-export function getMaxwellStudioHubHref(): string {
-  return siteRoutes.maxwellStudio;
 }
 
 export function getContactHref(options?: ContactHrefOptions) {

@@ -8,8 +8,8 @@
  * an avatar trigger that opens a Popover with:
  *
  *   - The viewer's email (truncated, monospace).
- *   - A "My chats" link to /studio (hidden when the menu is rendered inside
- *     the studio itself — pass `showStudioLink={false}`).
+ *   - A "My chats" link to the home dashboard (hidden when the menu is
+ *     rendered inside the studio itself — pass `showStudioLink={false}`).
  *   - A "Sign out" form whose action calls the `signOutAction` Server Action,
  *     which delegates to NextAuth's `signOut` (cookie + JWT invalidation +
  *     redirect to `/`).
@@ -108,7 +108,7 @@ export function UserMenu({
         <div className="py-1">
           {showStudioLink && (
             <Link
-              href={`/${locale}/studio`}
+              href={`/${locale}`}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 text-xs text-foreground/85 transition-colors hover:bg-secondary/60"
             >
