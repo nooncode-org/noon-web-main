@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowUp,
   FileText,
@@ -34,6 +35,8 @@ import "./studio-rd.css";
 // /maxwell layout.
 // ============================================================================
 
+type Suggestion = { label: string; prompt: string };
+
 type SessionSummary = {
   id: string;
   initial_prompt: string;
@@ -59,7 +62,12 @@ export function StudioDashboard({
   locale: string;
 }) {
   const router = useRouter();
+  // Same rotating-suggestion source as the marketing hero composer.
+  const t = useTranslations("hero");
+  const suggestions = t.raw("suggestions") as Suggestion[];
   const [input, setInput] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [currentSuggestion, setCurrentSuggestion] = useState(0);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -86,6 +94,14 @@ export function StudioDashboard({
   useEffect(() => {
     void refresh();
   }, []);
+
+  // Rotate the placeholder suggestion every 4s (matches the hero composer).
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSuggestion((prev) => (prev + 1) % suggestions.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [suggestions.length]);
 
   // Close the attach menu on click-outside (ported from the hero composer).
   useEffect(() => {
@@ -306,19 +322,37 @@ export function StudioDashboard({
             className="w-full max-w-2xl"
           >
             <div className="rounded-[9px] bg-[#f9f9f9] p-1.5 shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:bg-[#131313] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14]">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    launch();
-                  }
-                }}
-                placeholder="Describe what you want to build..."
-                rows={3}
-                className="max-h-52 min-h-[84px] w-full resize-none bg-transparent px-3 py-2 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
-              />
+              <div className="relative min-w-0 overflow-hidden">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      launch();
+                    }
+                  }}
+                  placeholder={isInputFocused ? t("placeholder") : ""}
+                  rows={3}
+                  aria-label={t("placeholder")}
+                  className="max-h-52 min-h-[106px] w-full resize-none bg-transparent px-3 py-1.5 text-[16px] leading-relaxed text-foreground outline-none placeholder:text-[#a3a3a3]/50 text-left lg:min-h-[102px] lg:px-3.5 lg:text-[15px]"
+                />
+                {!input && !isInputFocused && (
+                  // Rotating suggestion — matches the textarea's font-size and
+                  // padding exactly so there's no visual jump between the
+                  // default / focus / typing states (ported from the hero).
+                  <div className="pointer-events-none absolute left-0 right-0 top-0 overflow-hidden px-3 py-1.5 lg:px-3.5">
+                    <span
+                      key={currentSuggestion}
+                      className="animate-fade-in block w-full truncate whitespace-nowrap text-left text-[16px] leading-relaxed text-[#a3a3a3]/50 lg:text-[15px]"
+                    >
+                      {suggestions[currentSuggestion]?.prompt}
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* Attached file badge (same chip as the hero/chat composers). */}
               {attachedFile && (
