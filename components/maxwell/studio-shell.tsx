@@ -12,6 +12,7 @@ import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
 import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
+import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================
@@ -1166,7 +1167,13 @@ export function StudioShell({
     }
   }
 
-  function handleApprove() {
+  async function handleApprove() {
+    if (!sessionId) return;
+    const phaseBeforeApprove = phase;
+
+    // Optimistic: swap to the approved panel immediately; the Server Action
+    // persists `approved_for_proposal` so the approval survives reloads and
+    // is recorded (it used to be client-side only and vanished on refresh).
     setPhase("approved_for_proposal");
     setMessages((prev) => [
       ...prev,
@@ -1176,6 +1183,24 @@ export function StudioShell({
           "Prototype approved. When you're ready, request the formal proposal with scope, deliverables, timeline, and investment. The Noon team reviews it before it reaches you.",
       }),
     ]);
+
+    try {
+      const result = await approvePrototypeAction({ sessionId });
+      if (!result.ok) throw new Error(result.code);
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("approvePrototypeAction failed:", error);
+      }
+      setPhase(phaseBeforeApprove);
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          content:
+            "The approval didn't save. Your session is intact — please try approving again.",
+        }),
+      ]);
+    }
   }
 
   async function handleRequestProposal() {
