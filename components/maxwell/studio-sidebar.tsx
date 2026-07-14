@@ -168,7 +168,7 @@ export function StudioSidebar({
             className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
           >
             <Rocket className="h-4 w-4 text-muted-foreground" />
-            Upgrade your website
+            Upgrade
           </Link>
           <Link
             href={agentHref}
