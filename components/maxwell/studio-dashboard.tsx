@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, PanelLeft } from "lucide-react";
+import {
+  ArrowUp,
+  FileText,
+  Github,
+  Globe,
+  Mic,
+  PanelLeft,
+  Plus,
+  TriangleIcon,
+  Upload,
+  X,
+} from "lucide-react";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { StudioSidebar } from "./studio-sidebar";
 import type { StudioDraftSession } from "./studio-sidebar";
+import type { AttachedFile } from "./studio-shell";
 import { getContactHref } from "@/lib/site-config";
 import "./studio-rd.css";
 
@@ -14,9 +26,11 @@ import "./studio-rd.css";
 // StudioDashboard — the signed-in HOME (v0-style). Same URL as the marketing
 // home (`/`), different surface: the chats hub sidebar + a launcher composer.
 // It is NOT the chat — submitting the composer / opening a chat navigates to
-// `/maxwell` (the conversation). Reuses <StudioSidebar> (the same panel the
-// chat uses) so the two surfaces stay consistent. Self-scoped with Geist +
-// `.mxw-rd` + studio-rd.css so it inherits the studio look without the
+// `/maxwell` (the conversation). Attachments ride the same sessionStorage
+// handoff the marketing hero uses (`maxwell_attached_file`, consumed by
+// StudioShell on the first message). Reuses <StudioSidebar> (the same panel
+// the chat uses) so the two surfaces stay consistent. Self-scoped with Geist
+// + `.mxw-rd` + studio-rd.css so it inherits the studio look without the
 // /maxwell layout.
 // ============================================================================
 
@@ -49,6 +63,15 @@ export function StudioDashboard({
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Attach affordance — same UX as the marketing hero / chat composer.
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  const [urlInputMode, setUrlInputMode] = useState<"github" | "vercel" | "image" | null>(null);
+  const [urlInputValue, setUrlInputValue] = useState("");
+  const [urlInputLoading, setUrlInputLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
 
   async function refresh() {
     try {
@@ -63,6 +86,19 @@ export function StudioDashboard({
   useEffect(() => {
     void refresh();
   }, []);
+
+  // Close the attach menu on click-outside (ported from the hero composer).
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
+        setAttachMenuOpen(false);
+        setUrlInputMode(null);
+        setUrlInputValue("");
+      }
+    }
+    if (attachMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [attachMenuOpen]);
 
   const maxwellHref = (qs = "") => `/${locale}/maxwell${qs}`;
   const agentHref = getContactHref({
@@ -84,9 +120,79 @@ export function StudioDashboard({
         : null,
   }));
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachedFile({ name: file.name, mimeType: file.type, dataUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    } else if (
+      file.type.startsWith("text/") ||
+      file.name.endsWith(".md") ||
+      file.name.endsWith(".csv") ||
+      file.name.endsWith(".json")
+    ) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachedFile({ name: file.name, mimeType: file.type, dataUrl: "", textContent: reader.result as string });
+      };
+      reader.readAsText(file);
+    } else {
+      setAttachedFile({ name: file.name, mimeType: file.type, dataUrl: "" });
+    }
+  }
+
+  async function handleUrlImport() {
+    if (!urlInputValue.trim()) return;
+    setUrlInputLoading(true);
+    try {
+      if (urlInputMode === "github") {
+        const match = urlInputValue.match(/github\.com\/([^/]+\/[^/]+)/);
+        const repo = match ? match[1].replace(/\.git$/, "") : urlInputValue;
+        const apiUrl = `https://api.github.com/repos/${repo}/readme`;
+        const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.raw+json" } });
+        if (res.ok) {
+          const text = await res.text();
+          setAttachedFile({ name: `${repo} (README.md)`, mimeType: "text/plain", dataUrl: "", textContent: text.slice(0, 8000) });
+        } else {
+          setAttachedFile({ name: `GitHub: ${repo}`, mimeType: "text/plain", dataUrl: "" });
+        }
+      } else if (urlInputMode === "vercel") {
+        setAttachedFile({ name: `Vercel: ${urlInputValue}`, mimeType: "text/plain", dataUrl: "", textContent: `Vercel project URL: ${urlInputValue}` });
+      } else if (urlInputMode === "image") {
+        setAttachedFile({ name: urlInputValue, mimeType: "image/url", dataUrl: urlInputValue });
+      }
+    } catch {
+      setAttachedFile({ name: urlInputValue, mimeType: "text/plain", dataUrl: "" });
+    } finally {
+      setUrlInputLoading(false);
+      setAttachMenuOpen(false);
+      setUrlInputMode(null);
+      setUrlInputValue("");
+    }
+  }
+
   function launch() {
     const prompt = input.trim();
-    router.push(prompt ? maxwellHref(`?prompt=${encodeURIComponent(prompt)}`) : maxwellHref());
+    if (!prompt && !attachedFile) return;
+
+    // Same handoff as the marketing hero: StudioShell consumes this key on
+    // the first message of a fresh session.
+    if (attachedFile) {
+      try {
+        sessionStorage.setItem("maxwell_attached_file", JSON.stringify(attachedFile));
+      } catch {
+        // sessionStorage full or unavailable
+      }
+    }
+    const effectivePrompt =
+      prompt || (attachedFile ? `I've attached a file: ${attachedFile.name}` : "");
+    router.push(maxwellHref(`?prompt=${encodeURIComponent(effectivePrompt)}`));
   }
 
   async function handleDelete(id: string) {
@@ -213,10 +319,107 @@ export function StudioDashboard({
                 rows={3}
                 className="max-h-52 min-h-[84px] w-full resize-none bg-transparent px-3 py-2 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
               />
-              <div className="flex items-center justify-end px-1.5 pb-1 pt-1">
+
+              {/* Attached file badge (same chip as the hero/chat composers). */}
+              {attachedFile && (
+                <div className="px-1.5 pb-1">
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                    <span className="truncate">{attachedFile.name}</span>
+                    <button
+                      type="button"
+                      aria-label="Remove attachment"
+                      onClick={() => setAttachedFile(null)}
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                </div>
+              )}
+
+              {/* Bottom row — attach menu (left) + send (right), same as the
+                  hero/chat composers. */}
+              <div className="mt-1 flex items-center justify-between gap-2 px-1.5 pb-1 pt-1">
+                <div className="relative" ref={attachMenuRef}>
+                  <input ref={fileInputRef} type="file" accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
+                  <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                  <button
+                    type="button"
+                    aria-label="Add"
+                    onClick={() => {
+                      setAttachMenuOpen((v) => !v);
+                      setUrlInputMode(null);
+                      setUrlInputValue("");
+                    }}
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  {attachMenuOpen && (
+                    <div className="liquid-glass-card absolute bottom-10 left-0 z-50 w-52 overflow-hidden rounded-[10px]">
+                      {!urlInputMode ? (
+                        <div className="py-1">
+                          <button type="button" disabled title="Voice input is not available yet." className="flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground/60">
+                            <Mic className="h-4 w-4 text-muted-foreground/60" />
+                            Voice input
+                          </button>
+                          <div className="my-1 h-px bg-border" />
+                          <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Upload className="h-4 w-4 text-muted-foreground" />
+                            Upload file
+                          </button>
+                          <button type="button" onClick={() => { pdfInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            Upload PDF
+                          </button>
+                          <div className="my-1 h-px bg-border" />
+                          <button type="button" onClick={() => setUrlInputMode("github")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Github className="h-4 w-4 text-muted-foreground" />
+                            Import from GitHub
+                          </button>
+                          <button type="button" onClick={() => setUrlInputMode("vercel")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <TriangleIcon className="h-4 w-4 text-muted-foreground" />
+                            Import from Vercel
+                          </button>
+                          <button type="button" onClick={() => setUrlInputMode("image")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
+                            <Globe className="h-4 w-4 text-muted-foreground" />
+                            Image URL
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 p-3">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {urlInputMode === "github" ? "GitHub repository" : urlInputMode === "vercel" ? "Vercel project" : "Image URL"}
+                          </p>
+                          <input
+                            type="text"
+                            autoFocus
+                            value={urlInputValue}
+                            onChange={(e) => setUrlInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void handleUrlImport();
+                              if (e.key === "Escape") { setUrlInputMode(null); setUrlInputValue(""); }
+                            }}
+                            placeholder={urlInputMode === "github" ? "github.com/user/repo" : urlInputMode === "vercel" ? "vercel.com/project" : "https://..."}
+                            className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-foreground/30"
+                          />
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => void handleUrlImport()} disabled={urlInputLoading || !urlInputValue.trim()} className="flex-1 rounded-lg bg-[#0056FD] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40">
+                              {urlInputLoading ? "Importing…" : "Import"}
+                            </button>
+                            <button type="button" onClick={() => { setUrlInputMode(null); setUrlInputValue(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  disabled={!input.trim()}
+                  disabled={!input.trim() && !attachedFile}
                   aria-label="Start building"
                   className="group flex h-9 w-9 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
