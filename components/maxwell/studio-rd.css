@@ -76,3 +76,17 @@ html.dark:has(.mxw-rd) {
 .mxw-rd .site-primary-action:active {
   background-color: #0042c4 !important;
 }
+
+/* ── Resizable chat↔preview split ────────────────────────────────────────────
+   While the seller drags the divider, the workspace <main> gets `.mxw-resizing`.
+   The preview is a cross-origin <iframe> that would (a) swallow the pointer once
+   it crosses the divider and (b) lag as its width transition chases the drag.
+   Kill both for the duration of the drag. */
+.mxw-resizing iframe {
+  pointer-events: none;
+  transition: none !important;
+}
+.mxw-resizing,
+.mxw-resizing * {
+  user-select: none;
+}

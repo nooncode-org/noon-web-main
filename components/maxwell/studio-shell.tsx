@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
 import { StudioSidebar } from "./studio-sidebar";
@@ -13,6 +13,7 @@ import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view
 import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
+import { useResizableChatPane } from "@/hooks/use-resizable-chat-pane";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 
 // ============================================================================
@@ -254,6 +255,18 @@ export function StudioShell({
   // first opens so the split gets its width back. The header's PanelLeft
   // button re-toggles it any time.
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Drag-resizable chat↔preview divider (desktop lg+). Drives `--mxw-chat-w`
+  // on the workspace <main>; the chat <aside> reads it via a Tailwind var width.
+  const {
+    containerRef: workspaceRef,
+    width: chatWidth,
+    isResizing,
+    onPointerDown: onDividerPointerDown,
+    onKeyDown: onDividerKeyDown,
+    reset: resetSplit,
+  } = useResizableChatPane();
+
   const prevWorkspaceVisibleRef = useRef(false);
   useEffect(() => {
     if (shouldShowWorkspace && !prevWorkspaceVisibleRef.current) {
@@ -1485,12 +1498,17 @@ export function StudioShell({
         gets <section role="region"> with an aria-label so AT users hear what
         each pane represents.
       */}
-      <main className="flex min-h-0 flex-1 overflow-hidden" aria-label="Studio workspace">
+      <main
+        ref={workspaceRef}
+        className={`flex min-h-0 flex-1 overflow-hidden ${isResizing ? "mxw-resizing" : ""}`}
+        style={{ ["--mxw-chat-w" as string]: `${chatWidth}px` } as CSSProperties}
+        aria-label="Studio workspace"
+      >
         <aside
           aria-label="Conversation with Maxwell"
           className={`
             flex min-h-0 flex-col
-            ${shouldShowWorkspace ? "w-full shrink-0 border-r border-border/70 bg-background lg:w-[440px] xl:w-[500px]" : "w-full border-r-0"}
+            ${shouldShowWorkspace ? "w-full shrink-0 bg-background lg:w-[var(--mxw-chat-w)]" : "w-full"}
             ${shouldShowWorkspace ? (activeView === "chat" ? "flex" : "hidden") : "flex"}
           `}
         >
@@ -1536,6 +1554,32 @@ export function StudioShell({
             />
           </div>
         </aside>
+
+        {/* Drag-resizable divider — only when both panes coexist (desktop lg+
+            in "chat" view; "preview" view hides the chat and goes full-width,
+            and mobile is a tab switch). A 1px hairline (replacing the old aside
+            border-r) with a ±6px invisible hit area via ::after. Keyboard:
+            ←/→ resize; double-click resets. */}
+        {shouldShowWorkspace && activeView === "chat" && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize chat panel"
+            aria-valuenow={chatWidth}
+            tabIndex={0}
+            onPointerDown={onDividerPointerDown}
+            onKeyDown={onDividerKeyDown}
+            onDoubleClick={resetSplit}
+            className="relative hidden w-px shrink-0 bg-border/70 transition-colors hover:bg-border focus-visible:bg-border focus-visible:outline-none lg:block"
+          >
+            {/* Widened hit area as a real child (not ::after) at z-30, so it
+                wins over the preview pane's z-10 load/revising overlays. */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 -left-2 -right-2 z-30 cursor-col-resize touch-none select-none"
+            />
+          </div>
+        )}
 
         {shouldShowWorkspace && (
           <section
