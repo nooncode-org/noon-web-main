@@ -12,7 +12,7 @@
   padding: 0 24px; height: 60px;
   position: relative; display: flex; align-items: center; justify-content: space-between;
 }
-@media (min-width: 768px) { .rdnav-inner { padding: 0 28px; } }
+@media (min-width: 768px) { .rdnav-inner { padding: 0 16px; } } /* 16px = logo/CTA sit 4px inside the 12px frame */
 
 .rdnav-logo { display: inline-flex; align-items: center; color: var(--text-primary); text-decoration: none; }
 

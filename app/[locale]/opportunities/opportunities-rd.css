@@ -96,7 +96,7 @@ html.dark .opp-rd {
 /* ── nav ────────────────────────────────────────────────────────────────── */
 .opp-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: var(--bg-base); }
 .opp-nav-inner { padding: 0 24px; height: 60px; position: relative; display: flex; align-items: center; justify-content: space-between; }
-@media (min-width: 768px) { .opp-nav-inner { padding: 0 28px; } }
+@media (min-width: 768px) { .opp-nav-inner { padding: 0 16px; } } /* align 4px inside the 12px frame */
 .opp-nav-logo { display: inline-flex; align-items: center; color: var(--text-primary); }
 .opp-nav-links { display: none; gap: 36px; }
 @media (min-width: 768px) { .opp-nav-links { display: flex; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); } }
