@@ -16,9 +16,8 @@ import {
   FileText,
   Globe,
   TriangleIcon,
-  MessageSquare,
 } from "lucide-react";
-import { getMaxwellStudioHubHref, getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
+import { getStartWithMaxwellHref, siteRoutes } from "@/lib/site-config";
 import { HeroTemplatesPanel } from "./hero-templates-panel";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
@@ -48,49 +47,10 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
   const [urlInputMode, setUrlInputMode] = useState<"github" | "vercel" | "image" | null>(null);
   const [urlInputValue, setUrlInputValue] = useState("");
   const [urlInputLoading, setUrlInputLoading] = useState(false);
-  const [showMyChatsLink, setShowMyChatsLink] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const ac = new AbortController();
-    void (async () => {
-      try {
-        const sessionRes = await fetch("/api/auth/session", {
-          cache: "no-store",
-          credentials: "same-origin",
-          signal: ac.signal,
-        });
-        if (!sessionRes.ok) {
-          setShowMyChatsLink(false);
-          return;
-        }
-
-        const session = (await sessionRes.json()) as { user?: unknown };
-        if (!session.user) {
-          setShowMyChatsLink(false);
-          return;
-        }
-
-        const res = await fetch("/api/maxwell/studio/sessions", {
-          cache: "no-store",
-          credentials: "same-origin",
-          signal: ac.signal,
-        });
-        if (!res.ok) {
-          setShowMyChatsLink(false);
-          return;
-        }
-        const data = (await res.json()) as { sessions?: unknown[] };
-        setShowMyChatsLink(Array.isArray(data.sessions) && data.sessions.length > 0);
-      } catch {
-        if (!ac.signal.aborted) setShowMyChatsLink(false);
-      }
-    })();
-    return () => ac.abort();
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -387,18 +347,6 @@ export function HeroSection({ spectrum = false }: { spectrum?: boolean } = {}) {
                           </div>
                         )}
                       </div>
-
-                      {showMyChatsLink ? (
-                        <Link
-                          href={`/${locale}${getMaxwellStudioHubHref()}`}
-                          aria-label={t("myConversationsHint")}
-                          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/50 bg-secondary/55 px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:bg-secondary hover:text-foreground"
-                          title={t("myConversationsHint")}
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{t("myConversations")}</span>
-                        </Link>
-                      ) : null}
                     </div>
 
                     {/* Right: send button */}
