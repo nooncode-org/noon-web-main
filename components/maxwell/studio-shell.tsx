@@ -1381,7 +1381,29 @@ export function StudioShell({
     prototypeFailedReason === "quota" || monthlyPrototypeUsed ? "quota" : "error";
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-background">
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
+      {/* Full-height chats rail (desktop) — sits LEFT of the header, spanning
+          the whole viewport height (like the dashboard + v0), so the header no
+          longer sits above the sidebar. */}
+      {sidebarOpen && (
+        <div className="hidden min-h-0 w-72 shrink-0 border-r border-border/70 lg:flex">
+          <StudioSidebar
+            viewerEmail={viewerEmail}
+            locale={locale}
+            agentHref={agentHref}
+            draftSessions={draftSessionsForHeader}
+            currentSessionId={sessionId}
+            onSelectDraftSession={handleSelectSessionFromList}
+            onNewDraftChat={handleNewChatFromList}
+            onDeleteDraftSession={handleDeleteSessionList}
+            quotaSnapshot={quotaSnapshot}
+            onClose={() => setSidebarOpen(false)}
+            className="bg-background"
+          />
+        </div>
+      )}
+      {/* Right column — header + banner + the two-pane workspace. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <StudioHeader
         projectName={projectName}
         phase={phase}
@@ -1443,27 +1465,6 @@ export function StudioShell({
         each pane represents.
       */}
       <main className="flex min-h-0 flex-1 overflow-hidden" aria-label="Studio workspace">
-        {/* Desktop chats rail (lg+) — the SAME StudioSidebar the mobile drawer
-            mounts, persistent as the first column so the row reads
-            sidebar | chat | preview. Chat keeps its fixed width and the
-            preview stays flex-1, so the split logic is untouched. */}
-        {sidebarOpen && (
-          <div className="hidden min-h-0 w-72 shrink-0 border-r border-border/70 lg:flex">
-            <StudioSidebar
-              viewerEmail={viewerEmail}
-              locale={locale}
-              agentHref={agentHref}
-              draftSessions={draftSessionsForHeader}
-              currentSessionId={sessionId}
-              onSelectDraftSession={handleSelectSessionFromList}
-              onNewDraftChat={handleNewChatFromList}
-              onDeleteDraftSession={handleDeleteSessionList}
-              quotaSnapshot={quotaSnapshot}
-              onClose={() => setSidebarOpen(false)}
-              className="bg-background"
-            />
-          </div>
-        )}
         <aside
           aria-label="Conversation with Maxwell"
           className={`
@@ -1550,6 +1551,7 @@ export function StudioShell({
           </section>
         )}
       </main>
+      </div>
     </div>
   );
 }

@@ -239,9 +239,11 @@ export function StudioHeader({
         <button
           type="button"
           onClick={() => onToggleSidebar?.()}
-          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-label="Expand sidebar"
           aria-expanded={sidebarOpen}
-          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
+          className={`hidden h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground ${
+            sidebarOpen ? "lg:hidden" : "lg:flex"
+          }`}
         >
           <PanelLeft className="h-4 w-4" />
         </button>
@@ -260,7 +262,10 @@ export function StudioHeader({
             {displayName}
           </span>
         </div>
-        <span className="hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
+        <span
+          className={`hidden h-4 w-px bg-border sm:block ${sidebarOpen ? "lg:hidden" : ""}`}
+          aria-hidden="true"
+        />
         <ViewToggle
           activeView={activeView}
           onToggle={onToggleView}

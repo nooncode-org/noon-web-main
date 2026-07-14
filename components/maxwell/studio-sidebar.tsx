@@ -117,7 +117,7 @@ export function StudioSidebar({
     <>
       <div className={`flex h-full min-h-0 w-full flex-col overflow-hidden ${className}`}>
         {/* Header — account identity (avatar + email) + close/collapse, v0-style. */}
-        <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-foreground/8">
+        <div className="flex h-[55px] items-center gap-2.5 px-4 border-b border-border/70">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
             {viewerEmail.charAt(0) || "?"}
           </span>
@@ -131,8 +131,8 @@ export function StudioSidebar({
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center justify-center w-7 h-7 shrink-0 rounded-[6px] text-muted-foreground transition-colors hover:text-foreground"
-              aria-label="Close menu"
+              className="flex items-center justify-center w-8 h-8 shrink-0 rounded-md text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Collapse sidebar"
             >
               <PanelLeft className="w-4 h-4" />
             </button>
