@@ -311,7 +311,7 @@ export function StudioDashboard({
 
         {/* Center — the launcher composer. */}
         <section className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-16">
-          <h1 className="mb-6 text-center text-2xl font-semibold text-foreground sm:text-3xl">
+          <h1 className="mb-6 text-center text-[1.375rem] leading-[1.1] tracking-tight text-foreground sm:text-[1.625rem] lg:text-[1.875rem]">
             {t("headline")}
           </h1>
           <form
@@ -385,7 +385,7 @@ export function StudioDashboard({
                       setUrlInputMode(null);
                       setUrlInputValue("");
                     }}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70"
+                    className="flex h-8 w-8 items-center justify-center text-foreground transition-opacity hover:opacity-70"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -455,9 +455,9 @@ export function StudioDashboard({
                   type="submit"
                   disabled={!input.trim() && !attachedFile}
                   aria-label="Start building"
-                  className="group flex h-9 w-9 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
+                  className="group flex h-8 w-8 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
-                  <ArrowUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
+                  <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
                 </button>
               </div>
             </div>
