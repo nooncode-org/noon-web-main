@@ -310,7 +310,7 @@ export function StudioDashboard({
         </div>
 
         {/* Center — the launcher composer. */}
-        <section className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-16">
+        <section className="flex min-h-0 flex-1 flex-col items-center justify-center px-6">
           <h1 className="mb-6 text-center text-[1.375rem] leading-[1.1] tracking-tight text-foreground sm:text-[1.625rem] lg:text-[1.875rem]">
             {t("headline")}
           </h1>
