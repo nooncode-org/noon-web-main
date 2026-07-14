@@ -17,16 +17,13 @@ const VALID_TRANSITIONS: Record<StudioStatus, StudioStatus[]> = {
   intake: ["clarifying"],
   clarifying: ["generating_prototype"],
   generating_prototype: ["prototype_ready", "clarifying"],       // clarifying = v0 failure fallback
-  // prototype_shared added 2026-05-27 per ADR-028 D7 (D-upstream wire). Coexists
-  // additively with the legacy paths to revision_requested / approved_for_proposal.
-  prototype_ready: ["revision_requested", "approved_for_proposal", "prototype_shared"],
+  // Sharing became an ATTRIBUTE (the share columns) on 2026-07-14 — nothing
+  // transitions INTO `prototype_shared` anymore. The status itself stays in
+  // the enum with its outgoing transitions so legacy rows persisted before
+  // the change remain operable (they self-heal by adjusting or approving).
+  prototype_ready: ["revision_requested", "approved_for_proposal"],
   revision_requested: ["revision_applied", "prototype_ready"],   // prototype_ready = correction failure fallback
   revision_applied: ["prototype_ready"],
-  // After a share, the seller can still request adjustments (returns to the
-  // revision pipeline; App will supersede the V1 token when V2 is shared) or
-  // skip ahead to the legacy formal-proposal path (ADR-028 D12 coexistence).
-  // No auto-revert to prototype_ready — an explicit revision must go through
-  // revision_requested.
   prototype_shared: ["revision_requested", "approved_for_proposal"],
   approved_for_proposal: ["proposal_pending_review"],
   proposal_pending_review: ["proposal_sent", "approved_for_proposal"], // approved_for_proposal = PM returned

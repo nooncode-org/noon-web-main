@@ -1,13 +1,14 @@
 /**
  * tests/visual/studio-share-cta.spec.ts
  *
- * ADR-028 D13 — a11y scan for the new share CTA branches in
- * `components/maxwell/studio-proposal-cta.tsx`:
+ * ADR-028 D13 — a11y scan for the share CTA surfaces in
+ * `components/maxwell/studio-proposal-cta.tsx` (share became an ATTRIBUTE on
+ * 2026-07-14 — there is no `prototype_shared` branch anymore):
  *   - `phase === "prototype_ready"` AND `shareEnabled === true` → primary
- *     "Compartir prototipo con el cliente" button alongside the legacy
- *     Approve / Adjust / Skip-to-proposal trio.
- *   - `phase === "prototype_shared"` → shareable URL + "Copiar" button +
- *     status badge + secondary Pedir cambios / Enviar propuesta detallada.
+ *     "Get shareable link" button alongside the Approve / Adjust /
+ *     Skip-to-proposal trio.
+ *   - same phase with `shareUrl` set → inline shareable URL + "Copy" button
+ *     rendered WITHIN the prototype_ready panel (actions stay visible).
  *
  * **Currently deferred.** The studio route at `/[locale]/maxwell`
  * requires an authenticated viewer (RSC `auth()` redirects to `/signin`
@@ -48,7 +49,7 @@ test.describe("a11y studio share CTA — ADR-028 D-upstream wire", () => {
     // Placeholder — implementation requires auth bypass per file header.
   });
 
-  test("renders prototype_shared with copy-link button", async () => {
+  test("renders the inline copy-link box inside prototype_ready when shareUrl is set", async () => {
     // Placeholder — implementation requires auth bypass per file header.
   });
 

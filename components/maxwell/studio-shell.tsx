@@ -1152,13 +1152,9 @@ export function StudioShell({
       const { uxState } = await sharePrototypeAction({ sessionId, locale });
       setShareUxState(uxState);
       if (uxState.kind === "success") {
+        // Share is an attribute, not a phase: surface the link inline and
+        // keep the prototype_ready action set (approve / adjust / chat).
         setShareUrl(uxState.shareUrl);
-        // Local optimistic transition. The Server Action already wrote the
-        // status in the DB and revalidated, but the client state machine
-        // mirrors what the user sees right now.
-        if (phase === "prototype_ready") {
-          setPhase("prototype_shared");
-        }
       }
     } catch (error) {
       // A truly unexpected throw (rare — the Server Action returns mapped

@@ -44,7 +44,6 @@ describe("resolveRehydratedStudioView", () => {
       "clarifying",
       "prototype_ready",
       "revision_applied",
-      "prototype_shared",
       "approved_for_proposal",
       "proposal_pending_review",
       "proposal_sent",
@@ -62,5 +61,21 @@ describe("resolveRehydratedStudioView", () => {
         prototypeFailed: false,
       });
     }
+  });
+
+  it("remaps legacy prototype_shared rows to prototype_ready (share is an attribute now)", () => {
+    // Sharing stopped being a status transition on 2026-07-14; rows persisted
+    // as prototype_shared before that re-enter the full action set. The
+    // rehydrated shareTokenUrl still renders the link box.
+    expect(resolveRehydratedStudioView("prototype_shared", 1)).toEqual({
+      phase: "prototype_ready",
+      prototypeFailed: false,
+    });
+    // Defensive: a shared row always has a version, but if not, fall back to
+    // the retryable-failure surface instead of an empty prototype_ready.
+    expect(resolveRehydratedStudioView("prototype_shared", 0)).toEqual({
+      phase: "clarifying",
+      prototypeFailed: true,
+    });
   });
 });

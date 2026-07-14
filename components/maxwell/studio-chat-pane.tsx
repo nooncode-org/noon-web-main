@@ -498,7 +498,6 @@ export function StudioChatPane({
 
   const showActionZone =
     phase === "prototype_ready" ||
-    phase === "prototype_shared" ||
     phase === "approved_for_proposal" ||
     phase === "proposal_pending_review" ||
     phase === "proposal_sent";

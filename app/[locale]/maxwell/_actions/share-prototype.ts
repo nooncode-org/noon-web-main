@@ -13,10 +13,10 @@
  *      lookup; customer fields nulled since the studio doesn't capture
  *      them at share time per ADR-028 D2 rationale).
  *   4. Call `requestPrototipoShare` to POST to App.
- *   5. On `ok`: persist the four share columns on `studio_session`,
- *      transition `prototype_ready → prototype_shared` (or stay on
- *      `prototype_shared` for a regenerate re-share), revalidate the
- *      studio page, return `{ uxState: { kind: 'success', shareUrl, ... } }`.
+ *   5. On `ok`: persist the four share columns on `studio_session` (share
+ *      is an attribute — the status is NOT transitioned; the session keeps
+ *      its full prototype_ready action set), revalidate the studio page,
+ *      return `{ uxState: { kind: 'success', shareUrl, ... } }`.
  *   6. On `error`: log structured event with App's `requestId` (if any),
  *      return the mapped UX state.
  *
@@ -44,7 +44,6 @@ import {
   getStudioSession,
   getLatestStudioVersion,
   updateStudioSessionShareToken,
-  updateStudioSessionStatus,
 } from "@/lib/maxwell/repositories";
 import { requestPrototipoShare } from "@/lib/maxwell/prototipo-share";
 import {
@@ -227,18 +226,18 @@ export async function sharePrototypeAction(
     ? composeShareUrl(baseUrl, input.locale, result.data.share_token)
     : "";
 
+  // Sharing is an ATTRIBUTE of the session, not a workflow phase: only the
+  // four share columns are written. The session stays in its current status
+  // so the seller keeps the full prototype_ready action set (approve /
+  // request adjustment / chat) after sharing. Legacy rows already persisted
+  // as `prototype_shared` self-heal via their still-legal outgoing
+  // transitions + the rehydrate remap.
   await updateStudioSessionShareToken(session.id, {
     prototypeWorkspaceId: result.data.prototype_workspace_id,
     shareToken: result.data.share_token,
     shareTokenUrl: shareUrl,
     prototypeSharedAt: result.data.issued_at,
   });
-
-  // State machine transition — only when leaving `prototype_ready`. On a
-  // regenerate re-share from `prototype_shared` the status stays put.
-  if (session.status === "prototype_ready") {
-    await updateStudioSessionStatus(session.id, "prototype_shared");
-  }
 
   if (!result.isReplay) {
     log.info(

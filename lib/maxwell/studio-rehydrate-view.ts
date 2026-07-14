@@ -37,5 +37,14 @@ export function resolveRehydratedStudioView(
   if (isInFlight) {
     return { phase: "prototype_ready", prototypeFailed: false };
   }
+  // Legacy rows: sharing used to be a status transition; it is now an
+  // attribute (the share columns). Remap so old sessions re-enter the full
+  // prototype_ready action set — the rehydrated shareTokenUrl still renders
+  // the link. (A shared row always has a version; the guard is defensive.)
+  if (status === "prototype_shared") {
+    return versionCount > 0
+      ? { phase: "prototype_ready", prototypeFailed: false }
+      : { phase: "clarifying", prototypeFailed: true };
+  }
   return { phase: status, prototypeFailed: false };
 }

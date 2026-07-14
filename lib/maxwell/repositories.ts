@@ -801,11 +801,10 @@ export async function setStylePackId(
  * id / URL / timestamp. On regenerate the same call OVERWRITES with the V2
  * values, soft-superseding the V1 share locally.
  *
- * Does NOT transition state — the caller (Server Action per D9) wraps this in
- * a `prototype_ready → prototype_shared` `assertValidTransition` +
- * `updateStudioSessionStatus` call. Splitting persistence from transition
- * keeps the repository pure and lets the Server Action handle the "if App
- * already had a row" idempotent-replay path without re-firing transitions.
+ * Does NOT transition state — and since 2026-07-14 neither does the caller:
+ * sharing is an ATTRIBUTE of the session (these four columns), not a status.
+ * The session keeps its current status so the seller retains the full
+ * prototype_ready action set after sharing.
  */
 export async function updateStudioSessionShareToken(
   sessionId: string,

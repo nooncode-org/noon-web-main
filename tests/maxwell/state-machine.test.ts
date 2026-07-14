@@ -38,12 +38,13 @@ describe("isValidTransition", () => {
     expect(isValidTransition("prototype_ready", "approved_for_proposal")).toBe(true);
   });
 
-  // ADR-028 D7 — D-upstream wire prototype_shared transitions.
-  it("allows prototype_ready → prototype_shared (D-upstream wire)", () => {
-    expect(isValidTransition("prototype_ready", "prototype_shared")).toBe(true);
+  // Share became an ATTRIBUTE (2026-07-14): nothing transitions INTO
+  // prototype_shared anymore, but legacy rows keep their outgoing paths.
+  it("blocks prototype_ready → prototype_shared (share is an attribute now)", () => {
+    expect(isValidTransition("prototype_ready", "prototype_shared")).toBe(false);
   });
 
-  it("allows prototype_shared → revision_requested", () => {
+  it("allows prototype_shared → revision_requested (legacy rows self-heal)", () => {
     expect(isValidTransition("prototype_shared", "revision_requested")).toBe(true);
   });
 
@@ -51,9 +52,9 @@ describe("isValidTransition", () => {
     expect(isValidTransition("prototype_shared", "approved_for_proposal")).toBe(true);
   });
 
-  it("blocks prototype_shared → prototype_ready (no auto-revert)", () => {
-    // Explicit revision must go through revision_requested; the seller cannot
-    // silently undo a share by going backwards.
+  it("blocks prototype_shared → prototype_ready (no silent status revert)", () => {
+    // Legacy rows escape via revision_requested or approved_for_proposal;
+    // the rehydrate view remaps their RENDERED phase without a DB write.
     expect(isValidTransition("prototype_shared", "prototype_ready")).toBe(false);
   });
 

@@ -30,13 +30,14 @@ type StudioProposalCtaProps = {
   proposalToken?: string | null;
   /**
    * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
-   * "Get shareable link" CTA does not render and the
-   * `prototype_shared` branch falls back to the legacy `prototype_ready`
-   * surface (which can never be entered while the flag is off anyway,
-   * because the Server Action short-circuits — defence in depth).
+   * "Get shareable link" CTA does not render (defence in depth: the Server
+   * Action short-circuits too).
    */
   shareEnabled?: boolean;
-  /** ADR-028 D10 — the Web-composed share URL when phase === "prototype_shared". */
+  /**
+   * The Web-composed share URL. Sharing is an attribute, not a phase — when
+   * set, the link box renders inline inside the `prototype_ready` panel.
+   */
   shareUrl?: string | null;
   /** ADR-028 D8 — current UX bucket for share action lifecycle. */
   shareUxState?: PrototipoShareUxState;
@@ -293,88 +294,6 @@ export function StudioProposalCta({
     );
   }
 
-  // ── Prototype shared (ADR-028 D10) ────────────────────────────────────────
-
-  if (phase === "prototype_shared") {
-    return (
-      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-muted-foreground">
-            <Share2 className="w-3.5 h-3.5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium mb-0.5">Shareable link ready</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Forward this link to anyone who needs to review the prototype.
-            </p>
-          </div>
-        </div>
-
-        {shareUrl ? (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Shareable link</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={shareUrl}
-                readOnly
-                aria-label="Shareable prototype link"
-                className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground/85 outline-none focus:border-foreground/20"
-                onFocus={(e) => e.currentTarget.select()}
-              />
-              <button
-                type="button"
-                onClick={() => void handleCopyShareUrl(shareUrl)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
-                aria-label={linkCopied ? "Link copied" : "Copy link"}
-              >
-                {linkCopied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-border/50">
-          {canCorrect && (
-            <button
-              type="button"
-              onClick={() => setShowCorrectionInput(true)}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Request changes
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onRequestProposal}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <FileText className="w-3 h-3" />
-            Request formal proposal
-          </button>
-          <Link
-            href={agentHref}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <User className="w-3 h-3" />
-            Talk to agent
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   // ── Prototype ready ───────────────────────────────────────────────────────
 
   if (phase !== "prototype_ready") return null;
@@ -449,6 +368,45 @@ export function StudioProposalCta({
           </button>
         )}
       </div>
+
+      {/* Shareable link — an attribute of the session, shown inline the moment
+          it exists. Sharing no longer swaps this panel; the seller keeps
+          Approve / Request adjustment / chat alongside the link. */}
+      {shareUrl ? (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Shareable link — forward it to anyone who needs to review the prototype.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={shareUrl}
+              readOnly
+              aria-label="Shareable prototype link"
+              className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground/85 outline-none focus:border-foreground/20"
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <button
+              type="button"
+              onClick={() => void handleCopyShareUrl(shareUrl)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-xs text-foreground transition-colors hover:bg-foreground/10"
+              aria-label={linkCopied ? "Link copied" : "Copy link"}
+            >
+              {linkCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {/* Share error surface (ADR-028 D10 copy) */}
       {shareErrorCopy ? (
