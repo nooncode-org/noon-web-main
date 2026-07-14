@@ -312,7 +312,7 @@ export function StudioDashboard({
         {/* Center — the launcher composer. */}
         <section className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-16">
           <h1 className="mb-6 text-center text-2xl font-semibold text-foreground sm:text-3xl">
-            What do you want to build?
+            {t("headline")}
           </h1>
           <form
             onSubmit={(e) => {
@@ -337,7 +337,7 @@ export function StudioDashboard({
                   placeholder={isInputFocused ? t("placeholder") : ""}
                   rows={3}
                   aria-label={t("placeholder")}
-                  className="max-h-52 min-h-[106px] w-full resize-none bg-transparent px-3 py-1.5 text-[16px] leading-relaxed text-foreground outline-none placeholder:text-[#a3a3a3]/50 text-left lg:min-h-[102px] lg:px-3.5 lg:text-[15px]"
+                  className="max-h-52 min-h-[84px] w-full resize-none bg-transparent px-3 py-1.5 text-[16px] leading-relaxed text-foreground outline-none placeholder:text-[#a3a3a3]/50 text-left lg:px-3.5 lg:text-[15px]"
                 />
                 {!input && !isInputFocused && (
                   // Rotating suggestion — matches the textarea's font-size and
