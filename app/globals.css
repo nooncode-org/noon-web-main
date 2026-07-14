@@ -1097,9 +1097,13 @@
      Desktop only. Border color matches the redesign tokens (#e6e8f2/#262626). */
   .home-frame { display: none; }
   @media (min-width: 768px) {
+    /* Home nav sits a touch shorter than the site-wide 60px so the frame
+       rises a little (owner request). Single source of truth: the nav bar
+       height and the frame's top both read --nav-bar-h. */
+    .home-single { --nav-bar-h: 52px; }
     .home-frame {
       display: block; position: fixed;
-      top: 60px; left: 12px; right: 12px; bottom: 12px;
+      top: var(--nav-bar-h, 60px); left: 12px; right: 12px; bottom: 12px;
       border: 1px solid #e6e8f2;
       pointer-events: none; z-index: 30;
     }

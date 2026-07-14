@@ -12,7 +12,7 @@ export default async function Home() {
     // (Work/Templates/About). --font-geist-sans/mono are set by the .variable
     // classes; font-family makes the whole home (nav + hero + chips) inherit it.
     <main
-      className={`${GeistSans.variable} ${GeistMono.variable} relative h-dvh overflow-hidden bg-background`}
+      className={`${GeistSans.variable} ${GeistMono.variable} home-single relative h-dvh overflow-hidden bg-background`}
       style={{ fontFamily: "var(--font-geist-sans)" }}
     >
       <Navigation viewer={viewer} />

@@ -64,7 +64,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
          volver al pill flotante anterior). */}
       <header className="fixed top-0 left-0 right-0 z-[60] bg-background">
         <nav className="w-full">
-          <div className="relative flex h-[60px] items-center justify-between px-6 md:px-7">
+          <div className="relative flex items-center justify-between px-6 md:px-4" style={{ height: "var(--nav-bar-h, 60px)" }}>
             <Link href={localHref(siteRoutes.home)} className="flex items-center group">
               <NoonLogo variant="wordmark" height={20} />
             </Link>
