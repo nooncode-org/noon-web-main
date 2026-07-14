@@ -1,11 +1,27 @@
+import { redirect } from "next/navigation";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Navigation } from "@/components/landing/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
+import { siteRoutes } from "@/lib/site-config";
 
-export default async function Home() {
-  const viewer = await getAuthenticatedViewer();
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: Props) {
+  const [{ locale }, viewer] = await Promise.all([
+    params,
+    getAuthenticatedViewer(),
+  ]);
+
+  // v0-style routing: signed-in visitors land on the app surface (/studio,
+  // their chats hub), not the marketing pitch. No loop — /studio redirects
+  // back here only when there is NO viewer (complementary conditions).
+  if (viewer) {
+    redirect(`/${locale}${siteRoutes.maxwellStudio}`);
+  }
 
   return (
     // Geist scoped to the home so the hero matches the redesigned pages
