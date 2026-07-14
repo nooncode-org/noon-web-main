@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
+import { StudioSidebar } from "./studio-sidebar";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
 import { WorkspaceReentryBanner } from "./workspace-reentry-banner";
@@ -237,6 +238,28 @@ export function StudioShell({
   // pass straight into the "View your proposal" CTA. Null until a sent proposal
   // exists for this session.
   const [proposalPublicToken, setProposalPublicToken] = useState<string | null>(null);
+
+  // Hoisted above the hooks that need it (rail auto-collapse effect below);
+  // also drives the chat/preview split in the render.
+  const shouldShowWorkspace =
+    phase === "generating_prototype" ||
+    phase === "revision_requested" ||
+    prototypeFailed ||
+    prototypeVersions.length > 0;
+
+  // Desktop chats rail (lg+) — the same StudioSidebar the mobile drawer
+  // mounts, persistent as the first column of <main>. Open by default on the
+  // intake/hub; auto-collapses ONCE when the workspace (chat|preview split)
+  // first opens so the split gets its width back. The header's PanelLeft
+  // button re-toggles it any time.
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const prevWorkspaceVisibleRef = useRef(false);
+  useEffect(() => {
+    if (shouldShowWorkspace && !prevWorkspaceVisibleRef.current) {
+      setSidebarOpen(false);
+    }
+    prevWorkspaceVisibleRef.current = shouldShowWorkspace;
+  }, [shouldShowWorkspace]);
 
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -1257,7 +1280,8 @@ export function StudioShell({
   }
 
   async function handleDeleteSessionList(id: string) {
-    if (!window.confirm("Delete this conversation? You will not be able to open it again.")) return;
+    // Confirmation lives in the StudioSidebar AlertDialog (B31) — the only
+    // caller. A second window.confirm here would double-prompt.
     try {
       const res = await fetch(
         `/api/maxwell/studio/sessions?session_id=${encodeURIComponent(id)}`,
@@ -1339,12 +1363,6 @@ export function StudioShell({
     phase === "proposal_pending_review" ||
     phase === "proposal_sent";
 
-  const shouldShowWorkspace =
-    phase === "generating_prototype" ||
-    phase === "revision_requested" ||
-    prototypeFailed ||
-    prototypeVersions.length > 0;
-
   // The preview's failure copy must distinguish a transient generation error
   // from the deliberate monthly-quota block. The 403 handler sets
   // `prototypeFailedReason` to "quota", but that flag is fragile: it is reset to
@@ -1382,6 +1400,13 @@ export function StudioShell({
         onDeleteDraftSession={handleDeleteSessionList}
         onRequestChats={refreshSessionSummaries}
         quotaSnapshot={quotaSnapshot}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => {
+          // Re-fetch the list when expanding (mirrors the drawer-open refresh —
+          // recovers from a silently-failed first load).
+          if (!sidebarOpen) void refreshSessionSummaries();
+          setSidebarOpen((v) => !v);
+        }}
         previewVersions={prototypeVersions}
         selectedVersionIndex={selectedVersionIndex}
         onSelectVersion={setSelectedVersionIndex}
@@ -1417,6 +1442,26 @@ export function StudioShell({
         each pane represents.
       */}
       <main className="flex min-h-0 flex-1 overflow-hidden" aria-label="Studio workspace">
+        {/* Desktop chats rail (lg+) — the SAME StudioSidebar the mobile drawer
+            mounts, persistent as the first column so the row reads
+            sidebar | chat | preview. Chat keeps its fixed width and the
+            preview stays flex-1, so the split logic is untouched. */}
+        {sidebarOpen && (
+          <div className="hidden min-h-0 w-72 shrink-0 border-r border-border/70 lg:flex">
+            <StudioSidebar
+              viewerEmail={viewerEmail}
+              agentHref={agentHref}
+              draftSessions={draftSessionsForHeader}
+              currentSessionId={sessionId}
+              onSelectDraftSession={handleSelectSessionFromList}
+              onNewDraftChat={handleNewChatFromList}
+              onDeleteDraftSession={handleDeleteSessionList}
+              quotaSnapshot={quotaSnapshot}
+              onClose={() => setSidebarOpen(false)}
+              className="bg-background"
+            />
+          </div>
+        )}
         <aside
           aria-label="Conversation with Maxwell"
           className={`

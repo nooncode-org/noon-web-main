@@ -1,39 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   ExternalLink,
-  FileText,
-  Home,
-  LogOut,
   MessageSquare,
   Monitor,
   PanelLeft,
-  Plus,
   RotateCcw,
-  Search,
   Smartphone,
   Star,
-  Trash2,
-  User,
 } from "lucide-react";
-import { signOutAction } from "@/lib/auth/signout-action";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { GeistSans } from "geist/font/sans";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
-import { siteRoutes } from "@/lib/site-config";
 import { STUDIO_STATUS_META } from "@/lib/maxwell/studio-status";
+import { StudioSidebar } from "./studio-sidebar";
+import type { StudioDraftSession } from "./studio-sidebar";
 import type { StudioPhase, ActiveView, PrototypeVersion } from "./studio-shell";
+
+// The chats/account panel content was extracted to ./studio-sidebar (it now
+// also mounts as a persistent desktop rail in the shell); the type moved with
+// it. Re-exported here so existing importers keep working.
+export type { StudioDraftSession } from "./studio-sidebar";
 
 // ============================================================================
 // Phase label map
@@ -151,18 +137,6 @@ function ViewToggle({
 // StudioHeader
 // ============================================================================
 
-export type StudioDraftSession = {
-  id: string;
-  title: string;
-  updatedAt: string;
-  // Slice 1d (A) — set when the session has a provisioned client workspace;
-  // renders an "Open workspace" link on the row. Null/undefined → no link.
-  workspaceHref?: string | null;
-  // Set when the session's proposal is viewable + unpaid; renders a "View
-  // proposal" link on the row. Null/undefined → no link.
-  proposalHref?: string | null;
-};
-
 type StudioHeaderProps = {
   projectName: string;
   phase: StudioPhase;
@@ -185,6 +159,11 @@ type StudioHeaderProps = {
   // from that silently-failed first load.
   onRequestChats?: () => void;
   quotaSnapshot?: PrototypeQuotaSnapshot | null;
+  // Desktop rail state (lg+). The rail itself is mounted by the shell inside
+  // <main>; the header only hosts the toggle button + hides the chat title
+  // while the rail is open (the active row already names the chat there).
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
   // Preview controls relocated from the preview pane's top strip into this
   // single header bar (v0-style). Rendered only when `hasPrototype` is true.
   previewVersions?: PrototypeVersion[];
@@ -213,6 +192,8 @@ export function StudioHeader({
   onDeleteDraftSession,
   onRequestChats,
   quotaSnapshot = null,
+  sidebarOpen = false,
+  onToggleSidebar,
   previewVersions = [],
   selectedVersionIndex = 0,
   onSelectVersion,
@@ -221,21 +202,9 @@ export function StudioHeader({
   onReloadPreview,
 }: StudioHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [chatQuery, setChatQuery] = useState("");
-  // B31 — Track the row staged for deletion. Single-row state is enough: the
-  // AlertDialog is modal so only one delete prompt can be open at a time. We
-  // keep the row's title around so the dialog can name what is being deleted
-  // even after the popover closes.
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const isProcessing = phaseIsActive(phase);
   const label = phaseLabels[phase];
   const displayName = projectName || "Maxwell Studio";
-
-  // Client-side filter for the drawer's chat search input.
-  const chatQueryTrimmed = chatQuery.trim().toLowerCase();
-  const filteredSessions = chatQueryTrimmed
-    ? draftSessions.filter((s) => s.title.toLowerCase().includes(chatQueryTrimmed))
-    : draftSessions;
 
   // Preview controls (relocated). The selected version drives the "Open full
   // screen" href + the compact version label. Processing/revising is shown
@@ -250,6 +219,9 @@ export function StudioHeader({
     <>
     <header className="flex items-center justify-between gap-2 border-b border-border/70 bg-background/95 px-4 py-2.5 shrink-0">
       <div className="flex min-w-0 items-center gap-2.5">
+        {/* Panel trigger — one per breakpoint. Mobile opens the overlay
+            drawer; desktop (lg+) toggles the persistent rail the shell mounts
+            inside <main>. */}
         <button
           type="button"
           onClick={() => {
@@ -257,13 +229,26 @@ export function StudioHeader({
             onRequestChats?.();
           }}
           aria-label="Open menu"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:hidden"
         >
           <PanelLeft className="h-4 w-4" />
         </button>
-        {/* Current chat name — plain text. The chat switcher now lives in the
-            left drawer (v0-style), so this is no longer a dropdown. */}
-        <div className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex">
+        <button
+          type="button"
+          onClick={() => onToggleSidebar?.()}
+          aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-expanded={sidebarOpen}
+          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
+        >
+          <PanelLeft className="h-4 w-4" />
+        </button>
+        {/* Current chat name — plain text. Hidden on desktop while the rail is
+            open (the active row already names the chat there). */}
+        <div
+          className={`hidden min-w-0 items-center gap-2 text-xs text-muted-foreground sm:flex ${
+            sidebarOpen ? "lg:hidden" : ""
+          }`}
+        >
           <Star className="h-3 w-3 shrink-0 text-muted-foreground/70" />
           <span
             className="max-w-[min(280px,42vw)] truncate font-medium text-foreground/90"
@@ -393,239 +378,35 @@ export function StudioHeader({
       </div>
     </header>
 
-    {/* Mobile-nav-style side drawer (reused from landing/navigation.tsx so the
-        studio uses the same Noon profile panel). Opens from the LEFT — the ▢
-        menu button sits on the left of the header (v0-style). */}
+    {/* Mobile overlay drawer (lg:hidden — on desktop the shell mounts the same
+        StudioSidebar as a persistent rail inside <main>). Opens from the LEFT —
+        the ▢ menu button sits on the left of the header (v0-style). */}
     <div
-      className={`fixed inset-0 z-[998] transition-all duration-300 ${
+      className={`fixed inset-0 z-[998] transition-all duration-300 lg:hidden ${
         menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       style={{ backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(2px)" }}
       onClick={() => setMenuOpen(false)}
     />
     <div
-      className={`fixed top-1.5 left-1.5 bottom-1.5 z-[999] w-72 transition-all duration-300 ${
+      className={`fixed top-1.5 left-1.5 bottom-1.5 z-[999] w-72 transition-all duration-300 lg:hidden ${
         menuOpen ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 -translate-x-full pointer-events-none"
       }`}
     >
-      <div className="h-full rounded-[10px] border border-foreground/10 bg-background/95 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
-        {/* Header — account identity (avatar + email) + close, v0-style. */}
-        <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-foreground/8">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
-            {viewerEmail.charAt(0) || "?"}
-          </span>
-          <span
-            className="min-w-0 flex-1 truncate text-sm font-medium text-foreground"
-            title={viewerEmail}
-          >
-            {viewerEmail}
-          </span>
-          <button
-            type="button"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center justify-center w-7 h-7 shrink-0 rounded-[6px] text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Close menu"
-          >
-            <PanelLeft className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Studio shortcuts */}
-        <div className="px-3 py-3 space-y-1">
-          {onNewDraftChat && (
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                onNewDraftChat();
-              }}
-              className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
-            >
-              <Plus className="h-4 w-4 text-muted-foreground" />
-              New chat
-            </button>
-          )}
-          <Link
-            href={agentHref}
-            onClick={() => setMenuOpen(false)}
-            className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
-          >
-            <User className="h-4 w-4 text-muted-foreground" />
-            Talk to agent
-          </Link>
-        </div>
-
-        {/* Chat switcher — search + recent chats, moved here from the breadcrumb
-            popover so the drawer is the single v0-style panel. Same data source
-            (draftSessions); the per-row actions (view proposal / open workspace /
-            delete) migrated with it so nothing is lost. */}
-        {draftSessions.length > 0 && (
-          <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-3">
-            <div className="px-1 pb-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
-                <input
-                  type="text"
-                  value={chatQuery}
-                  onChange={(e) => setChatQuery(e.target.value)}
-                  placeholder="Search chats"
-                  aria-label="Search chats"
-                  className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
-                />
-              </div>
-            </div>
-            <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
-              Recent chats
-            </p>
-            <div className="min-h-0 flex-1 overflow-y-auto pb-2">
-              {filteredSessions.length === 0 ? (
-                <p className="px-4 py-3 text-xs text-muted-foreground/70">
-                  No chats match “{chatQuery}”.
-                </p>
-              ) : (
-                filteredSessions.map((row) => {
-                  const active = row.id === currentSessionId;
-                  return (
-                    <div
-                      key={row.id}
-                      className={`flex items-stretch gap-0.5 rounded-[8px] ${
-                        active ? "bg-secondary/60" : "hover:bg-secondary/40"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          onSelectDraftSession?.(row.id);
-                        }}
-                        className="min-w-0 flex-1 rounded-[8px] px-4 py-2.5 text-left"
-                      >
-                        <span className="line-clamp-1 text-sm text-foreground/85">{row.title}</span>
-                        <span className="text-[10px] text-muted-foreground/70">
-                          {row.updatedAt.slice(0, 10)}
-                        </span>
-                      </button>
-                      {row.proposalHref && (
-                        <Link
-                          href={row.proposalHref}
-                          aria-label="View proposal"
-                          title="View proposal"
-                          onClick={() => setMenuOpen(false)}
-                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                        </Link>
-                      )}
-                      {row.workspaceHref && (
-                        <Link
-                          href={row.workspaceHref}
-                          aria-label="Open workspace"
-                          title="Open workspace"
-                          onClick={() => setMenuOpen(false)}
-                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                        >
-                          <Monitor className="h-3.5 w-3.5" />
-                        </Link>
-                      )}
-                      {onDeleteDraftSession && (
-                        <button
-                          type="button"
-                          aria-label="Delete conversation"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMenuOpen(false);
-                            setPendingDelete({ id: row.id, title: row.title });
-                          }}
-                          className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Footer — quota + sign out. The account email now lives in the drawer
-            header, so it isn't repeated here. */}
-        <div className="mt-auto px-4 pb-4 pt-1 space-y-3">
-          {/* Prototype quota — neutral/informational, not an alarm. */}
-          {quotaSnapshot && (
-            <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
-                Prototype previews this month
-              </p>
-              <p className="mt-0.5 text-xs text-foreground">
-                {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
-                <span className="ml-2 text-muted-foreground/70">
-                  studio {quotaSnapshot.globalInitialPrototypesThisUtcMonth}/{quotaSnapshot.globalMonthlyInitialLimit}
-                </span>
-              </p>
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <form action={signOutAction} onSubmit={() => setMenuOpen(false)} className="flex-1">
-              <button
-                type="submit"
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </button>
-            </form>
-            <Link
-              href={siteRoutes.home}
-              onClick={() => setMenuOpen(false)}
-              aria-label="Home"
-              title="Home"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
+      <StudioSidebar
+        viewerEmail={viewerEmail}
+        agentHref={agentHref}
+        draftSessions={draftSessions}
+        currentSessionId={currentSessionId}
+        onSelectDraftSession={onSelectDraftSession}
+        onNewDraftChat={onNewDraftChat}
+        onDeleteDraftSession={onDeleteDraftSession}
+        quotaSnapshot={quotaSnapshot}
+        onClose={() => setMenuOpen(false)}
+        onNavigate={() => setMenuOpen(false)}
+        className="rounded-[10px] border border-foreground/10 bg-background/95 backdrop-blur-xl shadow-2xl"
+      />
     </div>
-
-    {/*
-      B31 — Destructive-action confirmation. The popover's per-row delete
-      button now stages a row into `pendingDelete`; this dialog renders only
-      while a row is staged. `onOpenChange(false)` (close via X, ESC, or
-      backdrop) clears the staged row without firing the destructive callback.
-    */}
-    <AlertDialog
-      open={pendingDelete !== null}
-      onOpenChange={(open) => {
-        if (!open) setPendingDelete(null);
-      }}
-    >
-      <AlertDialogContent className={GeistSans.className}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
-          <AlertDialogDescription>
-            {pendingDelete
-              ? `“${pendingDelete.title}” and its draft history will be removed. This cannot be undone.`
-              : "This cannot be undone."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              if (pendingDelete && onDeleteDraftSession) {
-                onDeleteDraftSession(pendingDelete.id);
-              }
-              setPendingDelete(null);
-            }}
-          >
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }
