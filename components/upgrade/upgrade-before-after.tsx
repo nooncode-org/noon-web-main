@@ -152,10 +152,8 @@ function ProofConnector() {
     >
       <defs>
         {/* indigo / blue / violet — blue plus its two closest, cool-family
-            neighbors in the project's one established multi-color set (the
-            true-ROYGBIV spectrum parked at /hero-spectrum; see
-            components/landing/hero-section.tsx) — no green/red/yellow, kept
-            to hues that read as "blue and friends." */}
+            neighbors — no green/red/yellow, kept to hues that read as
+            "blue and friends." */}
         <linearGradient id="proofConnectorGradient" x1="146.5" y1="0" x2="455.5" y2="0" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#5b5bff" />
           <stop offset="45%" stopColor="#1b9aff" />

@@ -68,7 +68,14 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
           : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
       }`}
     >
-      <div className="overflow-hidden rounded-b-[12px] bg-[#f1f1f1] dark:bg-[#1e1e1e] px-3.5 pb-3.5 pt-1">
+      {/* Padding is gated on `open`: when closed the clipped element must have
+          NO padding, otherwise the 18px of pt-1/pb-3.5 keeps the collapsed
+          grid row from reaching 0 (padding renders even at height:0). */}
+      <div
+        className={`min-h-0 overflow-hidden rounded-b-[12px] bg-[#f1f1f1] dark:bg-[#1e1e1e] ${
+          open ? "px-3.5 pb-3.5 pt-1" : ""
+        }`}
+      >
         {/* Carousel row — relative wrapper scoped to scroll area only so
             the absolute fade overlays don't cover the footer. The outer panel
             already has overflow-hidden which clips them at the panel edge. */}
