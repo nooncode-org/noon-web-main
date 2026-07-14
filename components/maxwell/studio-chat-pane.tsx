@@ -521,10 +521,10 @@ export function StudioChatPane({
   // 3-side shadow border instead of a solid border).
   const composerSurfaceClass =
     "rounded-[9px] p-1.5 bg-[#f9f9f9] dark:bg-[#131313] shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14]";
-  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[80px]" : "min-h-[112px]";
+  const composerInputWrapperClass = isWorkspaceVisible ? "min-h-[80px]" : "min-h-[96px]";
   const composerTextAreaClass = isWorkspaceVisible
-    ? "max-h-40 min-h-[64px] w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
-    : "max-h-52 min-h-[96px] w-full resize-none bg-transparent px-3 py-1.5 text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
+    ? "max-h-40 min-h-[64px] w-full resize-none bg-transparent px-3 py-1.5 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55"
+    : "max-h-52 min-h-[84px] w-full resize-none bg-transparent px-3 py-1.5 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/55";
   const latestAssistantIndex = messages.findLastIndex(
     (message) => message.role === "assistant" && (!message.type || message.type === "chat"),
   );
@@ -793,7 +793,7 @@ export function StudioChatPane({
               )}
 
               {/* Bottom row — attach menu (left) + send (right), home-style. */}
-              <div className="mt-1 flex items-center justify-between gap-2 px-1 pb-0.5 pt-1">
+              <div className="mt-1 flex items-center justify-between gap-2 px-1.5 pb-1 pt-1">
                 <div className="relative" ref={attachMenuRef}>
                   <input ref={fileInputRef} type="file" accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
                   <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
@@ -805,7 +805,7 @@ export function StudioChatPane({
                       setUrlInputMode(null);
                       setUrlInputValue("");
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70"
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -883,12 +883,12 @@ export function StudioChatPane({
                       onSend();
                     }
                   }}
-                  className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
+                  className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
                   {isThinking ? (
                     <Square className="h-3 w-3 fill-current" />
                   ) : (
-                    <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
+                    <ArrowUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
                   )}
                 </button>
               </div>
