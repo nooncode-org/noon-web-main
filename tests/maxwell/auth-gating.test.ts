@@ -4,14 +4,14 @@ import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 
 describe("normalizeInternalRedirect", () => {
   it("keeps valid internal paths", () => {
-    expect(normalizeInternalRedirect("/maxwell/studio?prompt=test")).toBe(
-      "/maxwell/studio?prompt=test",
+    expect(normalizeInternalRedirect("/studio?prompt=test")).toBe(
+      "/studio?prompt=test",
     );
   });
 
   it("rejects external urls", () => {
-    expect(normalizeInternalRedirect("https://evil.example")).toBe("/maxwell/studio");
-    expect(normalizeInternalRedirect("//evil.example")).toBe("/maxwell/studio");
+    expect(normalizeInternalRedirect("https://evil.example")).toBe("/studio");
+    expect(normalizeInternalRedirect("//evil.example")).toBe("/studio");
   });
 
   it("falls back when missing", () => {
@@ -21,8 +21,8 @@ describe("normalizeInternalRedirect", () => {
 
 describe("buildSignInHref", () => {
   it("preserves redirect target in query string", () => {
-    expect(buildSignInHref("/maxwell/studio?prompt=test")).toBe(
-      "/signin?redirectTo=%2Fmaxwell%2Fstudio%3Fprompt%3Dtest",
+    expect(buildSignInHref("/studio?prompt=test")).toBe(
+      "/signin?redirectTo=%2Fstudio%3Fprompt%3Dtest",
     );
   });
 });

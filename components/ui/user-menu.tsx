@@ -8,8 +8,8 @@
  * an avatar trigger that opens a Popover with:
  *
  *   - The viewer's email (truncated, monospace).
- *   - A "Maxwell Studio" link (hidden when the menu is rendered inside the
- *     studio itself — pass `showStudioLink={false}`).
+ *   - A "My chats" link to /studio (hidden when the menu is rendered inside
+ *     the studio itself — pass `showStudioLink={false}`).
  *   - A "Sign out" form whose action calls the `signOutAction` Server Action,
  *     which delegates to NextAuth's `signOut` (cookie + JWT invalidation +
  *     redirect to `/`).
@@ -27,7 +27,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, Sparkles } from "lucide-react";
+import { LogOut, MessageSquare } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { signOutAction } from "@/lib/auth/signout-action";
 
@@ -41,7 +41,7 @@ export type UserMenuProps = {
   viewer: UserMenuViewer;
   locale: string;
   /**
-   * When `false`, the "Maxwell Studio" link is omitted. Use from inside the
+   * When `false`, the "My chats" link is omitted. Use from inside the
    * studio itself so the menu doesn't link to where the user already is.
    * Defaults to `true`.
    */
@@ -108,12 +108,12 @@ export function UserMenu({
         <div className="py-1">
           {showStudioLink && (
             <Link
-              href={`/${locale}/maxwell/studio`}
+              href={`/${locale}/studio`}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-3 py-2 text-xs text-foreground/85 transition-colors hover:bg-secondary/60"
             >
-              <Sparkles className="h-3.5 w-3.5" />
-              Maxwell Studio
+              <MessageSquare className="h-3.5 w-3.5" />
+              My chats
             </Link>
           )}
 

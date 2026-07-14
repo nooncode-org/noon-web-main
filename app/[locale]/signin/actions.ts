@@ -8,7 +8,7 @@ import { normalizeInternalRedirect } from "@/lib/auth/redirect";
 export async function signInWithGoogleAction(formData: FormData) {
   const redirectTo = normalizeInternalRedirect(
     formData.get("redirectTo")?.toString(),
-    "/maxwell/studio",
+    "/studio",
   );
 
   try {

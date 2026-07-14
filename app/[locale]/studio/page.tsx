@@ -22,7 +22,7 @@ export default async function MaxwellStudioPage({ params, searchParams }: Props)
     searchParams,
   ]);
   const trimmedPrompt = prompt.trim();
-  const studioPath = `/${locale}/maxwell/studio`;
+  const studioPath = `/${locale}/studio`;
 
   const session = await auth();
   // Dev bypass: use DEV_VIEWER_EMAIL from .env.local when Google auth is not

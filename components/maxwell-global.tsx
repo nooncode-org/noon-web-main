@@ -9,8 +9,9 @@ import { siteStatusTones, siteTones } from "@/lib/site-tones";
 export function MaxwellGlobal() {
   const pathname = usePathname();
 
-  // Suppress on Maxwell pages — the user is already in the Maxwell flow.
-  if (pathname.includes("/maxwell")) return null;
+  // Suppress on Maxwell pages and inside the Studio itself (/studio) — the
+  // user is already in the Maxwell flow.
+  if (pathname.includes("/maxwell") || pathname.includes("/studio")) return null;
 
   return (
     <Link

@@ -4,7 +4,7 @@
  * Wire types and error taxonomy for the D-upstream wire (ADR-028), the
  * Web→App POST that NoonWeb fires when the seller shares the current
  * prototipo with the client. Companion to `prototipo-share.ts` (the
- * outbound helper) and `app/[locale]/maxwell/studio/_actions/share-prototype.ts`
+ * outbound helper) and `app/[locale]/studio/_actions/share-prototype.ts`
  * (the Server Action that wraps it).
  *
  * Direction: NoonWeb → App `/api/integrations/website/prototype-share`.

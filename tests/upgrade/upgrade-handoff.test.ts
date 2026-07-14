@@ -197,7 +197,7 @@ describe("POST /api/upgrade/[id]/handoff", () => {
 
     const body = (await res.json()) as { studioSessionId: string; redirectTo: string };
     expect(body.studioSessionId).toMatch(/^[0-9a-f-]{36}$/); // UUID v4 shape
-    expect(body.redirectTo).toBe("/maxwell/studio");
+    expect(body.redirectTo).toBe("/studio");
 
     // 2 INSERTs: studio_session + studio_event
     expect(executedSql).toHaveLength(2);
