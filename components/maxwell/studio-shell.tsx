@@ -420,6 +420,8 @@ export function StudioShell({
         workspace_pending?: boolean;
         proposal_status?: string | null;
         proposal_public_token?: string | null;
+        // W5 — decision the client recorded on the shared prototipo link.
+        share_decision?: { status: "accepted" | "rejected"; decidedAt: string | null } | null;
       };
 
       setSessionId(data.session.id);
@@ -449,10 +451,25 @@ export function StudioShell({
         setShareUrl(data.session.shareTokenUrl);
       }
       const restoredMessages = data.messages.map(normalizeMessage);
-      setMessages(
-        data.workspace_pending
+      // W5 — surface the client's decision on the shared link (pulled from
+      // App during rehydrate). Ephemeral notice, not persisted — mirrors the
+      // workspace_pending banner below. Resolves the "I shared the link and
+      // heard nothing" blind spot without a push callback (ADR-028 D7).
+      const shareDecisionNotice = data.share_decision
+        ? createMessage({
+            role: "assistant" as const,
+            type: "system_event" as const,
+            content:
+              data.share_decision.status === "accepted"
+                ? "Your client accepted the shared prototype. When you're ready, approve it and request the formal proposal."
+                : "Your client requested changes on the shared prototype. Review their feedback and adjust the prototype before moving forward.",
+          })
+        : null;
+      setMessages([
+        ...restoredMessages,
+        ...(shareDecisionNotice ? [shareDecisionNotice] : []),
+        ...(data.workspace_pending
           ? [
-              ...restoredMessages,
               createMessage({
                 role: "assistant",
                 type: "system_event",
@@ -460,8 +477,8 @@ export function StudioShell({
                   "Your project is being prepared by Noon. The workspace will appear once activation finishes.",
               }),
             ]
-          : restoredMessages,
-      );
+          : []),
+      ]);
       setPrototypeVersions(data.versions);
       if (data.workspace_pending) {
         setStopNotice("Your workspace is being prepared by Noon.");
