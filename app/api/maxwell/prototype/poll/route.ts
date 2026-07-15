@@ -17,6 +17,7 @@ import {
 } from "@/lib/maxwell/prototype-poll-policy";
 import { log } from "@/lib/server/logger";
 import { serializeV0Source } from "@/lib/maxwell/serialize-v0-source";
+import { findMissingLocalImports } from "@/lib/maxwell/prototype-source-integrity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -166,6 +167,25 @@ export async function GET(request: Request) {
       // committing a cold URL. See lib/maxwell/prototype-poll-policy.ts.
       const stabilized = confirmationToken === completionSignature;
       if (!stabilized && !shouldRescueUnstableCompletion(attempt)) {
+        return NextResponse.json({ status: "pending", completion_token: completionSignature });
+      }
+
+      // Content gate (W2, 2026-07-14 E2E): v0 can report completed while the
+      // emitted source imports components it never generated — the demo shell
+      // still serves HTML, so the preview-ready check below is blind to it,
+      // and committing the version burns the client's monthly quota on a
+      // broken deploy. Keep answering `pending` while imports are unresolved:
+      // either v0's next revision emits the missing files (the "completed
+      // before all files" race) or the poll budget cap turns this into a
+      // clean `failed` with no version committed.
+      const missingImports = findMissingLocalImports(statusResult.files);
+      if (missingImports.length > 0) {
+        log.warn("maxwell.prototype.poll", "Completed version has unresolved local imports — holding commit", {
+          session_id: session.id,
+          action,
+          attempt,
+          missing_imports: missingImports.slice(0, 10),
+        });
         return NextResponse.json({ status: "pending", completion_token: completionSignature });
       }
 
