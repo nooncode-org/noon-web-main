@@ -36,11 +36,9 @@ export function buildMagicLinkEmailHtml(url: string): string {
             Sign in to Maxwell
           </a>
         </p>
-        <p style="margin:0 0 8px; font-size:14px; line-height:1.6; color:#6a6057;">
-          If the button doesn't work, copy and paste this link into your browser:
-        </p>
-        <p style="margin:0 0 24px; font-size:13px; line-height:1.5; color:#8a7f71; word-break:break-all;">
-          ${safeUrl}
+        <p style="margin:0 0 24px; font-size:14px; line-height:1.6; color:#6a6057;">
+          If the button doesn't work,
+          <a href="${safeUrl}" style="color:#171412; font-weight:600; text-decoration:underline;">use this link to sign in</a>.
         </p>
         <p style="margin:0; font-size:14px; line-height:1.6; color:#6a6057;">
           If you didn't request this, you can safely ignore this email.
