@@ -13,10 +13,11 @@ import {
 import {
   ProposalEmailConfigurationError,
   ProposalEmailSendError,
+  sendProposalChangesRequestedEmail,
   sendProposalEmail,
   sendProposalRejectedEmail,
 } from "@/lib/maxwell/proposal-email";
-import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
+import { buildPublicProposalUrl, buildStudioSessionUrl } from "@/lib/maxwell/public-url";
 import { log } from "@/lib/server/logger";
 import {
   NoonAppIntegrationError,
@@ -305,6 +306,59 @@ async function applyReviewDecision(
         actor: "noon-app",
         notes: "Noon App PM requested changes before the website can show the proposal.",
       });
+
+      // W3 (owner decision 2026-07-14, supersedes 2026-05-29 Decision A): the
+      // client is the one who must re-request the proposal, so tell them —
+      // without this email they get no signal at all. Same contract as the
+      // approved/decline emails: try/catch, audit both outcomes, NEVER roll
+      // back the decision on email failure. The early-return above on
+      // already-`returned` proposals plus the versioned Resend idempotency key
+      // keep webhook retries from re-firing it.
+      const changesRecipient = proposal.deliveryRecipient ?? session.ownerEmail;
+      if (changesRecipient) {
+        try {
+          const emailResult = await sendProposalChangesRequestedEmail({
+            proposalId: proposal.id,
+            versionNumber: updated.versionNumber ?? proposal.versionNumber,
+            to: changesRecipient,
+            projectTitle:
+              session.goalSummary ??
+              session.initialPrompt ??
+              `Proposal ${proposal.id}`,
+            studioUrl: buildStudioSessionUrl(session.id, { request }),
+          });
+
+          await appendProposalReviewEvent({
+            proposalRequestId: proposal.id,
+            action: "sent",
+            actor: "noon-app",
+            notes: `Changes-requested email delivered to ${changesRecipient} via ${emailResult.provider} (${emailResult.messageId}).`,
+          });
+        } catch (error) {
+          await appendProposalReviewEvent({
+            proposalRequestId: proposal.id,
+            action: "delivery_failed",
+            actor: "noon-app",
+            notes:
+              error instanceof ProposalEmailConfigurationError ||
+              error instanceof ProposalEmailSendError
+                ? error.message
+                : "Changes-requested email send failed after Noon App review.",
+          });
+          log.error("integrations.noon-app.proposal-review-decision", error, {
+            phase: "proposal_changes_requested_email_send",
+            proposalId: proposal.id,
+          });
+        }
+      } else {
+        await appendProposalReviewEvent({
+          proposalRequestId: proposal.id,
+          action: "delivery_failed",
+          actor: "noon-app",
+          notes:
+            "Changes-requested email skipped: no delivery recipient resolved (deliveryRecipient and ownerEmail both empty).",
+        });
+      }
 
       return NextResponse.json({
         message: "Proposal returned for changes by Noon App.",

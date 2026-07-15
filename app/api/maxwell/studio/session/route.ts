@@ -10,7 +10,9 @@ import {
 } from "@/lib/maxwell/repositories";
 import type { MessageType } from "@/lib/maxwell/repositories";
 import { isProposalPubliclyViewable } from "@/lib/maxwell/proposal-visibility";
+import { fetchPrototipoRender } from "@/lib/maxwell/prototipo-render-fetch";
 import { assertNoInternalFields } from "@/lib/security/project-isolation";
+import { log } from "@/lib/server/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +54,39 @@ export async function GET(request: Request) {
   const workspace = await getClientWorkspaceBySession(sessionId);
   const proposal = await getLatestProposalRequest(sessionId);
 
+  // W5 (ADR-028 D7 stays: no push callback — sync is pull). When the session
+  // shared a prototipo link and no proposal exists yet, read the decision the
+  // client recorded on that link via App's signed-read, so the studio can say
+  // "your client already accepted/rejected" instead of leaving the owner
+  // blind. Best-effort: any fetch failure degrades to "no decision info"
+  // (fetchPrototipoRender never throws). Skipped once a proposal exists — the
+  // flow already moved past the prototype decision.
+  let shareDecision: {
+    status: "accepted" | "rejected";
+    decidedAt: string | null;
+  } | null = null;
+  const shareDecisionRelevant =
+    session.shareToken !== null &&
+    proposal === null &&
+    (session.status === "prototype_ready" ||
+      session.status === "prototype_shared" ||
+      session.status === "approved_for_proposal");
+  if (shareDecisionRelevant && session.shareToken) {
+    const render = await fetchPrototipoRender(session.shareToken);
+    if (render.status === "ok" && render.data.decision.status !== "pending") {
+      shareDecision = {
+        status: render.data.decision.status,
+        decidedAt: render.data.decision.decidedAt,
+      };
+    } else if (render.status === "error") {
+      log.warn("maxwell.studio.session", "Share-decision pull failed; rehydrating without it.", {
+        session_id: session.id,
+        code: render.code,
+        http_status: render.httpStatus,
+      });
+    }
+  }
+
   const messages = dbMessages
     .filter((message) => message.role !== "system")
     .map((message) => ({
@@ -88,6 +123,9 @@ export async function GET(request: Request) {
     versions,
     workspace: workspace ?? null,
     workspace_pending: session.status === "converted" && !workspace,
+    // W5 — the client's decision on the shared prototipo link (null when not
+    // shared, still pending, already past the prototype stage, or unreachable).
+    share_decision: shareDecision,
     proposal_status: proposal?.status ?? null,
     // Owner-only deep-link token for the Studio "View your proposal" CTA.
     // Exposed ONLY for statuses the public proposal page actually renders, so

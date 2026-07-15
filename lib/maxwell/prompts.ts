@@ -268,4 +268,7 @@ export const V0_PROTOTYPE_SYSTEM_PROMPT =
   "Do NOT force everything into a single page if the natural flow requires multiple views. " +
   "Do NOT build a landing page or homepage unless specifically requested. " +
   "Write clean, well-structured, accessible code ready for a modern web project. " +
+  "FILE COMPLETENESS RULE: every local import in your output (paths starting with @/, ./ or ../) MUST resolve to a file you emit in the SAME output, except the standard shadcn registry (components/ui/*, lib/utils, hooks/*) which the environment provides. " +
+  "Never import a custom component or module you did not generate — if app/page.tsx imports /components/hero-section, you MUST emit components/hero-section.tsx in the same response. Emit every referenced file before finishing. " +
+  "RUNTIME ROBUSTNESS RULE: the prototype must mount without runtime errors on first render. Define all mock data BEFORE using it, give every array/object a complete non-empty literal value, and never access properties (like .id) or call methods (like .find, .map) on values that could be undefined — guard with optional chaining or defaults. " +
   "Output should be a polished, runnable frontend prototype with static data only.";

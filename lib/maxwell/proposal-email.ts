@@ -194,8 +194,11 @@ export async function sendProposalEmail(input: SendProposalEmailInput): Promise<
  * structure of `sendProposalEmail` and uses the same shared Resend
  * primitives. Ungated, consistent with the live approval email (§6).
  *
- * Note: `changes_requested` deliberately does NOT send any email — it is an
- * internal back-to-the-seller state the client never sees (Decision A).
+ * Note on `changes_requested`: originally it sent no email (2026-05-29
+ * Decision A). Superseded by the owner 2026-07-14: the CLIENT is the one who
+ * must re-request the proposal, so with no signal they never find out —
+ * `sendProposalChangesRequestedEmail` below covers it. The copy asks for
+ * their action without exposing the internal review churn.
  */
 export type SendProposalRejectedEmailInput = {
   proposalId: string;
@@ -257,6 +260,97 @@ export async function sendProposalRejectedEmail(
     idempotencyKey: `maxwell-proposal-rejected-${input.proposalId}`,
     tags: [
       { name: "flow", value: "maxwell_proposal_rejected" },
+      { name: "proposal_id", value: input.proposalId },
+      { name: "proposal_version", value: String(input.versionNumber) },
+    ],
+  });
+}
+
+/**
+ * Sent when the Noon App PM requests changes on a proposal (W3, owner decision
+ * 2026-07-14, supersedes Decision A). The draft went back to `returned` and the
+ * session to `approved_for_proposal` — the CLIENT must re-request the proposal
+ * from their studio session, and without this email they get no signal at all.
+ * The copy is action-oriented ("request the updated proposal from your studio")
+ * and never mentions the internal review loop. The version number in the
+ * idempotency key lets a later round of changes (after a re-request bumps the
+ * version) send its own email while webhook retries of the SAME round dedupe.
+ */
+export type SendProposalChangesRequestedEmailInput = {
+  proposalId: string;
+  versionNumber: number;
+  to: string;
+  projectTitle: string;
+  /** Deep link back to the client's Maxwell studio session. */
+  studioUrl: string;
+};
+
+function buildProposalChangesRequestedEmailSubject(projectTitle: string): string {
+  return `Action needed on your Noon proposal${projectTitle ? ` — ${projectTitle}` : ""}`;
+}
+
+function buildProposalChangesRequestedEmailText(
+  input: SendProposalChangesRequestedEmailInput,
+): string {
+  return [
+    "We're refining your Noon proposal before sending the formal version.",
+    "",
+    `Project: ${input.projectTitle}`,
+    "",
+    "To receive the updated proposal, please return to your Maxwell studio session and request the proposal again when you're ready:",
+    input.studioUrl,
+    "",
+    "If you prefer direct assistance, just reply to this email and the Noon team will help you.",
+  ].join("\n");
+}
+
+function buildProposalChangesRequestedEmailHtml(
+  input: SendProposalChangesRequestedEmailInput,
+): string {
+  const projectTitle = escapeHtml(input.projectTitle);
+  const studioUrl = escapeHtml(input.studioUrl);
+
+  return `
+    <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
+      <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">
+        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">Noon proposal</p>
+        <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Your proposal needs one more step</h1>
+        <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
+          We're refining your proposal for <strong>${projectTitle}</strong> before sending the formal version.
+        </p>
+        <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
+          To receive the updated proposal, return to your Maxwell studio session and request it again when you're ready.
+        </p>
+        <p style="margin:0 0 28px;">
+          <a
+            href="${studioUrl}"
+            style="display:inline-block; background:#171412; color:#ffffff; text-decoration:none; padding:14px 22px; border-radius:999px; font-size:14px; font-weight:600;"
+          >
+            Open your studio session
+          </a>
+        </p>
+        <p style="margin:0; font-size:14px; line-height:1.6; color:#6a6057;">
+          If you prefer direct assistance, reply to this email and the Noon team will help you.
+        </p>
+      </div>
+    </div>
+  `.trim();
+}
+
+export async function sendProposalChangesRequestedEmail(
+  input: SendProposalChangesRequestedEmailInput,
+): Promise<ProposalEmailResult> {
+  const config = getResendConfig();
+
+  return sendViaResend({
+    config,
+    to: input.to,
+    subject: buildProposalChangesRequestedEmailSubject(input.projectTitle),
+    html: buildProposalChangesRequestedEmailHtml(input),
+    text: buildProposalChangesRequestedEmailText(input),
+    idempotencyKey: `maxwell-proposal-changes-${input.proposalId}-v${input.versionNumber}`,
+    tags: [
+      { name: "flow", value: "maxwell_proposal_changes_requested" },
       { name: "proposal_id", value: input.proposalId },
       { name: "proposal_version", value: String(input.versionNumber) },
     ],

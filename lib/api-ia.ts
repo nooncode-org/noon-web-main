@@ -244,17 +244,24 @@ export async function createV0Prototype(params: V0CreateParams): Promise<V0Resul
       imageGenerations: false,
       thinking: false,
     },
-  }) as { id: string; latestVersion?: { demoUrl?: string } };
+  }) as { id?: string; latestVersion?: { demoUrl?: string } };
 
   await recordLLMCall({
     category: "v0_prototype_create",
     provider: "v0",
     model: "default",
-    requestId: result.id ?? null,
+    requestId: result?.id ?? null,
     metadata: {
       response_mode: "async",
     },
   });
+
+  // Seen live 2026-07-14: the SDK can resolve without an id, and letting it
+  // through crashed downstream with a raw TypeError. Throw a typed message so
+  // the route's v0_create catch reverts the session and surfaces the retry copy.
+  if (!result?.id) {
+    throw new Error("v0 chats.create returned no chat id.");
+  }
 
   return {
     chatId: result.id,

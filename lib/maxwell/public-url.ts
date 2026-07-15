@@ -71,3 +71,26 @@ export function buildWorkspaceUrl(
   const locale = options.locale?.trim() || "en";
   return new URL(`/${locale}/maxwell/workspace/${sessionId}`, baseUrl).toString();
 }
+
+/**
+ * Deep link back to a client's Maxwell studio session (the studio rehydrates
+ * from `?session_id=`). Used by the W3 changes-requested email. Same locale
+ * default rationale as `buildWorkspaceUrl` above.
+ */
+export function buildStudioSessionUrl(
+  sessionId: string,
+  options: { locale?: string; request?: Request } = {},
+): string {
+  const baseUrl = resolvePublicBaseUrl(options.request);
+  if (!baseUrl) {
+    throw new Error(
+      "A public base URL is required. Set MAXWELL_PUBLIC_BASE_URL or NEXT_PUBLIC_SITE_URL."
+    );
+  }
+
+  const locale = options.locale?.trim() || "en";
+  return new URL(
+    `/${locale}/maxwell?session_id=${encodeURIComponent(sessionId)}`,
+    baseUrl,
+  ).toString();
+}
