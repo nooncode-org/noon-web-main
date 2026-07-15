@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ProposalEmailConfigurationError,
+  sendProposalChangesRequestedEmail,
   sendProposalEmail,
   sendProposalRejectedEmail,
   isProposalEmailConfigured,
@@ -225,5 +226,52 @@ describe("sendProposalRejectedEmail", () => {
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const payload = JSON.parse(String(init.body)) as { subject: string };
     expect(payload.subject).toBe("Update on your Noon proposal");
+  });
+});
+
+describe("sendProposalChangesRequestedEmail", () => {
+  it("sends the action-needed email with the studio CTA and a versioned idempotency key", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_changes_1" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await sendProposalChangesRequestedEmail({
+      proposalId: "proposal-11",
+      versionNumber: 3,
+      to: "client@example.com",
+      projectTitle: "Client portal",
+      studioUrl: "https://noon.example/en/maxwell?session_id=sess-1",
+    });
+
+    expect(result).toEqual({ provider: "resend", messageId: "email_changes_1" });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Record<string, string>;
+    // Versioned: a LATER round of changes (new version after re-request) must
+    // send its own email, while webhook retries of the same round dedupe.
+    expect(headers["Idempotency-Key"]).toBe("maxwell-proposal-changes-proposal-11-v3");
+
+    const payload = JSON.parse(String(init.body)) as {
+      subject: string;
+      html: string;
+      text: string;
+      tags: Array<{ name: string; value: string }>;
+    };
+    expect(payload.subject).toBe("Action needed on your Noon proposal — Client portal");
+    // Action-oriented copy with the studio deep link; never mentions the
+    // internal review loop (owner decision 2026-07-14 §4.6).
+    expect(payload.text).toContain("request the proposal again");
+    expect(payload.text).toContain("https://noon.example/en/maxwell?session_id=sess-1");
+    expect(payload.text).not.toMatch(/reject|declin|PM|review team/i);
+    expect(payload.html).toContain("Open your studio session");
+    expect(payload.tags).toContainEqual({
+      name: "flow",
+      value: "maxwell_proposal_changes_requested",
+    });
   });
 });
