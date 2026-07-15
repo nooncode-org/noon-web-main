@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { NoonWordmark, NoonMark } from "@/components/brand/noon-logo";
 import { normalizeInternalRedirect } from "@/lib/auth/redirect";
 import { signInWithGoogleAction } from "./actions";
+import { EmailSignInForm } from "./email-signin-form";
 
 export type AuthMode = "signup" | "signin";
 
@@ -55,10 +56,14 @@ export function AuthMethodsScreen({
   mode,
   locale,
   redirectTo,
+  emailEnabled,
 }: {
   mode: AuthMode;
   locale: string;
   redirectTo?: string;
+  /** Email magic-link wired (Resend + Postgres). When false, the email method
+      renders as a disabled placeholder — same as Apple. */
+  emailEnabled: boolean;
 }) {
   const copy = COPY[mode];
   const lp = (href: string) => `/${locale}${href}`;
@@ -88,21 +93,25 @@ export function AuthMethodsScreen({
           <h1 className="sic-title">{copy.heading}</h1>
           <p className="sic-sub">{copy.sub}</p>
 
-          {/* Only Google is wired (Noon's sole real provider). Email + Apple have no
-              backend yet, so they render disabled/greyed as a visual step. */}
-          <form className="sic-form">
-            <input
-              type="email"
-              className="sic-input"
-              placeholder="name@work-email.com"
-              autoComplete="email"
-              aria-label="Email address"
-              disabled
-            />
-            <button type="button" className="lgl-btn lgl-btn-primary sic-btn" disabled>
-              Continue with Email
-            </button>
-          </form>
+          {/* Email magic-link when configured (Resend + Postgres); Google is
+              always wired; Apple has no backend yet and stays disabled below. */}
+          {emailEnabled ? (
+            <EmailSignInForm redirectTo={redirectTo} />
+          ) : (
+            <form className="sic-form">
+              <input
+                type="email"
+                className="sic-input"
+                placeholder="name@work-email.com"
+                autoComplete="email"
+                aria-label="Email address"
+                disabled
+              />
+              <button type="button" className="lgl-btn lgl-btn-primary sic-btn" disabled>
+                Continue with Email
+              </button>
+            </form>
+          )}
 
           <div className="sic-divider" aria-hidden="true" />
 

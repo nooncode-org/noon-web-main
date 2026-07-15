@@ -40,6 +40,10 @@ vi.mock("@/lib/server/rate-limit-distributed", () => ({
   sweepRateLimitCounters: vi.fn(async () => 0),
 }));
 
+vi.mock("@/lib/auth/verification-adapter", () => ({
+  sweepExpiredVerificationTokens: vi.fn(async () => 0),
+}));
+
 vi.mock("@/lib/server/logger", () => ({
   log: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));

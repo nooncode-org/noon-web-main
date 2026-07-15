@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, isEmailAuthConfigured } from "@/auth";
 import { normalizeInternalRedirect } from "@/lib/auth/redirect";
 import { AuthMethodsScreen } from "../auth-methods";
 import "@/app/_components/site/legal-rd.css";
@@ -22,5 +22,12 @@ export default async function SignInPage({ params, searchParams }: Props) {
     redirect(redirectTo);
   }
 
-  return <AuthMethodsScreen mode="signin" locale={locale} redirectTo={rawRedirectTo} />;
+  return (
+    <AuthMethodsScreen
+      mode="signin"
+      locale={locale}
+      redirectTo={rawRedirectTo}
+      emailEnabled={isEmailAuthConfigured()}
+    />
+  );
 }

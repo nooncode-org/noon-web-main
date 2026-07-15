@@ -313,9 +313,30 @@ html.dark .si-mock { background: #131313; border-color: #2a2a2a; }
 /* the wired Google button is wrapped in a <form> — keep it transparent to the flex */
 .sic-providers form { display: contents; }
 
-/* disabled methods (Email + Apple have no backend yet) — greyed, non-interactive */
+/* disabled methods (Apple has no backend yet) — greyed, non-interactive */
 .sic-btn:disabled { opacity: 0.4; pointer-events: none; }
 .sic-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* email magic-link form — inline error + "we sent it" states */
+.sic-error {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #dc6b6b;
+}
+.sic-sent {
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+.sic-sent strong { color: var(--text-primary); }
 
 .sic-alt {
   margin: 26px 0 0;

@@ -57,6 +57,7 @@ import {
   sendClientRequestAttachmentToNoonApp,
 } from "@/lib/noon-app-integration";
 import { sweepRateLimitCounters } from "@/lib/server/rate-limit-distributed";
+import { sweepExpiredVerificationTokens } from "@/lib/auth/verification-adapter";
 import { log } from "@/lib/server/logger";
 
 /** Sesión in-flight sin actividad por más de esto = colgada. */
@@ -81,6 +82,7 @@ export type ReaperReport = {
         attachments: OutboxCounts;
       };
   rateLimitWindowsDeleted: number;
+  verificationTokensDeleted: number;
   errors: string[];
 };
 
@@ -264,12 +266,21 @@ export async function runReaper(): Promise<ReaperReport> {
     log.error("maxwell.reaper", error, { phase: "rate_limit_sweep" });
   }
 
+  let verificationTokensDeleted = 0;
+  try {
+    verificationTokensDeleted = await sweepExpiredVerificationTokens();
+  } catch (error) {
+    errors.push(`verification-token: ${error instanceof Error ? error.message : String(error)}`);
+    log.error("maxwell.reaper", error, { phase: "verification_token_sweep" });
+  }
+
   return {
     studioSessionsReverted,
     upgradeSessionsFailed,
     upgradeSessionsArchived,
     outbox,
     rateLimitWindowsDeleted,
+    verificationTokensDeleted,
     errors,
   };
 }

@@ -15,6 +15,27 @@ type Props = {
   searchParams: Promise<{ redirectTo?: string; error?: string }>;
 };
 
+/**
+ * Maps an Auth.js error code (or our own) to friendly copy. Known codes only —
+ * anything unrecognized becomes a generic message rather than reflecting raw
+ * query text back into the page.
+ */
+function mapSignInError(code?: string): string | null {
+  if (!code) return null;
+  switch (code) {
+    case "Verification":
+      return "That sign-in link expired or was already used — request a new one below.";
+    case "AccessDenied":
+      return "Too many sign-in attempts. Please wait a few minutes and try again.";
+    case "GoogleSignInFailed":
+      return "Could not start Google sign-in. Please try again.";
+    case "Configuration":
+      return "Sign-in is temporarily unavailable. Please try again shortly.";
+    default:
+      return "Something went wrong signing in. Please try again.";
+  }
+}
+
 export default async function SignInPage({ params, searchParams }: Props) {
   const [{ locale }, { redirectTo: rawRedirectTo, error }, session] = await Promise.all([
     params,
@@ -86,7 +107,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
             To start a Maxwell session, sign in to your account or create a new one.
           </p>
 
-          {error ? <div className="si-error">{error}</div> : null}
+          {mapSignInError(error) ? (
+            <div className="si-error">{mapSignInError(error)}</div>
+          ) : null}
 
           {/* Sign Up / Sign In each open their own method-chooser screen; the
               intended post-auth destination (redirectTo) is carried through. */}
