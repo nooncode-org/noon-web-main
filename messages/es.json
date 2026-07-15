@@ -15,6 +15,7 @@
     "decision": {
       "idleTitle": "¿Qué te parece el prototipo?",
       "idleBody": "Si está alineado con lo que esperabas, aceptalo para que arranquemos. Si querés cambios, contanos qué ajustar.",
+      "disclaimer": "Al aceptar acá confirmás el prototipo (el diseño). No es la propuesta formal y no genera ningún cobro: la propuesta con precios y pago se solicita desde la sesión original de Maxwell.",
       "accept": "Aceptar prototipo",
       "requestChanges": "Pedir cambios",
       "acceptTitle": "Aceptar este prototipo",

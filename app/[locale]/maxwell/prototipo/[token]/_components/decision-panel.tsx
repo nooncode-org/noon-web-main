@@ -231,6 +231,13 @@ export function DecisionPanel({ token, prototypeWorkspaceId, submitAction }: Pro
           {t("requestChanges")}
         </Button>
       </div>
+      {/* W6 (owner decision 2026-07-14): accepting on this page confirms the
+          PROTOTYPE only — never the formal proposal or a charge. Without this
+          note, someone landing here from a forwarded link reads "accept" as
+          accepting the commercial proposal. */}
+      <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+        {t("disclaimer")}
+      </p>
     </section>
   );
 }
