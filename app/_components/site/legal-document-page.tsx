@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { getContactHref } from "@/lib/site-config";
 import "./legal-rd.css";
@@ -52,7 +52,7 @@ export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPage
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <SiteNavRd locale={locale} />
+      <SiteNav locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

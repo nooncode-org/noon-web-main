@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { TemplatesContent } from "./templates-content";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./templates-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -21,7 +21,7 @@ export default async function TemplatesPage({ params }: Props) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} tpl-rd`}>
-      <SiteNavRd locale={locale} />
+      <SiteNav locale={locale} />
 
       {/* framed page border */}
       <div className="tpl-frame" aria-hidden />

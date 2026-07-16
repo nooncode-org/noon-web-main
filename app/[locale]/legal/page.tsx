@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileText, Shield, Cookie, Scale, ArrowRight } from "lucide-react";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { siteRoutes } from "@/lib/site-config";
 import "@/app/_components/site/legal-rd.css";
@@ -56,7 +56,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <SiteNavRd locale={locale} />
+      <SiteNav locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

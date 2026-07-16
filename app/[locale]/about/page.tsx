@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { AboutContentRd } from "./about-content-rd";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./about-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -21,7 +21,7 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} abt-rd`}>
-      <SiteNavRd locale={locale} active="about" />
+      <SiteNav locale={locale} active="about" />
 
       {/* framed page border */}
       <div className="abt-frame" aria-hidden />
