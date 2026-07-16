@@ -51,6 +51,8 @@ type PlanInfo = {
   priceSub: string;
   features: string[];
   recommended: boolean;
+  /** Membership when the engine doesn't offer it → rendered disabled, not selectable. */
+  unavailable?: boolean;
   ctaLabel: string;
   /** Selectable plan → its CTA advances to the payment step with this modality. */
   selectModality?: Modality;
@@ -59,51 +61,94 @@ type PlanInfo = {
 };
 
 /**
- * Step-1 plan card — always-expanded, its CTA *selects* the plan (advancing to
- * the payment step, where the actual pay methods live). The recommended card
- * carries brand blue (#0056fd) on its border + a filled CTA.
+ * Step-1 plan card — a filled price panel up top (name pill + big price, a
+ * brand-blue gradient on the recommended plan) over the tagline, CTA, and
+ * feature checklist. Its CTA *selects* the plan (advancing to the payment step).
  */
+// Animated wash for the recommended card: two blurred colour blobs that drift
+// slowly inside the price panel (clipped by its rounded box). Motion is gentle
+// and pauses under prefers-reduced-motion.
+const PPW_WASH_CSS = `
+.ppw-blob{position:absolute;border-radius:9999px;filter:blur(34px);will-change:transform}
+.ppw-blob-blue{width:72%;height:96%;top:-26%;right:-12%;background:radial-gradient(circle,rgba(0,86,253,.55),transparent 70%);animation:ppw-drift-a 15s ease-in-out infinite}
+.ppw-blob-purple{width:66%;height:88%;top:-18%;left:14%;background:radial-gradient(circle,rgba(124,58,237,.5),transparent 70%);animation:ppw-drift-b 19s ease-in-out infinite}
+@keyframes ppw-drift-a{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-7%,7%) scale(1.09)}}
+@keyframes ppw-drift-b{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9%,-4%) scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.ppw-blob{animation:none}}
+`;
+
 function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: Modality) => void }) {
-  const { name, badge, tagline, priceMain, priceSub, features, recommended } = plan;
+  const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
   const ctaAccent = recommended
     ? "bg-[#0056fd] text-white hover:bg-[#0047e0]"
-    : "border border-border bg-transparent text-foreground hover:bg-white/[0.06]";
+    : "bg-foreground text-background hover:bg-foreground/90";
+  const ctaClass = `inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-medium transition-colors ${ctaAccent}`;
+  const cta = unavailable ? (
+    <span
+      aria-disabled
+      className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full bg-foreground/10 px-4 py-3 text-sm font-medium text-muted-foreground"
+    >
+      {plan.ctaLabel}
+    </span>
+  ) : plan.ctaHref ? (
+    <Link href={plan.ctaHref} className={ctaClass}>
+      {plan.ctaLabel}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={() => plan.selectModality && onSelect(plan.selectModality)}
+      className={ctaClass}
+    >
+      {plan.ctaLabel}
+    </button>
+  );
   return (
     <div
-      className={`flex flex-col rounded-2xl border px-7 py-12 ${
-        recommended ? "border-[#0056fd] bg-[#0056fd]/[0.06]" : "border-border bg-secondary"
+      className={`flex flex-col rounded-2xl border border-border bg-card p-2.5 pb-10 ${
+        unavailable ? "opacity-55" : ""
       }`}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-[15px] font-medium text-foreground">{name}</span>
-        {badge && (
-          <span className="rounded-full bg-[#0056fd]/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#0056fd]">
-            {badge}
-          </span>
+      {/* Price panel — name up top; price + CTA down at the bottom. The
+          recommended card carries the blue→purple wash contained inside this
+          box (the rounded border-box clips it); the others keep a plain fill. */}
+      <div className="relative flex min-h-[248px] flex-col justify-between overflow-hidden rounded-xl bg-foreground/[0.05] px-6 pt-7 pb-4">
+        {recommended && (
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <span className="ppw-blob ppw-blob-blue" />
+            <span className="ppw-blob ppw-blob-purple" />
+            <style>{PPW_WASH_CSS}</style>
+          </div>
         )}
+        <div className="relative flex items-center justify-between gap-3">
+          <span className="text-[15px] font-medium text-foreground">{name}</span>
+          {recommended && (
+            <span className="rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-foreground">
+              Popular
+            </span>
+          )}
+          {unavailable && (
+            <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+              Unavailable
+            </span>
+          )}
+        </div>
+        <div className="relative">
+          {unavailable ? (
+            <span className="text-lg font-medium text-muted-foreground">Not available</span>
+          ) : (
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[28px] font-semibold leading-none text-foreground">{priceMain}</span>
+              {priceSub && <span className="text-xs text-muted-foreground">{priceSub}</span>}
+            </div>
+          )}
+          <div className="-mx-3 mt-5">{cta}</div>
+        </div>
       </div>
-      <p className="mt-1 text-[13px] text-muted-foreground">{tagline}</p>
-      <div className="mt-5 flex items-baseline gap-1.5">
-        <span className="text-[26px] font-semibold leading-none text-foreground">{priceMain}</span>
-        <span className="text-xs text-muted-foreground">{priceSub}</span>
-      </div>
-      {plan.ctaHref ? (
-        <Link
-          href={plan.ctaHref}
-          className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-medium transition-colors ${ctaAccent}`}
-        >
-          {plan.ctaLabel}
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={() => plan.selectModality && onSelect(plan.selectModality)}
-          className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-4 py-3.5 text-sm font-medium transition-colors ${ctaAccent}`}
-        >
-          {plan.ctaLabel}
-        </button>
-      )}
-      <ul className="mt-8 space-y-3.5">
+
+      <p className="mt-6 px-1.5 text-[13px] text-muted-foreground">{tagline}</p>
+
+      <ul className="mt-6 space-y-3.5 px-1.5">
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
             <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
@@ -209,7 +254,7 @@ export function PublicProposalPayment({
     tagline: "One payment, nothing recurring",
     priceMain: formatMoney(payableAmount, currency),
     priceSub: "once",
-    recommended: !hasMembership,
+    recommended: false,
     ctaLabel: "Continue",
     selectModality: "one_time",
     features: [
@@ -218,7 +263,7 @@ export function PublicProposalPayment({
       "We start the moment it clears",
     ],
   };
-  const membershipPlan: PlanInfo | null =
+  const membershipPlan: PlanInfo =
     hasMembership && monthlyAmountUsd != null
       ? {
           key: "membership",
@@ -237,7 +282,23 @@ export function PublicProposalPayment({
             "Set with your Noon PM — never charged automatically",
           ],
         }
-      : null;
+      : {
+          // Engine didn't recommend membership for this project → the card stays
+          // in place (the 3-up layout never shifts) but renders disabled.
+          key: "membership",
+          name: "Membership",
+          tagline: "Not offered for this project's scope",
+          priceMain: "",
+          priceSub: "",
+          recommended: false,
+          unavailable: true,
+          ctaLabel: "Not available",
+          features: [
+            "Ongoing improvements after your project ships",
+            "A monthly retainer for changes and new work",
+            "Set with your Noon PM — never charged automatically",
+          ],
+        };
   const otherPlan: PlanInfo = {
     key: "other",
     name: "Other",
@@ -253,7 +314,7 @@ export function PublicProposalPayment({
       "Prefer to talk it through first",
     ],
   };
-  const plans = [oneTimePlan, ...(membershipPlan ? [membershipPlan] : []), otherPlan];
+  const plans = [oneTimePlan, membershipPlan, otherPlan];
   const chosen =
     selectedPlan === "membership" ? membershipPlan : selectedPlan === "one_time" ? oneTimePlan : null;
 
@@ -437,13 +498,13 @@ export function PublicProposalPayment({
   return (
     <section className="pt-12">
       <div className="text-center">
-        <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Choose your plan</h2>
+        <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Choose an option</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Your project starts once payment is confirmed.
         </p>
       </div>
 
-      <div className={`mt-8 grid gap-3 ${plans.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+      <div className={`mt-8 grid gap-6 ${plans.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
         {plans.map((plan) => (
           <PlanColumn
             key={plan.key}

@@ -200,7 +200,7 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
         {!effectivelyExpired && (
           <>
-            <div className="mx-auto mt-6 max-w-6xl">
+            <div className="mx-auto mt-6 max-w-[1100px]">
               <PublicProposalPayment
                 publicToken={proposal.publicToken}
                 status={proposal.status}
