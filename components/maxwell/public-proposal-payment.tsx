@@ -3,9 +3,19 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, CheckCircle2, ChevronDown, Loader2, UploadCloud } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  CreditCard,
+  Loader2,
+  Lock,
+  UploadCloud,
+} from "lucide-react";
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
 import { getContactHref } from "@/lib/site-config";
+import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
 
 type CheckoutResult = "success" | "cancelled" | null;
 type Modality = "one_time" | "membership";
@@ -45,7 +55,6 @@ function formatMoney(amount: number, currency: string) {
 type PlanInfo = {
   key: string;
   name: string;
-  badge?: string;
   tagline: string;
   priceMain: string;
   priceSub: string;
@@ -76,6 +85,27 @@ const PPW_WASH_CSS = `
 @keyframes ppw-drift-b{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9%,-4%) scale(1.12)}}
 @media (prefers-reduced-motion:reduce){.ppw-blob{animation:none}}
 `;
+
+// Brand marks for the payment-method rows. Inlined (no asset in the repo); these
+// are placeholder marks — swap for the official brand SVGs when finalising.
+function AppleMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 text-foreground" fill="currentColor" aria-hidden="true">
+      <path d="M17.05 12.04c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.9-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.78 1.3 10.32.86 1.24 1.89 2.63 3.23 2.58 1.3-.05 1.79-.83 3.36-.83 1.57 0 2.01.83 3.38.81 1.4-.03 2.28-1.26 3.13-2.51.99-1.44 1.4-2.83 1.42-2.9-.03-.01-2.72-1.04-2.75-4.14M14.6 4.44c.71-.86 1.19-2.06 1.06-3.25-1.02.04-2.26.68-2.99 1.54-.66.76-1.23 1.98-1.08 3.15 1.14.09 2.3-.58 3.01-1.44" />
+    </svg>
+  );
+}
+
+function GoogleMark() {
+  return (
+    <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden="true">
+      <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
+      <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
+      <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z" />
+      <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z" />
+    </svg>
+  );
+}
 
 function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: Modality) => void }) {
   const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
@@ -268,7 +298,6 @@ export function PublicProposalPayment({
       ? {
           key: "membership",
           name: "Membership",
-          badge: "Recommended",
           tagline: "Activation now, plus ongoing monthly",
           priceMain: formatMoney(payableAmount, currency),
           priceSub: `activation + ${formatMoney(monthlyAmountUsd, currency)}/mo`,
@@ -395,63 +424,132 @@ export function PublicProposalPayment({
   // ── STEP 2 — pay for the chosen plan ──────────────────────────────────────
   if (chosen && selectedPlan) {
     const checkoutBusy = checkingOut !== null;
+    const isMembership = selectedPlan === "membership";
+    // M1 (billing live) bills activation + first month up front, then recurs.
+    // Kill-switch back to M0 → activation only, monthly arranged by the PM.
+    const billsMonthlyNow =
+      isMembership && monthlyAmountUsd != null && MEMBERSHIP_BILLING_ENABLED;
+    const totalTodayUsd =
+      billsMonthlyNow && monthlyAmountUsd != null
+        ? payableAmount + monthlyAmountUsd
+        : payableAmount;
+    const monthlyLabel = monthlyAmountUsd != null ? formatMoney(monthlyAmountUsd, currency) : null;
     return (
       <section className="pt-12">
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedPlan(null);
-            setError(null);
-          }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Change plan
-        </button>
-
-        <div className="mt-5 text-center">
-          <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Complete your payment</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your project starts once payment is confirmed.
-          </p>
-        </div>
-
-        <div className="mx-auto mt-6 max-w-md space-y-4">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-secondary p-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[15px] font-medium text-foreground">{chosen.name}</span>
-                {chosen.badge && (
-                  <span className="rounded-full bg-[#0056fd]/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#0056fd]">
-                    {chosen.badge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">{chosen.tagline}</p>
-            </div>
-            <span className="whitespace-nowrap text-right text-[15px] font-medium text-foreground">
-              {chosen.priceMain}
-              <span className="block text-[11px] font-normal text-muted-foreground">{chosen.priceSub}</span>
-            </span>
-          </div>
-
+        <div className="mx-auto max-w-md">
           <button
             type="button"
-            onClick={() => startCheckout(selectedPlan)}
-            disabled={checkoutBusy || isPending}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0056fd] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0047e0] disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => {
+              setSelectedPlan(null);
+              setError(null);
+            }}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            {checkoutBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {checkoutBusy ? "Redirecting to checkout…" : "Pay with card"}
+            <ArrowLeft className="h-4 w-4" />
+            Change plan
           </button>
+        </div>
+
+        <div className="mx-auto mt-4 max-w-md rounded-2xl border border-border bg-card p-6 sm:p-7">
+          <div className="text-center">
+            <h2 className="text-xl font-medium text-foreground sm:text-2xl">Complete your payment</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Your project starts once payment is confirmed.
+            </p>
+          </div>
+
+          {/* Order summary — itemised, with the amount due today made explicit.
+              When membership billing is live the first charge includes the first
+              month; the kill-switch path falls back to activation-only. */}
+          <div className="mt-6 rounded-xl bg-foreground/[0.05] p-4">
+            <p className="text-[15px] font-medium text-foreground">{chosen.name}</p>
+            <p className="mt-0.5 text-[13px] text-muted-foreground">{chosen.tagline}</p>
+
+            <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">
+                  {isMembership ? "Activation" : "Project payment"}
+                </span>
+                <span className="text-foreground">{formatMoney(payableAmount, currency)}</span>
+              </div>
+              {isMembership && monthlyLabel && (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Membership</span>
+                  <span className="text-foreground">{monthlyLabel}/mo</span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+              <span className="text-sm font-medium text-foreground">Total due today</span>
+              <span className="text-lg font-semibold text-foreground">
+                {formatMoney(totalTodayUsd, currency)}
+              </span>
+            </div>
+
+            {isMembership && monthlyLabel && (
+              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground/80">
+                {billsMonthlyNow
+                  ? `Includes your first month, then ${monthlyLabel}/mo.`
+                  : `The ${monthlyLabel}/mo membership is arranged with your Noon PM — not charged here.`}
+              </p>
+            )}
+          </div>
+
+          {/* Payment method picker — button rows like a method selector. Each
+              launches the Stripe checkout. VISUAL pass; genuine per-method
+              one-tap wiring is the Express Checkout Element step. */}
+          <div className="mt-5 space-y-2">
+            {[
+              {
+                key: "card",
+                label: "Credit or debit card",
+                mark: <CreditCard className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />,
+              },
+              { key: "apple", label: "Apple Pay", mark: <AppleMark /> },
+              { key: "google", label: "Google Pay", mark: <GoogleMark /> },
+              {
+                key: "paypal",
+                label: "PayPal",
+                mark: (
+                  <span
+                    className="text-[15px] font-bold italic leading-none tracking-tight text-foreground"
+                    aria-hidden="true"
+                  >
+                    PayPal
+                  </span>
+                ),
+              },
+            ].map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => startCheckout(selectedPlan)}
+                disabled={checkoutBusy || isPending}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-background px-4 py-3.5 text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-foreground/[0.03] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span>{m.label}</span>
+                <span className="flex h-5 items-center">{m.mark}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            {checkoutBusy ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Lock className="h-3.5 w-3.5" />
+            )}
+            {checkoutBusy ? "Redirecting to checkout…" : "Secure checkout · powered by Stripe"}
+          </p>
 
           {checkoutResult === "cancelled" && (
-            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+            <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
               Payment was cancelled. You can try again whenever you&apos;re ready.
             </p>
           )}
 
-          <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground/70">
+          <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground/70">
             <span className="h-px flex-1 bg-border" />
             or
             <span className="h-px flex-1 bg-border" />
@@ -484,11 +582,12 @@ export function PublicProposalPayment({
           </details>
 
           {submitted && (
-            <p className="text-sm text-sky-900">
+            <p className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0056fd]" />
               Noon received your payment evidence. The workspace activates after verification.
             </p>
           )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
         </div>
       </section>
     );
