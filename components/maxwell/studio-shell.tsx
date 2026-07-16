@@ -254,7 +254,9 @@ export function StudioShell({
   // intake/hub; auto-collapses ONCE when the workspace (chat|preview split)
   // first opens so the split gets its width back. The header's PanelLeft
   // button re-toggles it any time.
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Opens with the chats rail COLLAPSED (matches the dashboard launcher) — the
+  // conversation is the focus; the panel button reopens it.
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Drag-resizable chat↔preview divider (desktop lg+). Drives `--mxw-chat-w`
   // on the workspace <main>; the chat <aside> reads it via a Tailwind var width.

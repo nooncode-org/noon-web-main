@@ -70,8 +70,7 @@ export function StudioDashboard({
   const [currentSuggestion, setCurrentSuggestion] = useState(0);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   // Launcher opens with the rail COLLAPSED — the composer is the focus; the
-  // panel button (top-left) reopens it. (The chat surface still opens with its
-  // rail expanded, where navigation matters more.)
+  // panel button (top-left) reopens it. (The chat surface matches this.)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   // Attach affordance — same UX as the marketing hero / chat composer.
