@@ -1014,6 +1014,28 @@ export function StudioShell({
     // but we also stop here defensively in case of an older server build.
     attempt: number = 1,
   ) {
+    // A poll request is a read: one transient failure (cold start, 5xx, a
+    // network blip) must NOT declare the generation dead — v0 keeps cooking
+    // server-side, and the false failure invited a "Try again" that
+    // double-generated. Retry on the same 5s cadence against the same attempt
+    // budget; only the server's authoritative `failed` (or budget exhaustion)
+    // ends the loop.
+    const retryPollLater = () =>
+      setTimeout(
+        () =>
+          pollV0Status(
+            chatId,
+            pollSessionId,
+            action,
+            prompt,
+            previousDemoUrl,
+            previousVersionId,
+            confirmationToken,
+            attempt + 1,
+          ),
+        5000,
+      );
+
     try {
       const params = new URLSearchParams({
         chatId,
@@ -1035,7 +1057,10 @@ export function StudioShell({
       }
       const res = await fetch(`/api/maxwell/prototype/poll?${params.toString()}`);
       if (!res.ok) {
-        return handlePollError(action);
+        if (hasExceededPollBudget(attempt)) {
+          return handlePollError(action);
+        }
+        return void retryPollLater();
       }
       const data = await res.json();
 
@@ -1079,11 +1104,16 @@ export function StudioShell({
           1200,
         );
       } else {
-        // failed or error
+        // Server-reported `failed` — authoritative (it already reverted the
+        // session); do not retry.
         handlePollError(action);
       }
     } catch {
-      handlePollError(action);
+      if (hasExceededPollBudget(attempt)) {
+        handlePollError(action);
+      } else {
+        retryPollLater();
+      }
     }
   }
 

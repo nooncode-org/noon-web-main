@@ -8,9 +8,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  GENERATION_IN_FLIGHT_WINDOW_MS,
   MAX_PROTOTYPE_POLL_ATTEMPTS,
   POLL_RESCUE_AFTER_ATTEMPTS,
   hasExceededPollBudget,
+  isGenerationLikelyInFlight,
   normalizePollAttempt,
   shouldRescueUnstableCompletion,
 } from "@/lib/maxwell/prototype-poll-policy";
@@ -60,5 +62,47 @@ describe("shouldRescueUnstableCompletion", () => {
 
   it("does not rescue on the first attempt", () => {
     expect(shouldRescueUnstableCompletion(1)).toBe(false);
+  });
+});
+
+describe("isGenerationLikelyInFlight — same-session double-fire guard", () => {
+  const NOW = Date.parse("2026-07-17T12:00:00Z");
+  const iso = (msAgo: number) => new Date(NOW - msAgo).toISOString();
+
+  it("blocks a create while generating_prototype is fresh", () => {
+    expect(isGenerationLikelyInFlight("generating_prototype", iso(5_000), NOW)).toBe(true);
+    expect(
+      isGenerationLikelyInFlight(
+        "generating_prototype",
+        iso(GENERATION_IN_FLIGHT_WINDOW_MS - 1),
+        NOW,
+      ),
+    ).toBe(true);
+  });
+
+  it("reopens the retry lane once the row is an orphan (past the window)", () => {
+    expect(
+      isGenerationLikelyInFlight(
+        "generating_prototype",
+        iso(GENERATION_IN_FLIGHT_WINDOW_MS),
+        NOW,
+      ),
+    ).toBe(false);
+  });
+
+  it("never blocks other statuses", () => {
+    expect(isGenerationLikelyInFlight("clarifying", iso(0), NOW)).toBe(false);
+    expect(isGenerationLikelyInFlight("prototype_ready", iso(0), NOW)).toBe(false);
+    expect(isGenerationLikelyInFlight("revision_requested", iso(0), NOW)).toBe(false);
+  });
+
+  it("fails open on missing or unparseable timestamps", () => {
+    expect(isGenerationLikelyInFlight("generating_prototype", null, NOW)).toBe(false);
+    expect(isGenerationLikelyInFlight("generating_prototype", undefined, NOW)).toBe(false);
+    expect(isGenerationLikelyInFlight("generating_prototype", "not-a-date", NOW)).toBe(false);
+  });
+
+  it("keeps the window above the poll budget so a live loop can never be past it", () => {
+    expect(GENERATION_IN_FLIGHT_WINDOW_MS).toBeGreaterThan(MAX_PROTOTYPE_POLL_ATTEMPTS * 5000);
   });
 });

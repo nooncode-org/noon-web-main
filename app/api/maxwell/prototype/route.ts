@@ -13,6 +13,7 @@ import {
   updateStudioSessionStatus,
 } from "@/lib/maxwell/repositories";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
+import { isGenerationLikelyInFlight } from "@/lib/maxwell/prototype-poll-policy";
 import { evaluateInitialPrototypeCreate } from "@/lib/maxwell/prototype-quota";
 import { classifyStylePack } from "@/lib/maxwell/style-classifier";
 import {
@@ -86,6 +87,20 @@ export async function POST(request: Request) {
     }
 
     if (payload.action === "create") {
+      // Same-session double-fire guard: the quota's concurrency check skips
+      // the current session on purpose, so without this a retry fired while
+      // the first generation was still cooking created a second v0 chat.
+      if (isGenerationLikelyInFlight(session.status, session.updatedAt, Date.now())) {
+        return NextResponse.json(
+          {
+            message:
+              "A prototype is already generating for this conversation. Give it a moment to finish.",
+            code: "PROTOTYPE_GENERATION_IN_PROGRESS",
+          },
+          { status: 409 },
+        );
+      }
+
       const quota = await evaluateInitialPrototypeCreate(viewer.email, session.id);
       if (quota) {
         const contactAgent =

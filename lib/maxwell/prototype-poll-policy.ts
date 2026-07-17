@@ -75,3 +75,33 @@ export function hasExceededPollBudget(attempt: number): boolean {
 export function shouldRescueUnstableCompletion(attempt: number): boolean {
   return normalizePollAttempt(attempt) >= POLL_RESCUE_AFTER_ATTEMPTS;
 }
+
+/**
+ * Window during which a session sitting in `generating_prototype` is assumed
+ * to still have a live generation attached. Derived from the poll budget: a
+ * healthy loop either commits or gives up (and the server reverts the status)
+ * within {@link MAX_PROTOTYPE_POLL_ATTEMPTS} × 5s, so past that plus a margin
+ * the row is an orphan (function died, tab closed) and the retry lane reopens.
+ */
+export const GENERATION_IN_FLIGHT_WINDOW_MS =
+  MAX_PROTOTYPE_POLL_ATTEMPTS * 5000 + 60_000;
+
+/**
+ * Same-session double-fire guard for `action: create` (2026-07-17). A false
+ * client-side failure (one transient poll error used to kill the loop) left
+ * "Try again" free to start a SECOND generation while the first was still
+ * cooking — the quota's concurrency check deliberately skips the current
+ * session. A fresh `generating_prototype` status means work is in flight:
+ * refuse the create. An unparseable/missing timestamp fails open so a user is
+ * never locked out by bad data.
+ */
+export function isGenerationLikelyInFlight(
+  status: string,
+  updatedAtIso: string | null | undefined,
+  nowMs: number,
+): boolean {
+  if (status !== "generating_prototype") return false;
+  const updatedAtMs = updatedAtIso ? Date.parse(updatedAtIso) : NaN;
+  if (!Number.isFinite(updatedAtMs)) return false;
+  return nowMs - updatedAtMs < GENERATION_IN_FLIGHT_WINDOW_MS;
+}
