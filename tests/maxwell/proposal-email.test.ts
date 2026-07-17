@@ -273,5 +273,59 @@ describe("sendProposalChangesRequestedEmail", () => {
       name: "flow",
       value: "maxwell_proposal_changes_requested",
     });
+    // W8 — nudge the client to brief Maxwell before re-requesting.
+    expect(payload.text).toContain("tell Maxwell");
+  });
+
+  it("W7: renders the PM note verbatim (text) and HTML-escaped (html) when present", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_changes_2" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProposalChangesRequestedEmail({
+      proposalId: "proposal-11",
+      versionNumber: 3,
+      to: "client@example.com",
+      projectTitle: "Client portal",
+      studioUrl: "https://noon.example/en/maxwell?session_id=sess-1",
+      pmNotes: 'Add pricing & timeline <details>',
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+    expect(payload.text).toContain("Notes from the Noon team:");
+    expect(payload.text).toContain("Add pricing & timeline <details>");
+    expect(payload.html).toContain("Add pricing &amp; timeline &lt;details&gt;");
+    expect(payload.html).not.toContain("<details>");
+  });
+
+  it("W7: omits the notes block when pmNotes is null (cron-rebuilt retry)", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_changes_3" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProposalChangesRequestedEmail({
+      proposalId: "proposal-11",
+      versionNumber: 3,
+      to: "client@example.com",
+      projectTitle: "Client portal",
+      studioUrl: "https://noon.example/en/maxwell?session_id=sess-1",
+      pmNotes: null,
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+    expect(payload.text).not.toContain("Notes from the Noon team:");
+    expect(payload.html).not.toContain("Notes from the Noon team");
   });
 });

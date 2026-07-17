@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { z } from "zod";
 import {
   appendProposalReviewEvent,
+  appendStudioMessage,
   findReceivedProposalReviewDecision,
   getProposalRequest,
   getStudioSession,
@@ -307,6 +308,28 @@ async function applyReviewDecision(
         notes: "Noon App PM requested changes before the website can show the proposal.",
       });
 
+      // W7 — surface the PM's note VERBATIM in the studio chat as a persisted
+      // system message, so the client sees what to adjust when they return to
+      // the session. Best-effort: a failed insert is notification debt, never
+      // a decision failure. Webhook retries dedupe via §7.6 + the
+      // already-`returned` early return above.
+      const pmNotes = payload.notes ?? null;
+      if (pmNotes) {
+        try {
+          await appendStudioMessage({
+            studioSessionId: session.id,
+            role: "assistant",
+            messageType: "system_event",
+            content: `The Noon team reviewed your proposal and asked for adjustments:\n\n"${pmNotes}"\n\nTell Maxwell what to change, then request the proposal again when you're ready.`,
+          });
+        } catch (error) {
+          log.error("integrations.noon-app.proposal-review-decision", error, {
+            phase: "pm_notes_chat_message",
+            proposalId: proposal.id,
+          });
+        }
+      }
+
       // W3 (owner decision 2026-07-14, supersedes 2026-05-29 Decision A): the
       // client is the one who must re-request the proposal, so tell them —
       // without this email they get no signal at all. Same contract as the
@@ -326,6 +349,7 @@ async function applyReviewDecision(
               session.initialPrompt ??
               `Proposal ${proposal.id}`,
             studioUrl: buildStudioSessionUrl(session.id, { request }),
+            pmNotes,
           });
 
           await appendProposalReviewEvent({
