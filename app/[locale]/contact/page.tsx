@@ -4,7 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ArrowRight, Mail } from "lucide-react";
 import { ContactIntakeForm } from "@/app/_components/site/contact-intake-form";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { ContactScroll } from "./contact-scroll";
 import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
@@ -47,7 +47,7 @@ export default async function ContactRedesignPage({ params, searchParams }: Prop
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} ct-rd`}>
-      <SiteNavRd locale={locale} active="contact" />
+      <SiteNav locale={locale} active="contact" />
 
       {/* desktop: the framed region is the scroll container (native bar hidden,
           custom 4px overlay thumb floats inside the frame so divider lines stay

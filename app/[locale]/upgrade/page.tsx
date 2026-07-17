@@ -8,7 +8,7 @@ import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
 import { UpgradeBeforeAfter } from "@/components/upgrade/upgrade-before-after";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./upgrade-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -43,7 +43,7 @@ async function UpgradePageContent({ params, searchParams }: Props) {
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
-      <SiteNavRd locale={locale} active="services" />
+      <SiteNav locale={locale} active="services" />
 
       <div className="upg-frame" aria-hidden />
 

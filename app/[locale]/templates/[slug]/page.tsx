@@ -4,7 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { TemplateMockup } from "@/components/landing/explore-builds-section";
 import { WorkShot } from "@/components/work/work-shot";
-import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
+import { SiteNav } from "@/app/_components/site/site-nav";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import templateMockups from "@/data/template-mockups.json";
 import { notFound, redirect } from "next/navigation";
@@ -64,7 +64,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <SiteNavRd locale={locale} />
+      <SiteNav locale={locale} />
 
       <div className="lgl-frame" aria-hidden />
 

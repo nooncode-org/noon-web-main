@@ -10,9 +10,11 @@ import "./site-nav-rd.css";
 type SiteNavRdProps = {
   locale: string;
   active?: "services" | "about" | "contact";
+  /** Signed-in viewers get a studio nav: marketing links hidden, CTA → Studio. */
+  signedIn?: boolean;
 };
 
-export function SiteNavRd({ locale, active }: SiteNavRdProps) {
+export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
   const [open, setOpen] = useState(false);
   const lp = (href: string) => `/${locale}${href}`;
   const maxwellHref = lp(getStartWithMaxwellHref());
@@ -22,6 +24,25 @@ export function SiteNavRd({ locale, active }: SiteNavRdProps) {
     { href: lp(siteRoutes.about), label: "About", key: "about" },
     { href: lp(siteRoutes.contact), label: "Contact", key: "contact" },
   ];
+
+  // Signed-in: no marketing links / no "Start with Maxwell" sign-up CTA — just
+  // the logo and a "Go to Studio" button (the studio's own nav lives inside).
+  if (signedIn) {
+    return (
+      <header className="rdnav">
+        <div className="rdnav-inner">
+          <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label="Noon — home">
+            <span style={{ height: 20, display: "inline-flex" }}>
+              <NoonWordmark />
+            </span>
+          </Link>
+          <Link href={lp(siteRoutes.maxwellStudio)} className="rdnav-cta rdnav-cta-solo">
+            Go to Studio
+          </Link>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="rdnav">

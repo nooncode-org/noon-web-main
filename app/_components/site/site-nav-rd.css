@@ -39,6 +39,8 @@
 }
 @media (min-width: 768px) { .rdnav-cta { display: inline-flex; } }
 .rdnav-cta:hover { transform: translateY(-1px); }
+/* Signed-in solo CTA (no marketing links / no hamburger) — visible on mobile too. */
+.rdnav-cta-solo { display: inline-flex; }
 
 /* ── hamburger toggle (hidden on desktop) ────────────────────────────────── */
 .rdnav-toggle {

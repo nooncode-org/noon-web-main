@@ -18,6 +18,11 @@ import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import { log } from "@/lib/server/logger";
 import { consumeDistributedToken } from "@/lib/server/rate-limit-distributed";
 import { recordProposalAccessSafe } from "@/lib/server/audit/proposal-access";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { ProposalSidebar } from "@/components/maxwell/proposal-sidebar";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
+import "@/components/maxwell/studio-rd.css";
 
 export const metadata: Metadata = {
   title: "Proposal - Noon",
@@ -37,7 +42,7 @@ function formatDate(iso: string) {
 }
 
 type Props = {
-  params: Promise<{ token: string }>;
+  params: Promise<{ locale: string; token: string }>;
   searchParams: Promise<{ checkout?: string }>;
 };
 
@@ -67,7 +72,7 @@ async function resolveRscClientIdentity(): Promise<string> {
 }
 
 export default async function PublicProposalPage({ params, searchParams }: Props) {
-  const { token } = await params;
+  const { locale, token } = await params;
   const { checkout } = await searchParams;
   const checkoutResult =
     checkout === "success" ? "success" : checkout === "cancelled" ? "cancelled" : null;
@@ -153,53 +158,65 @@ export default async function PublicProposalPage({ params, searchParams }: Props
     ? resolveProposalCommercialProfile(session)
     : null;
 
+  const viewer = await getAuthenticatedViewer();
+
   return (
-    <main className="min-h-screen bg-background px-6 py-12">
-      <div className="mx-auto max-w-3xl space-y-6">
-        <header className="rounded-2xl border border-border bg-card p-6">
-          <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
-            Noon Proposal
-          </p>
-          <h1 className="mt-2 text-2xl font-display">Project proposal</h1>
-          <div className="mt-4">
-            <StatusBadge status={proposal.status} />
-          </div>
-          <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-            <p>Version {proposal.versionNumber}</p>
-            <p>Sent: {proposal.sentAt ? formatDate(proposal.sentAt) : "Pending delivery record"}</p>
-            <p>
-              First opened: {proposal.firstOpenedAt ? formatDate(proposal.firstOpenedAt) : "This visit"}
+    <main
+      className={`${GeistSans.variable} ${GeistMono.variable} mxw-rd min-h-screen bg-background`}
+      style={{ fontFamily: "var(--font-geist-sans)" }}
+    >
+      {viewer && <ProposalSidebar viewerEmail={viewer.email} locale={locale} />}
+      <div className="px-6 py-12">
+        <div className="mx-auto max-w-3xl">
+          <header className="rounded-2xl border border-border bg-card p-6">
+            <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
+              Noon Proposal
             </p>
-            <p>
-              Valid through: {proposal.expiresAt ? formatDate(proposal.expiresAt) : "15 days from first open"}
-            </p>
-            {/* E2-SEC LOW-1: en la vista expirada no se re-expone el recipient. */}
-            {!effectivelyExpired && proposal.deliveryRecipient && (
-              <p>Recipient: {proposal.deliveryRecipient}</p>
-            )}
-          </div>
-          {effectivelyExpired && (
-            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-              This proposal has expired. Contact Noon if you need an updated version.
+            <h1 className="mt-2 text-2xl font-display">Project proposal</h1>
+            <div className="mt-4">
+              <StatusBadge status={proposal.status} />
             </div>
-          )}
-        </header>
+            <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              <p>Version {proposal.versionNumber}</p>
+              <p>Sent: {proposal.sentAt ? formatDate(proposal.sentAt) : "Pending delivery record"}</p>
+              <p>
+                First opened: {proposal.firstOpenedAt ? formatDate(proposal.firstOpenedAt) : "This visit"}
+              </p>
+              <p>
+                Valid through: {proposal.expiresAt ? formatDate(proposal.expiresAt) : "15 days from first open"}
+              </p>
+              {/* E2-SEC LOW-1: en la vista expirada no se re-expone el recipient. */}
+              {!effectivelyExpired && proposal.deliveryRecipient && (
+                <p>Recipient: {proposal.deliveryRecipient}</p>
+              )}
+            </div>
+            {effectivelyExpired && (
+              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+                This proposal has expired. Contact Noon if you need an updated version.
+              </div>
+            )}
+          </header>
+        </div>
 
         {!effectivelyExpired && (
           <>
-            <PublicProposalPayment
-              publicToken={proposal.publicToken}
-              status={proposal.status}
-              approvedAmountUsd={proposal.approvedAmountUsd}
-              approvedCurrency={proposal.approvedCurrency}
-              membershipApplicable={commercialProfile?.membershipRecommended ?? false}
-              monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
-              checkoutResult={checkoutResult}
-            />
+            <div className="mx-auto mt-6 max-w-[1100px]">
+              <PublicProposalPayment
+                publicToken={proposal.publicToken}
+                status={proposal.status}
+                approvedAmountUsd={proposal.approvedAmountUsd}
+                approvedCurrency={proposal.approvedCurrency}
+                membershipApplicable={commercialProfile?.membershipRecommended ?? false}
+                monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
+                checkoutResult={checkoutResult}
+              />
+            </div>
 
-            <section className="rounded-2xl border border-border bg-card p-6">
-              <ProposalDocument content={cleanDraft} />
-            </section>
+            <div className="mx-auto mt-6 max-w-3xl">
+              <section className="rounded-2xl border border-border bg-card p-6">
+                <ProposalDocument content={cleanDraft} />
+              </section>
+            </div>
           </>
         )}
       </div>
