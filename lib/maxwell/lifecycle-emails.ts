@@ -430,6 +430,104 @@ export async function sendMvpReadyEmail(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Project escalated — a Noon specialist takes over
+// ---------------------------------------------------------------------------
+//
+// Fired by the `ai-mvp-milestone` webhook on the `escalated` milestone: the AI
+// pipeline handed the project to a human. The client sees a REASSURING note
+// ("a specialist is on it"), never an alarming "the build failed" — the
+// milestone is unique per project, so this is a once-per-project email.
+
+export type SendMvpEscalatedEmailInput = {
+  /**
+   * App project id (from the milestone payload). Idempotency anchor — the
+   * `escalated` milestone is unique per project (UNIQUE(project_id, kind)), so
+   * `maxwell-mvp-escalated-<projectId>` can never collide with a second send.
+   */
+  projectId: string;
+  /** Recipient email — typically `proposal_request.delivery_recipient`. */
+  to: string;
+  /** Human-readable project title. */
+  projectTitle: string;
+  /** Workspace URL (built via `buildWorkspaceUrl`). Primary CTA. */
+  workspaceUrl: string;
+};
+
+function buildMvpEscalatedSubject(projectTitle: string): string {
+  return `Your project is in expert hands — ${projectTitle || "your Noon project"}`;
+}
+
+function buildMvpEscalatedText(input: SendMvpEscalatedEmailInput): string {
+  return [
+    "A Noon specialist is now on your project.",
+    "",
+    `Project: ${input.projectTitle}`,
+    "",
+    "A member of our team is giving your project hands-on attention to make sure it's done exactly right. There's nothing you need to do — we'll keep you posted in your workspace.",
+    "",
+    `Open your workspace: ${input.workspaceUrl}`,
+    "",
+    "Reply to this email anytime if you have a question for the Noon team.",
+  ].join("\n");
+}
+
+function buildMvpEscalatedHtml(input: SendMvpEscalatedEmailInput): string {
+  const projectTitle = escapeHtml(input.projectTitle);
+  const workspaceUrl = escapeHtml(input.workspaceUrl);
+
+  return `
+    <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
+      <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">
+        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">Noon project</p>
+        <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Your project is in expert hands</h1>
+        <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
+          Project: <strong>${projectTitle}</strong>
+        </p>
+        <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
+          A member of our team is giving your project hands-on attention to make sure it&#39;s
+          done exactly right. There&#39;s nothing you need to do — we&#39;ll keep you posted in
+          your workspace.
+        </p>
+        <p style="margin:0 0 28px;">
+          <a
+            href="${workspaceUrl}"
+            style="display:inline-block; background:#171412; color:#ffffff; text-decoration:none; padding:14px 22px; border-radius:999px; font-size:14px; font-weight:600;"
+          >
+            Open your workspace
+          </a>
+        </p>
+        <p style="margin:0; font-size:14px; line-height:1.6; color:#6a6057;">
+          Reply to this email anytime if you have a question for the Noon team.
+        </p>
+      </div>
+    </div>
+  `.trim();
+}
+
+export async function sendMvpEscalatedEmail(
+  input: SendMvpEscalatedEmailInput,
+): Promise<LifecycleEmailResult> {
+  if (!isLifecycleEmailsEnabled()) {
+    return buildSkipResult("lifecycle_emails_disabled");
+  }
+
+  const config = getResendConfig();
+
+  return sendViaResend({
+    config,
+    to: input.to,
+    subject: buildMvpEscalatedSubject(input.projectTitle),
+    html: buildMvpEscalatedHtml(input),
+    text: buildMvpEscalatedText(input),
+    idempotencyKey: `maxwell-mvp-escalated-${input.projectId}`,
+    tags: [
+      { name: "flow", value: "maxwell_mvp_escalated" },
+      { name: "project_id", value: input.projectId },
+    ],
+  });
+}
+
 // `resolvePublicBaseUrl` is re-exported so a caller building the URL
 // for the email body can do the resolution + URL construction in one
 // import. Keeps the call site:
