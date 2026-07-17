@@ -1606,6 +1606,25 @@ export async function getClientWorkspaceBySession(studioSessionId: string): Prom
 }
 
 /**
+ * Reverse lookup: App project id → workspace (B8 #4). The AI-MVP milestone
+ * webhook only carries `project_id`; this resolves it back to the workspace
+ * (and thus the studio session / recipient) to send the "first version ready"
+ * email. The mapping is write-once (see setClientWorkspaceNoonAppProjectId),
+ * so at most one row matches in practice.
+ */
+export async function getClientWorkspaceByNoonAppProjectId(
+  noonAppProjectId: string,
+): Promise<ClientWorkspace | null> {
+  const sql = getDb();
+  const rows = await sql<WorkspaceRow[]>`
+    SELECT * FROM client_workspace
+    WHERE noon_app_project_id = ${noonAppProjectId}
+    ORDER BY created_at DESC LIMIT 1
+  `;
+  return rows[0] ? mapWorkspace(rows[0]) : null;
+}
+
+/**
  * Persist App's project id on the workspace, captured from the payment-confirmed
  * response (PR-B). Write-once: only sets the column when it is currently NULL, so
  * a webhook retry or a corrected/different id can never silently overwrite the

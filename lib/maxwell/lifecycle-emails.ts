@@ -16,6 +16,12 @@
  *     "proposal sent" to "project live" — the email IS the
  *     onboarding email for the workspace UI.
  *
+ *   - `sendMvpReadyEmail` (B8 #4) — the client is told their FIRST
+ *     version (the AI-built MVP) is ready to see. Fired by the
+ *     `ai-mvp-milestone` webhook on `version-ready`; that milestone is
+ *     unique per project (UNIQUE(project_id, kind)), so this is a
+ *     once-per-project email — the payoff moment of the purchase.
+ *
  * Both emails share infrastructure with the existing proposal email
  * via `email-config.ts`. They use deterministic idempotency keys
  * (`maxwell-payment-<paymentEventId>` and
@@ -307,6 +313,119 @@ export async function sendWorkspaceReadyEmail(
     tags: [
       { name: "flow", value: "maxwell_workspace_ready" },
       { name: "workspace_id", value: input.workspaceId },
+    ],
+  });
+}
+
+// ---------------------------------------------------------------------------
+// B8 #4 — First version (MVP) ready
+// ---------------------------------------------------------------------------
+
+export type SendMvpReadyEmailInput = {
+  /**
+   * App project id (from the milestone payload). Idempotency anchor — the
+   * `version-ready` milestone is unique per project, so the key
+   * `maxwell-mvp-ready-<projectId>` can never collide with a second send.
+   */
+  projectId: string;
+  /** Recipient email — typically `proposal_request.delivery_recipient`. */
+  to: string;
+  /** Human-readable project title. */
+  projectTitle: string;
+  /** Workspace URL (built via `buildWorkspaceUrl`). Primary CTA. */
+  workspaceUrl: string;
+  /** Direct preview URL from the milestone (`version_url`), when present. */
+  previewUrl?: string | null;
+};
+
+function buildMvpReadySubject(projectTitle: string): string {
+  return `Your first version is ready — ${projectTitle || "your Noon project"}`;
+}
+
+function buildMvpReadyText(input: SendMvpReadyEmailInput): string {
+  const lines = [
+    "Your first version is ready to see.",
+    "",
+    `Project: ${input.projectTitle}`,
+    "",
+    "We've built the first working version of your project. Open your workspace to explore it and tell us what to refine.",
+    "",
+    `Open your workspace: ${input.workspaceUrl}`,
+  ];
+
+  if (input.previewUrl) {
+    lines.push("", `Or open the version directly: ${input.previewUrl}`);
+  }
+
+  lines.push(
+    "",
+    "Reply to this email anytime if you need help or have a question for the Noon team.",
+  );
+
+  return lines.join("\n");
+}
+
+function buildMvpReadyHtml(input: SendMvpReadyEmailInput): string {
+  const projectTitle = escapeHtml(input.projectTitle);
+  const workspaceUrl = escapeHtml(input.workspaceUrl);
+  const previewUrl = input.previewUrl ? escapeHtml(input.previewUrl) : null;
+
+  const previewLine = previewUrl
+    ? `
+        <p style="margin:0 0 24px; font-size:14px; line-height:1.6; color:#6a6057;">
+          Or open the version directly:
+          <a href="${previewUrl}" style="color:#171412;">${previewUrl}</a>
+        </p>`
+    : "";
+
+  return `
+    <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
+      <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #e5ddd1; border-radius:16px; padding:32px;">
+        <p style="margin:0 0 8px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#8a7f71;">Noon project</p>
+        <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Your first version is ready</h1>
+        <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
+          Project: <strong>${projectTitle}</strong>
+        </p>
+        <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
+          We&#39;ve built the first working version of your project. Open your workspace to
+          explore it and tell us what to refine.
+        </p>
+        <p style="margin:0 0 28px;">
+          <a
+            href="${workspaceUrl}"
+            style="display:inline-block; background:#171412; color:#ffffff; text-decoration:none; padding:14px 22px; border-radius:999px; font-size:14px; font-weight:600;"
+          >
+            See your project
+          </a>
+        </p>
+        ${previewLine}
+        <p style="margin:0; font-size:14px; line-height:1.6; color:#6a6057;">
+          Reply to this email anytime if you need help or have a question for the Noon team.
+        </p>
+      </div>
+    </div>
+  `.trim();
+}
+
+export async function sendMvpReadyEmail(
+  input: SendMvpReadyEmailInput,
+): Promise<LifecycleEmailResult> {
+  if (!isLifecycleEmailsEnabled()) {
+    return buildSkipResult("lifecycle_emails_disabled");
+  }
+
+  const config = getResendConfig();
+
+  return sendViaResend({
+    config,
+    to: input.to,
+    subject: buildMvpReadySubject(input.projectTitle),
+    html: buildMvpReadyHtml(input),
+    text: buildMvpReadyText(input),
+    idempotencyKey: `maxwell-mvp-ready-${input.projectId}`,
+    tags: [
+      { name: "flow", value: "maxwell_mvp_ready" },
+      { name: "project_id", value: input.projectId },
     ],
   });
 }

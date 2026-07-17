@@ -17,6 +17,9 @@
  *  - Kinds: started / version-ready (+url) / escalated persisted with the right args
  *  - version_url: honoured only on version-ready; ignored on other kinds
  *  - Idempotency: dedup replay returns 2xx and surfaces deduplicated:true
+ *  - B8 #4 email: fired once on a FIRST version-ready (right recipient/link),
+ *    suppressed on dedup replays / other kinds / unmapped projects, and a
+ *    sender crash never breaks the webhook's 2xx contract
  */
 
 import crypto from "node:crypto";
@@ -40,9 +43,38 @@ vi.mock("@/lib/maxwell/repositories", () => ({
       created: true,
     }),
   ),
+  // B8 #4 resolution chain (project → workspace → session/proposal). Happy-path
+  // defaults; individual tests override per-case.
+  getClientWorkspaceByNoonAppProjectId: vi.fn(async () => ({
+    id: "ws-1",
+    studioSessionId: "sess-1",
+    paymentStatus: "paid",
+    workspaceStatus: "active",
+    latestUpdateSummary: null,
+    noonAppProjectId: "project-1",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  })),
+  getStudioSession: vi.fn(async () => ({
+    id: "sess-1",
+    goalSummary: "Ops dashboard",
+    language: "en",
+  })),
+  getLatestProposalRequest: vi.fn(async () => ({
+    id: "prop-1",
+    deliveryRecipient: "client@example.com",
+  })),
+}));
+
+vi.mock("@/lib/maxwell/lifecycle-emails", () => ({
+  sendMvpReadyEmail: vi.fn(async () => ({
+    provider: "resend",
+    messageId: "msg-1",
+  })),
 }));
 
 import * as repos from "@/lib/maxwell/repositories";
+import { sendMvpReadyEmail } from "@/lib/maxwell/lifecycle-emails";
 import { POST } from "@/app/api/integrations/noon-app/ai-mvp-milestone/route";
 
 const TEST_SECRET = "test-secret-not-for-prod";
@@ -84,6 +116,8 @@ function buildSignedRequest(
 
 beforeEach(() => {
   vi.stubEnv("NOON_WEBSITE_WEBHOOK_SECRET", TEST_SECRET);
+  // B8 #4 builds the workspace link with the real buildWorkspaceUrl.
+  vi.stubEnv("MAXWELL_PUBLIC_BASE_URL", "https://noon.example");
   vi.clearAllMocks();
 });
 
@@ -343,5 +377,86 @@ describe("AI MVP milestone webhook — idempotency", () => {
     const req = buildSignedRequest(basePayload);
     const res = await POST(req);
     expect(res.status).toBe(500);
+  });
+});
+
+// ============================================================================
+// B8 #4 — "first version ready" client email
+// ============================================================================
+
+const versionReadyPayload = {
+  event: "ai_mvp_milestone",
+  kind: "version-ready",
+  project_id: "project-1",
+  version_url: "https://preview.example/v1",
+};
+
+describe("AI MVP milestone webhook — B8 #4 mvp-ready email", () => {
+  it("sends the email once on a FIRST version-ready, with the resolved recipient and links", async () => {
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpReadyEmail).toHaveBeenCalledTimes(1);
+    expect(sendMvpReadyEmail).toHaveBeenCalledWith({
+      projectId: "project-1",
+      to: "client@example.com",
+      projectTitle: "Ops dashboard",
+      workspaceUrl: "https://noon.example/en/maxwell/workspace/sess-1",
+      previewUrl: "https://preview.example/v1",
+    });
+  });
+
+  it("does NOT send on a dedup replay (created:false)", async () => {
+    vi.mocked(repos.recordAiMvpMilestone).mockResolvedValueOnce({
+      milestone: {
+        id: "milestone-1",
+        projectId: "project-1",
+        kind: "version-ready",
+        versionUrl: "https://preview.example/v1",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      created: false,
+    });
+
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("does NOT send for non-version-ready kinds", async () => {
+    const res = await POST(buildSignedRequest(basePayload)); // kind: started
+
+    expect(res.status).toBe(200);
+    expect(sendMvpReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("skips (still 2xx) when no workspace is mapped to the project", async () => {
+    vi.mocked(repos.getClientWorkspaceByNoonAppProjectId).mockResolvedValueOnce(null);
+
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("skips (still 2xx) when the proposal has no delivery recipient", async () => {
+    vi.mocked(repos.getLatestProposalRequest).mockResolvedValueOnce(null as never);
+
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("never breaks the webhook 2xx when the email sender throws", async () => {
+    vi.mocked(sendMvpReadyEmail).mockRejectedValueOnce(new Error("resend down"));
+
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.deduplicated).toBe(false);
   });
 });
