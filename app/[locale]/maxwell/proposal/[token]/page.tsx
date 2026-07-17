@@ -209,6 +209,7 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 membershipApplicable={commercialProfile?.membershipRecommended ?? false}
                 monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
                 checkoutResult={checkoutResult}
+                studioSessionId={proposal.studioSessionId}
               />
             </div>
 
