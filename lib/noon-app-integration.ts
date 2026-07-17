@@ -896,6 +896,10 @@ export const noonAppProposalReviewDecisionPayloadSchema = z.object({
   external_source: z.string().min(1),
   external_session_id: z.string().min(1),
   external_proposal_id: z.string().min(1),
+  // W7 — PM note forwarded VERBATIM to the client (email + studio chat).
+  // Nothing load-bearing may key off it, so any malformed value degrades to
+  // null instead of failing the whole decision webhook.
+  notes: z.string().trim().min(1).max(2000).nullish().catch(null),
   noon_app: z
     .object({
       lead_id: z.string().optional(),

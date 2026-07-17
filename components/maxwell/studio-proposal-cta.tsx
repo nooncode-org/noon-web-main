@@ -20,6 +20,11 @@ type StudioProposalCtaProps = {
   onApprove: () => void;
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
+  /**
+   * W10 — always-visible recovery: re-send the pending draft to the Noon PM
+   * queue from the `proposal_pending_review` panel. Idempotent server-side.
+   */
+  onResendProposal?: () => Promise<void>;
   agentHref: string;
   /**
    * Owner-only deep-link token to the public proposal page. Present (from the
@@ -140,6 +145,7 @@ export function StudioProposalCta({
   onApprove,
   onRequestCorrection,
   onRequestProposal,
+  onResendProposal,
   agentHref,
   proposalToken,
   shareEnabled = false,
@@ -149,6 +155,7 @@ export function StudioProposalCta({
 }: StudioProposalCtaProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const canCorrect = phase === "prototype_ready" && correctionsUsed < maxCorrections;
   const allUsed = correctionsUsed >= maxCorrections;
@@ -206,13 +213,33 @@ export function StudioProposalCta({
           <p className="text-xs text-muted-foreground leading-relaxed">
             A Noon Project Manager is reviewing this before sending it to you.
           </p>
-          <Link
-            href={agentHref}
-            className="inline-flex items-center gap-1.5 mt-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <User className="w-3 h-3" />
-            Talk to an agent directly
-          </Link>
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            {onResendProposal ? (
+              <button
+                type="button"
+                disabled={isResending}
+                onClick={() => {
+                  setIsResending(true);
+                  void Promise.resolve(onResendProposal()).finally(() => setIsResending(false));
+                }}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                {isResending ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-3 h-3" />
+                )}
+                Resend to review
+              </button>
+            ) : null}
+            <Link
+              href={agentHref}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <User className="w-3 h-3" />
+              Talk to an agent directly
+            </Link>
+          </div>
         </div>
       </div>
     );

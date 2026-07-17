@@ -29,6 +29,8 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   })),
   updateStudioSessionStatus: vi.fn(async () => undefined),
   appendProposalReviewEvent: vi.fn(async () => undefined),
+  // W7 — PM note persisted into the studio chat on changes_requested.
+  appendStudioMessage: vi.fn(async () => undefined),
   // §7.6 idempotency ledger (fresh key by default; tests override for replays).
   findReceivedProposalReviewDecision: vi.fn(async () => null),
   recordReceivedProposalReviewDecision: vi.fn(async () => undefined),
@@ -37,6 +39,9 @@ vi.mock("@/lib/maxwell/repositories", () => ({
 vi.mock("@/lib/maxwell/public-url", () => ({
   buildPublicProposalUrl: vi.fn(
     (token: string) => `https://noon.test/en/maxwell/proposal/${token}`,
+  ),
+  buildStudioSessionUrl: vi.fn(
+    (sessionId: string) => `https://noon.test/en/maxwell?session_id=${sessionId}`,
   ),
 }));
 
@@ -57,11 +62,16 @@ vi.mock("@/lib/maxwell/proposal-email", () => {
       provider: "resend",
       messageId: "email_decline",
     })),
+    sendProposalChangesRequestedEmail: vi.fn(async () => ({
+      provider: "resend",
+      messageId: "email_changes",
+    })),
   };
 });
 
 import * as repos from "@/lib/maxwell/repositories";
 import {
+  sendProposalChangesRequestedEmail,
   sendProposalEmail,
   sendProposalRejectedEmail,
 } from "@/lib/maxwell/proposal-email";
@@ -527,6 +537,94 @@ describe("Noon App webhook — changes_requested decision", () => {
 
     expect(res.status).toBe(200);
     expect(repos.updateProposalRequestStatus).not.toHaveBeenCalled();
+    // W7 — the early return also guards the chat message and the email.
+    expect(repos.appendStudioMessage).not.toHaveBeenCalled();
+    expect(sendProposalChangesRequestedEmail).not.toHaveBeenCalled();
+  });
+
+  it("W7: persists the PM note VERBATIM in the studio chat and forwards it to the email", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "changes_requested",
+      notes: "Add a pricing section and clarify the timeline.",
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(repos.appendStudioMessage).toHaveBeenCalledTimes(1);
+    expect(repos.appendStudioMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        studioSessionId: "session-1",
+        role: "assistant",
+        messageType: "system_event",
+        content: expect.stringContaining("Add a pricing section and clarify the timeline."),
+      }),
+    );
+    expect(sendProposalChangesRequestedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pmNotes: "Add a pricing section and clarify the timeline.",
+      }),
+    );
+  });
+
+  it("W7: no notes (cron-rebuilt retry sends null) → no chat message, email gets pmNotes null", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "changes_requested",
+      notes: null,
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(repos.appendStudioMessage).not.toHaveBeenCalled();
+    expect(sendProposalChangesRequestedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ pmNotes: null }),
+    );
+  });
+
+  it("W7: a malformed notes value degrades to null instead of failing the decision", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "changes_requested",
+      notes: "x".repeat(3000),
+    });
+    const res = await POST(req);
+
+    // Nothing load-bearing keys off notes: the decision still applies.
+    expect(res.status).toBe(200);
+    expect(repos.updateProposalRequestStatus).toHaveBeenCalledWith(
+      "proposal-1",
+      "returned",
+      expect.objectContaining({ reviewerId: "noon-app" }),
+    );
+    expect(repos.appendStudioMessage).not.toHaveBeenCalled();
+  });
+
+  it("W7: a failed chat-message insert does not block the 200 / decision", async () => {
+    vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
+    vi.mocked(repos.appendStudioMessage).mockRejectedValueOnce(
+      new Error("db exploded"),
+    );
+
+    const req = buildSignedRequest({
+      ...basePayload,
+      decision: "changes_requested",
+      notes: "Add a pricing section.",
+    });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(sendProposalChangesRequestedEmail).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -620,7 +718,7 @@ describe("Noon App webhook — decline emails", () => {
     expect(sendProposalRejectedEmail).toHaveBeenCalledTimes(1);
   });
 
-  it("does NOT send any email on 'changes_requested' (Decision A)", async () => {
+  it("sends ONLY the changes-requested email on 'changes_requested' (W3 supersedes Decision A)", async () => {
     vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
     vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
 
@@ -631,6 +729,7 @@ describe("Noon App webhook — decline emails", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(200);
+    expect(sendProposalChangesRequestedEmail).toHaveBeenCalledTimes(1);
     expect(sendProposalRejectedEmail).not.toHaveBeenCalled();
     expect(sendProposalEmail).not.toHaveBeenCalled();
   });

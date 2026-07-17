@@ -467,9 +467,23 @@ export function StudioShell({
                 : "Your client requested changes on the shared prototype. Review their feedback and adjust the prototype before moving forward.",
           })
         : null;
+      // W8 — the PM asked for adjustments (draft went back to `returned` and
+      // the session to `approved_for_proposal`). Ephemeral notice like the W5
+      // one above; the PM's verbatim note (W7) is a persisted chat message and
+      // already arrives via restoredMessages.
+      const changesRequestedNotice =
+        data.session.status === "approved_for_proposal" && data.proposal_status === "returned"
+          ? createMessage({
+              role: "assistant" as const,
+              type: "system_event" as const,
+              content:
+                "The Noon team asked for adjustments before sending your formal proposal. Tell Maxwell what to change, then request the proposal again — the new draft is built from the full conversation.",
+            })
+          : null;
       setMessages([
         ...restoredMessages,
         ...(shareDecisionNotice ? [shareDecisionNotice] : []),
+        ...(changesRequestedNotice ? [changesRequestedNotice] : []),
         ...(data.workspace_pending
           ? [
               createMessage({
@@ -1332,6 +1346,44 @@ export function StudioShell({
     }
   }
 
+  // W10 — always-visible recovery rail for `proposal_pending_review`: re-POST
+  // the proposal endpoint, which re-sends the existing pending draft to the
+  // Noon PM queue (no new draft, no state change; App-side re-queue is
+  // idempotent). Exists because a swallowed handoff used to strand clients
+  // with no UI action at all.
+  async function handleResendProposal() {
+    if (!sessionId) return;
+    try {
+      const res = await fetch("/api/maxwell/proposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          type: res.ok ? "system_event" : "error",
+          content: res.ok
+            ? "Your proposal was sent to the Noon review team again."
+            : typeof data?.message === "string"
+              ? data.message
+              : "Couldn't resend the proposal. Please try again.",
+        }),
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          type: "error",
+          content: "Couldn't resend the proposal. Please try again.",
+        }),
+      ]);
+    }
+  }
+
   async function handleDeleteSessionList(id: string) {
     // Confirmation lives in the StudioSidebar AlertDialog (B31) — the only
     // caller. A second window.confirm here would double-prompt.
@@ -1558,6 +1610,7 @@ export function StudioShell({
               onApprove={handleApprove}
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}
+              onResendProposal={handleResendProposal}
               agentHref={agentHref}
               proposalToken={proposalPublicToken}
               isWorkspaceVisible={shouldShowWorkspace}

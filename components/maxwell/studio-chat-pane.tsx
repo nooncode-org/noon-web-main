@@ -334,6 +334,8 @@ type StudioChatPaneProps = {
   onApprove: () => void;
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
+  /** W10 — re-send the pending draft to the Noon PM queue (proposal_pending_review CTA). */
+  onResendProposal?: () => Promise<void>;
   agentHref: string;
   /** Owner-only deep-link token to the public proposal page (proposal_sent CTA). */
   proposalToken?: string | null;
@@ -407,6 +409,7 @@ export function StudioChatPane({
   onApprove,
   onRequestCorrection,
   onRequestProposal,
+  onResendProposal,
   agentHref,
   proposalToken,
   isWorkspaceVisible,
@@ -502,11 +505,12 @@ export function StudioChatPane({
     phase === "proposal_pending_review" ||
     phase === "proposal_sent";
 
+  // W9 — no `approved_for_proposal` here: approving ends the adjustment loop
+  // (approved_for_proposal → revision_requested is an illegal transition), so
+  // showing the bar there offered an action that could only 500.
   const showCorrectionBar =
     prototypeVersionNumber > 0 &&
-    (phase === "prototype_ready" ||
-      phase === "revision_requested" ||
-      phase === "approved_for_proposal");
+    (phase === "prototype_ready" || phase === "revision_requested");
   const contentFrameClass = isWorkspaceVisible ? "w-full" : "mx-auto w-full max-w-[720px]";
   const hasDraft = input.trim().length > 0;
   const canSubmit = (hasDraft || !!attachedFile) && !isThinking;
@@ -725,6 +729,7 @@ export function StudioChatPane({
             onApprove={onApprove}
             onRequestCorrection={onRequestCorrection}
             onRequestProposal={onRequestProposal}
+            onResendProposal={onResendProposal}
             agentHref={agentHref}
             proposalToken={proposalToken}
             shareEnabled={shareEnabled}

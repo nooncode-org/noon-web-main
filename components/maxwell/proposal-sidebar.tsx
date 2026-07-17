@@ -39,6 +39,10 @@ export function ProposalSidebar({ viewerEmail, locale }: { viewerEmail: string; 
     }
   }
   useEffect(() => {
+    // Prefetch the chats list so the drawer opens warm. setState happens in the
+    // fetch callback, not synchronously — the rule false-positives on the
+    // helper being invoked from the effect body.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
   }, []);
 

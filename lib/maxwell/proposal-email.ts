@@ -283,6 +283,11 @@ export type SendProposalChangesRequestedEmailInput = {
   projectTitle: string;
   /** Deep link back to the client's Maxwell studio session. */
   studioUrl: string;
+  /**
+   * W7 — the Noon PM's note, forwarded VERBATIM to the client. Null on
+   * cron-rebuilt webhook retries (the App does not persist it).
+   */
+  pmNotes?: string | null;
 };
 
 function buildProposalChangesRequestedEmailSubject(projectTitle: string): string {
@@ -296,9 +301,14 @@ function buildProposalChangesRequestedEmailText(
     "We're refining your Noon proposal before sending the formal version.",
     "",
     `Project: ${input.projectTitle}`,
+    ...(input.pmNotes
+      ? ["", "Notes from the Noon team:", input.pmNotes]
+      : []),
     "",
     "To receive the updated proposal, please return to your Maxwell studio session and request the proposal again when you're ready:",
     input.studioUrl,
+    "",
+    "Tip: you can tell Maxwell about these adjustments in the studio chat first — the new proposal is drafted from the full conversation.",
     "",
     "If you prefer direct assistance, just reply to this email and the Noon team will help you.",
   ].join("\n");
@@ -309,6 +319,13 @@ function buildProposalChangesRequestedEmailHtml(
 ): string {
   const projectTitle = escapeHtml(input.projectTitle);
   const studioUrl = escapeHtml(input.studioUrl);
+  const pmNotesBlock = input.pmNotes
+    ? `
+        <div style="margin:0 0 24px; border-left:3px solid #e5ddd1; padding:4px 0 4px 16px;">
+          <p style="margin:0 0 6px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#8a7f71;">Notes from the Noon team</p>
+          <p style="margin:0; font-size:15px; line-height:1.6; color:#3c342f; white-space:pre-line;">${escapeHtml(input.pmNotes)}</p>
+        </div>`
+    : "";
 
   return `
     <div style="font-family: Arial, sans-serif; background:#f6f3ee; margin:0; padding:32px;">
@@ -317,9 +334,10 @@ function buildProposalChangesRequestedEmailHtml(
         <h1 style="margin:0 0 12px; font-size:28px; line-height:1.2; color:#171412;">Your proposal needs one more step</h1>
         <p style="margin:0 0 20px; font-size:16px; line-height:1.6; color:#3c342f;">
           We're refining your proposal for <strong>${projectTitle}</strong> before sending the formal version.
-        </p>
+        </p>${pmNotesBlock}
         <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#3c342f;">
           To receive the updated proposal, return to your Maxwell studio session and request it again when you're ready.
+          You can tell Maxwell about these adjustments in the studio chat first — the new proposal is drafted from the full conversation.
         </p>
         <p style="margin:0 0 28px;">
           <a
