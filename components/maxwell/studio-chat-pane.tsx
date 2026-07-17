@@ -22,6 +22,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleIcon,
+  BellRing,
   Upload,
   User,
   X,
@@ -347,6 +348,26 @@ type StudioChatPaneProps = {
   onShare?: () => void;
 };
 
+/**
+ * Prominent card for review-loop notices (the PM's W7 note, the W8
+ * changes-requested aviso). These arrive at the bottom of a long chat and were
+ * easy to miss in the muted activity-block styling. Detected by the shared
+ * "The Noon team" content prefix because rehydrated rows carry only
+ * `messageType: system_event` — adding a dedicated type would need a DB
+ * migration for no other gain.
+ */
+function ReviewNoticeCard({ content }: { content: string }) {
+  return (
+    <div className="max-w-[68ch] rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 space-y-2">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400">
+        <BellRing className="h-3.5 w-3.5" />
+        <span>Update from the Noon team</span>
+      </div>
+      <p className="whitespace-pre-line text-sm leading-6 text-foreground">{content}</p>
+    </div>
+  );
+}
+
 function StudioActivityBlock({ content, phase }: { content: string; phase: StudioPhase }) {
   const isActive = phase === "generating_prototype" || phase === "revision_requested";
   const steps = [
@@ -662,6 +683,9 @@ export function StudioChatPane({
               );
             }
             if (msg.type === "system_event") {
+              if (msg.content.startsWith("The Noon team")) {
+                return <ReviewNoticeCard key={messageId} content={msg.content} />;
+              }
               return <StudioActivityBlock key={messageId} content={msg.content} phase={phase} />;
             }
             const persistedMessageId = msg.id;
