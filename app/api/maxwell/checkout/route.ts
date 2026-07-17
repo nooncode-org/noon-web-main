@@ -113,9 +113,14 @@ export async function POST(request: Request) {
 
     if (proposal.stripeCheckoutSessionId) {
       const existing = await stripe.checkout.sessions.retrieve(proposal.stripeCheckoutSessionId);
-      if (existing.status === "open" && existing.url) {
+      // Embedded Checkout: reuse an open session by returning its client_secret
+      // (the browser re-mounts it in-place — there is no redirect URL). A
+      // client_secret is only present on embedded sessions; sessions created
+      // before the embedded switch (hosted `url`, client_secret null) fall through
+      // and a fresh embedded session is created below.
+      if (existing.status === "open" && existing.client_secret) {
         return NextResponse.json({
-          checkout_url: existing.url,
+          client_secret: existing.client_secret,
           checkout_session_id: existing.id,
           reused: true,
         });
@@ -161,10 +166,15 @@ export async function POST(request: Request) {
             // lifecycle stream for the recurring webhooks. Earnings stay 1× on
             // the activation (payment-confirmed sends payment.amount = activation).
             mode: "subscription",
+            ui_mode: "embedded_page",
             client_reference_id: proposal.id,
             customer_email: customerEmail,
-            success_url: `${publicUrl}?checkout=success`,
-            cancel_url: `${publicUrl}?checkout=cancelled`,
+            // Embedded Checkout returns to the proposal page in-place after the
+            // charge; the Stripe webhook stays the source of truth for `paid`.
+            return_url: `${publicUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+            // Stripe collects the billing address inside the widget (this replaces
+            // the bespoke address form the website used to render on this side).
+            billing_address_collection: "required",
             line_items: [
               {
                 // Activation — a ONE-TIME line item (no `recurring`). Stripe bills
@@ -202,16 +212,17 @@ export async function POST(request: Request) {
             metadata: checkoutMetadata,
           },
           {
-            idempotencyKey: `noon-checkout-sub:${proposal.id}:${unitAmount}:${monthlyMinor}:${currency}`,
+            idempotencyKey: `noon-checkout-sub-emb:${proposal.id}:${unitAmount}:${monthlyMinor}:${currency}`,
           },
         )
       : await stripe.checkout.sessions.create(
           {
             mode: "payment",
+            ui_mode: "embedded_page",
             client_reference_id: proposal.id,
             customer_email: customerEmail,
-            success_url: `${publicUrl}?checkout=success`,
-            cancel_url: `${publicUrl}?checkout=cancelled`,
+            return_url: `${publicUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+            billing_address_collection: "required",
             line_items: [
               {
                 quantity: 1,
@@ -235,7 +246,7 @@ export async function POST(request: Request) {
             },
           },
           {
-            idempotencyKey: `noon-checkout:${proposal.id}:${unitAmount}:${currency}`,
+            idempotencyKey: `noon-checkout-emb:${proposal.id}:${unitAmount}:${currency}`,
           },
         );
 
@@ -260,7 +271,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      checkout_url: checkoutSession.url,
+      client_secret: checkoutSession.client_secret,
       checkout_session_id: checkoutSession.id,
       reused: false,
     });

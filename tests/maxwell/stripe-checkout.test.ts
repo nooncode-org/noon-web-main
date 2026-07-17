@@ -188,7 +188,8 @@ describe("POST /api/maxwell/checkout", () => {
     mocks.retrieveCheckoutSession.mockResolvedValue({
       id: "cs_open",
       status: "open",
-      url: "https://checkout.stripe.test/reuse",
+      ui_mode: "embedded_page",
+      client_secret: "cs_open_secret",
     });
 
     const res = await POST(buildRequest());
@@ -196,7 +197,7 @@ describe("POST /api/maxwell/checkout", () => {
 
     expect(res.status).toBe(200);
     expect(body).toMatchObject({
-      checkout_url: "https://checkout.stripe.test/reuse",
+      client_secret: "cs_open_secret",
       checkout_session_id: "cs_open",
       reused: true,
     });
@@ -208,7 +209,7 @@ describe("POST /api/maxwell/checkout", () => {
     mocks.getStudioSession.mockResolvedValue(session());
     mocks.createCheckoutSession.mockResolvedValue({
       id: "cs_test_123",
-      url: "https://checkout.stripe.test/pay",
+      client_secret: "cs_test_123_secret",
     });
 
     const res = await POST(buildRequest());
@@ -216,7 +217,7 @@ describe("POST /api/maxwell/checkout", () => {
 
     expect(res.status).toBe(200);
     expect(body).toMatchObject({
-      checkout_url: "https://checkout.stripe.test/pay",
+      client_secret: "cs_test_123_secret",
       checkout_session_id: "cs_test_123",
       reused: false,
     });
@@ -224,6 +225,11 @@ describe("POST /api/maxwell/checkout", () => {
     expect(mocks.createCheckoutSession).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: "payment",
+        // Embedded Checkout — the payment form mounts in-page (no redirect URL);
+        // Stripe collects the billing address inside the widget.
+        ui_mode: "embedded_page",
+        billing_address_collection: "required",
+        return_url: expect.stringContaining("checkout=success"),
         client_reference_id: "proposal-1",
         customer_email: "client@noon.test",
         metadata: expect.objectContaining({
@@ -235,7 +241,7 @@ describe("POST /api/maxwell/checkout", () => {
         }),
       }),
       expect.objectContaining({
-        idempotencyKey: "noon-checkout:proposal-1:450000:usd",
+        idempotencyKey: "noon-checkout-emb:proposal-1:450000:usd",
       }),
     );
     expect(mocks.updateProposalRequestStatus).toHaveBeenCalledWith(
