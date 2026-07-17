@@ -27,6 +27,7 @@ import {
   EmailConfigurationError,
   EmailSendError,
   isLifecycleEmailsReady,
+  sendMvpEscalatedEmail,
   sendMvpReadyEmail,
   sendPaymentReceivedEmail,
   sendWorkspaceReadyEmail,
@@ -559,6 +560,97 @@ describe("sendMvpReadyEmail", () => {
       to: "client@example.com",
       projectTitle: '<script>alert("x")</script>',
       workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-3",
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string };
+    expect(payload.html).not.toContain("<script>");
+    expect(payload.html).toContain("&lt;script&gt;");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sendMvpEscalatedEmail — a Noon specialist takes over
+// ---------------------------------------------------------------------------
+
+describe("sendMvpEscalatedEmail", () => {
+  beforeEach(() => {
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "1");
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+  });
+
+  it("skips without calling Resend when the lifecycle gate is closed", async () => {
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await sendMvpEscalatedEmail({
+      projectId: "project-1",
+      to: "client@example.com",
+      projectTitle: "Acme",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
+    });
+
+    expect(result).toMatchObject({ skipped: true, reason: "lifecycle_emails_disabled" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("posts to Resend with the reassuring subject, key, tags and workspace link", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_esc_1" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await sendMvpEscalatedEmail({
+      projectId: "project-9",
+      to: "client@example.com",
+      projectTitle: "Acme launchpad",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-9",
+    });
+
+    expect(result).toEqual({ provider: "resend", messageId: "email_esc_1" });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.resend.com/emails");
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Idempotency-Key"]).toBe("maxwell-mvp-escalated-project-9");
+
+    const payload = JSON.parse(String(init.body)) as {
+      to: string[];
+      subject: string;
+      html: string;
+      text: string;
+      tags: Array<{ name: string; value: string }>;
+    };
+    expect(payload.to).toEqual(["client@example.com"]);
+    expect(payload.subject).toBe("Your project is in expert hands — Acme launchpad");
+    expect(payload.html).toContain("Open your workspace");
+    expect(payload.html).toContain("https://noon.com/en/maxwell/workspace/sess-9");
+    expect(payload.text).toContain(
+      "Open your workspace: https://noon.com/en/maxwell/workspace/sess-9",
+    );
+    expect(payload.tags).toEqual(
+      expect.arrayContaining([
+        { name: "flow", value: "maxwell_mvp_escalated" },
+        { name: "project_id", value: "project-9" },
+      ]),
+    );
+  });
+
+  it("HTML-escapes the project title", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_esc_2" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendMvpEscalatedEmail({
+      projectId: "project-x",
+      to: "client@example.com",
+      projectTitle: '<script>alert("x")</script>',
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-x",
     });
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];

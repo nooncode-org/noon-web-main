@@ -71,10 +71,14 @@ vi.mock("@/lib/maxwell/lifecycle-emails", () => ({
     provider: "resend",
     messageId: "msg-1",
   })),
+  sendMvpEscalatedEmail: vi.fn(async () => ({
+    provider: "resend",
+    messageId: "msg-esc-1",
+  })),
 }));
 
 import * as repos from "@/lib/maxwell/repositories";
-import { sendMvpReadyEmail } from "@/lib/maxwell/lifecycle-emails";
+import { sendMvpEscalatedEmail, sendMvpReadyEmail } from "@/lib/maxwell/lifecycle-emails";
 import { POST } from "@/app/api/integrations/noon-app/ai-mvp-milestone/route";
 
 const TEST_SECRET = "test-secret-not-for-prod";
@@ -454,6 +458,78 @@ describe("AI MVP milestone webhook — B8 #4 mvp-ready email", () => {
     vi.mocked(sendMvpReadyEmail).mockRejectedValueOnce(new Error("resend down"));
 
     const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.deduplicated).toBe(false);
+  });
+});
+
+// ============================================================================
+// Escalated — "a specialist is on your project" reassurance email
+// ============================================================================
+
+const escalatedPayload = {
+  event: "ai_mvp_milestone",
+  kind: "escalated",
+  project_id: "project-1",
+};
+
+describe("AI MVP milestone webhook — escalated reassurance email", () => {
+  it("sends once on a FIRST escalated, with the resolved recipient and workspace link", async () => {
+    const res = await POST(buildSignedRequest(escalatedPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpEscalatedEmail).toHaveBeenCalledTimes(1);
+    expect(sendMvpEscalatedEmail).toHaveBeenCalledWith({
+      projectId: "project-1",
+      to: "client@example.com",
+      projectTitle: "Ops dashboard",
+      workspaceUrl: "https://noon.example/en/maxwell/workspace/sess-1",
+    });
+    // The version-ready sender must NOT fire for an escalated milestone.
+    expect(sendMvpReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("does NOT send on a dedup replay (created:false)", async () => {
+    vi.mocked(repos.recordAiMvpMilestone).mockResolvedValueOnce({
+      milestone: {
+        id: "milestone-1",
+        projectId: "project-1",
+        kind: "escalated",
+        versionUrl: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      created: false,
+    });
+
+    const res = await POST(buildSignedRequest(escalatedPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpEscalatedEmail).not.toHaveBeenCalled();
+  });
+
+  it("does NOT send for non-escalated kinds", async () => {
+    const res = await POST(buildSignedRequest(versionReadyPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpEscalatedEmail).not.toHaveBeenCalled();
+  });
+
+  it("skips (still 2xx) when no workspace is mapped to the project", async () => {
+    vi.mocked(repos.getClientWorkspaceByNoonAppProjectId).mockResolvedValueOnce(null);
+
+    const res = await POST(buildSignedRequest(escalatedPayload));
+
+    expect(res.status).toBe(200);
+    expect(sendMvpEscalatedEmail).not.toHaveBeenCalled();
+  });
+
+  it("never breaks the webhook 2xx when the escalated sender throws", async () => {
+    vi.mocked(sendMvpEscalatedEmail).mockRejectedValueOnce(new Error("resend down"));
+
+    const res = await POST(buildSignedRequest(escalatedPayload));
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, unknown>;
