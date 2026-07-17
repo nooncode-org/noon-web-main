@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, CheckCircle2, ChevronDown, Loader2, UploadCloud } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
-import { getContactHref } from "@/lib/site-config";
+import { getContactHref, siteRoutes } from "@/lib/site-config";
+import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
+
+// Stripe.js loads once per module. The publishable key is public by design (it
+// ships to the browser); when it's unset — e.g. before the owner configures it —
+// `stripePromise` stays null and the payment step shows a graceful fallback.
+const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
 
 type CheckoutResult = "success" | "cancelled" | null;
 type Modality = "one_time" | "membership";
@@ -32,6 +41,8 @@ type PublicProposalPaymentProps = {
    * so we show a "confirming" state until then.
    */
   checkoutResult?: CheckoutResult;
+  /** Studio session id — links the post-payment CTA to the client's project workspace (the portal). */
+  studioSessionId?: string;
 };
 
 function formatMoney(amount: number, currency: string) {
@@ -45,7 +56,6 @@ function formatMoney(amount: number, currency: string) {
 type PlanInfo = {
   key: string;
   name: string;
-  badge?: string;
   tagline: string;
   priceMain: string;
   priceSub: string;
@@ -168,29 +178,131 @@ export function PublicProposalPayment({
   membershipApplicable = false,
   monthlyAmountUsd = null,
   checkoutResult = null,
+  studioSessionId,
 }: PublicProposalPaymentProps) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [checkingOut, setCheckingOut] = useState<Modality | null>(null);
   // Two-step flow: pick a plan (null), then pay for it. `null` = step 1.
   const [selectedPlan, setSelectedPlan] = useState<Modality | null>(null);
   const hasApprovedAmount = approvedAmountUsd != null;
   const payable = (status === "sent" || status === "payment_pending") && hasApprovedAmount;
   const currency = approvedCurrency ?? "USD";
+  const pathname = usePathname();
+  const locale = pathname?.split("/")[1] || "en";
+  const localeHref = (route: string) => `/${locale}${route}`;
+
+  // Embedded Checkout asks for the session's client secret when it mounts. This
+  // POSTs to our checkout route (which creates or reuses the Stripe session for
+  // the chosen modality) and hands back its client_secret. A 401 means the viewer
+  // must sign in first — we bounce there and never resolve (the page navigates).
+  const fetchClientSecret = useCallback(async () => {
+    const response = await fetch("/api/maxwell/checkout", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        public_token: publicToken,
+        payment_modality: selectedPlan ?? undefined,
+      }),
+    });
+    if (response.status === 401) {
+      const callbackUrl = `${window.location.pathname}${window.location.search}`;
+      window.location.href = `/${locale}/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      return new Promise<string>(() => {});
+    }
+    const data = (await response.json().catch(() => null)) as
+      | { client_secret?: string; message?: string }
+      | null;
+    if (!response.ok || !data?.client_secret) {
+      throw new Error(data?.message ?? "Payment could not be started. Please try again.");
+    }
+    return data.client_secret;
+  }, [publicToken, selectedPlan, locale]);
 
   if (status === "paid") {
+    const wasMembership = membershipApplicable && monthlyAmountUsd != null;
+    const paidTotal =
+      wasMembership && monthlyAmountUsd != null && MEMBERSHIP_BILLING_ENABLED
+        ? (approvedAmountUsd ?? 0) + monthlyAmountUsd
+        : approvedAmountUsd ?? 0;
+    // Post-payment the client lands in their project portal (the workspace) —
+    // where status, versions, materials and billing all live. Falls back to the
+    // studio home if we somehow don't have the session id.
+    const projectHref = studioSessionId
+      ? localeHref(`/maxwell/workspace/${studioSessionId}`)
+      : localeHref(siteRoutes.maxwellStudio);
     return (
-      <section className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-sm text-emerald-900">
-        <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-medium">Payment received</p>
-            <p className="mt-1 text-emerald-900/80">
-              Your project is being activated by Noon. We will continue from the approved proposal.
-            </p>
+      <section className="pt-12">
+        <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="grid md:grid-cols-2">
+            {/* LEFT — confirmation + CTA */}
+            <div className="flex flex-col items-center justify-center p-8 text-center sm:p-10">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15">
+                <CheckCircle2 className="h-8 w-8 text-emerald-500" strokeWidth={2.5} />
+              </div>
+              <h2 className="mt-5 text-2xl font-semibold text-foreground">Payment successful</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Your project is confirmed — Noon is activating it now. We&apos;ll continue from the
+                approved proposal.
+              </p>
+              <Link
+                href={projectHref}
+                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0056fd] px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-[#0047e0]"
+              >
+                Go to your project
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                {wasMembership
+                  ? "Track progress, previews, and billing — all from your project workspace."
+                  : "Track progress and previews from your project workspace."}
+              </p>
+            </div>
+
+            {/* RIGHT — receipt */}
+            <div className="border-t border-border bg-foreground/[0.03] p-8 sm:p-10 md:border-l md:border-t-0">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">Receipt</p>
+                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-500">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Paid
+                </span>
+              </div>
+
+              <div className="mt-5 space-y-2.5 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Plan</span>
+                  <span className="text-foreground">
+                    {wasMembership ? "Membership" : "One-time project"}
+                  </span>
+                </div>
+                {approvedAmountUsd != null && (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">
+                      {wasMembership ? "Activation" : "Project payment"}
+                    </span>
+                    <span className="text-foreground">
+                      {formatMoney(approvedAmountUsd, currency)}
+                    </span>
+                  </div>
+                )}
+                {wasMembership && monthlyAmountUsd != null && (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Membership</span>
+                    <span className="text-foreground">
+                      {formatMoney(monthlyAmountUsd, currency)}/mo
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+                <span className="text-sm font-medium text-foreground">Total paid</span>
+                <span className="text-lg font-semibold text-foreground">
+                  {formatMoney(paidTotal, currency)}
+                </span>
+              </div>
+
+              <p className="mt-4 truncate text-[11px] text-muted-foreground/70">Ref: {publicToken}</p>
+            </div>
           </div>
         </div>
       </section>
@@ -268,7 +380,6 @@ export function PublicProposalPayment({
       ? {
           key: "membership",
           name: "Membership",
-          badge: "Recommended",
           tagline: "Activation now, plus ongoing monthly",
           priceMain: formatMoney(payableAmount, currency),
           priceSub: `activation + ${formatMoney(monthlyAmountUsd, currency)}/mo`,
@@ -318,177 +429,164 @@ export function PublicProposalPayment({
   const chosen =
     selectedPlan === "membership" ? membershipPlan : selectedPlan === "one_time" ? oneTimePlan : null;
 
-  function startCheckout(chosenModality: Modality) {
-    setError(null);
-    setCheckingOut(chosenModality);
-    void (async () => {
-      try {
-        const response = await fetch("/api/maxwell/checkout", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ public_token: publicToken, payment_modality: chosenModality }),
-        });
-        const data = (await response.json().catch(() => null)) as {
-          checkout_url?: string;
-          code?: string;
-          message?: string;
-        } | null;
-
-        if (response.status === 401) {
-          const callbackUrl = `${window.location.pathname}${window.location.search}`;
-          window.location.href = `/en/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-          return;
-        }
-
-        if (!response.ok || !data?.checkout_url) {
-          throw new Error(data?.message ?? "Card payment could not be started. Please try again.");
-        }
-
-        // Hand off to Stripe Checkout. On completion Stripe redirects back to
-        // `?checkout=success`; on cancel to `?checkout=cancelled`.
-        window.location.href = data.checkout_url;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Card payment could not be started. Please try again.");
-        setCheckingOut(null);
-      }
-    })();
-  }
-
-  function submitPaymentEvidence() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        const response = await fetch("/api/maxwell/payment", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({
-            action: "submit_payment_evidence",
-            public_token: publicToken,
-            notes: notes.trim() || undefined,
-          }),
-        });
-        const data = (await response.json().catch(() => null)) as {
-          code?: string;
-          message?: string;
-        } | null;
-
-        if (response.status === 401) {
-          const callbackUrl = `${window.location.pathname}${window.location.search}`;
-          window.location.href = `/en/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(data?.message ?? "Payment evidence could not be submitted.");
-        }
-
-        setSubmitted(true);
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Payment evidence could not be submitted.");
-      }
-    });
-  }
-
   // ── STEP 2 — pay for the chosen plan ──────────────────────────────────────
   if (chosen && selectedPlan) {
-    const checkoutBusy = checkingOut !== null;
+    const isMembership = selectedPlan === "membership";
+    // M1 (billing live) bills activation + first month up front, then recurs.
+    // Kill-switch back to M0 → activation only, monthly arranged by the PM.
+    const billsMonthlyNow =
+      isMembership && monthlyAmountUsd != null && MEMBERSHIP_BILLING_ENABLED;
+    const totalTodayUsd =
+      billsMonthlyNow && monthlyAmountUsd != null
+        ? payableAmount + monthlyAmountUsd
+        : payableAmount;
+    const monthlyLabel = monthlyAmountUsd != null ? formatMoney(monthlyAmountUsd, currency) : null;
     return (
       <section className="pt-12">
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedPlan(null);
-            setError(null);
-          }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Change plan
-        </button>
+        <div className="mx-auto max-w-5xl">
+          <button
+            type="button"
+            onClick={() => setSelectedPlan(null)}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Change plan
+          </button>
 
-        <div className="mt-5 text-center">
-          <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Complete your payment</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your project starts once payment is confirmed.
-          </p>
-        </div>
+          <div className="mt-5">
+            <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Complete your payment</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your project starts once payment is confirmed.
+            </p>
+          </div>
 
-        <div className="mx-auto mt-6 max-w-md space-y-4">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-secondary p-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[15px] font-medium text-foreground">{chosen.name}</span>
-                {chosen.badge && (
-                  <span className="rounded-full bg-[#0056fd]/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#0056fd]">
-                    {chosen.badge}
+          {/* Desktop: payment (left) + plan summary sidebar (right). Stacks on mobile. */}
+          <div className="mt-8 grid items-start gap-6 md:grid-cols-[3fr_2fr]">
+            {/* LEFT — Stripe Embedded Checkout. Stripe renders the real card and
+                wallet fields, collects the billing address, and owns the Pay /
+                Subscribe button inside its own widget: one charge, no redirect,
+                PCI-safe. `key={selectedPlan}` remounts it if the client goes back
+                and switches plans, so it re-fetches the matching session. */}
+            <div className="min-h-[440px] overflow-hidden rounded-2xl border border-border bg-white">
+              {stripePromise ? (
+                <EmbeddedCheckoutProvider
+                  key={selectedPlan}
+                  stripe={stripePromise}
+                  options={{ fetchClientSecret }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              ) : (
+                <div className="flex min-h-[440px] flex-col items-center justify-center gap-2 p-8 text-center">
+                  <Lock className="h-5 w-5 text-muted-foreground" />
+                  <p className="text-sm font-medium text-foreground">
+                    Online payment isn&apos;t available yet
+                  </p>
+                  <p className="text-[13px] text-muted-foreground">
+                    Please contact Noon and we&apos;ll help you complete your payment.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT — plan summary sidebar: features, price breakdown, pay CTA. */}
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xl font-medium text-foreground">{chosen.name}</p>
+                {isMembership && (
+                  <span className="shrink-0 rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-foreground">
+                    Popular
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">{chosen.tagline}</p>
+
+              {chosen.features.length > 0 && (
+                <ul className="mt-5 space-y-3.5">
+                  {chosen.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2.5 text-[13px] text-muted-foreground"
+                    >
+                      <Check className="mt-[3px] h-4 w-4 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="mt-6 space-y-2.5 border-t border-border pt-6 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">
+                    {isMembership ? "Activation" : "Project payment"}
+                  </span>
+                  <span className="text-foreground">{formatMoney(payableAmount, currency)}</span>
+                </div>
+                {isMembership && monthlyLabel && (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Membership</span>
+                    <span className="text-foreground">{monthlyLabel}/mo</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">VAT (0%)</span>
+                  <span className="text-foreground">{formatMoney(0, currency)}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+                <span className="text-base font-medium text-foreground">Total due today</span>
+                <span className="text-xl font-semibold text-foreground">
+                  {formatMoney(totalTodayUsd, currency)}
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground/60">Amounts in {currency}.</p>
+
+              {billsMonthlyNow && monthlyLabel && (
+                <p className="mt-5 rounded-xl border border-border bg-background px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                  You authorize {formatMoney(totalTodayUsd, currency)} today, then {monthlyLabel}/month
+                  on a recurring basis until you cancel — you confirm it on the secure Stripe form to
+                  the left. Cancel anytime from your account.
+                </p>
+              )}
+
+              {!billsMonthlyNow && (
+                <p className="mt-5 text-[11px] leading-relaxed text-muted-foreground/70">
+                  {isMembership && monthlyLabel
+                    ? `The ${monthlyLabel}/mo membership is arranged with your Noon PM. Your project starts once payment is confirmed.`
+                    : "One payment, nothing recurring. Your project starts once payment is confirmed."}
+                </p>
+              )}
+
+              <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                Secure checkout · powered by Stripe
+              </p>
+
+              <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/60">
+                By continuing you agree to Noon&apos;s{" "}
+                <Link
+                  href={localeHref(siteRoutes.termsAndConditions)}
+                  className="underline underline-offset-2 hover:text-muted-foreground"
+                >
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href={localeHref(siteRoutes.privacyPolicy)}
+                  className="underline underline-offset-2 hover:text-muted-foreground"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+
+              {checkoutResult === "cancelled" && (
+                <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+                  Payment was cancelled. You can try again whenever you&apos;re ready.
+                </p>
+              )}
             </div>
-            <span className="whitespace-nowrap text-right text-[15px] font-medium text-foreground">
-              {chosen.priceMain}
-              <span className="block text-[11px] font-normal text-muted-foreground">{chosen.priceSub}</span>
-            </span>
           </div>
-
-          <button
-            type="button"
-            onClick={() => startCheckout(selectedPlan)}
-            disabled={checkoutBusy || isPending}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0056fd] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0047e0] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {checkoutBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-            {checkoutBusy ? "Redirecting to checkout…" : "Pay with card"}
-          </button>
-
-          {checkoutResult === "cancelled" && (
-            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-              Payment was cancelled. You can try again whenever you&apos;re ready.
-            </p>
-          )}
-
-          <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground/70">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
-
-          <details className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
-              Paid through another channel?
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
-            </summary>
-            <div className="mt-3 space-y-3">
-              <textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                rows={3}
-                maxLength={1000}
-                placeholder="Optional: payment reference, bank confirmation, or short note."
-                className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-foreground/30"
-              />
-              <button
-                type="button"
-                onClick={submitPaymentEvidence}
-                disabled={isPending || submitted || checkoutBusy}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                {submitted ? "Evidence submitted" : "Submit payment evidence"}
-              </button>
-            </div>
-          </details>
-
-          {submitted && (
-            <p className="text-sm text-sky-900">
-              Noon received your payment evidence. The workspace activates after verification.
-            </p>
-          )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
       </section>
     );
@@ -509,10 +607,7 @@ export function PublicProposalPayment({
           <PlanColumn
             key={plan.key}
             plan={plan}
-            onSelect={(modality) => {
-              setSelectedPlan(modality);
-              setError(null);
-            }}
+            onSelect={(modality) => setSelectedPlan(modality)}
           />
         ))}
       </div>

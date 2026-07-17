@@ -125,17 +125,17 @@ function RequestCard({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="rounded-[6px] border border-border p-4">
       <div className="mb-1.5 flex items-center gap-2.5">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-medium">
           {CLIENT_REQUEST_TYPE_LABELS[request.type]}
         </span>
         {request.versionRef != null && (
-          <span className="text-[10px] font-mono text-muted-foreground/70">
+          <span className="text-[11px] text-muted-foreground/70">
             Re: version {request.versionRef}
           </span>
         )}
-        <span className="text-[10px] text-muted-foreground/50">
+        <span className="text-[11px] text-muted-foreground/70">
           {formatStamp(request.createdAt)}
         </span>
         <span
@@ -170,7 +170,7 @@ function RequestCard({
             rows={2}
             placeholder="Add a reply or clarification…"
             aria-label="Reply to request"
-            className="w-full resize-none rounded-lg border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
+            className="w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
             disabled={isPending}
           />
           <div className="mt-2 flex items-center gap-2">
@@ -212,7 +212,7 @@ function RequestCard({
             rows={2}
             placeholder="Add an optional note…"
             aria-label="Attachment note (optional)"
-            className="mt-2 w-full resize-none rounded-lg border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
+            className="mt-2 w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
             disabled={isPending}
           />
           <div className="mt-2 flex items-center gap-2">
@@ -243,7 +243,7 @@ function RequestCard({
               setReplying(true);
             }}
             disabled={isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Reply
           </button>
@@ -255,7 +255,7 @@ function RequestCard({
                 setAttaching(true);
               }}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
             >
               Attach file
             </button>
@@ -320,11 +320,15 @@ export function RequestBox({
   }
 
   return (
-    <section>
-      <h2 className="mb-4 text-xs font-mono uppercase tracking-widest text-muted-foreground">
-        Requests
-      </h2>
+    <section id="requests" className="scroll-mt-16 rounded-[6px] border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+        <h2 className="text-sm font-medium">Requests</h2>
+        {requests.length > 0 && (
+          <span className="text-[13px] text-muted-foreground">{requests.length}</span>
+        )}
+      </div>
 
+      <div className="p-5">
       {requests.length > 0 && (
         <div className="mb-4 space-y-3">
           {requests.map((request) => (
@@ -333,10 +337,10 @@ export function RequestBox({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-4">
+      <form onSubmit={handleSubmit} className="rounded-[6px] border border-border p-4">
         <div className="mb-3 grid gap-3 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            <span className="mb-1 block text-[11px] text-muted-foreground">
               Type
             </span>
             <select
@@ -344,7 +348,7 @@ export function RequestBox({
               onChange={(event) => setType(event.target.value as ClientRequestType)}
               aria-label="Request type"
               disabled={isPending}
-              className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none"
+              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
               {SELECTABLE_CLIENT_REQUEST_TYPES.map((value) => (
                 <option key={value} value={value}>
@@ -354,7 +358,7 @@ export function RequestBox({
             </select>
           </label>
           <label className="block">
-            <span className="mb-1 block text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            <span className="mb-1 block text-[11px] text-muted-foreground">
               Priority
             </span>
             <select
@@ -362,7 +366,7 @@ export function RequestBox({
               onChange={(event) => setPriority(event.target.value as ClientRequestPriority)}
               aria-label="Request priority"
               disabled={isPending}
-              className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none"
+              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
               {CLIENT_REQUEST_PRIORITIES.map((value) => (
                 <option key={value} value={value}>
@@ -374,8 +378,8 @@ export function RequestBox({
         </div>
         {versionOptions.length > 0 && (
           <label className="mb-3 block">
-            <span className="mb-1 block text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Regarding version <span className="normal-case opacity-60">(optional)</span>
+            <span className="mb-1 block text-[11px] text-muted-foreground">
+              Regarding version <span className="opacity-60">(optional)</span>
             </span>
             <select
               value={versionRef ?? ""}
@@ -384,7 +388,7 @@ export function RequestBox({
               }
               aria-label="Regarding version"
               disabled={isPending}
-              className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none"
+              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
               <option value="">No specific version</option>
               {versionOptions.map((version) => (
@@ -423,6 +427,7 @@ export function RequestBox({
           </p>
         )}
       </form>
+      </div>
     </section>
   );
 }

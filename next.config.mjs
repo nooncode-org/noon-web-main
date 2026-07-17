@@ -98,9 +98,10 @@ const nextConfig = {
     // blocks eval() → client JS fails → useRevealOnView leaves sections at
     // opacity-0 (page appears blank).
     const isDev = process.env.NODE_ENV !== "production";
+    // https://js.stripe.com → Stripe.js (Embedded Checkout) on the proposal page.
     const scriptSrc = isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-      : "script-src 'self' 'unsafe-inline'";
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com"
+      : "script-src 'self' 'unsafe-inline' https://js.stripe.com";
 
     const csp = [
       "default-src 'self'",
@@ -108,10 +109,12 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self'",
-      // 'self' → the /templates live product mockups (public/templates/mockups/*.html)
-      // embedded as same-origin iframes; the rest are v0 preview hosts.
-      "frame-src 'self' https://*.vercel.app https://*.vusercontent.net",
+      // api.stripe.com → Stripe.js network calls during Embedded Checkout.
+      "connect-src 'self' https://api.stripe.com",
+      // 'self' → /templates live product mockups (public/templates/mockups/*.html)
+      // embedded as same-origin iframes; v0 preview hosts; Stripe Embedded Checkout
+      // mounts its payment form from js.stripe.com / checkout.stripe.com.
+      "frame-src 'self' https://*.vercel.app https://*.vusercontent.net https://js.stripe.com https://checkout.stripe.com",
       "form-action 'self' https://checkout.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -126,8 +129,10 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
+            // payment=(self + Stripe) → Apple Pay / Google Pay inside the Stripe
+            // Embedded Checkout iframe (checkout.stripe.com).
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=(self)",
+            value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://checkout.stripe.com")',
           },
           // ── B15 additions ──
           // HSTS: 1 year, includeSubDomains. Not preloaded — soft launch should avoid

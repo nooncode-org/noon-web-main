@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { recordAiMvpMilestone } from "@/lib/maxwell/repositories";
+import {
+  getClientWorkspaceByNoonAppProjectId,
+  getLatestProposalRequest,
+  getStudioSession,
+  recordAiMvpMilestone,
+} from "@/lib/maxwell/repositories";
+import { sendMvpReadyEmail } from "@/lib/maxwell/lifecycle-emails";
+import { buildWorkspaceUrl } from "@/lib/maxwell/public-url";
 import { log } from "@/lib/server/logger";
 import {
   NoonAppIntegrationError,
@@ -9,6 +16,92 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * B8 #4 — best-effort "your first version is ready" email, fired when the
+ * `version-ready` milestone is durably recorded for the FIRST time (`created`
+ * gates it: the App's queue retries replay as a dedup no-op, so the email can
+ * never double-send; Resend's idempotency key is the second belt).
+ *
+ * Mirrors the payment-activation lifecycle-email contract: everything is
+ * wrapped so no failure here can leak into the webhook response — the App must
+ * still get its 2xx once the milestone row is persisted.
+ */
+async function notifyMvpReadyBestEffort(input: {
+  projectId: string;
+  versionUrl: string | null;
+}): Promise<void> {
+  try {
+    const workspace = await getClientWorkspaceByNoonAppProjectId(input.projectId);
+    if (!workspace) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Skipped B8 #4 mvp-ready: no workspace mapped to project.",
+        { project_id: input.projectId },
+      );
+      return;
+    }
+
+    const [session, proposal] = await Promise.all([
+      getStudioSession(workspace.studioSessionId),
+      getLatestProposalRequest(workspace.studioSessionId),
+    ]);
+
+    const recipient = proposal?.deliveryRecipient;
+    if (!recipient) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Skipped B8 #4 mvp-ready: proposal has no delivery_recipient.",
+        { project_id: input.projectId, session_id: workspace.studioSessionId },
+      );
+      return;
+    }
+
+    // The workspace link IS the email (same rule as B8 #3): if the public base
+    // URL is unresolvable, skip rather than send a body with no destination.
+    let workspaceUrl: string;
+    try {
+      workspaceUrl = buildWorkspaceUrl(workspace.studioSessionId, {
+        locale: session?.language,
+      });
+    } catch (error) {
+      log.warn(
+        "maxwell.lifecycle-email",
+        "Skipped B8 #4 mvp-ready: could not build workspace URL.",
+        {
+          session_id: workspace.studioSessionId,
+          reason: error instanceof Error ? error.message : String(error),
+        },
+      );
+      return;
+    }
+
+    const result = await sendMvpReadyEmail({
+      projectId: input.projectId,
+      to: recipient,
+      projectTitle: session?.goalSummary?.trim() || "Your Noon project",
+      workspaceUrl,
+      previewUrl: input.versionUrl,
+    });
+
+    if (result.skipped) {
+      log.info("maxwell.lifecycle-email", "B8 #4 mvp-ready skipped.", {
+        reason: result.reason,
+        project_id: input.projectId,
+      });
+    } else {
+      log.info("maxwell.lifecycle-email", "B8 #4 mvp-ready sent.", {
+        message_id: result.messageId,
+        project_id: input.projectId,
+      });
+    }
+  } catch (error) {
+    log.error("maxwell.lifecycle-email", error, {
+      stage: "mvp_ready",
+      project_id: input.projectId,
+    });
+  }
+}
 
 /**
  * Receiver for App's post-payment AI MVP pipeline milestones (handoff
@@ -26,6 +119,8 @@ export const dynamic = "force-dynamic";
  *      non-2xx, so a repeat is a no-op upsert (handoff §5/§6).
  *   4. Returns 2xx only once the milestone is durably accepted, so App can mark
  *      the ledger row delivered.
+ *   5. On a FIRST `version-ready`, best-effort notifies the client by email
+ *      (B8 #4) — never blocks or fails the webhook.
  *
  * `version_url` is honoured only for `version-ready` (§4.2); on the other kinds
  * App omits it and we never persist one.
@@ -45,6 +140,13 @@ export async function POST(request: Request) {
       kind: payload.kind,
       versionUrl,
     });
+
+    if (created && payload.kind === "version-ready") {
+      await notifyMvpReadyBestEffort({
+        projectId: payload.project_id,
+        versionUrl,
+      });
+    }
 
     return NextResponse.json({
       message: created

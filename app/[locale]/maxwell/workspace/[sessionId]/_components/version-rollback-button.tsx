@@ -30,7 +30,9 @@ export function VersionRollbackButton({
   sessionId: string;
   versionSequenceNumber: number;
 }) {
-  const defaultBody = `Requesting rollback to version ${versionSequenceNumber}.`;
+  // State-agnostic copy: the row may never have been live ("rollback" would read
+  // oddly there). The wire type stays `rollback` (B.4); this is client-facing only.
+  const defaultBody = `Please make version ${versionSequenceNumber} the live version.`;
   const [expanded, setExpanded] = useState(false);
   const [body, setBody] = useState(defaultBody);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export function VersionRollbackButton({
           disabled={isPending}
           className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Request rollback to this version
+          Ask the team to make this version live
         </button>
         {error && (
           <p className="mt-2 text-xs text-red-600" role="alert">
@@ -87,8 +89,8 @@ export function VersionRollbackButton({
   return (
     <div className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3">
       <p className="mb-2 text-xs text-muted-foreground">
-        Ask your Noon team to roll back to version {versionSequenceNumber}. They will
-        review the request and apply it.
+        Ask your Noon team to make version {versionSequenceNumber} the live version. They
+        will review the request and apply it.
       </p>
       <textarea
         value={body}
@@ -106,7 +108,7 @@ export function VersionRollbackButton({
           disabled={!canSend}
           className="site-primary-action inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isPending ? "Sending…" : "Send rollback request"}
+          {isPending ? "Sending…" : "Send request"}
         </button>
         <button
           type="button"

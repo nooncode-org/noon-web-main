@@ -22,10 +22,25 @@ type SessionSummary = {
  * an overlay drawer. The proposal is only reachable by a signed-in viewer, so
  * this is their real studio navigation (their scoping chats, account, sign out).
  * Rendered only when a viewer exists (see the proposal page).
+ *
+ * `collapsibleRail` (client workspace / portal): mirrors the studio dashboard —
+ * on lg+ the ▢ toggle expands a PUSH rail (a flex child that reflows the content
+ * beside it, no overlay); below lg it's the overlay drawer. Both start collapsed.
+ * The host must be a flex row (the rail renders as its first flex child). Without
+ * the flag (proposal page) the ▢ opens the overlay drawer at all widths.
  */
-export function ProposalSidebar({ viewerEmail, locale }: { viewerEmail: string; locale: string }) {
+export function ProposalSidebar({
+  viewerEmail,
+  locale,
+  collapsibleRail = false,
+}: {
+  viewerEmail: string;
+  locale: string;
+  collapsibleRail?: boolean;
+}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // overlay drawer (mobile in rail mode; all widths otherwise)
+  const [railOpen, setRailOpen] = useState(false); // desktop push rail (rail mode only)
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
 
   async function refresh() {
@@ -88,8 +103,12 @@ export function ProposalSidebar({ viewerEmail, locale }: { viewerEmail: string; 
     showHome: true,
   };
 
+  // Rail mode hides the overlay pieces on lg+ (the push rail takes over there).
+  const overlayLgHidden = collapsibleRail ? " lg:hidden" : "";
+
   return (
     <>
+      {/* Toggle (floats top-left). Mobile always opens the overlay drawer. */}
       <button
         type="button"
         onClick={() => {
@@ -97,25 +116,56 @@ export function ProposalSidebar({ viewerEmail, locale }: { viewerEmail: string; 
           void refresh();
         }}
         aria-label="Open menu"
-        className="fixed left-3 top-3 z-40 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+        className={`fixed left-3 top-3 z-40 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground${overlayLgHidden}`}
       >
         <PanelLeft className="h-4 w-4" />
       </button>
 
-      {/* Overlay drawer. */}
+      {/* Rail mode, desktop: a separate expand button, shown only while the rail
+          is collapsed (when open, the sidebar's own button collapses it — one
+          panel icon at a time). */}
+      {collapsibleRail && !railOpen && (
+        <button
+          type="button"
+          onClick={() => {
+            setRailOpen(true);
+            void refresh();
+          }}
+          aria-label="Expand sidebar"
+          className="fixed left-3 top-3 z-40 hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
+        >
+          <PanelLeft className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Rail mode, desktop: the PUSH rail — a flex child of the host row, so
+          showing/hiding it reflows the content beside it (no overlay). */}
+      {collapsibleRail && railOpen && (
+        <div className="hidden h-full w-72 shrink-0 border-r border-border/70 lg:flex">
+          <StudioSidebar {...sidebarProps} onClose={() => setRailOpen(false)} className="bg-background" />
+        </div>
+      )}
+
+      {/* Overlay drawer — all widths without the flag, mobile-only with it.
+          Open/closed via INLINE styles so the closed state is guaranteed on the
+          first paint even before the stylesheet applies (no FOUC flash-open). */}
       <div
-        className={`fixed inset-0 z-[998] transition-all duration-300 ${
-          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        style={{ backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(2px)" }}
+        className={`fixed inset-0 z-[998] transition-opacity duration-300${overlayLgHidden}`}
+        style={{
+          backgroundColor: "rgba(0,0,0,0.25)",
+          backdropFilter: "blur(2px)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+        }}
         onClick={() => setOpen(false)}
       />
       <div
-        className={`fixed bottom-1.5 left-1.5 top-1.5 z-[999] w-72 transition-all duration-300 ${
-          open
-            ? "pointer-events-auto translate-x-0 opacity-100"
-            : "pointer-events-none -translate-x-full opacity-0"
-        }`}
+        className={`fixed bottom-1.5 left-1.5 top-1.5 z-[999] w-72 transition-all duration-300${overlayLgHidden}`}
+        style={{
+          transform: open ? "translateX(0)" : "translateX(-110%)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+        }}
       >
         <StudioSidebar
           {...sidebarProps}

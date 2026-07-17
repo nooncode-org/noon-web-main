@@ -52,20 +52,22 @@ export function CommentBox({
   }
 
   return (
-    <section>
-      <h2 className="mb-4 text-xs font-mono uppercase tracking-widest text-muted-foreground">
-        Messages
-      </h2>
+    <section id="messages" className="scroll-mt-16 rounded-[6px] border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+        <h2 className="text-sm font-medium">Messages</h2>
+        {comments.length > 0 && (
+          <span className="text-[13px] text-muted-foreground">{comments.length}</span>
+        )}
+      </div>
 
+      <div className="p-5">
       {comments.length > 0 && (
         <div className="mb-4 space-y-3">
           {comments.map((comment) => (
-            <div key={comment.id} className="rounded-xl border border-border bg-card p-4">
+            <div key={comment.id} className="rounded-[6px] border border-border bg-secondary/20 p-4">
               <div className="mb-1.5 flex items-center gap-2.5">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  You
-                </span>
-                <span className="text-[10px] text-muted-foreground/50">
+                <span className="text-[11px] font-medium">You</span>
+                <span className="text-[11px] text-muted-foreground/70">
                   {formatStamp(comment.createdAt)}
                 </span>
               </div>
@@ -75,7 +77,7 @@ export function CommentBox({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-4">
+      <form onSubmit={handleSubmit} className="rounded-[6px] border border-border p-4">
         <textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}
@@ -104,6 +106,7 @@ export function CommentBox({
           </p>
         )}
       </form>
+      </div>
     </section>
   );
 }

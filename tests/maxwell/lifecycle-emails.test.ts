@@ -27,6 +27,7 @@ import {
   EmailConfigurationError,
   EmailSendError,
   isLifecycleEmailsReady,
+  sendMvpReadyEmail,
   sendPaymentReceivedEmail,
   sendWorkspaceReadyEmail,
 } from "@/lib/maxwell/lifecycle-emails";
@@ -452,5 +453,117 @@ describe("lifecycle senders surface EmailSendError on transport failure", () => 
         workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
       }),
     ).rejects.toBeInstanceOf(EmailSendError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sendMvpReadyEmail (B8 #4) — first version ready
+// ---------------------------------------------------------------------------
+
+describe("sendMvpReadyEmail", () => {
+  beforeEach(() => {
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "1");
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubEnv("MAIL_FROM", "Noon <hello@noon.com>");
+  });
+
+  it("skips without calling Resend when the lifecycle gate is closed", async () => {
+    vi.stubEnv("MAXWELL_LIFECYCLE_EMAILS", "");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await sendMvpReadyEmail({
+      projectId: "project-1",
+      to: "client@example.com",
+      projectTitle: "Acme",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
+    });
+
+    expect(result).toMatchObject({ skipped: true, reason: "lifecycle_emails_disabled" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("posts to Resend with the right subject, key, tags and both links", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_mvp_1" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await sendMvpReadyEmail({
+      projectId: "project-1",
+      to: "client@example.com",
+      projectTitle: "Acme launchpad",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-1",
+      previewUrl: "https://preview.example/v1",
+    });
+
+    expect(result).toEqual({ provider: "resend", messageId: "email_mvp_1" });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.resend.com/emails");
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Idempotency-Key"]).toBe("maxwell-mvp-ready-project-1");
+
+    const payload = JSON.parse(String(init.body)) as {
+      to: string[];
+      subject: string;
+      html: string;
+      text: string;
+      tags: Array<{ name: string; value: string }>;
+    };
+    expect(payload.to).toEqual(["client@example.com"]);
+    expect(payload.subject).toBe("Your first version is ready — Acme launchpad");
+    expect(payload.html).toContain("See your project");
+    expect(payload.html).toContain("https://noon.com/en/maxwell/workspace/sess-1");
+    expect(payload.html).toContain("https://preview.example/v1");
+    expect(payload.text).toContain("Open your workspace: https://noon.com/en/maxwell/workspace/sess-1");
+    expect(payload.text).toContain("Or open the version directly: https://preview.example/v1");
+    expect(payload.tags).toEqual(
+      expect.arrayContaining([
+        { name: "flow", value: "maxwell_mvp_ready" },
+        { name: "project_id", value: "project-1" },
+      ]),
+    );
+  });
+
+  it("omits the direct-preview line when previewUrl is absent", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_mvp_2" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendMvpReadyEmail({
+      projectId: "project-2",
+      to: "client@example.com",
+      projectTitle: "Solo",
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-2",
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string; text: string };
+    expect(payload.html).not.toContain("Or open the version directly");
+    expect(payload.text).not.toContain("Or open the version directly");
+  });
+
+  it("HTML-escapes the project title", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: "email_mvp_3" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendMvpReadyEmail({
+      projectId: "project-3",
+      to: "client@example.com",
+      projectTitle: '<script>alert("x")</script>',
+      workspaceUrl: "https://noon.com/en/maxwell/workspace/sess-3",
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body)) as { html: string };
+    expect(payload.html).not.toContain("<script>");
+    expect(payload.html).toContain("&lt;script&gt;");
   });
 });

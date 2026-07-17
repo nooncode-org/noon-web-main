@@ -141,6 +141,9 @@ describe("POST /api/maxwell/checkout — membership flag ON", () => {
 
     const [params, opts] = mocks.createCheckoutSession.mock.calls[0];
     expect(params.mode).toBe("subscription");
+    // Embedded Checkout — the same in-page widget serves subscriptions.
+    expect(params.ui_mode).toBe("embedded_page");
+    expect(params.billing_address_collection).toBe("required");
 
     // Activation = one-time line item (no recurring), $4500 → 450000 minor.
     const activationLine = params.line_items.find(
@@ -164,7 +167,7 @@ describe("POST /api/maxwell/checkout — membership flag ON", () => {
     // No one-time-only payment_intent_data in subscription mode.
     expect(params.payment_intent_data).toBeUndefined();
 
-    expect(opts.idempotencyKey).toBe("noon-checkout-sub:proposal-1:450000:6900:usd");
+    expect(opts.idempotencyKey).toBe("noon-checkout-sub-emb:proposal-1:450000:6900:usd");
 
     // The chosen modality + monthly are still persisted (M0 capture).
     expect(mocks.updateProposalRequest).toHaveBeenCalledWith("proposal-1", {
