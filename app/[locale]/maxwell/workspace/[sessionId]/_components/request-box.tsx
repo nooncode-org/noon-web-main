@@ -34,6 +34,22 @@ import {
 import { submitRequestAction } from "../_actions/submit-request";
 import { submitRequestUpdateAction } from "../_actions/submit-request-update";
 import { submitRequestAttachmentAction } from "../_actions/submit-request-attachment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+/* Styled (Radix) selects replace the native ones: the native popup can't be
+   themed (OS chrome, system-blue highlight) and its arrow hugs the border.
+   Trigger restyled to match the form inputs; content matches the card system. */
+const SELECT_TRIGGER =
+  "w-full rounded-[6px] border-border bg-transparent shadow-none dark:bg-transparent dark:hover:bg-transparent";
+const SELECT_CONTENT = "rounded-[6px] border-border";
+/** Radix Select forbids empty-string item values — sentinel for "no version". */
+const NO_VERSION = "none";
 
 function formatStamp(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -339,65 +355,74 @@ export function RequestBox({
 
       <form onSubmit={handleSubmit} className="rounded-[6px] border border-border p-4">
         <div className="mb-3 grid gap-3 sm:grid-cols-2">
-          <label className="block">
+          <div>
             <span className="mb-1 block text-[11px] text-muted-foreground">
               Type
             </span>
-            <select
+            <Select
               value={type}
-              onChange={(event) => setType(event.target.value as ClientRequestType)}
-              aria-label="Request type"
+              onValueChange={(value) => setType(value as ClientRequestType)}
               disabled={isPending}
-              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
-              {SELECTABLE_CLIENT_REQUEST_TYPES.map((value) => (
-                <option key={value} value={value}>
-                  {CLIENT_REQUEST_TYPE_LABELS[value]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
+              <SelectTrigger aria-label="Request type" className={SELECT_TRIGGER}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className={SELECT_CONTENT}>
+                {SELECTABLE_CLIENT_REQUEST_TYPES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {CLIENT_REQUEST_TYPE_LABELS[value]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
             <span className="mb-1 block text-[11px] text-muted-foreground">
               Priority
             </span>
-            <select
+            <Select
               value={priority}
-              onChange={(event) => setPriority(event.target.value as ClientRequestPriority)}
-              aria-label="Request priority"
+              onValueChange={(value) => setPriority(value as ClientRequestPriority)}
               disabled={isPending}
-              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
-              {CLIENT_REQUEST_PRIORITIES.map((value) => (
-                <option key={value} value={value}>
-                  {CLIENT_REQUEST_PRIORITY_LABELS[value]}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger aria-label="Request priority" className={SELECT_TRIGGER}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className={SELECT_CONTENT}>
+                {CLIENT_REQUEST_PRIORITIES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {CLIENT_REQUEST_PRIORITY_LABELS[value]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         {versionOptions.length > 0 && (
-          <label className="mb-3 block">
+          <div className="mb-3">
             <span className="mb-1 block text-[11px] text-muted-foreground">
               Regarding version <span className="opacity-60">(optional)</span>
             </span>
-            <select
-              value={versionRef ?? ""}
-              onChange={(event) =>
-                setVersionRef(event.target.value ? Number(event.target.value) : null)
+            <Select
+              value={versionRef == null ? NO_VERSION : String(versionRef)}
+              onValueChange={(value) =>
+                setVersionRef(value === NO_VERSION ? null : Number(value))
               }
-              aria-label="Regarding version"
               disabled={isPending}
-              className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none"
             >
-              <option value="">No specific version</option>
-              {versionOptions.map((version) => (
-                <option key={version.sequence} value={version.sequence}>
-                  Version {version.sequence}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger aria-label="Regarding version" className={SELECT_TRIGGER}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className={SELECT_CONTENT}>
+                <SelectItem value={NO_VERSION}>No specific version</SelectItem>
+                {versionOptions.map((version) => (
+                  <SelectItem key={version.sequence} value={String(version.sequence)}>
+                    Version {version.sequence}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
         <textarea
           value={body}

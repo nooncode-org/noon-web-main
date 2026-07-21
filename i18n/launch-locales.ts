@@ -14,9 +14,13 @@
  * coverage; a silent change to this set would expose broken locales).
  */
 
-/** Locales declared in routing but NOT launched yet — redirected to /en. */
+/** Locales declared in routing but NOT launched yet — redirected to /en.
+ * 2026-07-19 (owner): `es` RE-OPENED — browser-language auto-detection routes
+ * Spanish visitors to /es again (es.json is 1:1 with en.json in keys; the
+ * remaining gap is copy hardcoded in components, tracked as the translation
+ * pass). fr/de stay gated: their message files lag behind and nobody on the
+ * team can vouch for their quality. */
 export const DISABLED_LAUNCH_LOCALES: ReadonlySet<string> = new Set([
-  "es",
   "fr",
   "de",
 ]);

@@ -76,6 +76,23 @@ html.dark:has(.mxw-rd) {
 .mxw-rd .site-primary-action:active {
   background-color: #0042c4 !important;
 }
+/* Disabled primaries go QUIET (neutral surface), not 50%-opacity brand blue —
+   the washed baby-blue read as broken, worst in light mode (audit 2026-07-17). */
+.mxw-rd .site-primary-action:disabled {
+  background-color: var(--secondary) !important;
+  color: var(--muted-foreground) !important;
+  box-shadow: none !important;
+}
+
+/* ── Native select popup hardening ───────────────────────────────────────────
+   Belt-and-suspenders on top of the :root color-scheme fix (globals.css):
+   Windows/Linux Chromium honors bg/color on <option>, so pin them to the theme
+   tokens — options stay readable in the popup no matter how the UA resolves
+   the popup chrome. (macOS ignores option styling; harmless.) */
+.mxw-rd select option {
+  color: var(--foreground);
+  background-color: var(--card);
+}
 
 /* ── Resizable chat↔preview split ────────────────────────────────────────────
    While the seller drags the divider, the workspace <main> gets `.mxw-resizing`.

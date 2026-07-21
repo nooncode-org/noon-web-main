@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PanelLeft } from "lucide-react";
 import { StudioSidebar, type StudioDraftSession } from "./studio-sidebar";
+import {
+  WorkspaceProfileDialog,
+  type ClientProfile,
+} from "@/components/maxwell/workspace-profile-dialog";
+import { WorkspaceSettingsDialog } from "@/components/maxwell/workspace-settings-dialog";
 import { getContactHref } from "@/lib/site-config";
 
 // Mirrors the shape the studio dashboard maps from GET /api/maxwell/studio/sessions.
@@ -31,17 +36,45 @@ type SessionSummary = {
  */
 export function ProposalSidebar({
   viewerEmail,
+  viewerName = null,
   locale,
   collapsibleRail = false,
+  settings,
 }: {
   viewerEmail: string;
+  /** Client display name — seeds the editable profile (workspace portal). */
+  viewerName?: string | null;
   locale: string;
   collapsibleRail?: boolean;
+  /**
+   * When set, renders the project-settings gear (WorkspaceSettingsMenu) in the
+   * sidebar footer, wired to the profile state owned here (identity row + edit
+   * opener). Serializable so server pages can pass it. Absent → no gear
+   * (proposal page).
+   */
+  settings?: {
+    invoiceUrl?: string | null;
+    isMembership?: boolean;
+    /** Plan-state pill on the Billing card (label + token classes). */
+    membershipBadge?: { label: string; color: string } | null;
+    /** Sensitive project actions stay locked until the Noon team enables them. */
+    advancedUnlocked?: boolean;
+    /** Real billing action (e.g. the Stripe portal opener) for the Billing card. */
+    billingSlot?: ReactNode;
+  };
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false); // overlay drawer (mobile in rail mode; all widths otherwise)
   const [railOpen, setRailOpen] = useState(false); // desktop push rail (rail mode only)
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  // Client profile (name + photo) — editable via the sidebar identity. Front
+  // only (logic later): persistence is deferred; state lives here so both
+  // sidebar mounts (rail + drawer) share one identity.
+  const [profile, setProfile] = useState<ClientProfile>({
+    name: viewerName ?? "",
+    photoUrl: null,
+  });
+  const [profileOpen, setProfileOpen] = useState(false);
 
   async function refresh() {
     try {
@@ -88,8 +121,23 @@ export function ProposalSidebar({
         : null,
   }));
 
+  const footerExtra: ReactNode = settings ? (
+    <WorkspaceSettingsDialog
+      invoiceUrl={settings.invoiceUrl}
+      isMembership={settings.isMembership}
+      membershipBadge={settings.membershipBadge}
+      advancedUnlocked={settings.advancedUnlocked}
+      billingSlot={settings.billingSlot}
+      profile={{ name: profile.name, photoUrl: profile.photoUrl, email: viewerEmail }}
+      onEditProfile={() => setProfileOpen(true)}
+    />
+  ) : null;
+
   const sidebarProps = {
     viewerEmail,
+    viewerName: profile.name || null,
+    viewerPhotoUrl: profile.photoUrl,
+    onEditProfile: () => setProfileOpen(true),
     locale,
     agentHref,
     draftSessions,
@@ -101,6 +149,7 @@ export function ProposalSidebar({
     quotaSnapshot: null,
     // The proposal page is NOT the home, so offer a Home link back to the studio.
     showHome: true,
+    footerExtra,
   };
 
   // Rail mode hides the overlay pieces on lg+ (the push rail takes over there).
@@ -150,6 +199,7 @@ export function ProposalSidebar({
           Open/closed via INLINE styles so the closed state is guaranteed on the
           first paint even before the stylesheet applies (no FOUC flash-open). */}
       <div
+        aria-hidden="true"
         className={`fixed inset-0 z-[998] transition-opacity duration-300${overlayLgHidden}`}
         style={{
           backgroundColor: "rgba(0,0,0,0.25)",
@@ -159,7 +209,10 @@ export function ProposalSidebar({
         }}
         onClick={() => setOpen(false)}
       />
+      {/* `inert` while closed: opacity/pointer-events hide it visually but its
+          links would otherwise stay keyboard-tabbable + readable to AT. */}
       <div
+        inert={!open}
         className={`fixed bottom-1.5 left-1.5 top-1.5 z-[999] w-72 transition-all duration-300${overlayLgHidden}`}
         style={{
           transform: open ? "translateX(0)" : "translateX(-110%)",
@@ -174,6 +227,15 @@ export function ProposalSidebar({
           className="rounded-[10px] border border-foreground/10 bg-background/95 shadow-2xl backdrop-blur-xl"
         />
       </div>
+
+      {/* Client profile editor — opened from the sidebar identity. */}
+      <WorkspaceProfileDialog
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        email={viewerEmail}
+        profile={profile}
+        onSave={setProfile}
+      />
     </>
   );
 }

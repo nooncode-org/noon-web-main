@@ -73,7 +73,7 @@ export function VersionRollbackButton({
             setExpanded(true);
           }}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
         >
           Ask the team to make this version live
         </button>
@@ -87,7 +87,7 @@ export function VersionRollbackButton({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3">
+    <div className="mt-3 rounded-[6px] border border-amber-500/25 bg-amber-500/5 p-3">
       <p className="mb-2 text-xs text-muted-foreground">
         Ask your Noon team to make version {versionSequenceNumber} the live version. They
         will review the request and apply it.
@@ -98,7 +98,7 @@ export function VersionRollbackButton({
         maxLength={CLIENT_REQUEST_BODY_MAX}
         rows={3}
         aria-label="Rollback request details"
-        className="w-full resize-none rounded-lg border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
+        className="w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
         disabled={isPending}
       />
       <div className="mt-2 flex items-center gap-2">
