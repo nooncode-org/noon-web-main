@@ -9,6 +9,7 @@ import {
   getStudioSession,
   markProposalFirstOpened,
 } from "@/lib/maxwell/repositories";
+import { confirmStripeCheckoutReturn } from "@/lib/maxwell/checkout-return";
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import {
   isProposalPastCutoff,
@@ -43,7 +44,7 @@ function formatDate(iso: string) {
 
 type Props = {
   params: Promise<{ locale: string; token: string }>;
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{ checkout?: string; session_id?: string }>;
 };
 
 /**
@@ -73,7 +74,7 @@ async function resolveRscClientIdentity(): Promise<string> {
 
 export default async function PublicProposalPage({ params, searchParams }: Props) {
   const { locale, token } = await params;
-  const { checkout } = await searchParams;
+  const { checkout, session_id: checkoutSessionId } = await searchParams;
   const checkoutResult =
     checkout === "success" ? "success" : checkout === "cancelled" ? "cancelled" : null;
 
@@ -141,6 +142,28 @@ export default async function PublicProposalPage({ params, searchParams }: Props
     clientIp,
     userAgent,
   });
+
+  // Confirm-on-return: close the webhook race. When the client lands back here
+  // from Checkout (`?checkout=success&session_id=cs_…`) while the proposal is
+  // still `payment_pending`, confirm the payment right now so the workspace is
+  // provisioned before they navigate to it — no "Preparing" gap. Fully idempotent
+  // against the Stripe webhook (both de-dupe on the checkout session id), so
+  // whichever fires first wins. Best-effort: any failure just falls through to
+  // the webhook + the "confirming" state the payment component renders below.
+  if (
+    checkoutResult === "success" &&
+    checkoutSessionId?.startsWith("cs_") &&
+    proposal.status === "payment_pending"
+  ) {
+    try {
+      await confirmStripeCheckoutReturn({ checkoutSessionId, proposalId: proposal.id });
+      proposal = (await getProposalRequestByPublicToken(token)) ?? proposal;
+    } catch (error) {
+      log.warn("proposal.checkout-return", "Return-path confirm failed; webhook will finish it.", {
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   // SEC-M2 (auditoría 2026-07): cutoff duro. Past-cutoff o status expired →
   // vista expirada SIN contenido de la propuesta ni CTA de pago. Antes el

@@ -117,6 +117,20 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Native-widget theming: pin `color-scheme` to the SAME media query that flips
+   the tokens, so UA-rendered surfaces (select popups, scrollbars, date pickers)
+   always match the applied theme. Without this the computed scheme stays
+   `normal` and Chromium can render a WHITE select popup over the dark UI with
+   inherited white option text — i.e. invisible options (workspace bug). */
+:root {
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #000000;

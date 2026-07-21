@@ -51,7 +51,7 @@ export function VersionPublishButton({
             setConfirming(true);
           }}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? "Publishing…" : "Publish this version"}
         </button>
@@ -65,7 +65,7 @@ export function VersionPublishButton({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-3">
+    <div className="mt-3 rounded-[6px] border border-emerald-500/25 bg-emerald-500/5 p-3">
       <p className="mb-2 text-xs text-muted-foreground">
         Publish this version? It becomes the live version visible to the public.
       </p>

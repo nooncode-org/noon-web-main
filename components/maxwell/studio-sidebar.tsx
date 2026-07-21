@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   FileText,
@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { signOutAction } from "@/lib/auth/signout-action";
+import { initialsOf } from "@/components/maxwell/workspace-profile-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +56,13 @@ export type StudioDraftSession = {
 
 type StudioSidebarProps = {
   viewerEmail: string;
+  /** Display name (client profile) — shown instead of the raw email when set. */
+  viewerName?: string | null;
+  /** Profile photo URL — replaces the initials avatar when set. */
+  viewerPhotoUrl?: string | null;
+  /** When provided, the header identity becomes a button that opens the
+   *  profile editor (the workspace portal passes this; other mounts don't). */
+  onEditProfile?: () => void;
   /** Current locale — prefixes the Templates / Upgrade nav links. */
   locale: string;
   agentHref: string;
@@ -80,10 +88,19 @@ type StudioSidebarProps = {
    * the dashboard itself IS the home, so it passes `false` (redundant there).
    */
   showHome?: boolean;
+  /**
+   * Extra footer action between Sign out and Home — e.g. the client portal's
+   * project-settings gear. Only the workspace mount passes this; absent
+   * everywhere else (dashboard, chat, proposal), so the footer is unchanged there.
+   */
+  footerExtra?: ReactNode;
 };
 
 export function StudioSidebar({
   viewerEmail,
+  viewerName = null,
+  viewerPhotoUrl = null,
+  onEditProfile,
   locale,
   agentHref,
   draftSessions = [],
@@ -96,6 +113,7 @@ export function StudioSidebar({
   onNavigate,
   className = "",
   showHome = true,
+  footerExtra,
 }: StudioSidebarProps) {
   const [chatQuery, setChatQuery] = useState("");
   // B31 — Track the row staged for deletion. Single-row state is enough: the
@@ -120,15 +138,47 @@ export function StudioSidebar({
             h-14 must match the studio header so the top hairline is one
             continuous line across the sidebar/header seam (any font/DPI). */}
         <div className="flex h-14 items-center gap-2.5 px-4 border-b border-border/70">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
-            {viewerEmail.charAt(0) || "?"}
-          </span>
-          <span
-            className="min-w-0 flex-1 truncate text-sm font-medium text-foreground"
-            title={viewerEmail}
-          >
-            {viewerEmail}
-          </span>
+          {(() => {
+            // Identity: display name (profile) over raw email; photo over
+            // initials. Clickable → profile editor when the mount provides it.
+            const displayName = viewerName?.trim() || viewerEmail;
+            const avatar = viewerPhotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- profile photo (object URL in the mock)
+              <img
+                src={viewerPhotoUrl}
+                alt=""
+                className="h-7 w-7 shrink-0 rounded-full border border-border object-cover"
+              />
+            ) : (
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium uppercase text-foreground">
+                {viewerName?.trim() ? initialsOf(viewerName, viewerEmail) : viewerEmail.charAt(0) || "?"}
+              </span>
+            );
+            const nameEl = (
+              <span
+                className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground"
+                title={viewerEmail}
+              >
+                {displayName}
+              </span>
+            );
+            return onEditProfile ? (
+              <button
+                type="button"
+                onClick={onEditProfile}
+                title="Edit profile"
+                className="-mx-1.5 flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] px-1.5 py-1 transition-colors hover:bg-secondary/40"
+              >
+                {avatar}
+                {nameEl}
+              </button>
+            ) : (
+              <>
+                {avatar}
+                {nameEl}
+              </>
+            );
+          })()}
           {onClose && (
             <button
               type="button"
@@ -143,18 +193,15 @@ export function StudioSidebar({
 
         {/* Studio shortcuts */}
         <div className="px-3 py-3 space-y-1">
-          {onNewDraftChat && (
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate?.();
-                onNewDraftChat();
-              }}
+          {showHome && (
+            <Link
+              href={siteRoutes.home}
+              onClick={() => onNavigate?.()}
               className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
             >
-              <Plus className="h-4 w-4 text-muted-foreground" />
-              New chat
-            </button>
+              <Home className="h-4 w-4 text-muted-foreground" />
+              Home
+            </Link>
           )}
           <Link
             href={`/${locale}${siteRoutes.templates}`}
@@ -180,6 +227,19 @@ export function StudioSidebar({
             <User className="h-4 w-4 text-muted-foreground" />
             Talk to agent
           </Link>
+          {onNewDraftChat && (
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate?.();
+                onNewDraftChat();
+              }}
+              className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              New chat
+            </button>
+          )}
         </div>
 
         {/* Client portal — the live project workspace(s), post-payment. More
@@ -323,17 +383,7 @@ export function StudioSidebar({
                 Sign out
               </button>
             </form>
-            {showHome && (
-              <Link
-                href={siteRoutes.home}
-                onClick={() => onNavigate?.()}
-                aria-label="Home"
-                title="Home"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60"
-              >
-                <Home className="h-4 w-4" />
-              </Link>
-            )}
+            {footerExtra}
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ const bypassPatterns = [
   /^\/favicon\.ico$/,
   /^\/robots\.txt$/,
   /^\/sitemap\.xml$/,
+  /^\/manifest\.webmanifest$/,
   /^\/logo.*$/,
   // html → static showcase files in /public (e.g. /work/mockups/*.html) served
   // as-is inside same-origin iframes; never locale-prefixed.

@@ -1,6 +1,7 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import { getLocale } from "next-intl/server"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
     canonical: "/en",
     languages: {
       en: "/en",
+      es: "/es",
     },
   },
   openGraph: {
@@ -49,6 +51,12 @@ export const metadata: Metadata = {
     icon: '/logo-icon.png',
     apple: '/logo-icon.png',
   },
+  // iOS "add to home screen" → runs as a standalone app (pairs with app/manifest.ts).
+  appleWebApp: {
+    capable: true,
+    title: 'Noon',
+    statusBarStyle: 'default',
+  },
   other: {
     'color-scheme': 'light dark',
   },
@@ -64,13 +72,17 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Every page lives under app/[locale], so the middleware has always resolved
+  // a locale by the time this renders — <html lang> must follow it (es launched
+  // 2026-07-19; hardcoding "en" mislabeled Spanish pages for SEO/AT).
+  const locale = await getLocale();
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
+    <html lang={locale} suppressHydrationWarning className="overflow-x-hidden">
       <body
         suppressHydrationWarning
         className={`${instrumentSans.variable} ${jetbrainsMono.variable} font-sans antialiased overflow-x-hidden`}

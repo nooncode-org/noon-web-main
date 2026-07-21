@@ -25,29 +25,36 @@ export type VersionStateMeta = {
   label: string;
   /** Badge tone (Tailwind classes), mirroring the workspace status palette. */
   tone: string;
+  /** Solid dot color (Tailwind bg-*) for the compact "● label" status treatment. */
+  dot: string;
 };
 
 const NEUTRAL_VERSION_META: VersionStateMeta = {
   label: "Version",
   tone: "border-border text-muted-foreground",
+  dot: "bg-zinc-400",
 };
 
 const VERSION_STATE_META: Record<string, VersionStateMeta> = {
   ready_for_client_preview: {
     label: "Preview ready",
     tone: "border-blue-500/25 bg-blue-500/10 text-blue-700",
+    dot: "bg-blue-500",
   },
   published: {
     label: "Published",
     tone: "border-emerald-500/25 bg-emerald-500/10 text-emerald-700",
+    dot: "bg-emerald-500",
   },
   previous_published: {
     label: "Previously published",
     tone: "border-zinc-500/25 bg-zinc-500/10 text-zinc-500",
+    dot: "bg-zinc-400",
   },
   rolled_back: {
     label: "Rolled back",
     tone: "border-amber-500/25 bg-amber-500/10 text-amber-700",
+    dot: "bg-amber-500",
   },
 };
 
