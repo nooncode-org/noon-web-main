@@ -2307,6 +2307,29 @@ export async function getPaymentEventByProviderEventId(
   return rows[0] ? mapPaymentEvent(rows[0]) : null;
 }
 
+/**
+ * Look up a CONFIRMED payment event by the Stripe checkout session id. Used to
+ * de-duplicate activation across the two paths that race for the same session:
+ * the Stripe webhook and the client's return from Checkout. The `confirmed`
+ * filter is essential — the checkout route writes an `initiated` event under the
+ * same `provider_session_id`, and that one must NOT count as an existing
+ * confirmation.
+ */
+export async function getConfirmedPaymentEventBySessionId(
+  providerSessionId: string,
+): Promise<PaymentEvent | null> {
+  const sql = getDb();
+  const rows = await sql<PaymentEventRow[]>`
+    SELECT *
+    FROM payment_event
+    WHERE provider_session_id = ${providerSessionId}
+      AND event_type = 'confirmed'
+    ORDER BY created_at DESC
+    LIMIT 1
+  `;
+  return rows[0] ? mapPaymentEvent(rows[0]) : null;
+}
+
 // ============================================================================
 // studio_event
 // ============================================================================

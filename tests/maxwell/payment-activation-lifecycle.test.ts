@@ -57,6 +57,7 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   appendProposalReviewEvent: vi.fn(async () => undefined),
   createClientWorkspace: vi.fn(),
   getClientWorkspaceBySession: vi.fn(),
+  getConfirmedPaymentEventBySessionId: vi.fn(),
   getLatestProposalRequest: vi.fn(),
   getPaymentEventByProviderEventId: vi.fn(),
   getProposalRequest: vi.fn(),
@@ -241,6 +242,7 @@ beforeEach(() => {
 
   // Default happy-path wiring used by most tests.
   vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(null);
+  vi.mocked(repos.getConfirmedPaymentEventBySessionId).mockResolvedValue(null);
   vi.mocked(repos.getProposalRequest).mockResolvedValue(fakeProposal());
   vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
   vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(null);
@@ -385,6 +387,34 @@ describe("confirmProposalPayment — B8 skip conditions", () => {
     await flushFireAndForget();
 
     expect(result.idempotent).toBe(true);
+    expect(emails.sendPaymentReceivedEmail).not.toHaveBeenCalled();
+    expect(emails.sendWorkspaceReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("short-circuits on the shared checkout SESSION id (return vs webhook race)", async () => {
+    // Idempotency #2: the client's return-path confirm already wrote the
+    // `confirmed` event for this checkout session (a DIFFERENT provider_event_id).
+    // A subsequent webhook — carrying the same providerSessionId — must dedupe on
+    // the session id: no re-activation, no App re-notify, no duplicate emails.
+    vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(null);
+    vi.mocked(repos.getConfirmedPaymentEventBySessionId).mockResolvedValue(fakePaymentEvent());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(fakeWorkspace());
+
+    const result = await confirmProposalPayment({
+      proposalRequestId: "proposal-1",
+      actor: "stripe",
+      provider: "stripe",
+      providerEventId: "evt_webhook_after_return",
+      providerSessionId: "cs_shared_123",
+      paidAmountMinor: 125000,
+      paidCurrency: "USD",
+    });
+    await flushFireAndForget();
+
+    expect(result.idempotent).toBe(true);
+    expect(repos.getConfirmedPaymentEventBySessionId).toHaveBeenCalledWith("cs_shared_123");
+    // No fresh activation, and crucially no second round of lifecycle emails.
+    expect(repos.appendPaymentEvent).not.toHaveBeenCalled();
     expect(emails.sendPaymentReceivedEmail).not.toHaveBeenCalled();
     expect(emails.sendWorkspaceReadyEmail).not.toHaveBeenCalled();
   });

@@ -9,6 +9,8 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
+import { AutoRefresh } from "@/components/maxwell/auto-refresh";
+import { useEscalated } from "@/components/maxwell/workspace-preparing-body";
 
 // Stripe.js loads once per module. The publishable key is public by design (it
 // ships to the browser); when it's unset — e.g. before the owner configures it —
@@ -170,6 +172,48 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
   );
 }
 
+/**
+ * Live "confirming payment" state (a-lo-Vercel: status that updates itself, and
+ * an honest escalation instead of an endless spinner). Reaching it means the
+ * server-side confirm-on-return didn't land on this render (e.g. a transient
+ * Stripe API miss) and the webhook is finishing the job. Each `router.refresh()`
+ * tick re-runs the page server-side — which RETRIES the confirm, so this state
+ * actively self-heals rather than just waiting. The 7s interval keeps a
+ * comfortable margin inside the proposal page's 30 req/60s per-IP rate budget.
+ */
+function ConfirmingPaymentBox() {
+  const escalated = useEscalated(75_000);
+  return (
+    <section className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
+      <AutoRefresh intervalMs={7_000} />
+      <div className="flex items-start gap-3">
+        <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
+        <div>
+          <p className="font-medium">
+            {escalated ? "Still confirming your payment" : "We're confirming your payment"}
+          </p>
+          {escalated ? (
+            <p className="mt-1 text-sky-950/80">
+              This is taking longer than usual — but your payment went through and nothing is
+              lost. This page keeps checking on its own, and we&apos;ll also email you the
+              moment your project is confirmed. Need a hand?{" "}
+              <a href={getContactHref()} className="underline underline-offset-2">
+                Contact us
+              </a>
+              .
+            </p>
+          ) : (
+            <p className="mt-1 text-sky-950/80">
+              Thanks — your payment went through. This page updates on its own; confirmation
+              usually lands in a few seconds.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function PublicProposalPayment({
   publicToken,
   status,
@@ -325,26 +369,12 @@ export function PublicProposalPayment({
     );
   }
 
-  // The client just came back from a successful Stripe Checkout. The proposal
-  // flips to `paid` only when the Stripe webhook reaches the App + NoonWeb, so
-  // until then show a "confirming" state instead of the pay button (avoids a
-  // confusing double-charge prompt during the webhook window).
+  // The client just came back from a successful Stripe Checkout. The server
+  // already tried confirm-on-return before rendering; still being here means
+  // that path didn't land yet, so show a LIVE confirming state instead of the
+  // pay button (avoids a confusing double-charge prompt during the window).
   if (checkoutResult === "success") {
-    return (
-      <section className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
-        <div className="flex items-start gap-3">
-          <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
-          <div>
-            <p className="font-medium">We&apos;re confirming your payment</p>
-            <p className="mt-1 text-sky-950/80">
-              Thanks! Your card payment went through. This page will update to
-              &ldquo;Payment received&rdquo; once the confirmation lands — usually within a
-              minute. You can refresh anytime.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
+    return <ConfirmingPaymentBox />;
   }
 
   if (!payable) {

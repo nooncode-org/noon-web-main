@@ -4,6 +4,7 @@ import {
   appendProposalReviewEvent,
   createClientWorkspace,
   getClientWorkspaceBySession,
+  getConfirmedPaymentEventBySessionId,
   getLatestProposalRequest,
   getPaymentEventByProviderEventId,
   getProposalRequest,
@@ -356,6 +357,33 @@ async function notifyNoonApp(input: {
   }
 }
 
+/**
+ * Re-load the {proposal, session, workspace} triple for an already-processed
+ * payment so an idempotent confirmation can return the same shape as a fresh one
+ * without redoing any writes (or re-notifying the App / re-sending emails).
+ */
+async function loadIdempotentActivationState(
+  proposalRequestId: string,
+  existingEvent: PaymentEvent,
+): Promise<{
+  proposal: ProposalRequest;
+  session: StudioSession;
+  workspace: ClientWorkspace;
+  paymentEvent: PaymentEvent;
+  idempotent: true;
+}> {
+  const proposal = await getProposalRequest(proposalRequestId);
+  if (!proposal) {
+    throw new PaymentActivationError("Proposal request not found.", 404, "PROPOSAL_NOT_FOUND");
+  }
+  const session = await getStudioSession(proposal.studioSessionId);
+  const workspace = session ? await getClientWorkspaceBySession(session.id) : null;
+  if (!session || !workspace) {
+    throw new PaymentActivationError("Existing payment event has incomplete activation state.", 409);
+  }
+  return { proposal, session, workspace, paymentEvent: existingEvent, idempotent: true };
+}
+
 export async function confirmProposalPayment(input: {
   proposalRequestId: string;
   actor: string;
@@ -376,19 +404,25 @@ export async function confirmProposalPayment(input: {
   paymentEvent: PaymentEvent;
   idempotent: boolean;
 }> {
+  // Idempotency #1 — the Stripe EVENT id. Guards against Stripe re-delivering the
+  // same webhook event (retries carry a stable event.id).
   if (input.providerEventId) {
     const existingEvent = await getPaymentEventByProviderEventId(input.providerEventId);
     if (existingEvent) {
-      const proposal = await getProposalRequest(input.proposalRequestId);
-      if (!proposal) {
-        throw new PaymentActivationError("Proposal request not found.", 404, "PROPOSAL_NOT_FOUND");
-      }
-      const session = await getStudioSession(proposal.studioSessionId);
-      const workspace = session ? await getClientWorkspaceBySession(session.id) : null;
-      if (!session || !workspace) {
-        throw new PaymentActivationError("Existing payment event has incomplete activation state.", 409);
-      }
-      return { proposal, session, workspace, paymentEvent: existingEvent, idempotent: true };
+      return loadIdempotentActivationState(input.proposalRequestId, existingEvent);
+    }
+  }
+
+  // Idempotency #2 — the Stripe checkout SESSION id. The webhook and the client's
+  // return from Checkout race for the same session; whichever confirms first writes
+  // the `confirmed` payment_event, and the other short-circuits here on the shared
+  // session id (the natural key both paths hold, even though they carry different
+  // provider_event_ids). This keeps activation, the App handoff, and the lifecycle
+  // emails each firing exactly once regardless of who wins the race.
+  if (input.providerSessionId) {
+    const existingBySession = await getConfirmedPaymentEventBySessionId(input.providerSessionId);
+    if (existingBySession) {
+      return loadIdempotentActivationState(input.proposalRequestId, existingBySession);
     }
   }
 
