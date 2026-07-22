@@ -421,8 +421,11 @@ describe("client portal — what demands the client's attention", () => {
     const tree = await render();
     const text = textOf(tree);
 
-    // Says so, and offers the way back.
+    // Says so — including that the SITE is offline but nothing was deleted —
+    // and offers the way back.
     expect(text).toContain("membership has ended");
+    expect(text).toContain("site is offline");
+    expect(text).toContain("nothing was deleted");
     expect(text).toMatch(/Reactivate|Manage/);
 
     // Nothing is taken away: the thread stays, and it stays readable.
@@ -498,7 +501,11 @@ describe("client portal — what demands the client's attention", () => {
     const text = textOf(await render());
     // The date itself, not "ends soon" — vagueness is how people miss it.
     expect(text).toContain("Feb 15, 2026");
-    expect(text).toContain("hosting included");
+    // The consequence is named: the site goes offline (one rule for everyone,
+    // static or not — owner decision 2026-07-22), and staying online until the
+    // date is the promise of the month they already paid.
+    expect(text).toContain("stays online until then");
+    expect(text).toContain("goes offline");
     expect(text).toMatch(/Renew|Manage/);
   });
 

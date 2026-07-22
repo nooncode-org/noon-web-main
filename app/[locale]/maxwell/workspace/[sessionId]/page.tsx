@@ -581,7 +581,7 @@ export default async function WorkspacePage({ params }: Props) {
                   ? `Your membership ends on ${formatDate(membershipEndsOn)}.`
                   : "Your membership is set to end."}
               </span>{" "}
-              Everything keeps running until then — hosting included. Renew to keep it that way.
+              Your site stays online until then — after that it goes offline until you renew.
             </p>
             {billingSlot ?? (
               <a
@@ -601,8 +601,8 @@ export default async function WorkspacePage({ params }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary/40 px-6 py-3 lg:px-14">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Your membership has ended.</span>{" "}
-              Your project, conversation and files stay here to read — reactivate whenever you
-              want to pick the work back up.
+              Your site is offline, but nothing was deleted — your project, conversation and
+              files are all saved. Reactivate and it comes back exactly as it was.
             </p>
             {billingSlot ?? (
               <a
