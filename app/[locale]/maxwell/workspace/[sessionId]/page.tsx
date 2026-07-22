@@ -324,6 +324,20 @@ export default async function WorkspacePage({ params }: Props) {
   const showPlanCard = Boolean(planProposal?.paymentModality);
   const planCurrency = planProposal?.approvedCurrency ?? "USD";
   const isPastDue = isMembershipPlan && appMembership?.status === "past_due";
+  /**
+   * Membership over → the portal turns READ-ONLY (owner decision 2026-07-22).
+   *
+   * Only on `ended`. A failed payment (`past_due`) keeps working — Stripe is
+   * still retrying — and `cancelled` means "set to end", where the client has
+   * paid through the current period and keeps everything until it closes. So the
+   * cut happens exactly once, when the membership is actually over.
+   *
+   * Nothing is hidden or deleted: the project, the whole conversation, versions
+   * and invoices stay readable. What goes away is the ability to ask for NEW
+   * work, which is what the membership paid for. Reactivating is the one action
+   * left in front of them.
+   */
+  const membershipEnded = isMembershipPlan && appMembership?.status === "ended";
   const billingSlot =
     MEMBERSHIP_BILLING_ENABLED && planProposal?.stripeCustomerId ? (
       <ManageMembershipButton sessionId={sessionId} />
@@ -548,6 +562,27 @@ export default async function WorkspacePage({ params }: Props) {
           </div>
         </header>
 
+        {/* Membership over: state it plainly, say what is kept, and put
+            reactivating right there. Neutral — not red: nothing went wrong,
+            they chose this. */}
+        {membershipEnded && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary/40 px-6 py-3 lg:px-14">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Your membership has ended.</span>{" "}
+              Your project, conversation and files stay here to read — reactivate whenever you
+              want to pick the work back up.
+            </p>
+            {billingSlot ?? (
+              <a
+                href={getContactHref({ inquiry: "project-update", source: "workspace" })}
+                className="shrink-0 rounded-[6px] border border-transparent bg-[#0056fd] px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
+              >
+                Reactivate {"->"}
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Dunning banner — a failed membership payment interrupts everything
             (audit P0-3). The real fix path is the Stripe Billing Portal. */}
         {isPastDue && (
@@ -573,7 +608,9 @@ export default async function WorkspacePage({ params }: Props) {
             {/* The client's #1 recurring decision, surfaced first-class. Release
                 notes arrive when the App emits them (#27) — until then the
                 banner falls back to its generic instruction line. */}
-            {reviewVersion && (
+            {/* Sin membresía no se pide una decisión de trabajo: el banner
+                entero (verla, publicarla, pedir cambios) deja de aplicar. */}
+            {reviewVersion && !membershipEnded && (
               <VersionReviewBanner
                 sequence={reviewVersion.sequence}
                 previewUrl={reviewVersion.previewUrl}
@@ -751,7 +788,7 @@ export default async function WorkspacePage({ params }: Props) {
                 <p className="text-[13px] text-muted-foreground">
                   {workspace.latestUpdateSummary ?? statusCfg.description}
                 </p>
-                <RequestChangeChip />
+                {!membershipEnded && <RequestChangeChip />}
               </div>
             </section>
 
@@ -856,16 +893,23 @@ export default async function WorkspacePage({ params }: Props) {
           <div data-panel="chat">
             <WorkspaceChat
               siteUrl={appPublishedUrl ?? previewHref ?? undefined}
+              readOnly={
+                membershipEnded
+                  ? {
+                      note: "This conversation is read-only while your membership is inactive. Reactivate to start it again.",
+                    }
+                  : undefined
+              }
               real={{
                 messages: chatMessages,
                 send: sendChatMessage,
-                ...(workspace.noonAppProjectId
+                ...(workspace.noonAppProjectId && !membershipEnded
                   ? { formalize: formalizeChatRequest, reply: replyToChatRequest }
                   : {}),
                 // Uploads need the same App-mapping the requests need, plus the
                 // storage bucket + the B.5b kill-switch. The picker stays hidden
                 // unless the whole path is live.
-                ...(workspace.noonAppProjectId && ATTACHMENTS_ENABLED && isAttachmentStorageConfigured()
+                ...(workspace.noonAppProjectId && !membershipEnded && ATTACHMENTS_ENABLED && isAttachmentStorageConfigured()
                   ? {
                       attach: attachToChat,
                       attachLimits: {
@@ -893,8 +937,9 @@ export default async function WorkspacePage({ params }: Props) {
                     // client PUBLISHES a fresh preview forward directly, but only
                     // ASKS the team to reactivate an older published-before
                     // version (rollback = staff authority). Live gets neither.
-                    const canPublish = version.state === "ready_for_client_preview";
+                    const canPublish = !membershipEnded && version.state === "ready_for_client_preview";
                     const canRequestLive =
+                      !membershipEnded &&
                       ROLLBACK_REQUEST_ENABLED &&
                       isPublishableVersionState(version.state) &&
                       version.state !== "ready_for_client_preview";
@@ -942,7 +987,7 @@ export default async function WorkspacePage({ params }: Props) {
                   {/* Both dialogs hand off to the Chat with the request typed —
                       the channel that actually reaches the team (registrar
                       purchase + connect automation are #27/#28). */}
-                  <AddDomainButtons viaChat />
+                  <AddDomainButtons viaChat hidden={membershipEnded} />
                 </div>
                 <div className="p-5">
                   {/* The search earns its place from 5 domains up. */}

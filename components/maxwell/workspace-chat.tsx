@@ -349,12 +349,19 @@ export function WorkspaceChat({
   fresh = false,
   siteUrl,
   real,
+  readOnly,
 }: {
   fresh?: boolean;
   /** The client's live site — enables "+" → Review site (absent = no site yet). */
   siteUrl?: string;
   /** Live-thread wiring (the real workspace page); absent = the seeded mock. */
   real?: RealThread;
+  /**
+   * The conversation stays fully readable but takes no new messages (a membership
+   * that has ended). The composer is replaced by this note rather than disabled:
+   * a greyed-out box invites clicking and explains nothing.
+   */
+  readOnly?: { note: string };
 } = {}) {
   // Seeded ONCE: the action's revalidatePath re-renders the page mid-session,
   // but re-seeding would duplicate our optimistic sends (the server list now
@@ -814,6 +821,14 @@ export function WorkspaceChat({
         </div>
       )}
 
+      {/* Read-only: the thread above stays scrollable and searchable; only the
+          ability to add to it goes away, with the reason in its place. */}
+      {readOnly ? (
+        <p className="shrink-0 rounded-[12px] border border-border bg-secondary/30 px-4 py-3 text-center text-[13px] leading-relaxed text-muted-foreground">
+          {readOnly.note}
+        </p>
+      ) : (
+      <>
       {/* Composer — slim SINGLE row (v0-style): "+" (left), the input inline,
           the arrow-up send (right). Buttons pin to the bottom (items-end) so they
           stay put as the input grows. Same buttons/surface as the studio chat. */}
@@ -910,6 +925,8 @@ export function WorkspaceChat({
           <ArrowUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }

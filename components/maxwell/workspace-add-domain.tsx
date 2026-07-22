@@ -46,7 +46,10 @@ const BUY_PRICE: Record<string, number> = {
  */
 export function AddDomainButtons({
   viaChat = false,
+  hidden = false,
 }: {
+  /** Membership ended → the portal is read-only, so these actions don't exist. */
+  hidden?: boolean;
   /**
    * Real mode: submitting hands the client to the Chat with the request typed
    * and focused (their channel that actually reaches the team) — the registrar
@@ -98,7 +101,7 @@ export function AddDomainButtons({
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-2">
+    <div className={`flex shrink-0 items-center gap-2 ${hidden ? "hidden" : ""}`}>
       <button
         type="button"
         onClick={() => setAddOpen(true)}

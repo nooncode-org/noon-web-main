@@ -75,6 +75,8 @@ import WorkspacePage from "@/app/[locale]/maxwell/workspace/[sessionId]/page";
 import { WorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { WorkspaceTabs } from "@/components/maxwell/workspace-tabs";
 import { VersionReviewBanner } from "@/components/maxwell/workspace-version-review-banner";
+import { VersionRowMenu } from "@/components/maxwell/workspace-version-menu";
+import { AddDomainButtons } from "@/components/maxwell/workspace-add-domain";
 
 const SESSION_ID = "sess-1";
 
@@ -402,6 +404,80 @@ describe("client portal — what demands the client's attention", () => {
       },
     });
     expect(textOf(await render())).not.toContain("didn't go through");
+  });
+
+  it("goes read-only once the membership has actually ended", async () => {
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version()],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: { status: "ended" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+    const text = textOf(tree);
+
+    // Says so, and offers the way back.
+    expect(text).toContain("membership has ended");
+    expect(text).toMatch(/Reactivate|Manage/);
+
+    // Nothing is taken away: the thread stays, and it stays readable.
+    const chat = find(tree, WorkspaceChat);
+    const real = chat?.props.real as Record<string, unknown>;
+    expect(chat?.props.readOnly).toBeDefined();
+    expect(Array.isArray(real.messages)).toBe(true);
+
+    // But no new work can be asked for, on ANY surface.
+    expect(real.formalize).toBeUndefined();
+    expect(real.reply).toBeUndefined();
+    expect(real.attach).toBeUndefined();
+    expect(find(tree, VersionReviewBanner)).toBeUndefined();
+    const rows = tree.filter((el) => el.type === VersionRowMenu);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.props.canPublish).toBe(false);
+      expect(row.props.canRequestLive).toBe(false);
+    }
+    expect(find(tree, AddDomainButtons)?.props.hidden).toBe(true);
+  });
+
+  it("a failed payment does NOT lock the portal — Stripe is still retrying", async () => {
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "in_development" },
+        versions: [version()],
+        publishedUrl: null,
+        membership: { status: "past_due" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const chat = find(await render(), WorkspaceChat);
+    expect(chat?.props.readOnly).toBeUndefined();
+    expect((chat?.props.real as Record<string, unknown>).formalize).toBeDefined();
+  });
+
+  it("a membership set to end keeps working until the period closes", async () => {
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "in_development" },
+        versions: [version()],
+        publishedUrl: null,
+        // "cancelled" = scheduled to end; they paid through this period.
+        membership: { status: "cancelled" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+    expect(find(tree, WorkspaceChat)?.props.readOnly).toBeUndefined();
+    expect(textOf(tree)).not.toContain("membership has ended");
   });
 
   it("tells a one-time buyer nothing recurring is coming", async () => {

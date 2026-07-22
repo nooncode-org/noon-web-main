@@ -179,6 +179,10 @@ try {
   check("Pago pendiente no rompe el portal", !(await broke()));
   await db((sql) => sql`UPDATE proposal_request SET status = 'paid' WHERE studio_session_id = ${SESSION}`);
 
+  // El estado de la membresía lo manda el App, que esta maquina no tiene, así
+  // que el paso a solo lectura se verifica en tests/maxwell/workspace-page.test.ts
+  // — allí sí se controla esa respuesta.
+
   // ── Ajustes
   await load();
   let gear = page.locator('button[aria-label="Project settings"]:visible').first();
