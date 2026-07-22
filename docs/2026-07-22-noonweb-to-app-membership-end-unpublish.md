@@ -14,10 +14,10 @@
 - **Se conserva todo 12 meses** desde el corte (decisión del owner, 2026-07-22). Reactivar dentro de esa ventana devuelve el sitio tal cual estaba.
 - **NoonWeb ya envió su parte** (main, commits `4374577` → `f6b57e3` → `30a80c3`): el portal pasa a solo lectura y muestra la fecha exacta de corte con estas palabras al cliente:
   - Durante el periodo pagado: *"Your site stays online until then — after that it goes offline until you renew."*
-  - Al terminar: *"Your site is offline, but nothing was deleted… Reactivate and it comes back exactly as it was."*
+  - Al terminar: *"Your site is offline, but nothing was deleted — your project, conversation and files stay saved for 12 months. Reactivate and it comes back exactly as it was."*
 - **Lo que pedimos:** que el App **despublique** el deployment al recibir `status: "ended"`, y lo **vuelva a publicar** al reactivar.
 - **Sin cambios de contrato.** El receptor `membership-lifecycle` ya recibe el estado y la fecha.
-- **§4:** tres decisiones ya tomadas por Noon — página neutra al visitante · retención 12 meses · **reactivación inmediata** — y **dos preguntas concretas** para vosotros: cuánto tarda de verdad la reactivación, y si al despublicar el dominio se suelta (si se suelta, la página neutra no llega a verse).
+- **§4:** casi todo ya está decidido por Noon — página neutra al visitante · retención 12 meses · reactivación inmediata · el dominio comprado por nosotros va a nombre del cliente. Al App le queda **una pregunta que sí depende de su infraestructura**: al despublicar, ¿el dominio del cliente sigue enganchado sirviendo la página neutra, o se suelta? (si se suelta, la página neutra no llega a verse). Más un dato: cuánto tarda de verdad la reactivación.
 
 > Hoy el mensaje va por delante de la ejecución **a propósito**: el fallo inofensivo es que un sitio siga en línea más de lo anunciado; el fallo caro es que muera sin aviso. Pero mientras esto no se implemente, **le estamos prometiendo al cliente algo que no ocurre**.
 
@@ -78,9 +78,9 @@ En resumen: de los cuatro estados posibles, **solo uno apaga**.
 
 ---
 
-## 4. Decisiones tomadas y preguntas abiertas
+## 4. Decisiones tomadas y lo único que os toca
 
-Q1 y Q2 ya están decididas por el owner de Noon (no hay que debatirlas, solo confirmar que el App puede sostenerlas). Q3 y Q4 son las que dependen de vuestra infraestructura y **necesitamos vuestra respuesta**.
+Q1, Q2, Q3 y la titularidad del dominio (Q4b) ya están decididas por el owner de Noon — no hay que debatirlas, solo confirmar que el App puede sostenerlas. **Lo único que de verdad depende de vuestra infraestructura y necesitamos que respondáis es la Q4a** (¿el dominio se suelta al despublicar?) y el dato de latencia de la Q3.
 
 **Q1 — Qué ve el visitante: página NEUTRA (DECIDIDO, no es pregunta).**
 El owner decidió (2026-07-22): una página sobria de Noon, del tipo *"esta web no está disponible ahora mismo"*, que **NO revela que hubo un impago**.
@@ -103,7 +103,13 @@ Lo único que necesitamos saber: **¿cuánto tarda de verdad** desde que entra e
 
 **(a) El dominio lo compró el cliente fuera** (GoDaddy, Namecheap…) y lo apuntó a nosotros — hoy el único caso real (el botón *"Add existing"* del portal). No es nuestro, **no se toca nunca**. Pero ojo con una cosa: **la página neutra de la Q1 solo aparece si el dominio sigue enganchado a nuestra infraestructura.** Si al despublicar el App lo desasocia, el visitante no ve la página de Noon: ve un error crudo del hosting, o la página de otro. Eso tumbaría en silencio la decisión de la Q1. **La pregunta concreta: ¿despublicar suelta el dominio, o lo mantiene sirviendo la página neutra?** Necesitamos lo segundo.
 
-**(b) El dominio lo compramos nosotros** — el botón *"Buy"* del portal, **hoy sin lógica** (`workspace-add-domain.tsx`: front only, la compra por API del registrador está por construir). Cuando exista, Noon paga la renovación anual y aparece un riesgo que no tiene el caso (a): si dejamos de renovar, **el dominio caduca y se lo puede quedar cualquiera**. El cliente pierde su dirección de marca para siempre y nos la va a reclamar a nosotros, con razón, porque lo teníamos nosotros. Renovar a un cliente que ya no paga cuesta unos ~12 $/año; perderle el dominio no se arregla con dinero. **No hay que decidir esto todavía** — se decide cuando se construya la compra, y queda anotado aquí para que nadie lo construya sin darse cuenta.
+**(b) El dominio lo compramos nosotros** — el botón *"Buy"* del portal, **hoy sin lógica** (`workspace-add-domain.tsx`: front only, la compra por API del registrador está por construir). Regla del owner (2026-07-22), a fijar en el diseño de esa compra:
+
+- **El titular del dominio es el cliente desde el día uno.** Lo gestionamos nosotros, pero en el registro figura él. Noon **nunca** puede perdérselo ni retenérselo — es suyo, no una palanca de retención.
+- **Si deja de pagar, se lo seguimos renovando durante la ventana de 12 meses** (la misma retención del §4 Q2) y le avisamos de que puede llevárselo cuando quiera. Renovar cuesta ~12 $/año; que caduque y se lo quede otro le cuesta su marca para siempre y la reclamación nos llega a nosotros — la asimetría no admite discusión.
+- **Antes de que caduque de verdad, aviso claro** con instrucciones para que lo asuma él o lo transfiera. Nunca dejarlo morir en silencio.
+
+Esto es la política; **no hay que construir nada aún** porque el botón *"Buy"* no tiene lógica todavía. Queda anotado para que quien construya la compra lo registre a nombre del cliente desde el principio (invertir la titularidad después es un lío jurídico y técnico).
 
 ---
 
