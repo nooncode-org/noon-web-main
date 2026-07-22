@@ -17,7 +17,7 @@
   - Al terminar: *"Your site is offline, but nothing was deleted… Reactivate and it comes back exactly as it was."*
 - **Lo que pedimos:** que el App **despublique** el deployment al recibir `status: "ended"`, y lo **vuelva a publicar** al reactivar.
 - **Sin cambios de contrato.** El receptor `membership-lifecycle` ya recibe el estado y la fecha.
-- **§4:** dos decisiones ya tomadas por Noon (página neutra al visitante · retención 12 meses) y **dos preguntas abiertas** que sí dependen de vosotros (¿la reactivación es automática? · ¿qué pasa con el dominio propio?).
+- **§4:** tres decisiones ya tomadas por Noon — página neutra al visitante · retención 12 meses · **reactivación inmediata** — y **dos preguntas concretas** para vosotros: cuánto tarda de verdad la reactivación, y si al despublicar el dominio se suelta (si se suelta, la página neutra no llega a verse).
 
 > Hoy el mensaje va por delante de la ejecución **a propósito**: el fallo inofensivo es que un sitio siga en línea más de lo anunciado; el fallo caro es que muera sin aviso. Pero mientras esto no se implemente, **le estamos prometiendo al cliente algo que no ocurre**.
 
@@ -72,8 +72,9 @@ En resumen: de los cuatro estados posibles, **solo uno apaga**.
 
 1. **Al recibir `status: "ended"`** → despublicar el deployment de ese proyecto. El visitante deja de ver el sitio.
 2. **Conservar todo**: código, versiones, datos. Ventana de retención: **12 meses** desde `ended` (§4, Q2).
-3. **Al reactivar** (`status` vuelve a `active` tras un pago) → **re-publicar** el mismo deployment, sin rebuild ni pasos manuales. La promesa literal del portal es *"vuelve exactamente como estaba"*.
-4. **Idempotencia**: `ended` puede llegar repetido (reintentos del webhook). Despublicar dos veces no debe fallar ni disparar efectos secundarios.
+3. **Al reactivar** (`status` vuelve a `active` tras un pago) → **re-publicar el mismo deployment, de inmediato y en el propio handler** — sin rebuild, sin cola diaria, sin revisión manual. La promesa literal del portal es *"vuelve exactamente como estaba"*, y el cliente que acaba de pagar mira su web en ese momento.
+4. **Mantener el dominio enganchado** mientras está apagado, sirviendo la página neutra (§4 Q4a). Soltarlo rompe la Q1 sin que nadie se entere.
+5. **Idempotencia**: `ended` puede llegar repetido (reintentos del webhook). Despublicar dos veces no debe fallar ni disparar efectos secundarios.
 
 ---
 
@@ -93,11 +94,16 @@ El owner fijó **12 meses desde `ended`** (2026-07-22). El portal ya se lo dice 
 - **(a)** ¿Puede sostener ese plazo para el deployment y sus datos, o su infraestructura purga antes por su cuenta? Si purga antes, el portal está mintiendo y hay que corregirlo.
 - **(b)** ¿Quién ejecuta el borrado a los 12 meses — el App, NoonWeb, o cada uno lo suyo? Hoy **nadie lo hace**: el plazo está anunciado pero no implementado. Es deuda conocida, no un olvido.
 
-**Q3 — ¿La reactivación es automática?**
-Cuando el cliente vuelve a pagar, `status: "active"` llega por el mismo wire. ¿El App puede re-publicar solo al recibirlo, o hace falta una acción del PM? Esto decide si el portal puede prometer "vuelve al instante" o tiene que decir "tu equipo lo restaura".
+**Q3 — Reactivación INMEDIATA (requisito, ya no es pregunta).**
+Decisión del owner (2026-07-22): cuando el cliente vuelve a pagar, **la web tiene que volver a estar en línea al momento**, sin que nadie de Noon toque un botón. El `status: "active"` llega por el mismo wire, así que el App tiene el disparador; lo que pedimos es que republique **en el propio handler**, no en una cola diaria ni con revisión manual.
 
-**Q4 — ¿Qué pasa con el dominio propio?**
-Si el cliente conectó su dominio (`yourbrand.com`), al despublicar: ¿se libera, se conserva apuntando a la página neutra, o se desconecta? Afecta a lo que el portal debe advertir antes de que llegue la fecha.
+Lo único que necesitamos saber: **¿cuánto tarda de verdad** desde que entra el webhook hasta que la web responde? Si son segundos, el portal se lo dice al cliente tal cual ("vuelve al instante"). Si son minutos, el portal tiene que decir "en unos minutos" — preferimos prometer de menos que quedar mal.
+
+**Q4 — El dominio: son DOS casos distintos, y solo uno es vuestro.**
+
+**(a) El dominio lo compró el cliente fuera** (GoDaddy, Namecheap…) y lo apuntó a nosotros — hoy el único caso real (el botón *"Add existing"* del portal). No es nuestro, **no se toca nunca**. Pero ojo con una cosa: **la página neutra de la Q1 solo aparece si el dominio sigue enganchado a nuestra infraestructura.** Si al despublicar el App lo desasocia, el visitante no ve la página de Noon: ve un error crudo del hosting, o la página de otro. Eso tumbaría en silencio la decisión de la Q1. **La pregunta concreta: ¿despublicar suelta el dominio, o lo mantiene sirviendo la página neutra?** Necesitamos lo segundo.
+
+**(b) El dominio lo compramos nosotros** — el botón *"Buy"* del portal, **hoy sin lógica** (`workspace-add-domain.tsx`: front only, la compra por API del registrador está por construir). Cuando exista, Noon paga la renovación anual y aparece un riesgo que no tiene el caso (a): si dejamos de renovar, **el dominio caduca y se lo puede quedar cualquiera**. El cliente pierde su dirección de marca para siempre y nos la va a reclamar a nosotros, con razón, porque lo teníamos nosotros. Renovar a un cliente que ya no paga cuesta unos ~12 $/año; perderle el dominio no se arregla con dinero. **No hay que decidir esto todavía** — se decide cuando se construya la compra, y queda anotado aquí para que nadie lo construya sin darse cuenta.
 
 ---
 
