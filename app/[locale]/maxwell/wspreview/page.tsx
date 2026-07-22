@@ -612,9 +612,19 @@ function ActiveWorkspace({
                   <div className="max-w-md">
                     <p className="text-sm font-medium">Your project is delivered</p>
                     <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      Need changes, new features, or an ongoing team on call? A membership
-                      gives you continuous updates and a direct line to your developers —
-                      cancel anytime.
+                      Need changes, new features, or an ongoing team on call? Add a membership
+                      for continuous updates and a direct line to your developers — cancel anytime.
+                    </p>
+                    {/* Membership price = the MONTHLY ONLY. A one-time buyer already
+                        paid the activation (their build), so upgrading never charges
+                        it again — the amount here is the membership by itself (owner
+                        2026-07-22). Mock literal; the real port computes the monthly
+                        from the project and shows it without activation. */}
+                    <p className="mt-2 text-[13px]">
+                      <span className="font-semibold text-foreground">
+                        {formatProposalAmount(200, planCurrency)}/mo
+                      </span>
+                      <span className="text-muted-foreground"> · no setup fee — your build is already paid.</span>
                     </p>
                   </div>
                   <a
