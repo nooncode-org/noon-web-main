@@ -16,7 +16,8 @@
   - Durante el periodo pagado: *"Your site stays online until then — after that it goes offline until you renew."*
   - Al terminar: *"Your site is offline, but nothing was deleted… Reactivate and it comes back exactly as it was."*
 - **Lo que pedimos:** que el App **despublique** el deployment al recibir `status: "ended"`, y lo **vuelva a publicar** al reactivar.
-- **Sin cambios de contrato.** El receptor `membership-lifecycle` ya recibe el estado y la fecha. **4 preguntas abajo (§4).**
+- **Sin cambios de contrato.** El receptor `membership-lifecycle` ya recibe el estado y la fecha.
+- **§4:** dos decisiones ya tomadas por Noon (página neutra al visitante · retención 12 meses) y **dos preguntas abiertas** que sí dependen de vosotros (¿la reactivación es automática? · ¿qué pasa con el dominio propio?).
 
 > Hoy el mensaje va por delante de la ejecución **a propósito**: el fallo inofensivo es que un sitio siga en línea más de lo anunciado; el fallo caro es que muera sin aviso. Pero mientras esto no se implemente, **le estamos prometiendo al cliente algo que no ocurre**.
 
@@ -76,10 +77,16 @@ En resumen: de los cuatro estados posibles, **solo uno apaga**.
 
 ---
 
-## 4. Preguntas abiertas (a co-firmar)
+## 4. Decisiones tomadas y preguntas abiertas
 
-**Q1 — ¿Qué ve el visitante cuando el sitio está despublicado?**
-NoonWeb propone: una página neutra de Noon con 404/410, sin exponer que fue por impago (es información del cliente, no de sus visitantes). ¿El App ya tiene una página así o hay que diseñarla?
+Q1 y Q2 ya están decididas por el owner de Noon (no hay que debatirlas, solo confirmar que el App puede sostenerlas). Q3 y Q4 son las que dependen de vuestra infraestructura y **necesitamos vuestra respuesta**.
+
+**Q1 — Qué ve el visitante: página NEUTRA (DECIDIDO, no es pregunta).**
+El owner decidió (2026-07-22): una página sobria de Noon, del tipo *"esta web no está disponible ahora mismo"*, que **NO revela que hubo un impago**.
+
+> El razonamiento importa para no erosionarlo luego: el visitante es **cliente de nuestro cliente**. Que se entere de que su proveedor dejó de pagar lo humilla delante de su propia gente y nos lo va a cobrar a nosotros. La información de pago es del cliente, no de sus visitantes. Por eso también se descartó la variante "¿es tuya esta web? reactívala aquí": recupera algún cliente, pero a cambio publica su impago a todo el que pase.
+
+Lo que sí necesitamos del App: **(a)** ¿existe ya esa página o hay que diseñarla?, y **(b)** ¿con qué código responde? (NoonWeb sugiere **410 Gone** sobre 404: le dice a Google que la retire del índice sin marcar el dominio como roto, y revierte limpio al republicar).
 
 **Q2 — Retención: 12 meses (DECIDIDO, no es pregunta).**
 El owner fijó **12 meses desde `ended`** (2026-07-22). El portal ya se lo dice al cliente con esas palabras: *"your project, conversation and files stay saved for 12 months"*. Lo que sí necesitamos del App:
