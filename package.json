@@ -16,6 +16,9 @@
     "test:visual:after": "cross-env VISUAL_DIR=after playwright test capture.spec.ts",
     "test:a11y": "playwright test a11y.spec.ts",
     "db:check-migrations": "node scripts/check-migrations.mjs --strict",
+    "db:migrate": "node scripts/dev-db.mjs migrate",
+    "db:seed": "node scripts/dev-db.mjs seed",
+    "db:status": "node scripts/dev-db.mjs status",
     "gdpr:hard-delete": "node scripts/gdpr-hard-delete.mjs",
     "smoke:gpt-5.5": "node scripts/smoke-gpt-5.5.mjs",
     "analyze": "next build --experimental-analyze && node scripts/bundle-stats-summary.mjs"
