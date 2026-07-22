@@ -61,7 +61,12 @@ const providers = [
     : []),
 ];
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const {
+  handlers,
+  auth: nextAuth,
+  signIn,
+  signOut,
+} = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
   providers,
@@ -103,6 +108,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export { handlers, signIn, signOut };
+
+/**
+ * The session reader every server surface uses.
+ *
+ * In production this is NextAuth's `auth()` verbatim. In development, when no
+ * OAuth provider is configured and DEV_VIEWER_EMAIL is set, it returns that
+ * viewer — the same dev bypass `getAuthenticatedViewer()` already had, applied
+ * here so the whole app (pages, server actions, API routes) can actually be run
+ * locally instead of bouncing to a sign-in screen it cannot complete.
+ *
+ * The bypass is impossible in production: `getDevBypassEmail()` returns null
+ * whenever NODE_ENV === "production", and it also requires that no real provider
+ * is wired.
+ */
+export const auth = (async () => {
+  const session = await nextAuth();
+  if (session?.user?.email) return session;
+  if (isGoogleConfigured()) return session;
+
+  const devEmail = getDevBypassEmail();
+  if (!devEmail) return session;
+  return { ...session, user: { email: devEmail, name: "Dev User", image: null } };
+}) as typeof nextAuth;
 
 export function isGoogleAuthConfigured() {
   return isGoogleConfigured();

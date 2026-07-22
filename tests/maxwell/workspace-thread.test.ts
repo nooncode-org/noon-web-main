@@ -18,7 +18,8 @@ import type {
   WorkspaceUpdate,
 } from "@/lib/maxwell/repositories";
 
-const stamp = (iso: string) => `@${iso.slice(11, 16)}`;
+const stamp = (iso: string | Date) =>
+  `@${(iso instanceof Date ? iso.toISOString() : iso).slice(11, 16)}`;
 
 function comment(id: string, at: string, body = `comment ${id}`): ClientComment {
   return {
@@ -211,6 +212,23 @@ describe("buildWorkspaceThread", () => {
 
   it("an empty portal produces an empty thread, not a placeholder", () => {
     expect(build()).toEqual([]);
+  });
+
+  // Regression: postgres.js hands back Date objects for TIMESTAMPTZ even though
+  // the row types say `string`. Sorting as if they were strings crashed the real
+  // portal ("a.at.localeCompare is not a function") while these tests — which fed
+  // ISO strings — stayed green. Ordering must hold for either shape, and for a
+  // mix of both.
+  it("orders correctly when the database hands back Date objects", () => {
+    const d = (iso: string) => new Date(iso) as unknown as string;
+    const thread = build({
+      comments: [comment("c1", d("2026-07-20T10:00:00.000Z"))],
+      updates: [update("u1", d("2026-07-20T09:00:00.000Z"))],
+      // Deliberately mixed: one raw Date, one already-serialized string.
+      requests: [request("r1", "2026-07-20T11:00:00.000Z")],
+    });
+
+    expect(thread.map((m) => m.id)).toEqual(["u-u1", "c-c1", "r-r1"]);
   });
 });
 

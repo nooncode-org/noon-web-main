@@ -69,9 +69,10 @@ export function buildWorkspaceThread({
   updates: WorkspaceUpdate[];
   materials: WorkspaceUpdate[];
   requests: ClientRequestWithUpdates[];
-  formatStamp: (iso: string) => string;
+  formatStamp: (iso: string | Date) => string;
 }): ThreadMessage[] {
-  const entries: { at: string; msg: ThreadMessage }[] = [
+  // `at` is the raw row value: a Date from postgres.js, a string once serialized.
+  const entries: { at: string | Date; msg: ThreadMessage }[] = [
     ...comments.map((c) => ({
       at: c.createdAt,
       msg: {
@@ -131,7 +132,12 @@ export function buildWorkspaceThread({
     ]),
   ];
 
-  // ISO-8601 UTC timestamps sort lexicographically, so this is a plain string
-  // compare — no Date parsing per comparison.
-  return entries.sort((a, b) => a.at.localeCompare(b.at)).map((e) => e.msg);
+  // Timestamps arrive as Date objects from postgres.js even though the row types
+  // declare `string` (they're only ISO strings once something serializes them),
+  // so sort on the epoch value rather than assuming either shape.
+  return entries.sort((a, b) => toMillis(a.at) - toMillis(b.at)).map((e) => e.msg);
+}
+
+function toMillis(value: string | Date): number {
+  return value instanceof Date ? value.getTime() : Date.parse(value);
 }

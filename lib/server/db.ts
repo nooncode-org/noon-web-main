@@ -24,12 +24,20 @@ export function getDb(): postgres.Sql {
       throw new Error("DATABASE_URL (or POSTGRES_URL) is not configured.");
     }
 
+    // Un Postgres de desarrollo en la máquina (scripts/dev-db-server.mjs) habla
+    // TCP plano: exigirle TLS impide levantar el portal en local. Cualquier URL
+    // que no sea de loopback conserva `ssl: "require"` — producción nunca es
+    // localhost, así que el endurecimiento remoto queda intacto.
+    const isLoopback = /@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(url);
+
     const connectTimeoutSeconds = readPositiveIntEnv("DB_CONNECT_TIMEOUT_SECONDS", 20);
     const idleTimeoutSeconds = readPositiveIntEnv("DB_IDLE_TIMEOUT_SECONDS", 30);
-    const maxConnections = readPositiveIntEnv("DB_MAX_CONNECTIONS", 10);
+    // Ese mismo Postgres embebido atiende UNA conexión a la vez; un pool de 10
+    // provoca ECONNRESET intermitentes. Sigue siendo configurable por entorno.
+    const maxConnections = readPositiveIntEnv("DB_MAX_CONNECTIONS", isLoopback ? 1 : 10);
 
     globalForDb.postgresClient = postgres(url, {
-      ssl: "require",
+      ssl: isLoopback ? false : "require",
       max: maxConnections,
       idle_timeout: idleTimeoutSeconds,
       connect_timeout: connectTimeoutSeconds,

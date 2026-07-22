@@ -62,3 +62,6 @@ next-env.d.ts
 # raw PII. Must be uploaded to the team's secure backup bucket per the
 # runbook; never committed to git.
 /gdpr-snapshots/
+
+# Postgres de desarrollo embebido (scripts/dev-db-server.mjs)
+.pglite/

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { auth } from "@/auth";
+import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { buildSignInHref } from "@/lib/auth/redirect";
 import { Search } from "lucide-react";
 import {
@@ -93,7 +93,7 @@ function formatDate(iso: string) {
 }
 
 // Chat bubble stamps — same shape the old Messages log used.
-function formatStamp(iso: string) {
+function formatStamp(iso: string | Date) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -192,8 +192,11 @@ function WorkspacePreparing({
 
 export default async function WorkspacePage({ params }: Props) {
   const { locale, sessionId } = await params;
-  const sessionData = await auth();
-  const viewerEmail = sessionData?.user?.email?.trim().toLowerCase();
+  // Single auth entry point: same NextAuth session in production, plus the
+  // documented dev bypass so the portal can actually be run locally (calling
+  // `auth()` directly skipped it, which is why it was never clickable in dev).
+  const viewer = await getAuthenticatedViewer();
+  const viewerEmail = viewer?.email;
 
   if (!viewerEmail) {
     redirect(buildSignInHref(`/maxwell/workspace/${encodeURIComponent(sessionId)}`));
@@ -515,7 +518,7 @@ export default async function WorkspacePage({ params }: Props) {
     <div className="flex h-screen overflow-hidden bg-background">
       <ProposalSidebar
         viewerEmail={viewerEmail}
-        viewerName={sessionData?.user?.name ?? null}
+        viewerName={viewer?.name ?? null}
         locale={locale}
         collapsibleRail
         settings={{

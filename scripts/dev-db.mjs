@@ -76,6 +76,11 @@ const nowIso = () => new Date().toISOString();
  * did not create. A scratch database has none; production has plenty.
  */
 async function assertScratch(sql, force) {
+  // A brand-new database has no tables at all — that is the emptiest a scratch
+  // DB gets, so treat the missing relation as "nothing here to protect".
+  const exists = await sql`SELECT to_regclass('public.studio_session') AS t`;
+  if (!exists[0].t) return 0;
+
   const [{ n }] = await sql`
     SELECT count(*)::int AS n FROM studio_session WHERE id NOT LIKE ${DEMO_PREFIX + "%"}
   `;
@@ -95,45 +100,73 @@ function localMigrations() {
     .sort();
 }
 
+/** The ledger keys migrations by `filename`; it may not exist yet. */
 async function appliedMigrations(sql) {
   const exists = await sql`SELECT to_regclass('public.schema_migrations') AS t`;
-  if (!exists[0].t) return null; // ledger itself not created yet
-  const rows = await sql`SELECT version FROM public.schema_migrations`;
-  return new Set(rows.map((r) => r.version));
+  if (!exists[0].t) return new Set();
+  const rows = await sql`SELECT filename FROM public.schema_migrations`;
+  return new Set(rows.map((r) => r.filename));
 }
 
 async function migrate(sql) {
+  // `supabase/schema.sql` is the greenfield baseline and the migrations assume
+  // it: the very first one is a preflight that SELECTs from tables it never
+  // creates. On an empty database, lay the baseline down first.
+  const baseline = await sql`SELECT to_regclass('public.studio_session') AS t`;
+  if (!baseline[0].t) {
+    process.stdout.write("  applying supabase/schema.sql (baseline) … ");
+    await sql.unsafe(readFileSync(join(ROOT, "supabase", "schema.sql"), "utf8"));
+    console.log("ok");
+  }
+
   const files = localMigrations();
-  let applied = await appliedMigrations(sql);
-  console.log(`· ${files.length} migration files on disk`);
+  const applied = await appliedMigrations(sql);
+  console.log(`· ${files.length} migration files on disk, ${applied.size} already recorded`);
 
   let ran = 0;
+  let skipped = 0;
   for (const file of files) {
-    const version = file.replace(/\.sql$/, "");
-    if (applied?.has(version)) continue;
+    if (applied.has(file)) continue;
     process.stdout.write(`  applying ${file} … `);
     const body = readFileSync(join(MIGRATIONS_DIR, file), "utf8");
     try {
-      // Migrations are authored as complete scripts (they self-register in the
-      // ledger); run each as ONE multi-statement batch so transactions inside
-      // them behave exactly as they do under psql.
+      // Each file runs as ONE multi-statement batch so the transactions inside
+      // it behave exactly as they do under psql.
       await sql.unsafe(body);
-      ran += 1;
-      console.log("ok");
     } catch (error) {
       console.log("FAILED");
       console.error(`\n${file}: ${error.message}\n`);
       process.exit(1);
     }
-    // The ledger may have been created by the migration we just ran.
-    if (!applied) applied = await appliedMigrations(sql);
+
+    // Only ~2/3 of the files self-register. Record the rest so a second run is
+    // a no-op instead of replaying them.
+    const nowApplied = await appliedMigrations(sql);
+    if (!nowApplied.has(file)) {
+      const ledger = await sql`SELECT to_regclass('public.schema_migrations') AS t`;
+      if (ledger[0].t) {
+        await sql`
+          INSERT INTO public.schema_migrations (filename, applied_at, checksum, applied_by)
+          VALUES (${file}, now(), NULL, 'dev-db:runner')
+          ON CONFLICT (filename) DO NOTHING
+        `;
+      } else {
+        skipped += 1; // pre-ledger files (they run before it exists)
+      }
+    }
+    ran += 1;
+    console.log("ok");
   }
 
   console.log(ran === 0 ? "· already up to date" : `· applied ${ran} migration(s)`);
+  if (skipped > 0) console.log(`  (${skipped} ran before the ledger existed and will re-run)`);
 }
 
 async function seed(sql) {
   const at = nowIso();
+  // Stagger the thread rows: identical timestamps leave their order ambiguous,
+  // which reads like a merge bug when it's really just the fixture.
+  const minutesAgo = (n) => new Date(Date.now() - n * 60_000).toISOString();
   const email = (process.env.DEV_VIEWER_EMAIL || "dev@noon.dev").trim().toLowerCase();
 
   await sql`
@@ -183,7 +216,7 @@ async function seed(sql) {
     ) VALUES (
       ${DEMO_PREFIX + "-update-1"}, ${DEMO_WORKSPACE},
       'Version 2 is live', 'Dashboards and role-based access shipped.',
-      'status_update', true, 'noon-team', ${at}
+      'status_update', true, 'noon-team', ${minutesAgo(90)}
     )
     ON CONFLICT (id) DO NOTHING
   `;
@@ -191,7 +224,7 @@ async function seed(sql) {
     INSERT INTO client_comment (id, client_workspace_id, body, external_comment_id, created_at)
     VALUES (
       ${DEMO_PREFIX + "-comment-1"}, ${DEMO_WORKSPACE},
-      'Looks great — can the header logo be a bit bigger?', ${DEMO_PREFIX + "-comment-1"}, ${at}
+      'Looks great — can the header logo be a bit bigger?', ${DEMO_PREFIX + "-comment-1"}, ${minutesAgo(45)}
     )
     ON CONFLICT (id) DO NOTHING
   `;
@@ -209,7 +242,8 @@ async function unseed(sql) {
 async function status(sql) {
   const applied = await appliedMigrations(sql);
   const files = localMigrations();
-  const pending = applied ? files.filter((f) => !applied.has(f.replace(/\.sql$/, ""))) : files;
+  // The ledger keys by the full filename, extension included.
+  const pending = files.filter((f) => !applied.has(f));
   console.log(`· migrations: ${files.length - pending.length}/${files.length} applied`);
   if (pending.length) console.log(`  pending: ${pending.slice(0, 5).join(", ")}${pending.length > 5 ? " …" : ""}`);
 

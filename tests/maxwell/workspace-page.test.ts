@@ -39,7 +39,20 @@ const h = vi.hoisted(() => ({
 vi.mock("geist/font/sans", () => ({ GeistSans: { variable: "", className: "" } }));
 vi.mock("geist/font/mono", () => ({ GeistMono: { variable: "", className: "" } }));
 
-vi.mock("@/auth", () => ({ auth: h.authMock }));
+// The page reads the viewer through the shared session helper (which carries
+// the dev bypass), so that is what gets mocked.
+vi.mock("@/lib/auth/session", () => ({ getAuthenticatedViewer: h.authMock }));
+// The server actions the page imports pull in `@/auth` → next-auth → next/server,
+// which doesn't resolve under vitest. Stub it; the page never calls it directly.
+vi.mock("@/auth", () => ({
+  auth: vi.fn(async () => null),
+  isGoogleAuthConfigured: () => false,
+  isEmailAuthConfigured: () => false,
+  getDevBypassEmail: () => null,
+  handlers: {},
+  signIn: vi.fn(),
+  signOut: vi.fn(),
+}));
 vi.mock("@/lib/auth/ownership", () => ({ viewerOwnsStudioSession: h.ownsMock }));
 vi.mock("next/navigation", () => ({ redirect: h.redirectMock, notFound: h.notFoundMock }));
 vi.mock("@/lib/maxwell/project-status-fetch", () => ({
@@ -125,7 +138,7 @@ const version = (over: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  h.authMock.mockResolvedValue({ user: { email: "client@example.com", name: "Ana" } });
+  h.authMock.mockResolvedValue({ email: "client@example.com", name: "Ana", image: null });
   h.ownsMock.mockReturnValue(true);
   h.getStudioSessionMock.mockResolvedValue({
     id: SESSION_ID,
