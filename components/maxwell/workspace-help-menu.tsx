@@ -9,8 +9,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
  * before they ask them in the chat; native <details> keeps it dependency-free
  * and accessible. NOT a knowledge base — if this list wants to grow past ~6
  * entries, that's the signal to build a real help page instead.
+ *
+ * Plan-aware: the membership FAQ talks about the build flow, the Chat, and
+ * publishing — none of which a ONE-TIME buyer has. They get their own set
+ * (their code, yearly hosting, what non-renewal does, how to get changes), and
+ * no reference to a chat they don't have.
  */
-const FAQ: { q: string; a: string }[] = [
+const FAQ_MEMBERSHIP: { q: string; a: string }[] = [
   {
     q: "When will I see my first preview?",
     a: "Usually 3–5 business days after kickoff. It appears on your Overview the moment it's ready, and you get an email.",
@@ -37,7 +42,36 @@ const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-export function WorkspaceHelpMenu() {
+// One-time buyer: delivered project, owns the code, pays yearly hosting, no chat.
+const FAQ_ONETIME: { q: string; a: string }[] = [
+  {
+    q: "Where's my code?",
+    a: "On your Overview, under \"Your code\" — download it any time or open your repository. It's yours to keep.",
+  },
+  {
+    q: "Can I use my own domain?",
+    a: "Yes — Domains tab → Add. Your Noon team handles all the DNS; you never touch records unless you want to.",
+  },
+  {
+    q: "How does billing work?",
+    a: "You paid once for your build. Hosting and your domain renew yearly to keep the site online — we email you before each renewal.",
+  },
+  {
+    q: "What happens if I don't renew?",
+    a: "Your site goes offline, but nothing is deleted — we keep everything for 12 months, and you always have your code. Renew and it comes back exactly as it was.",
+  },
+  {
+    q: "Can I get changes or new features?",
+    a: "One-time projects don't include ongoing work. Add a membership from your Overview for continuous updates and a team on call — or book a call to scope a one-off.",
+  },
+  {
+    q: "Need a human?",
+    a: "Book a call below — it reaches your real Noon team.",
+  },
+];
+
+export function WorkspaceHelpMenu({ isMembership = true }: { isMembership?: boolean }) {
+  const FAQ = isMembership ? FAQ_MEMBERSHIP : FAQ_ONETIME;
   return (
     <Popover>
       <PopoverTrigger asChild>

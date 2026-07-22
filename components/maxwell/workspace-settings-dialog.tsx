@@ -105,6 +105,8 @@ export function WorkspaceSettingsDialog({
   const handingOff = useRef(false);
   const [notifyVersions, setNotifyVersions] = useState(true);
   const [notifyChat, setNotifyChat] = useState(true);
+  // One-time buyer's only recurring event is the yearly hosting/domain renewal.
+  const [notifyRenewal, setNotifyRenewal] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [exportRequested, setExportRequested] = useState(false);
@@ -120,7 +122,13 @@ export function WorkspaceSettingsDialog({
     ...(invoiceUrl || isMembership
       ? [{ key: "billing" as const, label: "Billing", blurb: "Your plan, payments, and invoices." }]
       : []),
-    { key: "data", label: "Project data", blurb: "Exports and other project-wide actions." },
+    // Project-data export is the team-mediated path for clients who don't hold
+    // their code directly (membership). A one-time buyer OWNS their code outright
+    // (the Overview's "Your code" card — download + repo), so a gated "ask the
+    // team to enable export" would be redundant and contradictory. Hidden for them.
+    ...(isMembership
+      ? [{ key: "data" as const, label: "Project data", blurb: "Exports and other project-wide actions." }]
+      : []),
   ];
   const active = sections.find((s) => s.key === section) ?? sections[0];
 
@@ -224,11 +232,17 @@ export function WorkspaceSettingsDialog({
                   {profile && onEditProfile && (
                     <SettingsCard
                       title="Profile"
-                      description="How you appear across your project — to Maxwell and your Noon team."
+                      description={
+                        isMembership
+                          ? "How you appear across your project — to Maxwell and your Noon team."
+                          : "Your name and photo on your Noon account."
+                      }
                       footer={
                         <>
                           <p className={hintClass}>
-                            A photo is optional but makes the chat feel yours.
+                            {isMembership
+                              ? "A photo is optional but makes the chat feel yours."
+                              : "A photo is optional."}
                           </p>
                           <button type="button" onClick={editProfile} className={buttonClass}>
                             Edit profile
@@ -277,20 +291,32 @@ export function WorkspaceSettingsDialog({
                     }
                   >
                     <div className="space-y-2.5">
-                      {[
-                        {
-                          label: "A new version is ready",
-                          hint: "So you can review it without checking back.",
-                          checked: notifyVersions,
-                          set: setNotifyVersions,
-                        },
-                        {
-                          label: "Replies in Chat",
-                          hint: "When your Noon team or Maxwell answers you.",
-                          checked: notifyChat,
-                          set: setNotifyChat,
-                        },
-                      ].map((p) => (
+                      {(isMembership
+                        ? [
+                            {
+                              label: "A new version is ready",
+                              hint: "So you can review it without checking back.",
+                              checked: notifyVersions,
+                              set: setNotifyVersions,
+                            },
+                            {
+                              label: "Replies in Chat",
+                              hint: "When your Noon team or Maxwell answers you.",
+                              checked: notifyChat,
+                              set: setNotifyChat,
+                            },
+                          ]
+                        : // One-time buyer: no chat, no new versions — the one email
+                          // that matters is the heads-up before their yearly renewal.
+                          [
+                            {
+                              label: "Hosting & domain renewal reminders",
+                              hint: "A heads-up before your yearly renewal, so it's never a surprise.",
+                              checked: notifyRenewal,
+                              set: setNotifyRenewal,
+                            },
+                          ]
+                      ).map((p) => (
                         <label
                           key={p.label}
                           className="flex cursor-pointer items-start gap-2.5 text-[13px]"
@@ -349,7 +375,7 @@ export function WorkspaceSettingsDialog({
                     description={
                       isMembership
                         ? "Invoices, payment method, and cancellation — handled securely via Stripe."
-                        : "One payment — nothing recurring. Your receipt is below."
+                        : "You paid once for your build; hosting and your domain renew yearly to keep it online. Your receipt is below."
                     }
                     footer={
                       billingSlot ? (

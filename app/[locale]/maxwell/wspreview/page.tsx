@@ -371,7 +371,7 @@ function ActiveWorkspace({
                 tight; the 4-tab consolidation stays — these aren't sections. */}
             <div className="flex shrink-0 items-center gap-0.5">
               <WorkspaceNotifications items={notifications} />
-              <WorkspaceHelpMenu />
+              <WorkspaceHelpMenu isMembership={isMembershipPlan} />
             </div>
           </div>
         </header>
