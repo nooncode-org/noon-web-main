@@ -428,6 +428,11 @@ describe("client portal — what demands the client's attention", () => {
     expect(text).toContain("nothing was deleted");
     expect(text).toMatch(/Reactivate|Manage/);
 
+    // "Saved" without a horizon is a promise we can't keep forever. The owner
+    // set 12 months (2026-07-22); the client is told the window, not just that
+    // their work survived.
+    expect(text).toContain("12 months");
+
     // Nothing is taken away: the thread stays, and it stays readable.
     const chat = find(tree, WorkspaceChat);
     const real = chat?.props.real as Record<string, unknown>;

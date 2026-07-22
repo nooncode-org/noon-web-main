@@ -602,7 +602,7 @@ export default async function WorkspacePage({ params }: Props) {
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Your membership has ended.</span>{" "}
               Your site is offline, but nothing was deleted — your project, conversation and
-              files are all saved. Reactivate and it comes back exactly as it was.
+              files stay saved for 12 months. Reactivate and it comes back exactly as it was.
             </p>
             {billingSlot ?? (
               <a
