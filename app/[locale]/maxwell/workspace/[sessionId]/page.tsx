@@ -338,6 +338,14 @@ export default async function WorkspacePage({ params }: Props) {
    * left in front of them.
    */
   const membershipEnded = isMembershipPlan && appMembership?.status === "ended";
+  /**
+   * Cancelled but still inside the paid period: the client keeps EVERYTHING
+   * (hosting included) until it closes — they paid for that month. What they
+   * lack is a heads-up, so this window gets a standing notice with the exact
+   * date and a way back, instead of only a quiet chip on the Plan card.
+   */
+  const membershipEnding = isMembershipPlan && appMembership?.status === "cancelled";
+  const membershipEndsOn = appMembership?.currentPeriodEnd ?? null;
   const billingSlot =
     MEMBERSHIP_BILLING_ENABLED && planProposal?.stripeCustomerId ? (
       <ManageMembershipButton sessionId={sessionId} />
@@ -561,6 +569,30 @@ export default async function WorkspacePage({ params }: Props) {
             </div>
           </div>
         </header>
+
+        {/* Still inside the period they paid for: nothing is taken away yet, so
+            this is a heads-up, not an alarm. It carries the exact date — "ends
+            soon" is the kind of vagueness that makes people miss it. */}
+        {membershipEnding && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/25 bg-amber-500/[0.07] px-6 py-3 lg:px-14">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              <span className="font-medium">
+                {membershipEndsOn
+                  ? `Your membership ends on ${formatDate(membershipEndsOn)}.`
+                  : "Your membership is set to end."}
+              </span>{" "}
+              Everything keeps running until then — hosting included. Renew to keep it that way.
+            </p>
+            {billingSlot ?? (
+              <a
+                href={getContactHref({ inquiry: "project-update", source: "workspace" })}
+                className="shrink-0 rounded-[6px] border border-transparent bg-[#0056fd] px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
+              >
+                Renew {"->"}
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Membership over: state it plainly, say what is kept, and put
             reactivating right there. Neutral — not red: nothing went wrong,

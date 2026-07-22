@@ -470,7 +470,7 @@ describe("client portal — what demands the client's attention", () => {
         versions: [version()],
         publishedUrl: null,
         // "cancelled" = scheduled to end; they paid through this period.
-        membership: { status: "cancelled" },
+        membership: { status: "cancelled", currentPeriodEnd: "2026-02-15T12:00:00.000Z" },
         proposal: null,
         latestUpdate: null,
       },
@@ -478,6 +478,45 @@ describe("client portal — what demands the client's attention", () => {
     const tree = await render();
     expect(find(tree, WorkspaceChat)?.props.readOnly).toBeUndefined();
     expect(textOf(tree)).not.toContain("membership has ended");
+  });
+
+  it("warns during the paid-through window, naming the exact date", async () => {
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "in_development" },
+        versions: [version()],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        // Paid Jan 15, cancelled Jan 29 → served through Feb 15. Noon UTC on
+        // purpose: a midnight-UTC fixture renders as the previous day in any
+        // timezone behind UTC, which looks like a bug and is not one.
+        membership: { status: "cancelled", currentPeriodEnd: "2026-02-15T12:00:00.000Z" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const text = textOf(await render());
+    // The date itself, not "ends soon" — vagueness is how people miss it.
+    expect(text).toContain("Feb 15, 2026");
+    expect(text).toContain("hosting included");
+    expect(text).toMatch(/Renew|Manage/);
+  });
+
+  it("still warns when the end date hasn't been reported yet", async () => {
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "in_development" },
+        versions: [],
+        publishedUrl: null,
+        membership: { status: "cancelled" }, // no currentPeriodEnd
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const text = textOf(await render());
+    expect(text).toContain("set to end");
+    expect(text).not.toContain("Invalid Date");
   });
 
   it("tells a one-time buyer nothing recurring is coming", async () => {
