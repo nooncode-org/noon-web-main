@@ -21,6 +21,7 @@
  * DEVELOPMENT ONLY. Never point production at this.
  */
 
+import fs from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PGlite } from "@electric-sql/pglite";
@@ -28,7 +29,17 @@ import { PGLiteSocketServer } from "@electric-sql/pglite-socket";
 import { ensureSchema } from "./dev-db.lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, "..", ".pglite");
+const ROOT = join(__dirname, "..");
+/**
+ * The data lives under node_modules/.cache, NOT at the project root.
+ *
+ * Postgres data files are binary, and Tailwind's source scanner walks the
+ * project tree: with the directory at the root it choked on those bytes
+ * ("Invalid code point") and took the whole app down with a CSS error. Every
+ * tool already ignores node_modules, and the data is disposable (recreate with
+ * `npm run db:migrate && npm run db:seed`).
+ */
+const DATA_DIR = join(ROOT, "node_modules", ".cache", "noon-pglite");
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(`--${name}`);
@@ -38,6 +49,7 @@ function arg(name, fallback) {
 const port = Number(arg("port", 5432));
 const inMemory = process.argv.includes("--memory");
 
+fs.mkdirSync(dirname(DATA_DIR), { recursive: true });
 const db = await PGlite.create(inMemory ? undefined : DATA_DIR);
 
 // Supabase ships roles that our migrations GRANT to. They don't exist in a bare

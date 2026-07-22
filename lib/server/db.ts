@@ -31,7 +31,10 @@ export function getDb(): postgres.Sql {
     const isLoopback = /@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(url);
 
     const connectTimeoutSeconds = readPositiveIntEnv("DB_CONNECT_TIMEOUT_SECONDS", 20);
-    const idleTimeoutSeconds = readPositiveIntEnv("DB_IDLE_TIMEOUT_SECONDS", 30);
+    // En loopback la conexión se suelta enseguida: el Postgres embebido atiende
+    // una a la vez, así que mantenerla 30s ociosa bloquea cualquier otra
+    // herramienta (seeds, comprobaciones) mientras la app está levantada.
+    const idleTimeoutSeconds = readPositiveIntEnv("DB_IDLE_TIMEOUT_SECONDS", isLoopback ? 1 : 30);
     // Ese mismo Postgres embebido atiende UNA conexión a la vez; un pool de 10
     // provoca ECONNRESET intermitentes. Sigue siendo configurable por entorno.
     const maxConnections = readPositiveIntEnv("DB_MAX_CONNECTIONS", isLoopback ? 1 : 10);
