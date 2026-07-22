@@ -13,7 +13,7 @@
  * | stress | unlocked | onetime.
  */
 import { notFound } from "next/navigation";
-import { Search } from "lucide-react";
+import { Code2, Search } from "lucide-react";
 import { getContactHref } from "@/lib/site-config";
 import {
   mapMembershipStatusToMeta,
@@ -565,6 +565,42 @@ function ActiveWorkspace({
                 {isMembershipPlan && <RequestChangeChip />}
               </div>
             </section>
+
+            {/* ── Your code (one-time only) — they paid for the build, so the
+                  source is THEIRS to keep (owner 2026-07-22, "muy importante que
+                  sí tenga su código"). Also the honest backstop to the offline
+                  policy: if they ever stop renewing hosting, they still walk away
+                  with everything. Front-only, logic later (download + repo). ── */}
+            {isOneTime && (
+              <section className="overflow-hidden rounded-[6px] border border-border bg-card p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="max-w-md">
+                    <div className="flex items-center gap-2">
+                      <Code2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
+                      <p className="text-sm font-medium">Your code</p>
+                    </div>
+                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                      You own your project&apos;s full source — download it any time, or take it
+                      to your own repository and host it wherever you like. It&apos;s yours to keep.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <a
+                      href="#"
+                      className="inline-flex items-center gap-1.5 rounded-[6px] border border-border px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-secondary/40"
+                    >
+                      View repository {"->"}
+                    </a>
+                    <a
+                      href="#"
+                      className="inline-flex items-center gap-1.5 rounded-[6px] bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
+                    >
+                      Download code
+                    </a>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* ── Upsell to membership (one-time only) — decision #5 "where the
                   upsell lives": placed right under the status, gentle not pushy.
