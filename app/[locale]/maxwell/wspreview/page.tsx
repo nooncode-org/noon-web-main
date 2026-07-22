@@ -10,7 +10,7 @@
  * Safe to commit because it is HARD-GATED below: outside `next dev` it 404s, so
  * no mock surface is ever reachable in production or previews. Also unlinked +
  * robots-noindexed. States: ?state=active (default) | new | preparing | pastdue
- * | stress | unlocked.
+ * | stress | unlocked | onetime.
  */
 import { notFound } from "next/navigation";
 import { Search } from "lucide-react";
@@ -220,6 +220,28 @@ const MOCK_STRESS = {
   ],
 };
 
+// One-time-buyer variant (?state=onetime): the client paid ONCE for the build —
+// no membership. Owner model (2026-07-22): they get the SAME portal but
+// READ-REDUCED — they see project STATUS and manage the HOST + DOMAIN they pay
+// yearly, but NOT the continuous-collaboration tools (the change-request chat,
+// approving/publishing new versions) that are what a membership buys. This mock
+// shows a delivered, live project: everything settled, nothing awaiting them.
+const MOCK_ONETIME = {
+  ...MOCK,
+  projectStatus: "delivered",
+  latestUpdateSummary: "Your project is delivered and live.",
+  plan: {
+    ...MOCK.plan,
+    paymentModality: "one_time" as "membership" | "one_time",
+    monthlyAmountUsd: null,
+  },
+  // Nothing awaits the client's approval — they don't drive the build anymore.
+  versions: [
+    { sequence: 2, state: "published", previewUrl: "https://v2.preview.nooncode.dev", at: "2026-07-16T18:00:00Z", published: true, notes: "Dashboards and role-based access for your field teams." },
+    { sequence: 1, state: "previous_published", previewUrl: "https://v1.preview.nooncode.dev", at: "2026-07-14T12:00:00Z", notes: "First working version — core flows and your brand kit applied." },
+  ] as MockVersion[],
+};
+
 function ActiveWorkspace({
   locale,
   data,
@@ -244,6 +266,8 @@ function ActiveWorkspace({
   const statusCfg = mapProjectStatusToMeta(data.projectStatus);
   const membershipMeta = mapMembershipStatusToMeta(data.membershipStatus);
   const isMembershipPlan = data.plan.paymentModality === "membership";
+  // One-time = the reduced portal: status + host/domain, no change-collaboration.
+  const isOneTime = !isMembershipPlan;
   const planCurrency = data.plan.approvedCurrency;
   // A version awaiting the client's decision → the Overview review banner.
   const reviewVersion =
@@ -253,8 +277,15 @@ function ActiveWorkspace({
   // items; real source is the same per-section "what's new" feed that powers the
   // tab dots. A fresh client gets a short welcome list; an active one gets the
   // event history (versions, domains, billing, chat).
-  const notifications: WorkspaceNotification[] =
-    data.versions.length >= 12
+  const notifications: WorkspaceNotification[] = isOneTime
+    ? // One-time: delivery + build/domain events only — NO chat replies and NO
+      // membership-billing items (neither exists on this plan).
+      [
+        { id: "o1", kind: "milestone", title: "Your project is delivered", detail: "It's live and it's yours.", at: "3d ago", tab: "overview", unread: true },
+        { id: "o2", kind: "version", title: "Version 2 published", detail: "Dashboards + role-based access are live.", at: "6d ago", tab: "versions" },
+        { id: "o3", kind: "domain", title: "opsdash.com verified", detail: "Your custom domain is connected.", at: "1w ago", tab: "domain" },
+      ]
+    : data.versions.length >= 12
       ? // Stress: 20 items → exercises the panel's scroll + unread count.
         Array.from({ length: 20 }, (_, i) => ({
           id: `s${i}`,
@@ -301,9 +332,12 @@ function ActiveWorkspace({
     // `pending` demo (front-only), showing both kinds side by side: Chat has 2
     // unread replies (blue count, clears on open); Versions has a build waiting
     // for your approval (amber, an action → stays until you resolve it).
-    { id: "chat", label: "Chat", pending: "unread" as const, count: 2 },
+    // One-time: NO Chat — the change-request thread is a membership tool.
+    ...(isMembershipPlan
+      ? [{ id: "chat", label: "Chat", pending: "unread" as const, count: 2 }]
+      : []),
     ...(data.versions.length > 0
-      ? [{ id: "versions", label: "Versions", pending: "action" as const }]
+      ? [{ id: "versions", label: "Versions", ...(isMembershipPlan ? { pending: "action" as const } : {}) }]
       : []),
     ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
   ];
@@ -363,8 +397,10 @@ function ActiveWorkspace({
         <WorkspaceTabs tabs={sections}>
           {/* ── Overview panel ── */}
           <div data-panel="overview" className="space-y-5">
-            {/* The client's #1 recurring decision, surfaced first-class. */}
-            {reviewVersion && (
+            {/* The client's #1 recurring decision, surfaced first-class — only a
+                membership client approves versions; a one-time buyer doesn't
+                drive the build. */}
+            {reviewVersion && isMembershipPlan && (
               <VersionReviewBanner
                 sequence={reviewVersion.sequence}
                 previewUrl={reviewVersion.previewUrl}
@@ -524,9 +560,36 @@ function ActiveWorkspace({
                   "Status updated <date>" repeated the same fact and is gone. */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
                 <p className="text-[13px] text-muted-foreground">{data.latestUpdateSummary ?? statusCfg.description}</p>
-                <RequestChangeChip />
+                {/* One-time has no "request a change" — that channel is the
+                    membership. The upsell card below is their path instead. */}
+                {isMembershipPlan && <RequestChangeChip />}
               </div>
             </section>
+
+            {/* ── Upsell to membership (one-time only) — decision #5 "where the
+                  upsell lives": placed right under the status, gentle not pushy.
+                  This is the one-time buyer's path to changes, in place of the
+                  change-request chat they don't have. ── */}
+            {isOneTime && (
+              <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="max-w-md">
+                    <p className="text-sm font-medium">Your project is delivered</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                      Need changes, new features, or an ongoing team on call? A membership
+                      gives you continuous updates and a direct line to your developers —
+                      cancel anytime.
+                    </p>
+                  </div>
+                  <a
+                    href="#"
+                    className="shrink-0 rounded-[6px] bg-[#0056fd] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
+                  >
+                    Explore membership {"->"}
+                  </a>
+                </div>
+              </section>
+            )}
 
             {/* "While you wait" — agency during the v1 build; fresh state only
                 (same condition as the chat's fresh greeting). */}
@@ -556,7 +619,9 @@ function ActiveWorkspace({
               <div className="rounded-[6px] border border-border bg-card p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm font-medium">Plan</p>
-                  {membershipMeta && (
+                  {/* Membership-status badge only for a membership — a one-time
+                      plan has no membership state to show. */}
+                  {isMembershipPlan && membershipMeta && (
                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${membershipMeta.color}`}>
                       {membershipMeta.label}
                     </span>
@@ -572,7 +637,11 @@ function ActiveWorkspace({
                   )}
                 </p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  {isMembershipPlan ? (membershipMeta ? membershipMeta.description : "Monthly membership is coordinated with your Noon PM.") : "One payment — nothing recurring."}
+                  {isMembershipPlan
+                    ? membershipMeta
+                      ? membershipMeta.description
+                      : "Monthly membership is coordinated with your Noon PM."
+                    : "Paid once for the build. Your hosting and domain renew yearly to keep it online."}
                 </p>
                 {/* The most-asked billing question, answered before it's asked
                     (audit P1-8). Only when the membership is in good standing —
@@ -582,7 +651,11 @@ function ActiveWorkspace({
                     Next payment: <span className="text-foreground">{formatDate(data.plan.nextPaymentAt)}</span>
                   </p>
                 )}
-                {MEMBERSHIP_BILLING_ENABLED && data.plan.stripeCustomerId ? (
+                {/* "Manage membership" (Stripe portal) is membership-only. A
+                    one-time buyer falls through to their build receipt — their
+                    yearly host/domain billing is a separate surface (decision #3,
+                    still open). */}
+                {isMembershipPlan && MEMBERSHIP_BILLING_ENABLED && data.plan.stripeCustomerId ? (
                   <div className="mt-4">
                     <ManageMembershipButton sessionId={data.sessionId} />
                     <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground/70">
@@ -622,8 +695,13 @@ function ActiveWorkspace({
                   // ASKS the team to reactivate an older, already-published version
                   // (reactivation = a rollback = staff authority → a request, not a
                   // direct act). A live/published version gets neither.
-                  const canPublish = version.state === "ready_for_client_preview";
+                  // One-time buyer: versions are read-only (open the preview,
+                  // nothing else) — publishing + reactivating are build actions
+                  // that belong to a membership.
+                  const canPublish =
+                    isMembershipPlan && version.state === "ready_for_client_preview";
                   const canRequestLive =
+                    isMembershipPlan &&
                     ROLLBACK_REQUEST_ENABLED &&
                     isPublishableVersionState(version.state) &&
                     version.state !== "ready_for_client_preview";
@@ -764,13 +842,17 @@ function ActiveWorkspace({
           {/* ── Chat panel — one "chat with Noon" (Maxwell + dev), the portal's
                 centerpiece: replaces the old Support tab (Requests + Messages),
                 the Brand-assets tab (share files here), and Activity (the thread
-                IS the timeline). First tab → default landing. ── */}
-          <div data-panel="chat">
-            <WorkspaceChat
-              fresh={data.versions.length === 0 && !data.appPublishedUrl}
-              siteUrl={appPublishedUrl ?? undefined}
-            />
-          </div>
+                IS the timeline). Membership only — a one-time buyer's portal has
+                no change-collaboration thread (its tab is gated out above; don't
+                mount a dead panel). ── */}
+          {isMembershipPlan && (
+            <div data-panel="chat">
+              <WorkspaceChat
+                fresh={data.versions.length === 0 && !data.appPublishedUrl}
+                siteUrl={appPublishedUrl ?? undefined}
+              />
+            </div>
+          )}
         </WorkspaceTabs>
       </div>
     </div>
@@ -826,7 +908,9 @@ export default async function WorkspacePreviewPage({
         ? MOCK_PASTDUE
         : state === "stress"
           ? MOCK_STRESS
-          : MOCK;
+          : state === "onetime"
+            ? MOCK_ONETIME
+            : MOCK;
   // ?state=unlocked previews what a client sees AFTER the team enables the
   // Advanced actions for them; everyone else gets them locked.
   return (
