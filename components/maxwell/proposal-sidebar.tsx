@@ -235,6 +235,7 @@ export function ProposalSidebar({
         email={viewerEmail}
         profile={profile}
         onSave={setProfile}
+        isMembership={settings?.isMembership ?? true}
       />
     </>
   );

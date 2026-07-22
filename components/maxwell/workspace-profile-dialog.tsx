@@ -35,12 +35,15 @@ export function WorkspaceProfileDialog({
   email,
   profile,
   onSave,
+  isMembership = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   email: string;
   profile: ClientProfile;
   onSave: (next: ClientProfile) => void;
+  /** One-time buyers have no chat with Maxwell — keep the copy neutral for them. */
+  isMembership?: boolean;
 }) {
   const [name, setName] = useState(profile.name);
   const [photoUrl, setPhotoUrl] = useState<string | null>(profile.photoUrl);
@@ -72,7 +75,9 @@ export function WorkspaceProfileDialog({
         <DialogHeader>
           <DialogTitle>Your profile</DialogTitle>
           <DialogDescription>
-            How you appear across your project — to Maxwell and your Noon team.
+            {isMembership
+              ? "How you appear across your project — to Maxwell and your Noon team."
+              : "Your name and photo on your Noon account."}
           </DialogDescription>
         </DialogHeader>
 
