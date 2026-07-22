@@ -37,17 +37,21 @@ import {
 import { getContactHref } from "@/lib/site-config";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
-  CLIENT_REQUEST_TYPE_LABELS,
   DEFAULT_CLIENT_REQUEST_PRIORITY,
   ROLLBACK_REQUEST_ENABLED,
-  type ClientRequestPriority,
-  type ClientVisibleState,
 } from "@/lib/maxwell/client-requests";
+import { buildWorkspaceThread } from "@/lib/maxwell/workspace-thread";
 import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
+import {
+  ATTACHMENTS_ENABLED,
+  ATTACHMENT_MAX_BYTES,
+  ATTACHMENT_MIME_ALLOWLIST,
+} from "@/lib/maxwell/attachments";
+import { isAttachmentStorageConfigured } from "@/lib/maxwell/attachment-storage";
 import { ProposalSidebar } from "@/components/maxwell/proposal-sidebar";
 import { WorkspaceTabs } from "@/components/maxwell/workspace-tabs";
 import { WorkspacePreparingBody } from "@/components/maxwell/workspace-preparing-body";
-import { WorkspaceChat, type ChatMsg } from "@/components/maxwell/workspace-chat";
+import { WorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { WorkspaceCopyButton } from "@/components/maxwell/workspace-copy-button";
 import { WorkspaceNotifications, type WorkspaceNotification } from "@/components/maxwell/workspace-notifications";
 import { WorkspaceHelpMenu } from "@/components/maxwell/workspace-help-menu";
@@ -62,6 +66,7 @@ import { ManageMembershipButton } from "./_components/manage-membership-button";
 import { submitCommentAction } from "./_actions/submit-comment";
 import { submitRequestAction } from "./_actions/submit-request";
 import { submitRequestUpdateAction } from "./_actions/submit-request-update";
+import { submitRequestAttachmentAction } from "./_actions/submit-request-attachment";
 import { submitVersionAction } from "./_actions/submit-version-action";
 
 export const dynamic = "force-dynamic";
@@ -145,21 +150,6 @@ const DOMAIN_STATUS: Record<DomainStatus, { label: string; detail: string; dot: 
 // studio surfaces).
 const CHIP =
   "inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary";
-
-// Chat chip mappings: the App's client-visible request state → the chat chip's
-// 3-step vocabulary; our 4 priorities → the chip's 3 labels.
-function chipStatus(state: ClientVisibleState | null): "received" | "in_progress" | "done" {
-  if (state === "completed") return "done";
-  if (state === "in_progress" || state === "in_review" || state === "under_internal_review") {
-    return "in_progress";
-  }
-  return "received";
-}
-function chipPriority(priority: ClientRequestPriority): "Low" | "Normal" | "High" {
-  if (priority === "critical" || priority === "high") return "High";
-  if (priority === "low") return "Low";
-  return "Normal";
-}
 
 // The one pre-workspace state a client can actually land on: the brief
 // provisioning blip after a confirmed payment. Everything else (not-yet-paid)
@@ -353,64 +343,15 @@ export default async function WorkspacePage({ params }: Props) {
 
   // ── Chat thread: ONE conversation with Noon, merged from every real channel
   // (client comments + team updates + delivered materials + tracked requests
-  // with their clarification replies), chronological. ─────────────────────────
-  const threadEntries: { at: string; msg: ChatMsg }[] = [
-    ...comments.map((c) => ({
-      at: c.createdAt,
-      msg: {
-        id: `c-${c.id}`,
-        from: "client" as const,
-        text: c.body,
-        at: formatStamp(c.createdAt),
-      },
-    })),
-    ...timeline.map((u) => ({
-      at: u.createdAt,
-      msg: {
-        id: `u-${u.id}`,
-        from: "dev" as const,
-        text: u.content ? `${u.title}\n${u.content}` : u.title,
-        at: formatStamp(u.createdAt),
-      },
-    })),
-    ...materials.map((u) => ({
-      at: u.createdAt,
-      msg: {
-        id: `m-${u.id}`,
-        from: "dev" as const,
-        text: u.content ?? u.title,
-        at: formatStamp(u.createdAt),
-        attachment: u.materialUrl ? { name: u.title, href: u.materialUrl } : undefined,
-      },
-    })),
-    ...requests.flatMap((r) => [
-      {
-        at: r.createdAt,
-        msg: {
-          id: `r-${r.id}`,
-          from: "client" as const,
-          text: r.body,
-          at: formatStamp(r.createdAt),
-          requestId: r.id,
-          request: {
-            label: CLIENT_REQUEST_TYPE_LABELS[r.type],
-            priority: chipPriority(r.clientPriority),
-            status: chipStatus(r.clientVisibleState),
-          },
-        },
-      },
-      ...r.updates.map((u) => ({
-        at: u.createdAt,
-        msg: {
-          id: `ru-${u.id}`,
-          from: "client" as const,
-          text: u.body,
-          at: formatStamp(u.createdAt),
-        },
-      })),
-    ]),
-  ].sort((a, b) => a.at.localeCompare(b.at));
-  const chatMessages = threadEntries.map((e) => e.msg);
+  // with their clarification replies), chronological. The merge itself lives in
+  // lib/maxwell/workspace-thread.ts so it can be tested without a database. ──
+  const chatMessages = buildWorkspaceThread({
+    comments,
+    updates: timeline,
+    materials,
+    requests,
+    formatStamp,
+  });
 
   // ── Chat transports — inline Server Actions bound to THIS session, handed to
   // the client component as props. Each wraps the existing validated action.
@@ -441,6 +382,46 @@ export default async function WorkspacePage({ params }: Props) {
       body: input.body,
     });
     return result.ok ? ({ ok: true } as const) : ({ ok: false, error: result.error } as const);
+  }
+  /**
+   * Share a file from the chat. There is no message-level attachment store, but
+   * §9 already hosts + forwards files attached to a REQUEST — and `material`
+   * ("Material / file") is exactly that request type. So a file share creates a
+   * material request carrying the note, then attaches the bytes to it. Both
+   * halves are the existing, validated actions; nothing new touches storage.
+   */
+  async function attachToChat(form: FormData) {
+    "use server";
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return { ok: false, error: "Please choose a file." } as const;
+    }
+    const note = String(form.get("note") ?? "").trim();
+    const created = await submitRequestAction({
+      sessionId,
+      type: "material",
+      clientPriority: DEFAULT_CLIENT_REQUEST_PRIORITY,
+      // The note is optional in the UI, but a request needs a body — fall back
+      // to naming the file so the team sees what arrived.
+      body: note || `Shared a file: ${file.name}`,
+    });
+    if (!created.ok) return { ok: false, error: created.error } as const;
+
+    const attached = await submitRequestAttachmentAction({
+      sessionId,
+      requestId: created.requestId,
+      file,
+      body: note || null,
+    });
+    if (!attached.ok) {
+      // The request landed but the file didn't — say so precisely instead of
+      // implying nothing was sent.
+      return {
+        ok: false,
+        error: `${attached.error} Your message was sent, but the file wasn't attached.`,
+      } as const;
+    }
+    return { ok: true } as const;
   }
   async function publishVersion(versionSequenceNumber: number) {
     "use server";
@@ -877,6 +858,18 @@ export default async function WorkspacePage({ params }: Props) {
                 send: sendChatMessage,
                 ...(workspace.noonAppProjectId
                   ? { formalize: formalizeChatRequest, reply: replyToChatRequest }
+                  : {}),
+                // Uploads need the same App-mapping the requests need, plus the
+                // storage bucket + the B.5b kill-switch. The picker stays hidden
+                // unless the whole path is live.
+                ...(workspace.noonAppProjectId && ATTACHMENTS_ENABLED && isAttachmentStorageConfigured()
+                  ? {
+                      attach: attachToChat,
+                      attachLimits: {
+                        maxBytes: ATTACHMENT_MAX_BYTES,
+                        mimes: ATTACHMENT_MIME_ALLOWLIST,
+                      },
+                    }
                   : {}),
                 expectationLine: "Messages reach your Noon team — replies within 24h",
               }}

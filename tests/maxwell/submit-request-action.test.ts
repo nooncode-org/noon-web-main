@@ -181,7 +181,7 @@ describe("submitRequestAction — persist + forward", () => {
   it("derives the opaque submitter, persists (trimmed), forwards, and marks forwarded", async () => {
     const result = await submitRequestAction({ ...VALID, body: "  Please add X  " });
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, requestId: "rq-1" });
     expect(h.deriveMock).toHaveBeenCalledWith("owner@example.com");
     expect(h.createRequestMock).toHaveBeenCalledWith({
       clientWorkspaceId: "ws-1",
@@ -208,7 +208,7 @@ describe("submitRequestAction — persist + forward", () => {
   it("still returns ok when the forward throws (request persists as a dead-letter)", async () => {
     h.sendMock.mockRejectedValue(new Error("App 503"));
     const result = await submitRequestAction(VALID);
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, requestId: "rq-1" });
     expect(h.createRequestMock).toHaveBeenCalledTimes(1);
     expect(h.markForwardedMock).not.toHaveBeenCalled();
   });
@@ -237,7 +237,7 @@ describe("submitRequestAction — persist + forward", () => {
       versionRef: 3,
     });
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, requestId: "rq-2" });
     expect(h.createRequestMock).toHaveBeenCalledWith(
       expect.objectContaining({ type: "bug", versionRef: 3 }),
     );
@@ -269,7 +269,7 @@ describe("submitRequestAction — persist + forward", () => {
       versionRef: 2,
     });
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, requestId: "rq-rb" });
     expect(h.createRequestMock).toHaveBeenCalledWith(
       expect.objectContaining({ type: "rollback", versionRef: 2 }),
     );

@@ -103,6 +103,14 @@ export type RealThread = {
     clientPriority: "low" | "normal" | "high";
     body: string;
   }) => Promise<ChatSendResult>;
+  /**
+   * Share a file with the team. Rides the existing per-request attachment
+   * pipeline: the file becomes a `material` request ("Material / file") with the
+   * note as its body. Absent when uploads aren't available for this project.
+   */
+  attach?: (form: FormData) => Promise<ChatSendResult>;
+  /** Client-side mirror of the server's upload rules, for a fail-fast message. */
+  attachLimits?: { maxBytes: number; mimes: readonly string[] };
   /** Clarification reply linked to an existing request (B.5a). */
   reply?: (input: { requestId: string; body: string }) => Promise<ChatSendResult>;
   /** Replaces the mock's Maxwell promise line (no Maxwell backend yet). */
@@ -362,6 +370,8 @@ export function WorkspaceChat({
   // Staged attachment (from the "+" → Photo/File) — shown above the composer,
   // sent with the next message.
   const [attach, setAttach] = useState<{ name: string; image?: boolean } | null>(null);
+  // Real mode: the actual File behind the staged chip, uploaded on send.
+  const [pickedFile, setPickedFile] = useState<File | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   // Formalize mode: a non-null type means the next message is tracked as a request.
   const [reqType, setReqType] = useState<"Change" | "Bug" | null>(null);
@@ -399,14 +409,33 @@ export function WorkspaceChat({
   function onPick(image: boolean) {
     return (e: ChangeEvent<HTMLInputElement>) => {
       const f = e.target.files?.[0];
-      if (f) setAttach({ name: f.name, image });
+      if (f) {
+        // Fail fast on the client with the SAME rules the server enforces — a
+        // 10 MB upload that dies server-side is a slow way to say "too big".
+        const limits = real?.attachLimits;
+        if (limits) {
+          if (f.size > limits.maxBytes) {
+            setSendError(
+              `That file is too large (max ${Math.round(limits.maxBytes / 1024 / 1024)} MB).`,
+            );
+            e.target.value = "";
+            return;
+          }
+          if (!limits.mimes.includes(f.type)) {
+            setSendError("That file type isn't allowed.");
+            e.target.value = "";
+            return;
+          }
+        }
+        setSendError(null);
+        setAttach({ name: f.name, image });
+        setPickedFile(f);
+      }
       e.target.value = ""; // allow re-picking the same file
     };
   }
 
-  // Real mode never stages a local attachment (Photo/File are hidden — no
-  // message-attachment backend yet), so text is the only payload there.
-  const canSend = Boolean(draft.trim() || (!real && attach));
+  const canSend = Boolean(draft.trim() || attach);
 
   // A short "h:mm" stamp for optimistic sends, matching the seeded format.
   const nowStamp = () =>
@@ -443,15 +472,16 @@ export function WorkspaceChat({
     const text = draft.trim();
 
     if (real) {
-      // Optimistic append + the matching real transport: a clarification reply
-      // (linked to its request), a formalized request, or a plain message. On
-      // failure the bubble is rolled back and the draft restored — no silent
-      // message-into-the-void.
+      // Optimistic append + the matching real transport: a file share, a
+      // clarification reply (linked to its request), a formalized request, or a
+      // plain message. On failure the bubble is rolled back and the draft (and
+      // the staged file) restored — no silent message-into-the-void.
       const optimistic: ChatMsg = {
         id: `local-${Date.now()}`,
         from: "client",
         text,
         at: nowStamp(),
+        attachment: attach ?? undefined,
         request:
           !replyTo && reqType
             ? { label: reqType, priority: reqPriority, status: "received" }
@@ -460,25 +490,39 @@ export function WorkspaceChat({
       const routedReply = replyTo;
       const routedType = reqType;
       const routedPriority = reqPriority;
+      const routedFile = pickedFile;
+      const routedAttach = attach;
       setMessages((prev) => [...prev, optimistic]);
       setDraft("");
       setSendError(null);
       setReplyTo(null);
       setReqType(null);
       setReqPriority("Normal");
+      setAttach(null);
+      setPickedFile(null);
       startTransition(async () => {
-        const result = routedReply
-          ? await real.reply!({ requestId: routedReply.requestId, body: text })
-          : routedType && real.formalize
-            ? await real.formalize({
-                type: routedType === "Bug" ? "bug" : "adjustment",
-                clientPriority: routedPriority.toLowerCase() as "low" | "normal" | "high",
-                body: text,
-              })
-            : await real.send(text);
+        let result: ChatSendResult;
+        if (routedFile && real.attach) {
+          const form = new FormData();
+          form.set("file", routedFile);
+          form.set("note", text);
+          result = await real.attach(form);
+        } else if (routedReply) {
+          result = await real.reply!({ requestId: routedReply.requestId, body: text });
+        } else if (routedType && real.formalize) {
+          result = await real.formalize({
+            type: routedType === "Bug" ? "bug" : "adjustment",
+            clientPriority: routedPriority.toLowerCase() as "low" | "normal" | "high",
+            body: text,
+          });
+        } else {
+          result = await real.send(text);
+        }
         if (!result.ok) {
           setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
           setDraft(text);
+          setAttach(routedAttach);
+          setPickedFile(routedFile);
           setSendError(result.error);
         }
       });
@@ -758,7 +802,10 @@ export function WorkspaceChat({
           <span className="min-w-0 flex-1 truncate">{attach.name}</span>
           <button
             type="button"
-            onClick={() => setAttach(null)}
+            onClick={() => {
+              setAttach(null);
+              setPickedFile(null);
+            }}
             aria-label="Remove attachment"
             className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
           >
@@ -799,10 +846,10 @@ export function WorkspaceChat({
                 Review site
               </DropdownMenuItem>
             )}
-            {/* Photo/File are mock-only for now: there is no message-attachment
-                backend yet (attachments are request-scoped, #27). Hiding beats
-                a picker whose file silently goes nowhere. */}
-            {!real && (
+            {/* Sharing a file rides the request-scoped attachment pipeline (it
+                becomes a "Material / file" request), so the picker only shows
+                when that path is actually available for this project. */}
+            {(!real || real.attach) && (
               <>
                 <DropdownMenuItem
                   onSelect={(e) => {

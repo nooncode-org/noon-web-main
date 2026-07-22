@@ -107,7 +107,7 @@ describe("submitRequestAction — rollback gate OFF (kill switch)", () => {
       body: "hi",
       versionRef: 2,
     });
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, requestId: "rq-1" });
     expect(h.createRequestMock).toHaveBeenCalledWith(
       expect.objectContaining({ type: "comment", versionRef: 2 }),
     );

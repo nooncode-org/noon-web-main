@@ -60,7 +60,15 @@ export type SubmitRequestActionInput = {
 };
 
 export type SubmitRequestActionResult =
-  | { ok: true }
+  | {
+      ok: true;
+      /**
+       * The persisted request's local id. Lets a caller immediately attach a
+       * file to the request it just created (the chat's file-share flow: a
+       * `material` request + submitRequestAttachmentAction), without a re-fetch.
+       */
+      requestId: string;
+    }
   | {
       ok: false;
       error: string;
@@ -200,5 +208,5 @@ export async function submitRequestAction(
 
   // force-dynamic page; revalidate so the new request appears in the log.
   revalidatePath("/[locale]/maxwell/workspace/[sessionId]", "page");
-  return { ok: true };
+  return { ok: true, requestId: requestRow.id };
 }
