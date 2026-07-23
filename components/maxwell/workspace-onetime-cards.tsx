@@ -38,19 +38,10 @@ function GithubMark({ className }: { className?: string }) {
 export function WorkspaceCodePanel() {
   return (
     <section className="rounded-[6px] border border-border bg-card">
-      <div className="border-b border-border px-5 py-3.5">
+      {/* Actions ride the title bar, hard right — same as the Domains header
+          (owner 2026-07-23: "sube los botones aquí"). */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-2.5">
         <h2 className="text-sm font-medium">Your code</h2>
-      </div>
-      {/* Body = the portal's card rhythm (text left, actions right, centered);
-          the help line moves to a tinted FOOTER strip (same anatomy as the
-          settings cards) — three loose stacked lines read disorganized in a
-          wide card (owner 2026-07-23). */}
-      <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-4 p-5">
-        <p className="max-w-xl flex-1 basis-72 text-[13px] leading-relaxed text-muted-foreground">
-          You paid for your project, so the source is yours to keep. Browse and clone the
-          repository, or download the whole codebase as a .zip — and host it wherever you
-          like, whenever you like.
-        </p>
         <div className="flex shrink-0 flex-wrap items-center gap-2.5">
           <button
             type="button"
@@ -73,6 +64,13 @@ export function WorkspaceCodePanel() {
             Download .zip
           </button>
         </div>
+      </div>
+      <div className="p-5">
+        <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+          You paid for your project, so the source is yours to keep. Browse and clone the
+          repository, or download the whole codebase as a .zip — and host it wherever you
+          like, whenever you like.
+        </p>
       </div>
       <div className="border-t border-border bg-secondary/20 px-5 py-3">
         <p className="text-[12px] leading-relaxed text-muted-foreground/70">
