@@ -232,17 +232,11 @@ export function WorkspaceSettingsDialog({
                   {profile && onEditProfile && (
                     <SettingsCard
                       title="Profile"
-                      description={
-                        isMembership
-                          ? "How you appear across your project — to Maxwell and your Noon team."
-                          : "Your name and photo on your Noon account."
-                      }
+                      description="How you appear across your project — to Maxwell and your Noon team."
                       footer={
                         <>
                           <p className={hintClass}>
-                            {isMembership
-                              ? "A photo is optional but makes the chat feel yours."
-                              : "A photo is optional."}
+                            A photo is optional but makes the chat feel yours.
                           </p>
                           <button type="button" onClick={editProfile} className={buttonClass}>
                             Edit profile
@@ -306,9 +300,16 @@ export function WorkspaceSettingsDialog({
                               set: setNotifyChat,
                             },
                           ]
-                        : // One-time buyer: no chat, no new versions — the one email
-                          // that matters is the heads-up before their yearly renewal.
+                        : // One-time buyer: they keep the Chat, plus the yearly
+                          // renewal reminder. No "new version" — their build is
+                          // delivered, not iterated on.
                           [
+                            {
+                              label: "Replies in Chat",
+                              hint: "When your Noon team or Maxwell answers you.",
+                              checked: notifyChat,
+                              set: setNotifyChat,
+                            },
                             {
                               label: "Hosting & domain renewal reminders",
                               hint: "A heads-up before your yearly renewal, so it's never a surprise.",

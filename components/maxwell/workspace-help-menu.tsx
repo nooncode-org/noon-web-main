@@ -62,11 +62,11 @@ const FAQ_ONETIME: { q: string; a: string }[] = [
   },
   {
     q: "Can I get changes or new features?",
-    a: "One-time projects don't include ongoing work. Add a membership from your Overview for continuous updates and a team on call — or book a call to scope a one-off.",
+    a: "Your build is a fixed scope. For ongoing changes or new features, add a membership from your Overview — or ask in the Chat to scope a one-off.",
   },
   {
     q: "Need a human?",
-    a: "Book a call below — it reaches your real Noon team.",
+    a: "Just say it in the Chat — it reaches your real Noon team. Or book a call below.",
   },
 ];
 

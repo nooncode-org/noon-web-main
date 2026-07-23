@@ -278,12 +278,14 @@ function ActiveWorkspace({
   // tab dots. A fresh client gets a short welcome list; an active one gets the
   // event history (versions, domains, billing, chat).
   const notifications: WorkspaceNotification[] = isOneTime
-    ? // One-time: delivery + build/domain events only — NO chat replies and NO
-      // membership-billing items (neither exists on this plan).
+    ? // One-time: chat + delivery + build/domain events. No membership-BILLING
+      // items (they're not a membership) — but the chat is theirs, so chat
+      // replies belong here.
       [
-        { id: "o1", kind: "milestone", title: "Your project is delivered", detail: "It's live and it's yours.", at: "3d ago", tab: "overview", unread: true },
-        { id: "o2", kind: "version", title: "Version 2 published", detail: "Dashboards + role-based access are live.", at: "6d ago", tab: "versions" },
-        { id: "o3", kind: "domain", title: "opsdash.com verified", detail: "Your custom domain is connected.", at: "1w ago", tab: "domain" },
+        { id: "o1", kind: "chat", title: "New reply from Carlos", detail: "“Logo's in — the header looks great.”", at: "2h ago", tab: "chat", unread: true },
+        { id: "o2", kind: "milestone", title: "Your project is delivered", detail: "It's live and it's yours.", at: "3d ago", tab: "overview", unread: true },
+        { id: "o3", kind: "version", title: "Version 2 published", detail: "Dashboards + role-based access are live.", at: "6d ago", tab: "versions" },
+        { id: "o4", kind: "domain", title: "opsdash.com verified", detail: "Your custom domain is connected.", at: "1w ago", tab: "domain" },
       ]
     : data.versions.length >= 12
       ? // Stress: 20 items → exercises the panel's scroll + unread count.
@@ -329,13 +331,11 @@ function ActiveWorkspace({
   // Support/Activity/Quick-access all absorbed by the Chat.
   const sections = [
     { id: "overview", label: "Overview" },
-    // `pending` demo (front-only), showing both kinds side by side: Chat has 2
-    // unread replies (blue count, clears on open); Versions has a build waiting
-    // for your approval (amber, an action → stays until you resolve it).
-    // One-time: NO Chat — the change-request thread is a membership tool.
-    ...(isMembershipPlan
-      ? [{ id: "chat", label: "Chat", pending: "unread" as const, count: 2 }]
-      : []),
+    // `pending` demo (front-only): Chat has 2 unread replies (blue count, clears
+    // on open); Versions has a build waiting for approval (amber, an action →
+    // stays until resolved). Chat is present for BOTH plans (owner 2026-07-22:
+    // one-time keeps the chat too — their support + build-handoff channel).
+    { id: "chat", label: "Chat", pending: "unread" as const, count: 2 },
     ...(data.versions.length > 0
       ? [{ id: "versions", label: "Versions", ...(isMembershipPlan ? { pending: "action" as const } : {}) }]
       : []),
@@ -612,8 +612,9 @@ function ActiveWorkspace({
                   <div className="max-w-md">
                     <p className="text-sm font-medium">Your project is delivered</p>
                     <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      Need changes, new features, or an ongoing team on call? Add a membership
-                      for continuous updates and a direct line to your developers — cancel anytime.
+                      Your build is a fixed scope. Need changes or new features down the line? A
+                      membership puts a team back on your project — continuous development whenever
+                      you need it, cancel anytime.
                     </p>
                     {/* Membership price = the MONTHLY ONLY. A one-time buyer already
                         paid the activation (their build), so upgrading never charges
@@ -888,17 +889,15 @@ function ActiveWorkspace({
           {/* ── Chat panel — one "chat with Noon" (Maxwell + dev), the portal's
                 centerpiece: replaces the old Support tab (Requests + Messages),
                 the Brand-assets tab (share files here), and Activity (the thread
-                IS the timeline). Membership only — a one-time buyer's portal has
-                no change-collaboration thread (its tab is gated out above; don't
-                mount a dead panel). ── */}
-          {isMembershipPlan && (
-            <div data-panel="chat">
-              <WorkspaceChat
-                fresh={data.versions.length === 0 && !data.appPublishedUrl}
-                siteUrl={appPublishedUrl ?? undefined}
-              />
-            </div>
-          )}
+                IS the timeline). Present for BOTH plans (owner 2026-07-22): the
+                one-time buyer keeps the chat as their support + build-handoff
+                channel; what membership adds is ongoing DEVELOPMENT, not the chat. ── */}
+          <div data-panel="chat">
+            <WorkspaceChat
+              fresh={data.versions.length === 0 && !data.appPublishedUrl}
+              siteUrl={appPublishedUrl ?? undefined}
+            />
+          </div>
         </WorkspaceTabs>
       </div>
     </div>
