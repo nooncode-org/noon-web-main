@@ -65,35 +65,34 @@ export function WorkspaceCodePanel() {
           </button>
         </div>
       </div>
-      <div className="p-5">
-        <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
-          You paid for your project, so the source is yours to keep. Browse and clone the
-          repository, or download the whole codebase as a .zip — and host it wherever you
-          like, whenever you like.
-        </p>
-        {/* The help line is now a DISCLOSURE (owner 2026-07-23): just a chevron;
-            clicking it expands the explanation. Native <details> — the same
-            dependency-free pattern the help menu uses. */}
-        <details className="group mt-2">
+      {/* Closed = NO text at all, just the chevron (owner 2026-07-23); the whole
+          explanation — lead line included — lives inside the disclosure. Native
+          <details>, the same dependency-free pattern the help menu uses. */}
+      <div className="px-5 py-3">
+        <details className="group">
           <summary className="-ml-1 flex w-fit cursor-pointer list-none items-center rounded-[6px] p-1 text-muted-foreground/70 transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
             <ChevronDown
               className="h-4 w-4 transition-transform group-open:rotate-180"
               strokeWidth={1.75}
               aria-hidden
             />
-            <span className="sr-only">What can I do with my code?</span>
+            <span className="sr-only">About your code</span>
           </summary>
-          <div className="mt-2 max-w-xl space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+          <div className="mt-2 max-w-xl space-y-2 pb-2 text-[13px] leading-relaxed text-muted-foreground">
             <p>
+              You paid for your project, so the source is yours to keep — and you can host it
+              wherever you like, whenever you like.
+            </p>
+            <p className="text-[12px]">
               <span className="font-medium text-foreground/85">Repository</span> — your code on
               GitHub with its full history. Ask for access and you (or any developer) can clone
               it and keep building on it.
             </p>
-            <p>
+            <p className="text-[12px]">
               <span className="font-medium text-foreground/85">Download .zip</span> — the whole
               codebase in one file: a backup, or a handoff to another developer or host.
             </p>
-            <p>
+            <p className="text-[12px]">
               You don&apos;t have to do anything with it — your site keeps running with us either
               way. Not sure? Ask in the Chat and your Noon team will walk you through it.
             </p>
