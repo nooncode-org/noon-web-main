@@ -902,7 +902,7 @@ export function WorkspaceChat({
             <button
               type="button"
               aria-label="Add"
-              title="Attach a file, photo, or track a request"
+              title={oneTime ? "Attach a file or photo" : "Attach a file, photo, or track a request"}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70 data-[state=open]:opacity-70"
             >
               <Plus className="h-4 w-4" />
@@ -911,8 +911,9 @@ export function WorkspaceChat({
           <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-52 rounded-[10px]">
             {/* Review site — mark an exact area on the client's live site and send
                 it here, so Maxwell + the dev know precisely what's meant. Only when
-                there's a live site to review. */}
-            {siteUrl && (
+                there's a live site to review — and never for a one-time buyer,
+                whose chat is support-only (marking spots = requesting changes). */}
+            {siteUrl && !oneTime && (
               <DropdownMenuItem
                 onSelect={() => {
                   // Let Radix close the menu (no preventDefault — that kept it
@@ -950,7 +951,9 @@ export function WorkspaceChat({
                 </DropdownMenuItem>
               </>
             )}
-            {(!real || real.formalize) && (
+            {/* Track-as-request = the tracked change/bug pipeline — membership
+                machinery. The one-time chat is questions + handoffs only. */}
+            {(real ? real.formalize : !oneTime) && (
               <DropdownMenuItem
                 onSelect={() => {
                   setReplyTo(null);

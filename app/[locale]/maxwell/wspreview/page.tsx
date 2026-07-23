@@ -282,7 +282,7 @@ function ActiveWorkspace({
       // items (they're not a membership) — but the chat is theirs, so chat
       // replies belong here.
       [
-        { id: "o1", kind: "chat", title: "New reply from Carlos", detail: "“Logo's in — the header looks great.”", at: "2h ago", tab: "chat", unread: true },
+        { id: "o1", kind: "chat", title: "New reply from Carlos", detail: "“Here's your getting-started guide so you can run everything yourself.”", at: "2h ago", tab: "chat", unread: true },
         { id: "o2", kind: "milestone", title: "Your project is delivered", detail: "It's live and it's yours.", at: "3d ago", tab: "overview", unread: true },
         { id: "o3", kind: "version", title: "Version 2 published", detail: "Dashboards + role-based access are live.", at: "6d ago", tab: "versions" },
         { id: "o4", kind: "domain", title: "opsdash.com verified", detail: "Your custom domain is connected.", at: "1w ago", tab: "domain" },
