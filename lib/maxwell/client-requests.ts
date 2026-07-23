@@ -65,6 +65,34 @@ export const SELECTABLE_CLIENT_REQUEST_TYPES: readonly ClientRequestType[] =
 export const ROLLBACK_REQUEST_ENABLED: boolean = true;
 
 /**
+ * Request types a ONE-TIME buyer may not create (owner 2026-07-22: "el chat del
+ * one-time solo es para ese tipo de consultas, no para actualizaciones ni nada
+ * extra"). They bought a FIXED SCOPE — every type here means "do more work on my
+ * project", which is what a membership buys.
+ *
+ * NOT blocked, on purpose: `material` (sharing files — the chat's attach path
+ * rides it), `comment`, `support` and `incident`. Those are help, not new work,
+ * and a one-time client can always DESCRIBE anything as a plain chat message —
+ * what they can't do is open a tracked work item.
+ *
+ * The portal already hides these entries; this is the lock behind the UI, since
+ * a Server Action is a public endpoint (the gating was cosmetic until now).
+ */
+export const MEMBERSHIP_ONLY_REQUEST_TYPES: readonly ClientRequestType[] = [
+  "adjustment",
+  "bug",
+  "improvement",
+  "feature",
+  "scope_change",
+  "rollback",
+];
+
+/** True when `type` is work a one-time plan doesn't include. */
+export function isMembershipOnlyRequestType(type: ClientRequestType): boolean {
+  return MEMBERSHIP_ONLY_REQUEST_TYPES.includes(type);
+}
+
+/**
  * The 5 client-DECLARED priorities (§9.6). Informational only: the OPERATIONAL
  * priority is decided by Noon on the App side and never crosses the wire.
  */

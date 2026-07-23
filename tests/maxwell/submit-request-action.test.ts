@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
   ownsMock: vi.fn(),
   getStudioSessionMock: vi.fn(),
   getWorkspaceMock: vi.fn(),
+  getProposalMock: vi.fn(),
   createRequestMock: vi.fn(),
   markForwardedMock: vi.fn(),
   configuredMock: vi.fn(),
@@ -31,6 +32,7 @@ vi.mock("@/lib/auth/ownership", () => ({ viewerOwnsStudioSession: h.ownsMock }))
 vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioSession: h.getStudioSessionMock,
   getClientWorkspaceBySession: h.getWorkspaceMock,
+  getLatestProposalRequest: h.getProposalMock,
   createClientRequest: h.createRequestMock,
   markClientRequestForwarded: h.markForwardedMock,
 }));
@@ -64,6 +66,8 @@ beforeEach(() => {
   h.ownsMock.mockReturnValue(true);
   h.getStudioSessionMock.mockResolvedValue({ id: SESSION_ID, ownerEmail: "owner@example.com" });
   h.getWorkspaceMock.mockResolvedValue({ id: "ws-1", noonAppProjectId: "proj-1" });
+  // Default plan = membership (the fixture these tests were written against).
+  h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "membership" });
   h.configuredMock.mockReturnValue(true);
   h.deriveMock.mockReturnValue("submitter-hash");
   h.createRequestMock.mockResolvedValue({
@@ -277,5 +281,65 @@ describe("submitRequestAction — persist + forward", () => {
       expect.objectContaining({ type: "rollback", versionRef: 2 }),
     );
     expect(h.markForwardedMock).toHaveBeenCalledWith("rq-rb");
+  });
+});
+
+/**
+ * A ONE-TIME buyer bought a fixed scope: the portal hides the change/work
+ * entries, and this is the lock BEHIND that UI — a Server Action is a public
+ * endpoint, so hiding a button proves nothing (owner 2026-07-22).
+ */
+describe("submitRequestAction — one-time plan", () => {
+  const asOneTime = () =>
+    h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "one_time" });
+
+  it.each(["adjustment", "bug", "improvement", "feature", "scope_change"])(
+    "refuses a %s request — that's work a membership buys",
+    async (type) => {
+      asOneTime();
+      const result = await submitRequestAction({ ...VALID, type });
+      expect(result).toMatchObject({ ok: false, code: "PLAN_NOT_ALLOWED" });
+      // Nothing persisted and nothing forwarded — the App never sees it.
+      expect(h.createRequestMock).not.toHaveBeenCalled();
+      expect(h.sendMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it("refuses a rollback even with a valid versionRef", async () => {
+    asOneTime();
+    const result = await submitRequestAction({
+      ...VALID,
+      type: "rollback",
+      clientPriority: "normal",
+      body: "Please roll back to version 2.",
+      versionRef: 2,
+    });
+    expect(result).toMatchObject({ ok: false, code: "PLAN_NOT_ALLOWED" });
+    expect(h.createRequestMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["material", "comment", "support", "incident"])(
+    "still allows a %s request — that's help, not new work",
+    async (type) => {
+      asOneTime();
+      const result = await submitRequestAction({ ...VALID, type });
+      expect(result).toMatchObject({ ok: true });
+      expect(h.createRequestMock).toHaveBeenCalledWith(expect.objectContaining({ type }));
+    },
+  );
+
+  it("points them at the membership instead of dead-ending", async () => {
+    asOneTime();
+    const result = await submitRequestAction({ ...VALID, type: "adjustment" });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toMatch(/membership/i);
+  });
+
+  it("leaves a membership client's change request untouched", async () => {
+    // Same input, membership plan (the beforeEach default) → goes through.
+    const result = await submitRequestAction({ ...VALID, type: "adjustment" });
+    expect(result).toMatchObject({ ok: true });
+    expect(h.sendMock).toHaveBeenCalled();
   });
 });

@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
   ownsMock: vi.fn(),
   getStudioSessionMock: vi.fn(),
   getWorkspaceMock: vi.fn(),
+  getProposalMock: vi.fn(),
   configuredMock: vi.fn(),
   sendMock: vi.fn(),
   enforceMock: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock("@/lib/auth/ownership", () => ({ viewerOwnsStudioSession: h.ownsMock }))
 vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioSession: h.getStudioSessionMock,
   getClientWorkspaceBySession: h.getWorkspaceMock,
+  getLatestProposalRequest: h.getProposalMock,
 }));
 vi.mock("@/lib/noon-app-integration", () => ({
   isNoonAppProposalHandoffConfigured: h.configuredMock,
@@ -60,6 +62,8 @@ beforeEach(() => {
   h.ownsMock.mockReturnValue(true);
   h.getStudioSessionMock.mockResolvedValue({ id: SESSION_ID, ownerEmail: "owner@example.com" });
   h.getWorkspaceMock.mockResolvedValue({ id: "ws-1", noonAppProjectId: "proj-1" });
+  // Default plan = membership: publishing is a membership self-service action.
+  h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "membership" });
   h.configuredMock.mockReturnValue(true);
   h.sendMock.mockResolvedValue({
     idempotent: false,
@@ -152,5 +156,28 @@ describe("submitVersionAction — forward", () => {
     const result = await submitVersionAction(VALID);
     expect(result).toMatchObject({ ok: false, code: "FORWARD_FAILED" });
     expect(h.revalidateMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Publishing is a BUILD decision: a one-time buyer's versions are read-only and
+ * the team ships their delivery (owner 2026-07-22). The portal hides the action;
+ * this is the lock behind it, since a Server Action is a public endpoint.
+ */
+describe("submitVersionAction — one-time plan", () => {
+  it("refuses to publish and never reaches the App", async () => {
+    h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "one_time" });
+    const result = await submitVersionAction(VALID);
+    expect(result).toMatchObject({ ok: false, code: "PLAN_NOT_ALLOWED" });
+    expect(h.sendMock).not.toHaveBeenCalled();
+    expect(h.revalidateMock).not.toHaveBeenCalled();
+  });
+
+  it("points them at the membership instead of dead-ending", async () => {
+    h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "one_time" });
+    const result = await submitVersionAction(VALID);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toMatch(/membership/i);
   });
 });

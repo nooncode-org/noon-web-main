@@ -39,6 +39,7 @@ import { auth } from "@/auth";
 import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
   getClientWorkspaceBySession,
+  getLatestProposalRequest,
   getStudioSession,
 } from "@/lib/maxwell/repositories";
 import {
@@ -64,7 +65,13 @@ export type SubmitVersionActionResult =
   | {
       ok: false;
       error: string;
-      code: "UNAUTHENTICATED" | "NOT_FOUND" | "INVALID" | "RATE_LIMITED" | "FORWARD_FAILED";
+      code:
+        | "UNAUTHENTICATED"
+        | "NOT_FOUND"
+        | "INVALID"
+        | "RATE_LIMITED"
+        | "PLAN_NOT_ALLOWED"
+        | "FORWARD_FAILED";
     };
 
 export async function submitVersionAction(
@@ -112,6 +119,19 @@ export async function submitVersionAction(
   const workspace = await getClientWorkspaceBySession(input.sessionId);
   if (!workspace) {
     return { ok: false, error: "Your workspace isn't ready yet.", code: "NOT_FOUND" };
+  }
+
+  // Plan gate: publishing is a BUILD decision — a one-time buyer's versions are
+  // read-only (owner 2026-07-22), the team ships their delivery. The portal
+  // hides the action; this is the lock behind it (a Server Action is public).
+  const proposal = await getLatestProposalRequest(input.sessionId);
+  if (proposal?.paymentModality === "one_time") {
+    return {
+      ok: false,
+      error:
+        "Your project is a one-time build, so your Noon team handles publishing. Add a membership to ship changes yourself.",
+      code: "PLAN_NOT_ALLOWED",
+    };
   }
 
   // Gate (Q-10 parity): a publish needs a payment-activated project (mapped to an

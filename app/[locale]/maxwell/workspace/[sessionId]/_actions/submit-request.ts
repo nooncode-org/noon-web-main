@@ -31,6 +31,7 @@ import { viewerOwnsStudioSession } from "@/lib/auth/ownership";
 import {
   createClientRequest,
   getClientWorkspaceBySession,
+  getLatestProposalRequest,
   getStudioSession,
   markClientRequestForwarded,
 } from "@/lib/maxwell/repositories";
@@ -44,6 +45,7 @@ import {
   CLIENT_REQUEST_BODY_MAX,
   isClientRequestPriority,
   isClientRequestType,
+  isMembershipOnlyRequestType,
   isValidVersionRef,
   ROLLBACK_REQUEST_ENABLED,
 } from "@/lib/maxwell/client-requests";
@@ -72,7 +74,7 @@ export type SubmitRequestActionResult =
   | {
       ok: false;
       error: string;
-      code: "UNAUTHENTICATED" | "NOT_FOUND" | "INVALID" | "RATE_LIMITED";
+      code: "UNAUTHENTICATED" | "NOT_FOUND" | "INVALID" | "RATE_LIMITED" | "PLAN_NOT_ALLOWED";
     };
 
 export async function submitRequestAction(
@@ -152,6 +154,22 @@ export async function submitRequestAction(
   const workspace = await getClientWorkspaceBySession(input.sessionId);
   if (!workspace) {
     return { ok: false, error: "Your workspace isn't ready yet.", code: "NOT_FOUND" };
+  }
+
+  // Plan gate: a ONE-TIME buyer bought a fixed scope, so they can't open a
+  // tracked WORK item (owner 2026-07-22). The portal hides these entries; this
+  // is the lock behind it, because a Server Action is a public endpoint. Sharing
+  // files (`material`), comments and support still go through — and anything can
+  // still be said as a plain chat message.
+  const proposal = await getLatestProposalRequest(input.sessionId);
+  const isOneTimePlan = proposal?.paymentModality === "one_time";
+  if (isOneTimePlan && isMembershipOnlyRequestType(requestType)) {
+    return {
+      ok: false,
+      error:
+        "Your project is a one-time build, so changes aren't part of it. Add a membership for ongoing work — or just message your Noon team in the chat.",
+      code: "PLAN_NOT_ALLOWED",
+    };
   }
 
   // Gate (Q-10): a request needs a payment-activated project (mapped to an App

@@ -15,6 +15,7 @@ const h = vi.hoisted(() => ({
   ownsMock: vi.fn(),
   getStudioSessionMock: vi.fn(),
   getWorkspaceMock: vi.fn(),
+  getProposalMock: vi.fn(),
   createRequestMock: vi.fn(),
   markForwardedMock: vi.fn(),
   configuredMock: vi.fn(),
@@ -29,6 +30,7 @@ vi.mock("@/lib/auth/ownership", () => ({ viewerOwnsStudioSession: h.ownsMock }))
 vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioSession: h.getStudioSessionMock,
   getClientWorkspaceBySession: h.getWorkspaceMock,
+  getLatestProposalRequest: h.getProposalMock,
   createClientRequest: h.createRequestMock,
   markClientRequestForwarded: h.markForwardedMock,
 }));
@@ -59,6 +61,7 @@ beforeEach(() => {
   h.ownsMock.mockReturnValue(true);
   h.getStudioSessionMock.mockResolvedValue({ id: SESSION_ID, ownerEmail: "owner@example.com" });
   h.getWorkspaceMock.mockResolvedValue({ id: "ws-1", noonAppProjectId: "proj-1" });
+  h.getProposalMock.mockResolvedValue({ id: "prop-1", paymentModality: "membership" });
   h.configuredMock.mockReturnValue(true);
   h.deriveMock.mockReturnValue("submitter-hash");
   h.createRequestMock.mockResolvedValue({
