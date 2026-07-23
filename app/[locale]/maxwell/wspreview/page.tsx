@@ -343,10 +343,10 @@ function ActiveWorkspace({
     ...(data.versions.length > 0
       ? [{ id: "versions", label: "Versions", ...(isMembershipPlan ? { pending: "action" as const } : {}) }]
       : []),
-    // "Code" = a one-time buyer's own tab (they own the source), once a build
-    // exists to hand over.
-    ...(isOneTime && data.versions.length > 0 ? [{ id: "code", label: "Code" }] : []),
     ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
+    // "Code" = a one-time buyer's own tab (they own the source), once a build
+    // exists to hand over. LAST tab (owner 2026-07-22).
+    ...(isOneTime && data.versions.length > 0 ? [{ id: "code", label: "Code" }] : []),
   ];
 
   return (

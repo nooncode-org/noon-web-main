@@ -533,11 +533,11 @@ export default async function WorkspacePage({ params }: Props) {
           },
         ]
       : []),
-    // "Code" is a one-time buyer's own tab (they own the source) — once a build
-    // exists to hand over. A membership doesn't get it (ongoing service, not a
-    // bought-and-done deliverable).
-    ...(!isMembershipPlan && latestVersion ? [{ id: "code", label: "Code" }] : []),
     ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
+    // "Code" is a one-time buyer's own tab (they own the source) — once a build
+    // exists to hand over. LAST tab (owner 2026-07-22). A membership doesn't get
+    // it (ongoing service, not a bought-and-done deliverable).
+    ...(!isMembershipPlan && latestVersion ? [{ id: "code", label: "Code" }] : []),
   ];
 
   const projectName = session.goalSummary ?? session.initialPrompt;
