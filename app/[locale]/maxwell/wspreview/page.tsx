@@ -14,7 +14,7 @@
  */
 import { notFound } from "next/navigation";
 import { Search } from "lucide-react";
-import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
+import { WorkspaceCodePanel, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 import { getContactHref } from "@/lib/site-config";
 import {
   mapMembershipStatusToMeta,
@@ -343,6 +343,9 @@ function ActiveWorkspace({
     ...(data.versions.length > 0
       ? [{ id: "versions", label: "Versions", ...(isMembershipPlan ? { pending: "action" as const } : {}) }]
       : []),
+    // "Code" = a one-time buyer's own tab (they own the source), once a build
+    // exists to hand over.
+    ...(isOneTime && data.versions.length > 0 ? [{ id: "code", label: "Code" }] : []),
     ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
   ];
 
@@ -629,11 +632,8 @@ function ActiveWorkspace({
               </div>
             </section>
 
-            {/* ── One-time cards (shared with the real page): Your code (they
-                  own the build) + the membership upsell (sells ongoing
-                  development; monthly ALONE — activation already paid). Both
-                  actions hand off to the Chat with the request typed. ── */}
-            {isOneTime && <YourCodeCard />}
+            {/* ── One-time upsell (Overview): sells ongoing development; monthly
+                  ALONE — activation already paid. "Your code" is its own tab. ── */}
             {isOneTime && (
               <MembershipUpsellCard
                 delivered={Boolean(appPublishedUrl)}
@@ -789,6 +789,13 @@ function ActiveWorkspace({
               </div>
             </section>
           </div>
+          )}
+
+          {/* ── Code panel (one-time only) — the source they own, its own tab. ── */}
+          {isOneTime && data.versions.length > 0 && (
+            <div data-panel="code">
+              <WorkspaceCodePanel />
+            </div>
           )}
 
           {/* ── Domains panel — Vercel-style LIST only (front only, logic later).

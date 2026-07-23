@@ -1,63 +1,89 @@
 "use client";
 
-import { Code2 } from "lucide-react";
+import { GitBranch, Download } from "lucide-react";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { formatProposalAmount } from "@/lib/maxwell/project-status-labels";
 
 /**
- * The one-time buyer's two Overview cards (owner model, 2026-07-22 — see the
- * wspreview `?state=onetime` playground where they were designed):
+ * The one-time buyer's own surfaces (owner model, 2026-07-22 — designed in the
+ * wspreview `?state=onetime` playground). Shared by the mock and the real page
+ * so they can't diverge.
  *
- * - YourCodeCard — they PAID for the build, so the source is THEIRS ("muy
- *   importante que sí tenga su código"). Repository + download, covering the
- *   technical and the non-technical client. It's also what keeps the offline
- *   policy honest: stop renewing hosting and we shut down OUR hosting, not
- *   their project.
- * - MembershipUpsellCard — their path to changes. Sells ongoing DEVELOPMENT
- *   (a team back on the project), NOT the chat (they already have it, as a
- *   support/questions channel). Price is the MONTHLY ALONE: their activation
- *   (the build) is already paid, and re-charging it would bill the same thing
- *   twice.
+ * - WorkspaceCodePanel — its OWN "Code" tab (owner 2026-07-22: "esto debe tener
+ *   su sección aparte como code"). They PAID for the build, so the source is
+ *   theirs: browse/clone the repo + download the whole thing. It's also what
+ *   keeps the offline policy honest — stop renewing hosting and we shut down OUR
+ *   hosting, not their project.
+ * - MembershipUpsellCard — an Overview card, their path to changes. Sells ongoing
+ *   DEVELOPMENT (a team back on the project), NOT the chat (they already have it,
+ *   as a support channel). Price is the MONTHLY ALONE: their activation (the
+ *   build) is already paid, and re-charging it would bill the same thing twice.
  *
- * Shared by the mock and the real page. Today both actions hand off to the
- * Chat with the request typed (the channel that actually reaches the team —
- * same pattern as AddDomainButtons); when real repo access / download / an
- * upgrade checkout exist, these swap to direct links without moving the cards.
+ * Both actions hand off to the Chat with the request typed (the channel that
+ * actually reaches the team — same pattern as AddDomainButtons); when real repo
+ * access / download / an upgrade checkout exist, they swap to direct links
+ * without moving anything.
  */
-export function YourCodeCard() {
+export function WorkspaceCodePanel() {
   return (
-    <section className="overflow-hidden rounded-[6px] border border-border bg-card p-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-md">
-          <div className="flex items-center gap-2">
-            <Code2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
-            <p className="text-sm font-medium">Your code</p>
-          </div>
-          <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            You own your project&apos;s full source — download it any time, or take it
-            to your own repository and host it wherever you like. It&apos;s yours to keep.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() =>
-              goToWorkspaceChat("Hi — could you share access to my project's repository?")
-            }
-            className="inline-flex items-center gap-1.5 rounded-[6px] border border-border px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-secondary/40"
-          >
-            View repository {"->"}
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              goToWorkspaceChat("Hi — I'd like a download of my project's full source code.")
-            }
-            className="inline-flex items-center gap-1.5 rounded-[6px] bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
-          >
-            Download code
-          </button>
-        </div>
+    <section className="rounded-[6px] border border-border bg-card">
+      <div className="border-b border-border px-5 py-3.5">
+        <h2 className="text-sm font-medium">Your code</h2>
+      </div>
+      <div className="p-5">
+        <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+          You paid for your project, so the source is yours to keep. Browse it, clone it
+          to your own repository, or download the whole thing — and host it wherever you
+          like, whenever you like.
+        </p>
+
+        <ul className="mt-4 divide-y divide-border overflow-hidden rounded-[6px] border border-border">
+          <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-border bg-secondary/40">
+              <GitBranch className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Repository</p>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
+                Browse and clone your project&apos;s full Git history.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                goToWorkspaceChat("Hi — could you share access to my project's repository?")
+              }
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-[6px] border border-border bg-background px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-secondary/50"
+            >
+              View repository {"->"}
+            </button>
+          </li>
+
+          <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-border bg-secondary/40">
+              <Download className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Source download</p>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
+                The complete codebase as a single .zip.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                goToWorkspaceChat("Hi — I'd like a download of my project's full source code.")
+              }
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-[6px] bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
+            >
+              Download
+            </button>
+          </li>
+        </ul>
+
+        <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/70">
+          Not sure what to do with it? Ask in the Chat — your Noon team will walk you through it.
+        </p>
       </div>
     </section>
   );

@@ -61,7 +61,7 @@ import { RequestChangeChip } from "@/components/maxwell/workspace-quick-access";
 import { VisitButton } from "@/components/maxwell/visit-button";
 import { AddDomainButtons } from "@/components/maxwell/workspace-add-domain";
 import { VersionRowMenu } from "@/components/maxwell/workspace-version-menu";
-import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
+import { WorkspaceCodePanel, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 import { NoonMark } from "@/components/brand/noon-logo";
 import { ManageMembershipButton } from "./_components/manage-membership-button";
 import { submitCommentAction } from "./_actions/submit-comment";
@@ -533,6 +533,10 @@ export default async function WorkspacePage({ params }: Props) {
           },
         ]
       : []),
+    // "Code" is a one-time buyer's own tab (they own the source) — once a build
+    // exists to hand over. A membership doesn't get it (ongoing service, not a
+    // bought-and-done deliverable).
+    ...(!isMembershipPlan && latestVersion ? [{ id: "code", label: "Code" }] : []),
     ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
   ];
 
@@ -884,11 +888,8 @@ export default async function WorkspacePage({ params }: Props) {
               </div>
             </section>
 
-            {/* ── One-time cards (shared with the wspreview playground): Your
-                  code (they paid for the build → the source is theirs; shown
-                  once code exists) + the membership upsell (their path to
-                  changes — monthly ALONE, activation already paid). ── */}
-            {!isMembershipPlan && latestVersion && <YourCodeCard />}
+            {/* ── One-time upsell (Overview): their path to changes — monthly
+                  ALONE, activation already paid. "Your code" is its own tab. ── */}
             {!isMembershipPlan && (
               <MembershipUpsellCard
                 delivered={Boolean(appPublishedUrl)}
@@ -1098,6 +1099,13 @@ export default async function WorkspacePage({ params }: Props) {
                   })}
                 </div>
               </section>
+            </div>
+          )}
+
+          {/* ── Code panel (one-time only) — the source they own, its own tab. ── */}
+          {!isMembershipPlan && latestVersion && (
+            <div data-panel="code">
+              <WorkspaceCodePanel />
             </div>
           )}
 

@@ -78,7 +78,7 @@ import { VersionReviewBanner } from "@/components/maxwell/workspace-version-revi
 import { VersionRowMenu } from "@/components/maxwell/workspace-version-menu";
 import { AddDomainButtons } from "@/components/maxwell/workspace-add-domain";
 import { RequestChangeChip } from "@/components/maxwell/workspace-quick-access";
-import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
+import { WorkspaceCodePanel, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 
 const SESSION_ID = "sess-1";
 
@@ -647,8 +647,10 @@ describe("client portal — one-time plan", () => {
     });
     const tree = await render();
 
-    // They paid for the build → the source is theirs.
-    expect(find(tree, YourCodeCard)).toBeDefined();
+    // They paid for the build → the source is theirs, in its own Code tab.
+    expect(find(tree, WorkspaceCodePanel)).toBeDefined();
+    const tabs = find(tree, WorkspaceTabs)?.props.tabs as { id: string }[];
+    expect(tabs.some((t) => t.id === "code")).toBe(true);
     // The upsell sells ongoing development, priced as the monthly ALONE —
     // their activation (the build) is already paid, never re-charged. The
     // card receives the bare monthly and states the delivered status.
@@ -672,8 +674,11 @@ describe("client portal — one-time plan", () => {
     });
     const tree = await render();
 
-    expect(find(tree, YourCodeCard)).toBeUndefined();
+    expect(find(tree, WorkspaceCodePanel)).toBeUndefined();
     expect(find(tree, MembershipUpsellCard)).toBeUndefined();
+    // No "Code" tab either.
+    const tabs = find(tree, WorkspaceTabs)?.props.tabs as { id: string }[];
+    expect(tabs.some((t) => t.id === "code")).toBe(false);
     // Their review decision + change channel stay intact.
     expect(find(tree, VersionReviewBanner)).toBeDefined();
     expect(find(tree, RequestChangeChip)).toBeDefined();
