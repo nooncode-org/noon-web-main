@@ -201,6 +201,60 @@ const SEED: ChatMsg[] = [
 // (empty) state, before any back-and-forth (?state=new in the preview).
 const FRESH_SEED: ChatMsg[] = [SEED[0]];
 
+// One-time buyer's chat (owner 2026-07-22): SUPPORT + questions only — NOT a
+// change/updates pipeline. It still handles the brand-kit handoff, "is it live?",
+// hosting/domain, and file handoffs; but when they ask for a CHANGE, Maxwell
+// draws the line and points to a membership (which is what buys ongoing work).
+// No "Change · in progress" chip, no dev "I'll ship it in the next version".
+const ONETIME_SEED: ChatMsg[] = [
+  {
+    id: "t1",
+    from: "maxwell",
+    text: "Hi! I'm Maxwell, Noon's assistant. Ask me anything about your project — how something works, your files, your hosting or domain. I'll answer what I can and loop in your Noon team when it needs a person.",
+    at: "9:58",
+  },
+  {
+    id: "t2",
+    from: "client",
+    text: "Great! Here's our brand kit — logo, colors, and fonts. 🎨",
+    at: "9:59",
+    attachment: { name: "brand-kit.zip" },
+  },
+  {
+    id: "t3",
+    from: "maxwell",
+    text: "Perfect — I've shared these with your Noon team so your build reflects your brand.",
+    at: "9:59",
+  },
+  { id: "t4", from: "client", text: "Quick one — is my site live yet?", at: "10:21" },
+  {
+    id: "t5",
+    from: "maxwell",
+    text: "Yes! It's live at opsdash.nooncode.dev since yesterday. 🎉",
+    at: "10:21",
+  },
+  {
+    id: "t6",
+    from: "client",
+    text: "Amazing. Can we make the header logo a bit bigger?",
+    at: "10:23",
+  },
+  {
+    id: "t7",
+    from: "maxwell",
+    text: "Your project is a one-time build, so it ships as delivered — I can't queue new changes here. For tweaks and new features whenever you want them, a membership puts your team back on it. Want me to show you how it works?",
+    at: "10:23",
+  },
+  {
+    id: "t8",
+    from: "dev",
+    devName: "Carlos",
+    text: "And here's your getting-started guide so you can run everything yourself. 👍",
+    at: "10:40",
+    attachment: { name: "getting-started-guide.pdf" },
+  },
+];
+
 function Avatar({ msg }: { msg: ChatMsg }) {
   if (msg.from === "maxwell") {
     return (
@@ -347,11 +401,18 @@ function MessageRow({
 
 export function WorkspaceChat({
   fresh = false,
+  oneTime = false,
   siteUrl,
   real,
   readOnly,
 }: {
   fresh?: boolean;
+  /**
+   * One-time buyer's chat: support + questions only, not a change/updates
+   * pipeline (owner 2026-07-22). Swaps the seeded conversation + the expectation
+   * line; mock-only (the real thread passes its own `real.messages`).
+   */
+  oneTime?: boolean;
   /** The client's live site — enables "+" → Review site (absent = no site yet). */
   siteUrl?: string;
   /** Live-thread wiring (the real workspace page); absent = the seeded mock. */
@@ -367,7 +428,7 @@ export function WorkspaceChat({
   // but re-seeding would duplicate our optimistic sends (the server list now
   // contains them under new ids). Fresh data lands on the next visit.
   const [messages, setMessages] = useState<ChatMsg[]>(
-    real ? real.messages : fresh ? FRESH_SEED : SEED,
+    real ? real.messages : fresh ? FRESH_SEED : oneTime ? ONETIME_SEED : SEED,
   );
   const [isPending, startTransition] = useTransition();
   const [sendError, setSendError] = useState<string | null>(null);
@@ -644,7 +705,10 @@ export function WorkspaceChat({
           </div>
         ) : (
           <p className="text-[11px] text-muted-foreground/70">
-            {real?.expectationLine ?? "Maxwell answers instantly · your Noon team replies within 24h"}
+            {real?.expectationLine ??
+              (oneTime
+                ? "Maxwell answers instantly · your Noon team helps with questions about your project"
+                : "Maxwell answers instantly · your Noon team replies within 24h")}
           </p>
         )}
         {!searchOpen && (

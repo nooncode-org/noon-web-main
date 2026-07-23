@@ -895,6 +895,7 @@ function ActiveWorkspace({
           <div data-panel="chat">
             <WorkspaceChat
               fresh={data.versions.length === 0 && !data.appPublishedUrl}
+              oneTime={isOneTime}
               siteUrl={appPublishedUrl ?? undefined}
             />
           </div>
