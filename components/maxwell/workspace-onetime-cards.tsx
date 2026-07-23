@@ -41,16 +41,17 @@ export function WorkspaceCodePanel() {
       <div className="border-b border-border px-5 py-3.5">
         <h2 className="text-sm font-medium">Your code</h2>
       </div>
-      <div className="p-5">
-        <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+      {/* Body = the portal's card rhythm (text left, actions right, centered);
+          the help line moves to a tinted FOOTER strip (same anatomy as the
+          settings cards) — three loose stacked lines read disorganized in a
+          wide card (owner 2026-07-23). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-4 p-5">
+        <p className="max-w-xl flex-1 basis-72 text-[13px] leading-relaxed text-muted-foreground">
           You paid for your project, so the source is yours to keep. Browse and clone the
           repository, or download the whole codebase as a .zip — and host it wherever you
           like, whenever you like.
         </p>
-
-        {/* One card, both actions together (owner 2026-07-22): open the repo
-            (GitHub-branded) or grab the .zip. */}
-        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={() =>
@@ -72,8 +73,9 @@ export function WorkspaceCodePanel() {
             Download .zip
           </button>
         </div>
-
-        <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground/70">
+      </div>
+      <div className="border-t border-border bg-secondary/20 px-5 py-3">
+        <p className="text-[12px] leading-relaxed text-muted-foreground/70">
           Not sure what to do with it? Ask in the Chat — your Noon team will walk you through it.
         </p>
       </div>
