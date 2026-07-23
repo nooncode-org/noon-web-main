@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { formatProposalAmount } from "@/lib/maxwell/project-status-labels";
 
@@ -71,11 +71,34 @@ export function WorkspaceCodePanel() {
           repository, or download the whole codebase as a .zip — and host it wherever you
           like, whenever you like.
         </p>
-        {/* Help rides the body as fine print — a separate footer strip under an
-            actions-in-header card read as a loose band (owner 2026-07-23). */}
-        <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground/70">
-          Not sure what to do with it? Ask in the Chat — your Noon team will walk you through it.
-        </p>
+        {/* The help line is now a DISCLOSURE (owner 2026-07-23): just a chevron;
+            clicking it expands the explanation. Native <details> — the same
+            dependency-free pattern the help menu uses. */}
+        <details className="group mt-2">
+          <summary className="-ml-1 flex w-fit cursor-pointer list-none items-center rounded-[6px] p-1 text-muted-foreground/70 transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+            <ChevronDown
+              className="h-4 w-4 transition-transform group-open:rotate-180"
+              strokeWidth={1.75}
+              aria-hidden
+            />
+            <span className="sr-only">What can I do with my code?</span>
+          </summary>
+          <div className="mt-2 max-w-xl space-y-1.5 text-[12px] leading-relaxed text-muted-foreground">
+            <p>
+              <span className="font-medium text-foreground/85">Repository</span> — your code on
+              GitHub with its full history. Ask for access and you (or any developer) can clone
+              it and keep building on it.
+            </p>
+            <p>
+              <span className="font-medium text-foreground/85">Download .zip</span> — the whole
+              codebase in one file: a backup, or a handoff to another developer or host.
+            </p>
+            <p>
+              You don&apos;t have to do anything with it — your site keeps running with us either
+              way. Not sure? Ask in the Chat and your Noon team will walk you through it.
+            </p>
+          </div>
+        </details>
       </div>
     </section>
   );
