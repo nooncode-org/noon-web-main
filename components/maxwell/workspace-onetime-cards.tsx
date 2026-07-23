@@ -1,6 +1,6 @@
 "use client";
 
-import { GitBranch, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { formatProposalAmount } from "@/lib/maxwell/project-status-labels";
 
@@ -43,57 +43,37 @@ export function WorkspaceCodePanel() {
       </div>
       <div className="p-5">
         <p className="max-w-xl text-[13px] leading-relaxed text-muted-foreground">
-          You paid for your project, so the source is yours to keep. Browse it, clone it
-          to your own repository, or download the whole thing — and host it wherever you
+          You paid for your project, so the source is yours to keep. Browse and clone the
+          repository, or download the whole codebase as a .zip — and host it wherever you
           like, whenever you like.
         </p>
 
-        <ul className="mt-4 divide-y divide-border overflow-hidden rounded-[6px] border border-border">
-          <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-border bg-secondary/40">
-              <GitBranch className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Repository</p>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                Browse and clone your project&apos;s full Git history.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                goToWorkspaceChat("Hi — could you share access to my project's repository?")
-              }
-              className="inline-flex shrink-0 items-center gap-2 rounded-[6px] border border-border bg-background px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-secondary/50"
-            >
-              <GithubMark className="h-4 w-4" />
-              Repository
-            </button>
-          </li>
+        {/* One card, both actions together (owner 2026-07-22): open the repo
+            (GitHub-branded) or grab the .zip. */}
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() =>
+              goToWorkspaceChat("Hi — could you share access to my project's repository?")
+            }
+            className="inline-flex items-center gap-2 rounded-[6px] border border-border bg-background px-3.5 py-2 text-[13px] font-medium transition-colors hover:bg-secondary/50"
+          >
+            <GithubMark className="h-4 w-4" />
+            Repository
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              goToWorkspaceChat("Hi — I'd like a download of my project's full source code.")
+            }
+            className="inline-flex items-center gap-2 rounded-[6px] bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
+          >
+            <Download className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+            Download .zip
+          </button>
+        </div>
 
-          <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-border bg-secondary/40">
-              <Download className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Source download</p>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                The complete codebase as a single .zip.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                goToWorkspaceChat("Hi — I'd like a download of my project's full source code.")
-              }
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-[6px] bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
-            >
-              Download
-            </button>
-          </li>
-        </ul>
-
-        <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/70">
+        <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground/70">
           Not sure what to do with it? Ask in the Chat — your Noon team will walk you through it.
         </p>
       </div>
