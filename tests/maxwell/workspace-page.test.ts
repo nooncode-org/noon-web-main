@@ -556,16 +556,20 @@ describe("client portal — what demands the client's attention", () => {
     expect(text).not.toContain("Invalid Date");
   });
 
-  it("tells a one-time buyer what hosting costs and when it renews", async () => {
+  it("tells a one-time buyer both hosting prices and what paying yearly saves", async () => {
     useOneTimeProposal();
     const text = textOf(await render());
     expect(text).toContain("One-time");
     // The old copy promised "nothing recurring" — false under the owner's
-    // model: the build is paid once, hosting renews yearly.
+    // model: the build is paid once, hosting recurs.
     expect(text).not.toContain("nothing recurring");
-    // And it names the PRICE, not a vague "renews yearly" (owner 2026-07-23).
-    expect(text).toContain("$300");
-    expect(text).toMatch(/renews at .*\/year/);
+    // The first year is included (owner 2026-07-23) — say so, it's the selling point.
+    expect(text).toContain("first year of hosting is included");
+    // Both prices, named — not a vague "renews yearly".
+    expect(text).toContain("$350");
+    expect(text).toContain("$35");
+    // And the saving that makes yearly the obvious choice.
+    expect(text).toContain("saves you $70");
     // The domain is billed separately — never folded into the hosting figure.
     expect(text).toContain("domain is billed separately");
   });

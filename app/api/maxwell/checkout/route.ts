@@ -13,9 +13,8 @@ import { isProposalPastCutoff } from "@/lib/maxwell/proposal-visibility";
 import { MEMBERSHIP_BILLING_ENABLED, MEMBERSHIP_INTERVAL } from "@/lib/maxwell/membership-billing";
 import {
   HOSTING_FIRST_YEAR_INCLUDED,
-  HOSTING_INTERVAL,
   HOSTING_TRIAL_DAYS,
-  HOSTING_YEARLY_USD,
+  hostingPriceUsd,
   shouldBillHosting,
 } from "@/lib/maxwell/hosting-billing";
 import { buildWebsiteProposalPayload } from "@/lib/noon-app-integration";
@@ -31,6 +30,9 @@ const checkoutSchema = z.object({
   // v3 membership (M0): the modality the client picks on the proposal page.
   // Defaults to one_time for back-compat with clients that omit it.
   payment_modality: z.enum(["one_time", "membership"]).optional().default("one_time"),
+  // One-time only: how their hosting recurs after the included first year.
+  // Defaults to yearly — the discounted plan, and the one we want them on.
+  hosting_interval: z.enum(["month", "year"]).optional().default("year"),
 });
 
 const PAYABLE_STATUSES = new Set(["sent", "payment_pending"]);
@@ -156,9 +158,9 @@ export async function POST(request: Request) {
     // carries the one-time build line — only the interval is `year`, so the
     // webhook, the Billing Portal and the lifecycle wire need no new plumbing.
     const isHostingCheckout = shouldBillHosting(paymentModality);
-    const hostingMinor = isHostingCheckout
-      ? toStripeMinorUnit(HOSTING_YEARLY_USD, currency)
-      : 0;
+    const hostingInterval = payload.hosting_interval;
+    const hostingUsd = hostingPriceUsd(hostingInterval);
+    const hostingMinor = isHostingCheckout ? toStripeMinorUnit(hostingUsd, currency) : 0;
 
     // Shared metadata — read back by the Stripe webhook to correlate + route
     // activation. Identical keys across both modes so the webhook reads the same
@@ -176,7 +178,7 @@ export async function POST(request: Request) {
       // (and a human reading the Stripe dashboard) can tell a yearly hosting
       // subscription apart from a monthly membership one.
       ...(isHostingCheckout
-        ? { hosting_yearly_usd: String(HOSTING_YEARLY_USD), billing_interval: HOSTING_INTERVAL }
+        ? { hosting_price_usd: String(hostingUsd), billing_interval: hostingInterval }
         : {}),
     };
 
@@ -265,16 +267,17 @@ export async function POST(request: Request) {
                   },
                 },
                 {
-                  // Hosting, yearly. The DOMAIN is billed separately — do not
-                  // fold it in here (owner 2026-07-23).
+                  // Hosting — yearly by default (the discounted plan) or
+                  // monthly if the client chose it. The DOMAIN is billed
+                  // separately: do not fold it in here (owner 2026-07-23).
                   quantity: 1,
                   price_data: {
                     currency,
                     unit_amount: hostingMinor,
-                    recurring: { interval: HOSTING_INTERVAL },
+                    recurring: { interval: hostingInterval },
                     product_data: {
                       name: `${productName} — hosting`,
-                      description: "Noon hosting, billed yearly",
+                      description: `Noon hosting, billed ${hostingInterval === "month" ? "monthly" : "yearly"}`,
                     },
                   },
                 },
@@ -291,7 +294,7 @@ export async function POST(request: Request) {
               metadata: checkoutMetadata,
             },
             {
-              idempotencyKey: `noon-checkout-host-emb:${proposal.id}:${unitAmount}:${hostingMinor}:${currency}`,
+              idempotencyKey: `noon-checkout-host-emb:${proposal.id}:${unitAmount}:${hostingMinor}:${hostingInterval}:${currency}`,
             },
           )
         : await stripe.checkout.sessions.create(

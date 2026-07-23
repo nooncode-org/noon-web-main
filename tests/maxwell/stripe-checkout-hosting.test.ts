@@ -75,7 +75,11 @@ vi.mock("@/lib/stripe/server", async (importOriginal) => {
 });
 
 import { POST } from "@/app/api/maxwell/checkout/route";
-import { HOSTING_YEARLY_USD } from "@/lib/maxwell/hosting-billing";
+import {
+  HOSTING_MONTHLY_USD,
+  HOSTING_YEARLY_SAVING_USD,
+  HOSTING_YEARLY_USD,
+} from "@/lib/maxwell/hosting-billing";
 
 const ROUTE_URL = "http://localhost/api/maxwell/checkout";
 
@@ -201,17 +205,44 @@ describe("POST /api/maxwell/checkout — one-time + yearly hosting (flag ON)", (
       external_session_id: "session-1",
       external_proposal_id: "proposal-1",
       payment_modality: "one_time",
-      hosting_yearly_usd: String(HOSTING_YEARLY_USD),
+      hosting_price_usd: String(HOSTING_YEARLY_USD),
       billing_interval: "year",
     });
     // Subscription mode has no one-time-only payment_intent_data.
     expect(params.payment_intent_data).toBeUndefined();
   });
 
-  it("keys idempotency on both amounts so a re-price can't reuse a stale session", async () => {
+  it("keys idempotency on amount AND interval so switching plan can't reuse a session", async () => {
     await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "one_time" }));
     const [, opts] = mocks.createCheckoutSession.mock.calls[0];
-    expect(opts.idempotencyKey).toBe("noon-checkout-host-emb:proposal-1:450000:30000:usd");
+    expect(opts.idempotencyKey).toBe("noon-checkout-host-emb:proposal-1:450000:35000:year:usd");
+  });
+
+  it("bills monthly when the client picks it, at the higher monthly rate", async () => {
+    // Paying yearly is the DISCOUNTED plan (owner 2026-07-23): $35×12 = $420
+    // monthly vs $350 yearly. The monthly rate must be the un-discounted one.
+    await POST(
+      buildRequest({
+        public_token: "public-token-abc",
+        payment_modality: "one_time",
+        hosting_interval: "month",
+      }),
+    );
+    const [params, opts] = mocks.createCheckoutSession.mock.calls[0];
+
+    const hostingLine = (params.line_items as Line[]).find((li) => li.price_data.recurring)!;
+    expect(hostingLine.price_data.recurring!.interval).toBe("month");
+    expect(hostingLine.price_data.unit_amount).toBe(HOSTING_MONTHLY_USD * 100);
+    expect(params.subscription_data.metadata.billing_interval).toBe("month");
+    expect(opts.idempotencyKey).toContain(":month:");
+  });
+
+  it("prices yearly BELOW twelve monthly payments — the discount must be real", () => {
+    // Guards the whole point of the two-tier price: if a future edit ever made
+    // yearly cost the same or more, the "save $X" copy would be a lie.
+    expect(HOSTING_YEARLY_USD).toBeLessThan(HOSTING_MONTHLY_USD * 12);
+    expect(HOSTING_YEARLY_SAVING_USD).toBe(HOSTING_MONTHLY_USD * 12 - HOSTING_YEARLY_USD);
+    expect(HOSTING_YEARLY_SAVING_USD).toBeGreaterThan(0);
   });
 
   it("does NOT put hosting on a membership — its monthly already covers it", async () => {

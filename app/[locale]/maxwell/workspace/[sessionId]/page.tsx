@@ -42,7 +42,11 @@ import {
 } from "@/lib/maxwell/client-requests";
 import { buildWorkspaceThread } from "@/lib/maxwell/workspace-thread";
 import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
-import { HOSTING_YEARLY_USD } from "@/lib/maxwell/hosting-billing";
+import {
+  HOSTING_MONTHLY_USD,
+  HOSTING_YEARLY_SAVING_USD,
+  HOSTING_YEARLY_USD,
+} from "@/lib/maxwell/hosting-billing";
 import {
   ATTACHMENTS_ENABLED,
   ATTACHMENT_MAX_BYTES,
@@ -967,10 +971,16 @@ export default async function WorkspacePage({ params }: Props) {
                       ? membershipMeta
                         ? membershipMeta.description
                         : "Monthly membership is coordinated with your Noon PM."
-                      : `Paid once for the build — your first year of hosting is included. After that it renews at ${formatProposalAmount(
+                      : `Paid once for the build — your first year of hosting is included. After that: ${formatProposalAmount(
                           HOSTING_YEARLY_USD,
                           planCurrency,
-                        )}/year to keep your site online; your domain is billed separately.`}
+                        )}/year, or ${formatProposalAmount(
+                          HOSTING_MONTHLY_USD,
+                          planCurrency,
+                        )}/month — paying yearly saves you ${formatProposalAmount(
+                          HOSTING_YEARLY_SAVING_USD,
+                          planCurrency,
+                        )}. Your domain is billed separately.`}
                   </p>
                   {/* The most-asked billing question, answered before it's asked
                       (audit P1-8) — good standing only; past_due gets the banner. */}
