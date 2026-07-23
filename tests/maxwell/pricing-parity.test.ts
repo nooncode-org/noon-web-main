@@ -15,6 +15,7 @@ import {
   type ProjectCategory,
 } from "@/lib/maxwell/proposal-rules";
 import canonical from "@/lib/maxwell/pricing-table.v1.json";
+import { HOSTING_MONTHLY_USD, HOSTING_YEARLY_USD } from "@/lib/maxwell/hosting-billing";
 
 // The canonical snapshot uses the App's tier naming; this repo names tiers in
 // Spanish. Same three levels, fixed mapping.
@@ -43,5 +44,39 @@ describe("cross-repo pricing parity", () => {
         expect(local.monthly, `${category}.${level}.monthly`).toBe(cell.monthly);
       }
     }
+  });
+});
+
+/**
+ * The membership INCLUDES hosting + database (owner model), so it can never
+ * cost LESS than buying hosting on its own — that would price the plan which
+ * strictly contains the other one below it, and no client would ever pick
+ * hosting-only. That inversion was real until 2026-07-23 (landing sat at
+ * $25/$32 against $35 hosting); these tests keep it from coming back the next
+ * time either side of the pricing moves.
+ */
+describe("membership vs standalone hosting", () => {
+  it("every membership monthly is above the standalone hosting monthly", () => {
+    for (const category of CATEGORIES) {
+      for (const level of ["low", "medium", "high"] as const) {
+        const monthly = PRICING_TABLE[category][TIER_MAP[level]].monthly;
+        expect(monthly, `${category}.${level} membership vs hosting`).toBeGreaterThan(
+          HOSTING_MONTHLY_USD,
+        );
+      }
+    }
+  });
+
+  it("a full year of the cheapest membership still beats a year of hosting alone", () => {
+    // The yearly hosting plan is discounted, so it's the harder bar to clear —
+    // check the cheapest membership against it, not against the monthly rate.
+    const cheapestMonthly = Math.min(
+      ...CATEGORIES.flatMap((category) =>
+        (["low", "medium", "high"] as const).map(
+          (level) => PRICING_TABLE[category][TIER_MAP[level]].monthly,
+        ),
+      ),
+    );
+    expect(cheapestMonthly * 12).toBeGreaterThan(HOSTING_YEARLY_USD);
   });
 });

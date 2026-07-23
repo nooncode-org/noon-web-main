@@ -64,7 +64,13 @@ export type ComplexityTier = keyof typeof COMPLEXITY_TIERS;
 // Precios exactos en USD. No usar rangos.
 //
 // activation -> fee unico para arrancar el proyecto
-// monthly    -> cuota mensual de membresia
+// monthly    -> cuota mensual de membresia. INCLUYE hosting + base de datos
+//               (modelo del owner): la membresia no es "hosting + algo encima",
+//               es la via que SUSTITUYE al hosting suelto. Por eso cada monthly
+//               lleva dentro el coste del hosting (+$35 el 2026-07-23) y toda
+//               membresia queda por encima del hosting solo — antes las dos mas
+//               baratas ($25/$32) quedaban POR DEBAJO de el, o sea el plan que
+//               daba menos costaba mas. Ver lib/maxwell/hosting-billing.ts.
 //
 // CROSS-REPO TWIN: esta tabla es la misma verdad comercial que
 // App-nooncode lib/maxwell/pricing.ts (ACTIVATION/MEMBERSHIP). Ambos repos la
@@ -79,29 +85,29 @@ export const PRICING_TABLE: Record<
   Record<ComplexityTier, { activation: number; monthly: number }>
 > = {
   landing: {
-    bajo: { activation: 49, monthly: 25 },
-    medio: { activation: 79, monthly: 32 },
-    alto: { activation: 129, monthly: 49 },
+    bajo: { activation: 49, monthly: 60 },
+    medio: { activation: 79, monthly: 67 },
+    alto: { activation: 129, monthly: 84 },
   },
   ecommerce: {
-    bajo: { activation: 79, monthly: 39 },
-    medio: { activation: 129, monthly: 55 },
-    alto: { activation: 199, monthly: 79 },
+    bajo: { activation: 79, monthly: 74 },
+    medio: { activation: 129, monthly: 90 },
+    alto: { activation: 199, monthly: 114 },
   },
   webapp: {
-    bajo: { activation: 99, monthly: 49 },
-    medio: { activation: 179, monthly: 69 },
-    alto: { activation: 279, monthly: 109 },
+    bajo: { activation: 99, monthly: 84 },
+    medio: { activation: 179, monthly: 104 },
+    alto: { activation: 279, monthly: 144 },
   },
   mobile: {
-    bajo: { activation: 129, monthly: 49 },
-    medio: { activation: 199, monthly: 69 },
-    alto: { activation: 299, monthly: 109 },
+    bajo: { activation: 129, monthly: 84 },
+    medio: { activation: 199, monthly: 104 },
+    alto: { activation: 299, monthly: 144 },
   },
   saas_ai: {
-    bajo: { activation: 129, monthly: 69 },
-    medio: { activation: 229, monthly: 99 },
-    alto: { activation: 349, monthly: 149 },
+    bajo: { activation: 129, monthly: 104 },
+    medio: { activation: 229, monthly: 134 },
+    alto: { activation: 349, monthly: 184 },
   },
 };
 

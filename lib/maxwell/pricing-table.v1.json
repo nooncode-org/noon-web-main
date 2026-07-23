@@ -1,36 +1,40 @@
 {
   "version": 1,
+  "revision": "2026-07-23-hosting-included",
   "currency": "USD",
   "twins": [
     "App-nooncode/lib/maxwell/pricing-table.v1.json",
     "noon-web-main/lib/maxwell/pricing-table.v1.json"
   ],
-  "note": "Cross-repo canonical pricing snapshot (auditoria 2026-07 F2-05/F7-01). App lib/maxwell/pricing.ts and Web lib/maxwell/proposal-rules.ts must both match this file — enforced by a pricing-parity test in EACH repo. To change pricing: update this file in BOTH repos (byte-identical) plus each repo's local table, in the same cross-repo change. A green parity test with a stale twin is the failure mode this file exists to make visible: diff the twins when in doubt.",
+  "note": "Cross-repo canonical pricing snapshot (auditoria 2026-07 F2-05/F7-01). App lib/maxwell/pricing.ts and Web lib/maxwell/proposal-rules.ts must both match this file — enforced by a pricing-parity test in EACH repo. To change pricing: update this file in BOTH repos (byte-identical) plus each repo's local table, in the same cross-repo change. A green parity test with a stale twin is the failure mode this file exists to make visible: diff the twins when in doubt — `revision` is there so a stale twin is obvious at a glance.",
+  "changelog": [
+    "2026-07-23-hosting-included: every `monthly` +$35. The membership INCLUDES hosting + database (owner model), so its price now carries the hosting cost explicitly. Before this, the cheapest memberships ($25/$32) sat BELOW the standalone hosting price ($35/mo), which made the hosting-only plan cost more than a plan that strictly contained it. `activation` values are unchanged. Existing Stripe subscriptions keep their own price — this only affects NEW proposals."
+  ],
   "table": {
     "landing": {
-      "low": { "activation": 49, "monthly": 25 },
-      "medium": { "activation": 79, "monthly": 32 },
-      "high": { "activation": 129, "monthly": 49 }
+      "low": { "activation": 49, "monthly": 60 },
+      "medium": { "activation": 79, "monthly": 67 },
+      "high": { "activation": 129, "monthly": 84 }
     },
     "ecommerce": {
-      "low": { "activation": 79, "monthly": 39 },
-      "medium": { "activation": 129, "monthly": 55 },
-      "high": { "activation": 199, "monthly": 79 }
+      "low": { "activation": 79, "monthly": 74 },
+      "medium": { "activation": 129, "monthly": 90 },
+      "high": { "activation": 199, "monthly": 114 }
     },
     "webapp": {
-      "low": { "activation": 99, "monthly": 49 },
-      "medium": { "activation": 179, "monthly": 69 },
-      "high": { "activation": 279, "monthly": 109 }
+      "low": { "activation": 99, "monthly": 84 },
+      "medium": { "activation": 179, "monthly": 104 },
+      "high": { "activation": 279, "monthly": 144 }
     },
     "mobile": {
-      "low": { "activation": 129, "monthly": 49 },
-      "medium": { "activation": 199, "monthly": 69 },
-      "high": { "activation": 299, "monthly": 109 }
+      "low": { "activation": 129, "monthly": 84 },
+      "medium": { "activation": 199, "monthly": 104 },
+      "high": { "activation": 299, "monthly": 144 }
     },
     "saas_ai": {
-      "low": { "activation": 129, "monthly": 69 },
-      "medium": { "activation": 229, "monthly": 99 },
-      "high": { "activation": 349, "monthly": 149 }
+      "low": { "activation": 129, "monthly": 104 },
+      "medium": { "activation": 229, "monthly": 134 },
+      "high": { "activation": 349, "monthly": 184 }
     }
   }
 }
