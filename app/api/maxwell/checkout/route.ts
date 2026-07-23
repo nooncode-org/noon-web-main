@@ -11,6 +11,11 @@ import {
 import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import { isProposalPastCutoff } from "@/lib/maxwell/proposal-visibility";
 import { MEMBERSHIP_BILLING_ENABLED, MEMBERSHIP_INTERVAL } from "@/lib/maxwell/membership-billing";
+import {
+  HOSTING_INTERVAL,
+  HOSTING_YEARLY_USD,
+  shouldBillHosting,
+} from "@/lib/maxwell/hosting-billing";
 import { buildWebsiteProposalPayload } from "@/lib/noon-app-integration";
 import { buildPublicProposalUrl } from "@/lib/maxwell/public-url";
 import { log } from "@/lib/server/logger";
@@ -143,6 +148,16 @@ export async function POST(request: Request) {
     const isMembershipCheckout =
       paymentModality === "membership" && MEMBERSHIP_BILLING_ENABLED && monthlyAmountUsd != null;
 
+    // A ONE-TIME buyer pays for the build once and then keeps the site online
+    // with a YEARLY hosting fee (owner 2026-07-22; price 2026-07-23). Same
+    // Option A shape as the membership — one subscription whose first invoice
+    // carries the one-time build line — only the interval is `year`, so the
+    // webhook, the Billing Portal and the lifecycle wire need no new plumbing.
+    const isHostingCheckout = shouldBillHosting(paymentModality);
+    const hostingMinor = isHostingCheckout
+      ? toStripeMinorUnit(HOSTING_YEARLY_USD, currency)
+      : 0;
+
     // Shared metadata — read back by the Stripe webhook to correlate + route
     // activation. Identical keys across both modes so the webhook reads the same
     // shape regardless of `mode`.
@@ -155,6 +170,12 @@ export async function POST(request: Request) {
       currency: websitePayload.proposal.currency,
       payment_modality: paymentModality,
       monthly_amount_usd: monthlyAmountUsd != null ? String(monthlyAmountUsd) : "",
+      // Present ONLY on a one-time checkout that carries hosting, so the webhook
+      // (and a human reading the Stripe dashboard) can tell a yearly hosting
+      // subscription apart from a monthly membership one.
+      ...(isHostingCheckout
+        ? { hosting_yearly_usd: String(HOSTING_YEARLY_USD), billing_interval: HOSTING_INTERVAL }
+        : {}),
     };
 
     const checkoutSession = isMembershipCheckout
@@ -215,7 +236,57 @@ export async function POST(request: Request) {
             idempotencyKey: `noon-checkout-sub-emb:${proposal.id}:${unitAmount}:${monthlyMinor}:${currency}`,
           },
         )
-      : await stripe.checkout.sessions.create(
+      : isHostingCheckout
+        ? await stripe.checkout.sessions.create(
+            {
+              // One-time + yearly hosting: same Option A shape as the
+              // membership, interval `year`. The build is the one-time line on
+              // the first invoice; hosting recurs every year after it.
+              mode: "subscription",
+              ui_mode: "embedded_page",
+              client_reference_id: proposal.id,
+              customer_email: customerEmail,
+              return_url: `${publicUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+              billing_address_collection: "required",
+              line_items: [
+                {
+                  // The build — ONE-TIME (no `recurring`), billed on the first
+                  // invoice alongside the first hosting year.
+                  quantity: 1,
+                  price_data: {
+                    currency,
+                    unit_amount: unitAmount,
+                    product_data: {
+                      name: `${productName} — build`,
+                      description: "Noon project build (one-time)",
+                    },
+                  },
+                },
+                {
+                  // Hosting, yearly. The DOMAIN is billed separately — do not
+                  // fold it in here (owner 2026-07-23).
+                  quantity: 1,
+                  price_data: {
+                    currency,
+                    unit_amount: hostingMinor,
+                    recurring: { interval: HOSTING_INTERVAL },
+                    product_data: {
+                      name: `${productName} — hosting`,
+                      description: "Noon hosting, billed yearly",
+                    },
+                  },
+                },
+              ],
+              subscription_data: {
+                metadata: checkoutMetadata,
+              },
+              metadata: checkoutMetadata,
+            },
+            {
+              idempotencyKey: `noon-checkout-host-emb:${proposal.id}:${unitAmount}:${hostingMinor}:${currency}`,
+            },
+          )
+        : await stripe.checkout.sessions.create(
           {
             mode: "payment",
             ui_mode: "embedded_page",
