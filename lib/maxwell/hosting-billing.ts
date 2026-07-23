@@ -46,6 +46,28 @@ export const HOSTING_YEARLY_USD = 300;
 export const HOSTING_INTERVAL = "year" as const;
 
 /**
+ * The FIRST hosting year is included in the build price (owner decision
+ * 2026-07-23): a $4,500 project pays $4,500 at checkout — not $4,800 — and the
+ * $300 starts on the anniversary. It sells better ("your project includes the
+ * first year of hosting") and removes friction exactly where the client is
+ * deciding to pay; the cost is $300 deferred, not lost.
+ *
+ * Implemented as a trial on the subscription: the recurring hosting line doesn't
+ * bill until the trial ends, while the one-time BUILD line still invoices
+ * immediately (Stripe cuts an invoice for one-time items at the start of a
+ * trial — the standard "setup fee + trial" shape).
+ *
+ * ⚠️ VERIFY IN STRIPE TEST MODE BEFORE FLIPPING `HOSTING_BILLING_ENABLED`:
+ * confirm the checkout charges the build TODAY and $0 of hosting. If the trial
+ * ever deferred the build too, a client would receive the project without paying
+ * for it — the one failure here that actually costs money.
+ */
+export const HOSTING_FIRST_YEAR_INCLUDED: boolean = true;
+
+/** Trial length when the first year is included. Stripe counts plain days. */
+export const HOSTING_TRIAL_DAYS = 365;
+
+/**
  * Kill switch for CHARGING hosting at checkout. OFF until the owner turns it on:
  * flipping it changes what a real client pays (their first hosting year is
  * billed together with the build), so it is a deliberate business action, not a

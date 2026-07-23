@@ -967,7 +967,7 @@ export default async function WorkspacePage({ params }: Props) {
                       ? membershipMeta
                         ? membershipMeta.description
                         : "Monthly membership is coordinated with your Noon PM."
-                      : `Paid once for the build. Hosting renews at ${formatProposalAmount(
+                      : `Paid once for the build — your first year of hosting is included. After that it renews at ${formatProposalAmount(
                           HOSTING_YEARLY_USD,
                           planCurrency,
                         )}/year to keep your site online; your domain is billed separately.`}

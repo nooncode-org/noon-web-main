@@ -172,6 +172,27 @@ describe("POST /api/maxwell/checkout — one-time + yearly hosting (flag ON)", (
     expect(params.line_items).toHaveLength(2);
   });
 
+  it("includes the first hosting year: a 365-day trial on the recurring line", async () => {
+    // Owner 2026-07-23: a $4,500 project pays $4,500 at checkout, NOT $4,800 —
+    // the $300 starts on the anniversary. The trial defers ONLY the recurring
+    // line; the one-time build still invoices today (Stripe's setup-fee shape).
+    await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "one_time" }));
+    const [params] = mocks.createCheckoutSession.mock.calls[0];
+
+    expect(params.subscription_data.trial_period_days).toBe(365);
+    // The build stays a ONE-TIME line — it must never become recurring, or the
+    // trial would defer it and the client would get the project unpaid.
+    const buildLine = (params.line_items as Line[]).find((li) => !li.price_data.recurring)!;
+    expect(buildLine.price_data.unit_amount).toBe(450000);
+    expect(buildLine.price_data.recurring).toBeUndefined();
+  });
+
+  it("never puts a trial on a membership — its first month is charged upfront", async () => {
+    await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "membership" }));
+    const [params] = mocks.createCheckoutSession.mock.calls[0];
+    expect(params.subscription_data.trial_period_days).toBeUndefined();
+  });
+
   it("marks the subscription as hosting so the webhook can tell it from a membership", async () => {
     await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "one_time" }));
     const [params] = mocks.createCheckoutSession.mock.calls[0];

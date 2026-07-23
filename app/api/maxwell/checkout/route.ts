@@ -12,7 +12,9 @@ import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import { isProposalPastCutoff } from "@/lib/maxwell/proposal-visibility";
 import { MEMBERSHIP_BILLING_ENABLED, MEMBERSHIP_INTERVAL } from "@/lib/maxwell/membership-billing";
 import {
+  HOSTING_FIRST_YEAR_INCLUDED,
   HOSTING_INTERVAL,
+  HOSTING_TRIAL_DAYS,
   HOSTING_YEARLY_USD,
   shouldBillHosting,
 } from "@/lib/maxwell/hosting-billing";
@@ -279,6 +281,12 @@ export async function POST(request: Request) {
               ],
               subscription_data: {
                 metadata: checkoutMetadata,
+                // First hosting year included in the build price (owner
+                // 2026-07-23): the recurring line doesn't bill until the trial
+                // ends, while the one-time BUILD line still invoices today.
+                ...(HOSTING_FIRST_YEAR_INCLUDED
+                  ? { trial_period_days: HOSTING_TRIAL_DAYS }
+                  : {}),
               },
               metadata: checkoutMetadata,
             },
