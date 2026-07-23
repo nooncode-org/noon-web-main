@@ -71,9 +71,9 @@ export function WorkspaceCodePanel() {
           repository, or download the whole codebase as a .zip — and host it wherever you
           like, whenever you like.
         </p>
-      </div>
-      <div className="border-t border-border bg-secondary/20 px-5 py-3">
-        <p className="text-[12px] leading-relaxed text-muted-foreground/70">
+        {/* Help rides the body as fine print — a separate footer strip under an
+            actions-in-header card read as a loose band (owner 2026-07-23). */}
+        <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground/70">
           Not sure what to do with it? Ask in the Chat — your Noon team will walk you through it.
         </p>
       </div>
