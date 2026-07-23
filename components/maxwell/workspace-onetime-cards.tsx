@@ -126,6 +126,15 @@ export function MembershipUpsellCard({
             membership puts a team back on your project — continuous development whenever
             you need it, cancel anytime.
           </p>
+          {/* A membership REPLACES the standalone hosting, it isn't added to it
+              (owner model — see [[one-time-vs-membership-model]]). Without this
+              line the client reads the monthly as a charge ON TOP of the hosting
+              they already pay, which makes the step look far more expensive than
+              it is. */}
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+            It <span className="font-medium text-foreground">includes your hosting</span> — you
+            stop paying that separately.
+          </p>
           {monthlyAmountUsd != null && (
             <p className="mt-2 text-[13px]">
               <span className="font-semibold text-foreground">
