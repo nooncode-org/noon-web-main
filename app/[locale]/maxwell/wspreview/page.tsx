@@ -13,7 +13,8 @@
  * | stress | unlocked | onetime.
  */
 import { notFound } from "next/navigation";
-import { Code2, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 import { getContactHref } from "@/lib/site-config";
 import {
   mapMembershipStatusToMeta,
@@ -566,76 +567,17 @@ function ActiveWorkspace({
               </div>
             </section>
 
-            {/* ── Your code (one-time only) — they paid for the build, so the
-                  source is THEIRS to keep (owner 2026-07-22, "muy importante que
-                  sí tenga su código"). Also the honest backstop to the offline
-                  policy: if they ever stop renewing hosting, they still walk away
-                  with everything. Front-only, logic later (download + repo). ── */}
+            {/* ── One-time cards (shared with the real page): Your code (they
+                  own the build) + the membership upsell (sells ongoing
+                  development; monthly ALONE — activation already paid). Both
+                  actions hand off to the Chat with the request typed. ── */}
+            {isOneTime && <YourCodeCard />}
             {isOneTime && (
-              <section className="overflow-hidden rounded-[6px] border border-border bg-card p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="max-w-md">
-                    <div className="flex items-center gap-2">
-                      <Code2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} aria-hidden />
-                      <p className="text-sm font-medium">Your code</p>
-                    </div>
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      You own your project&apos;s full source — download it any time, or take it
-                      to your own repository and host it wherever you like. It&apos;s yours to keep.
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1.5 rounded-[6px] border border-border px-3 py-1.5 text-[13px] font-medium transition-colors hover:bg-secondary/40"
-                    >
-                      View repository {"->"}
-                    </a>
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1.5 rounded-[6px] bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
-                    >
-                      Download code
-                    </a>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* ── Upsell to membership (one-time only) — decision #5 "where the
-                  upsell lives": placed right under the status, gentle not pushy.
-                  This is the one-time buyer's path to changes, in place of the
-                  change-request chat they don't have. ── */}
-            {isOneTime && (
-              <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="max-w-md">
-                    <p className="text-sm font-medium">Your project is delivered</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      Your build is a fixed scope. Need changes or new features down the line? A
-                      membership puts a team back on your project — continuous development whenever
-                      you need it, cancel anytime.
-                    </p>
-                    {/* Membership price = the MONTHLY ONLY. A one-time buyer already
-                        paid the activation (their build), so upgrading never charges
-                        it again — the amount here is the membership by itself (owner
-                        2026-07-22). Mock literal; the real port computes the monthly
-                        from the project and shows it without activation. */}
-                    <p className="mt-2 text-[13px]">
-                      <span className="font-semibold text-foreground">
-                        {formatProposalAmount(200, planCurrency)}/mo
-                      </span>
-                      <span className="text-muted-foreground"> · no setup fee — your build is already paid.</span>
-                    </p>
-                  </div>
-                  <a
-                    href="#"
-                    className="shrink-0 rounded-[6px] bg-[#0056fd] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
-                  >
-                    Explore membership {"->"}
-                  </a>
-                </div>
-              </section>
+              <MembershipUpsellCard
+                delivered={Boolean(appPublishedUrl)}
+                monthlyAmountUsd={200}
+                currency={planCurrency}
+              />
             )}
 
             {/* "While you wait" — agency during the v1 build; fresh state only

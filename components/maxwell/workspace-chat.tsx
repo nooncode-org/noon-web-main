@@ -430,6 +430,13 @@ export function WorkspaceChat({
   const [messages, setMessages] = useState<ChatMsg[]>(
     real ? real.messages : fresh ? FRESH_SEED : oneTime ? ONETIME_SEED : SEED,
   );
+  // The composer's "+" items, resolved once so the trigger can disappear when
+  // NONE apply (a one-time project before the App-mapping/storage are live
+  // would otherwise open an empty menu).
+  const showReviewSite = Boolean(siteUrl) && !oneTime;
+  const showAttach = real ? Boolean(real.attach) : true;
+  const showFormalize = real ? Boolean(real.formalize) : !oneTime;
+  const hasComposerExtras = showReviewSite || showAttach || showFormalize;
   const [isPending, startTransition] = useTransition();
   const [sendError, setSendError] = useState<string | null>(null);
   // Real mode: a pending clarification reply, linked to a tracked request.
@@ -897,6 +904,7 @@ export function WorkspaceChat({
           the arrow-up send (right). Buttons pin to the bottom (items-end) so they
           stay put as the input grows. Same buttons/surface as the studio chat. */}
       <div className="flex shrink-0 items-end gap-2 rounded-[12px] bg-[#f9f9f9] px-2 py-1.5 shadow-[0_-1px_0_0_#0000000f,-1px_0_0_0_#0000000f,1px_0_0_0_#0000000f] dark:bg-[#131313] dark:shadow-[0_-1px_0_0_#ffffff14,-1px_0_0_0_#ffffff14,1px_0_0_0_#ffffff14]">
+        {hasComposerExtras && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -913,7 +921,7 @@ export function WorkspaceChat({
                 it here, so Maxwell + the dev know precisely what's meant. Only when
                 there's a live site to review — and never for a one-time buyer,
                 whose chat is support-only (marking spots = requesting changes). */}
-            {siteUrl && !oneTime && (
+            {showReviewSite && (
               <DropdownMenuItem
                 onSelect={() => {
                   // Let Radix close the menu (no preventDefault — that kept it
@@ -929,7 +937,7 @@ export function WorkspaceChat({
             {/* Sharing a file rides the request-scoped attachment pipeline (it
                 becomes a "Material / file" request), so the picker only shows
                 when that path is actually available for this project. */}
-            {(!real || real.attach) && (
+            {showAttach && (
               <>
                 <DropdownMenuItem
                   onSelect={(e) => {
@@ -953,7 +961,7 @@ export function WorkspaceChat({
             )}
             {/* Track-as-request = the tracked change/bug pipeline — membership
                 machinery. The one-time chat is questions + handoffs only. */}
-            {(real ? real.formalize : !oneTime) && (
+            {showFormalize && (
               <DropdownMenuItem
                 onSelect={() => {
                   setReplyTo(null);
@@ -966,6 +974,7 @@ export function WorkspaceChat({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
         <textarea
           ref={composerRef}
           value={draft}

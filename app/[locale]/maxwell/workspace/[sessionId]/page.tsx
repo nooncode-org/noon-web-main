@@ -61,6 +61,7 @@ import { RequestChangeChip } from "@/components/maxwell/workspace-quick-access";
 import { VisitButton } from "@/components/maxwell/visit-button";
 import { AddDomainButtons } from "@/components/maxwell/workspace-add-domain";
 import { VersionRowMenu } from "@/components/maxwell/workspace-version-menu";
+import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 import { NoonMark } from "@/components/brand/noon-logo";
 import { ManageMembershipButton } from "./_components/manage-membership-button";
 import { submitCommentAction } from "./_actions/submit-comment";
@@ -468,7 +469,8 @@ export default async function WorkspacePage({ params }: Props) {
   // ── Notifications — derived from the same real signals that power the page
   // (read-state is per-visit until a persistent feed lands, #27). ────────────
   const notifications: WorkspaceNotification[] = [
-    ...(reviewVersion
+    // "Ready for your review" asks for a build decision — membership only.
+    ...(reviewVersion && isMembershipPlan
       ? [
           {
             id: `nv-${reviewVersion.sequence}`,
@@ -525,7 +527,9 @@ export default async function WorkspacePage({ params }: Props) {
           {
             id: "versions",
             label: "Versions",
-            ...(reviewVersion ? { pending: "action" as const } : {}),
+            // The amber "action" dot asks them to resolve a review — a
+            // membership decision; one-time versions are read-only.
+            ...(reviewVersion && isMembershipPlan ? { pending: "action" as const } : {}),
           },
         ]
       : []),
@@ -565,7 +569,7 @@ export default async function WorkspacePage({ params }: Props) {
             </h1>
             <div className="flex shrink-0 items-center gap-0.5">
               <WorkspaceNotifications items={notifications} />
-              <WorkspaceHelpMenu />
+              <WorkspaceHelpMenu isMembership={isMembershipPlan} />
             </div>
           </div>
         </header>
@@ -641,8 +645,9 @@ export default async function WorkspacePage({ params }: Props) {
                 notes arrive when the App emits them (#27) — until then the
                 banner falls back to its generic instruction line. */}
             {/* Sin membresía no se pide una decisión de trabajo: el banner
-                entero (verla, publicarla, pedir cambios) deja de aplicar. */}
-            {reviewVersion && !membershipEnded && (
+                entero (verla, publicarla, pedir cambios) deja de aplicar. El
+                one-time tampoco decide builds — no dirige el desarrollo. */}
+            {reviewVersion && isMembershipPlan && !membershipEnded && (
               <VersionReviewBanner
                 sequence={reviewVersion.sequence}
                 previewUrl={reviewVersion.previewUrl}
@@ -820,9 +825,24 @@ export default async function WorkspacePage({ params }: Props) {
                 <p className="text-[13px] text-muted-foreground">
                   {workspace.latestUpdateSummary ?? statusCfg.description}
                 </p>
-                {!membershipEnded && <RequestChangeChip />}
+                {/* "Request a change" is membership machinery — the one-time
+                    chat is questions/support only (owner 2026-07-22). */}
+                {isMembershipPlan && !membershipEnded && <RequestChangeChip />}
               </div>
             </section>
+
+            {/* ── One-time cards (shared with the wspreview playground): Your
+                  code (they paid for the build → the source is theirs; shown
+                  once code exists) + the membership upsell (their path to
+                  changes — monthly ALONE, activation already paid). ── */}
+            {!isMembershipPlan && latestVersion && <YourCodeCard />}
+            {!isMembershipPlan && (
+              <MembershipUpsellCard
+                delivered={Boolean(appPublishedUrl)}
+                monthlyAmountUsd={planProposal?.monthlyAmountUsd ?? null}
+                currency={planCurrency}
+              />
+            )}
 
             {/* "While you wait" — agency during the v1 build; fresh state only. */}
             {appVersions.length === 0 && !appPublishedUrl && <StarterChecklist />}
@@ -892,7 +912,7 @@ export default async function WorkspacePage({ params }: Props) {
                       ? membershipMeta
                         ? membershipMeta.description
                         : "Monthly membership is coordinated with your Noon PM."
-                      : "One payment — nothing recurring."}
+                      : "Paid once for the build. Your hosting and domain renew yearly to keep it online."}
                   </p>
                   {/* The most-asked billing question, answered before it's asked
                       (audit P1-8) — good standing only; past_due gets the banner. */}
@@ -925,6 +945,9 @@ export default async function WorkspacePage({ params }: Props) {
           <div data-panel="chat">
             <WorkspaceChat
               siteUrl={appPublishedUrl ?? previewHref ?? undefined}
+              // One-time: the chat is support/questions — Review site (mark a
+              // spot to change) stays membership-only (owner 2026-07-22).
+              oneTime={!isMembershipPlan}
               readOnly={
                 membershipEnded
                   ? {
@@ -935,8 +958,14 @@ export default async function WorkspacePage({ params }: Props) {
               real={{
                 messages: chatMessages,
                 send: sendChatMessage,
+                // Track-as-request = the change/bug pipeline → membership only.
+                // Replies stay for both plans: answering the team's questions on
+                // an existing request (e.g. a shared file) is support.
+                ...(workspace.noonAppProjectId && !membershipEnded && isMembershipPlan
+                  ? { formalize: formalizeChatRequest }
+                  : {}),
                 ...(workspace.noonAppProjectId && !membershipEnded
-                  ? { formalize: formalizeChatRequest, reply: replyToChatRequest }
+                  ? { reply: replyToChatRequest }
                   : {}),
                 // Uploads need the same App-mapping the requests need, plus the
                 // storage bucket + the B.5b kill-switch. The picker stays hidden
@@ -950,7 +979,9 @@ export default async function WorkspacePage({ params }: Props) {
                       },
                     }
                   : {}),
-                expectationLine: "Messages reach your Noon team — replies within 24h",
+                expectationLine: isMembershipPlan
+                  ? "Messages reach your Noon team — replies within 24h"
+                  : "Your Noon team helps with questions about your project — replies within 24h",
               }}
             />
           </div>
@@ -969,8 +1000,15 @@ export default async function WorkspacePage({ params }: Props) {
                     // client PUBLISHES a fresh preview forward directly, but only
                     // ASKS the team to reactivate an older published-before
                     // version (rollback = staff authority). Live gets neither.
-                    const canPublish = !membershipEnded && version.state === "ready_for_client_preview";
+                    // One-time buyer: versions are read-only (open the preview,
+                    // nothing else) — publishing + reactivating are build
+                    // decisions that belong to a membership.
+                    const canPublish =
+                      isMembershipPlan &&
+                      !membershipEnded &&
+                      version.state === "ready_for_client_preview";
                     const canRequestLive =
+                      isMembershipPlan &&
                       !membershipEnded &&
                       ROLLBACK_REQUEST_ENABLED &&
                       isPublishableVersionState(version.state) &&

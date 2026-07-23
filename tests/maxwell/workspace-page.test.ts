@@ -77,6 +77,8 @@ import { WorkspaceTabs } from "@/components/maxwell/workspace-tabs";
 import { VersionReviewBanner } from "@/components/maxwell/workspace-version-review-banner";
 import { VersionRowMenu } from "@/components/maxwell/workspace-version-menu";
 import { AddDomainButtons } from "@/components/maxwell/workspace-add-domain";
+import { RequestChangeChip } from "@/components/maxwell/workspace-quick-access";
+import { YourCodeCard, MembershipUpsellCard } from "@/components/maxwell/workspace-onetime-cards";
 
 const SESSION_ID = "sess-1";
 
@@ -531,19 +533,129 @@ describe("client portal — what demands the client's attention", () => {
     expect(text).not.toContain("Invalid Date");
   });
 
-  it("tells a one-time buyer nothing recurring is coming", async () => {
-    h.getProposalMock.mockResolvedValue({
-      id: "prop-1",
-      status: "paid",
-      publicToken: "tok-1",
-      paymentModality: "one_time",
-      approvedCurrency: "USD",
-      approvedAmountUsd: 4500,
-      monthlyAmountUsd: null,
-      stripeCustomerId: null,
-    });
+  it("tells a one-time buyer their hosting renews yearly (the model changed 2026-07-22)", async () => {
+    useOneTimeProposal();
     const text = textOf(await render());
     expect(text).toContain("One-time");
-    expect(text).toContain("nothing recurring");
+    // The old copy promised "nothing recurring" — false under the owner's
+    // model 2: the build is paid once, host + domain renew yearly.
+    expect(text).not.toContain("nothing recurring");
+    expect(text).toContain("hosting and domain renew yearly");
+  });
+});
+
+// ── One-time plan (owner model, 2026-07-22): the FULL portal, chat included —
+// but the chat is support/questions only, versions are read-only, and their
+// two cards (Your code + the membership upsell) appear. ─────────────────────
+function useOneTimeProposal() {
+  h.getProposalMock.mockResolvedValue({
+    id: "prop-1",
+    status: "paid",
+    publicToken: "tok-1",
+    paymentModality: "one_time",
+    approvedCurrency: "USD",
+    approvedAmountUsd: 4500,
+    monthlyAmountUsd: 200,
+    stripeCustomerId: null,
+  });
+}
+
+describe("client portal — one-time plan", () => {
+  it("keeps the chat but strips the change machinery from it", async () => {
+    useOneTimeProposal();
+    const tree = await render();
+    const chat = find(tree, WorkspaceChat);
+    const real = chat?.props.real as Record<string, unknown>;
+
+    // The chat exists (their support + handoff channel)…
+    expect(chat).toBeDefined();
+    expect(chat?.props.oneTime).toBe(true);
+    // …but Track-as-request (the change/bug pipeline) is membership-only,
+    // while replying to the team's questions stays (that's support).
+    expect(real.formalize).toBeUndefined();
+    expect(real.reply).toBeDefined();
+    expect(String(real.expectationLine)).toContain("questions about your project");
+  });
+
+  it("shows versions read-only: no publish, no make-it-live, no review ask", async () => {
+    useOneTimeProposal();
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "in_development" },
+        versions: [version(), version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: null,
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+
+    // v3 is ready_for_client_preview — for a membership that's a decision;
+    // for a one-time buyer it must ask NOTHING.
+    expect(find(tree, VersionReviewBanner)).toBeUndefined();
+    const menus = tree.filter((el) => el.type === VersionRowMenu);
+    expect(menus.length).toBeGreaterThan(0);
+    for (const menu of menus) {
+      expect(menu.props.canPublish).toBe(false);
+      expect(menu.props.canRequestLive).toBe(false);
+    }
+    // And the Versions tab carries no amber "resolve this" dot.
+    const tabs = find(tree, WorkspaceTabs)?.props.tabs as { id: string; pending?: string }[];
+    expect(tabs.find((t) => t.id === "versions")?.pending).toBeUndefined();
+    // No "Request a change" chip either — that channel is the membership.
+    // (Client components keep their copy inside — assert by element, not text.)
+    expect(find(tree, RequestChangeChip)).toBeUndefined();
+  });
+
+  it("gives them their code and the path to a membership, priced monthly-only", async () => {
+    useOneTimeProposal();
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: null,
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+
+    // They paid for the build → the source is theirs.
+    expect(find(tree, YourCodeCard)).toBeDefined();
+    // The upsell sells ongoing development, priced as the monthly ALONE —
+    // their activation (the build) is already paid, never re-charged. The
+    // card receives the bare monthly and states the delivered status.
+    const upsell = find(tree, MembershipUpsellCard);
+    expect(upsell?.props.monthlyAmountUsd).toBe(200);
+    expect(upsell?.props.delivered).toBe(true);
+  });
+
+  it("a membership client sees none of the one-time surfaces", async () => {
+    // Default fixture = membership. Same delivered/live scenario.
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version(), version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: { status: "active", currentPeriodEnd: "2026-08-15T12:00:00.000Z" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+
+    expect(find(tree, YourCodeCard)).toBeUndefined();
+    expect(find(tree, MembershipUpsellCard)).toBeUndefined();
+    // Their review decision + change channel stay intact.
+    expect(find(tree, VersionReviewBanner)).toBeDefined();
+    expect(find(tree, RequestChangeChip)).toBeDefined();
+    const chat = find(tree, WorkspaceChat);
+    expect(chat?.props.oneTime).toBe(false);
+    expect((chat?.props.real as Record<string, unknown>).formalize).toBeDefined();
   });
 });
