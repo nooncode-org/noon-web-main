@@ -120,6 +120,9 @@ const MOCK = {
   sessionId: "preview-session",
   projectName: "Ops dashboard for field teams",
   appPublishedUrl: "https://opsdash.nooncode.dev" as string | null,
+  // The studio prototype the client approved before paying — the preview shown
+  // until the first real version lands (?state=new exercises it).
+  prototypeUrl: "https://proto.preview.nooncode.dev" as string | null,
   adminUrl: "https://opsdash.nooncode.dev/admin" as string | null,
   invoiceUrl: "https://pay.nooncode.dev/receipt/INV-0042" as string | null,
   proposal: { title: "Ops dashboard", amount: 4500, currency: "USD" },
@@ -524,13 +527,77 @@ function ActiveWorkspace({
                     </div>
                   </div>
                 </div>
+              ) : data.prototypeUrl ? (
+                // Mirrors the real page (owner 2026-07-22): the client already
+                // approved a PROTOTYPE in the studio before paying, so it IS the
+                // preview until the MVP lands — no empty box, no invented
+                // "3–5 business days" promise (retired).
+                <div className="flex flex-col gap-6 p-5 md:flex-row md:items-start md:gap-10">
+                  <div className="w-full shrink-0 md:w-[440px]">
+                    <a
+                      href={data.prototypeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Open your approved prototype"
+                      className="group block"
+                    >
+                      <div className="flex aspect-[16/10] flex-col overflow-hidden rounded-[6px] border border-border bg-secondary/20 transition-colors group-hover:border-foreground/25">
+                        <div className="flex shrink-0 items-center gap-1.5 border-b border-border px-3 py-2">
+                          <span className="h-2 w-2 rounded-full bg-foreground/15" />
+                          <span className="h-2 w-2 rounded-full bg-foreground/15" />
+                          <span className="h-2 w-2 rounded-full bg-foreground/15" />
+                          <span className="ml-2 h-3 flex-1 rounded bg-foreground/[0.06]" />
+                        </div>
+                        <div className="flex min-h-0 flex-1">
+                          <div className="w-12 shrink-0 space-y-2 border-r border-border p-2.5">
+                            <span className="block h-2 rounded bg-foreground/15" />
+                            <span className="block h-2 w-2/3 rounded bg-foreground/[0.08]" />
+                            <span className="block h-2 w-2/3 rounded bg-foreground/[0.08]" />
+                            <span className="block h-2 w-1/2 rounded bg-foreground/[0.08]" />
+                          </div>
+                          <div className="flex-1 space-y-3 p-3.5">
+                            <div className="h-3 w-1/3 rounded bg-foreground/20" />
+                            <div className="grid grid-cols-3 gap-2.5">
+                              <div className="h-12 rounded-md border border-border bg-foreground/[0.04]" />
+                              <div className="h-12 rounded-md border border-border bg-foreground/[0.04]" />
+                              <div className="h-12 rounded-md border border-border bg-foreground/[0.04]" />
+                            </div>
+                            <div className="h-20 rounded-md border border-border bg-gradient-to-br from-[#0056fd]/15 to-transparent" />
+                            <div className="h-2 w-4/5 rounded bg-foreground/[0.08]" />
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                  <div className="grid content-start gap-5">
+                    <div>
+                      <p className="text-[13px] text-muted-foreground">Prototype</p>
+                      <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
+                        <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                        Approved by you
+                      </div>
+                      <a
+                        href={data.prototypeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1.5 inline-flex items-center gap-1 text-[12px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                      >
+                        Open prototype {"->"}
+                      </a>
+                    </div>
+                    <div>
+                      <p className="text-[13px] text-muted-foreground">What&apos;s next</p>
+                      <p className="mt-1 max-w-sm text-sm leading-relaxed text-foreground">
+                        Your Noon team is turning it into your MVP — the first real version lands
+                        right here, and you&apos;ll get an email.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col items-center gap-3 px-5 py-8 text-center">
-                  {/* No preview yet — reuse the browser-wireframe motif at low
-                      emphasis (dashed = placeholder), NOT a spinner: v1 takes
-                      days, so a spinner would wrongly imply this page resolves it.
-                      Compact paddings (audit "sobra" #4): the previous py-14 +
-                      280px art left a hole where reassurance should be. */}
+                  {/* Fallback (no prototype on file — rare): the dashed
+                      placeholder, NOT a spinner. No invented deadline. */}
                   <div className="flex aspect-[16/10] w-full max-w-[220px] flex-col overflow-hidden rounded-[6px] border border-dashed border-border bg-secondary/10 opacity-70">
                     <div className="flex shrink-0 items-center gap-1.5 border-b border-border px-3 py-2">
                       <span className="h-2 w-2 rounded-full bg-foreground/10" />
@@ -546,11 +613,6 @@ function ActiveWorkspace({
                     <p className="mx-auto mt-1 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
                       Your Noon team is building version 1 — it&apos;ll appear here the moment
                       it&apos;s ready, and you&apos;ll get an email.
-                    </p>
-                    {/* The "when" — explicit expectations kill refresh anxiety
-                        (audit P0-1). TODO(logic later): real per-project ETA. */}
-                    <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-3 py-1 text-[12px] font-medium text-muted-foreground">
-                      First preview: usually 3–5 business days
                     </p>
                   </div>
                 </div>

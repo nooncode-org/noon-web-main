@@ -346,6 +346,29 @@ describe("client portal — the chat's real capabilities", () => {
   });
 });
 
+describe("client portal — the preview is never an empty box", () => {
+  it("shows the approved prototype as the preview until the first version lands", async () => {
+    // The client approved this in the studio BEFORE paying (owner 2026-07-22):
+    // it IS the preview while the MVP is built from it.
+    h.getStudioVersionMock.mockResolvedValue({ previewUrl: "https://proto.example" });
+    const text = textOf(await render());
+
+    expect(text).toContain("https://proto.example");
+    expect(text).toContain("Approved by you");
+    // The waiting placeholder — and the invented deadline — are gone.
+    expect(text).not.toContain("first preview is on the way");
+    expect(text).not.toContain("3–5 business days");
+  });
+
+  it("never promises an invented deadline, even without a prototype on file", async () => {
+    // Default fixture: no studio version. The rare fallback keeps the calm
+    // placeholder but commits to no made-up date.
+    const text = textOf(await render());
+    expect(text).toContain("first preview is on the way");
+    expect(text).not.toContain("business days");
+  });
+});
+
 describe("client portal — what demands the client's attention", () => {
   it("surfaces the review decision when a build is waiting on them", async () => {
     h.fetchStatusMock.mockResolvedValue({
