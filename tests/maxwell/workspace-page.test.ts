@@ -667,6 +667,78 @@ describe("client portal — one-time plan", () => {
     expect(upsell?.props.delivered).toBe(true);
   });
 
+  it("goes offline + read-only when their HOSTING lapses, exactly like a membership", async () => {
+    // "Una sola regla para ambos planes" (owner 2026-07-22): a one-time buyer
+    // who stops renewing hosting gets the same treatment as a membership that
+    // ended. Both arrive on the same wire, so the portal must not gate this on
+    // the plan — it used to, which would have left one-time clients with a dead
+    // site and no notice.
+    useOneTimeProposal();
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: { status: "ended" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const tree = await render();
+    const text = textOf(tree);
+
+    // Named as HOSTING — they never had a membership.
+    expect(text).toContain("hosting has ended");
+    expect(text).not.toContain("membership has ended");
+    expect(text).toContain("site is offline");
+    // And the portal is read-only, same as the membership case.
+    const chat = find(tree, WorkspaceChat);
+    expect(chat?.props.readOnly).toBeDefined();
+    expect(String((chat?.props.readOnly as { note: string }).note)).toContain("hosting");
+  });
+
+  it("warns a one-time buyer before their hosting lapses, naming the date", async () => {
+    useOneTimeProposal();
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        // Scheduled to end, still paid through the period.
+        membership: { status: "cancelled", currentPeriodEnd: "2027-02-15T12:00:00.000Z" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const text = textOf(await render());
+
+    expect(text).toContain("hosting ends on");
+    expect(text).toContain("Feb 15, 2027");
+    // Still paid through: nothing is taken away yet.
+    expect(text).toContain("stays online until then");
+  });
+
+  it("shows a one-time buyer when their hosting renews, not a 'next payment'", async () => {
+    useOneTimeProposal();
+    h.fetchStatusMock.mockResolvedValue({
+      status: "ok",
+      data: {
+        project: { status: "delivered" },
+        versions: [version({ sequence: 2, state: "published", published: true })],
+        publishedUrl: "https://opsdash.nooncode.dev",
+        membership: { status: "active", currentPeriodEnd: "2027-07-23T12:00:00.000Z" },
+        proposal: null,
+        latestUpdate: null,
+      },
+    });
+    const text = textOf(await render());
+    expect(text).toContain("Hosting renews:");
+    expect(text).toContain("Jul 23, 2027");
+    expect(text).not.toContain("Next payment:");
+  });
+
   it("a membership client sees none of the one-time surfaces", async () => {
     // Default fixture = membership. Same delivered/live scenario.
     h.fetchStatusMock.mockResolvedValue({

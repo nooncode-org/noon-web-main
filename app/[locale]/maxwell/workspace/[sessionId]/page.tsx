@@ -329,32 +329,48 @@ export default async function WorkspacePage({ params }: Props) {
   const isMembershipPlan = planProposal?.paymentModality === "membership";
   const showPlanCard = Boolean(planProposal?.paymentModality);
   const planCurrency = planProposal?.approvedCurrency ?? "USD";
-  const isPastDue = isMembershipPlan && appMembership?.status === "past_due";
   /**
-   * Membership over → the portal turns READ-ONLY (owner decision 2026-07-22).
+   * The recurring relationship that keeps the site online. For a MEMBERSHIP
+   * that's the monthly; for a ONE-TIME buyer it's their yearly hosting (see
+   * lib/maxwell/hosting-billing.ts) — both arrive on the SAME wire, because the
+   * hosting subscription is the membership's Option A shape with a `year`
+   * interval. Owner 2026-07-22: "una sola regla para ambos planes", so these
+   * states are deliberately NOT gated on the plan — whoever has a subscription
+   * gets the same treatment, only the wording differs.
+   *
+   * A one-time client with no hosting subscription simply has no `appMembership`,
+   * so every flag below stays false and nothing changes for them.
+   */
+  const isPastDue = appMembership?.status === "past_due";
+  /**
+   * Plan over → the portal turns READ-ONLY (owner decision 2026-07-22).
    *
    * Only on `ended`. A failed payment (`past_due`) keeps working — Stripe is
    * still retrying — and `cancelled` means "set to end", where the client has
    * paid through the current period and keeps everything until it closes. So the
-   * cut happens exactly once, when the membership is actually over.
+   * cut happens exactly once, when the plan is actually over.
    *
    * Nothing is hidden or deleted: the project, the whole conversation, versions
    * and invoices stay readable. What goes away is the ability to ask for NEW
-   * work, which is what the membership paid for. Reactivating is the one action
-   * left in front of them.
+   * work. Reactivating is the one action left in front of them.
    */
-  const membershipEnded = isMembershipPlan && appMembership?.status === "ended";
+  const membershipEnded = appMembership?.status === "ended";
   /**
    * Cancelled but still inside the paid period: the client keeps EVERYTHING
-   * (hosting included) until it closes — they paid for that month. What they
+   * (hosting included) until it closes — they paid for that period. What they
    * lack is a heads-up, so this window gets a standing notice with the exact
    * date and a way back, instead of only a quiet chip on the Plan card.
    */
-  const membershipEnding = isMembershipPlan && appMembership?.status === "cancelled";
+  const membershipEnding = appMembership?.status === "cancelled";
   const membershipEndsOn = appMembership?.currentPeriodEnd ?? null;
+  /** What to call the lapsing thing in front of the client. */
+  const planNoun = isMembershipPlan ? "membership" : "hosting";
   const billingSlot =
     MEMBERSHIP_BILLING_ENABLED && planProposal?.stripeCustomerId ? (
-      <ManageMembershipButton sessionId={sessionId} />
+      <ManageMembershipButton
+        sessionId={sessionId}
+        label={isMembershipPlan ? "Manage membership" : "Manage hosting"}
+      />
     ) : undefined;
 
   const host = appPublishedUrl?.replace(/^https?:\/\//, "") ?? null;
@@ -591,8 +607,8 @@ export default async function WorkspacePage({ params }: Props) {
             <p className="text-sm text-amber-800 dark:text-amber-200">
               <span className="font-medium">
                 {membershipEndsOn
-                  ? `Your membership ends on ${formatDate(membershipEndsOn)}.`
-                  : "Your membership is set to end."}
+                  ? `Your ${planNoun} ends on ${formatDate(membershipEndsOn)}.`
+                  : `Your ${planNoun} is set to end.`}
               </span>{" "}
               Your site stays online until then — after that it goes offline until you renew.
             </p>
@@ -613,7 +629,7 @@ export default async function WorkspacePage({ params }: Props) {
         {membershipEnded && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary/40 px-6 py-3 lg:px-14">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Your membership has ended.</span>{" "}
+              <span className="font-medium text-foreground">{`Your ${planNoun} has ended.`}</span>{" "}
               Your site is offline, but nothing was deleted — your project, conversation and
               files stay saved for 12 months. Reactivate and it comes back exactly as it was.
             </p>
@@ -984,16 +1000,19 @@ export default async function WorkspacePage({ params }: Props) {
                   </p>
                   {/* The most-asked billing question, answered before it's asked
                       (audit P1-8) — good standing only; past_due gets the banner. */}
-                  {isMembershipPlan &&
-                    appMembership?.status === "active" &&
-                    appMembership.currentPeriodEnd && (
-                      <p className="mt-2 text-[12px] text-muted-foreground/80">
-                        Next payment:{" "}
-                        <span className="text-foreground">
-                          {formatDate(appMembership.currentPeriodEnd)}
-                        </span>
-                      </p>
-                    )}
+                  {/* The most-asked billing question, answered before it's asked
+                      — for BOTH plans: a membership's next monthly, or a
+                      one-time buyer's next hosting renewal (which is the same
+                      field, since hosting rides the same subscription wire).
+                      Good standing only; past_due gets the banner instead. */}
+                  {appMembership?.status === "active" && appMembership.currentPeriodEnd && (
+                    <p className="mt-2 text-[12px] text-muted-foreground/80">
+                      {isMembershipPlan ? "Next payment: " : "Hosting renews: "}
+                      <span className="text-foreground">
+                        {formatDate(appMembership.currentPeriodEnd)}
+                      </span>
+                    </p>
+                  )}
                   {billingSlot && (
                     <div className="mt-4">
                       {billingSlot}
@@ -1019,7 +1038,7 @@ export default async function WorkspacePage({ params }: Props) {
               readOnly={
                 membershipEnded
                   ? {
-                      note: "This conversation is read-only while your membership is inactive. Reactivate to start it again.",
+                      note: `This conversation is read-only while your ${planNoun} is inactive. Reactivate to start it again.`,
                     }
                   : undefined
               }
