@@ -9,6 +9,11 @@ import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
 import { getContactHref, siteRoutes } from "@/lib/site-config";
 import { MEMBERSHIP_BILLING_ENABLED } from "@/lib/maxwell/membership-billing";
+import {
+  HOSTING_BILLING_ENABLED,
+  HOSTING_MONTHLY_USD,
+  HOSTING_YEARLY_USD,
+} from "@/lib/maxwell/hosting-billing";
 import { AutoRefresh } from "@/components/maxwell/auto-refresh";
 import { useEscalated } from "@/components/maxwell/workspace-preparing-body";
 
@@ -390,10 +395,18 @@ export function PublicProposalPayment({
 
   const hasMembership = membershipApplicable && monthlyAmountUsd != null;
 
+  // The one-time card must describe what the checkout will actually do, which
+  // depends on the hosting flag: OFF → a single payment and truly nothing
+  // recurring; ON → the build today + a hosting subscription whose first year
+  // is included (Stripe shows the same terms on its form). "Nothing recurring"
+  // with the flag on would be a false promise at the exact click where the
+  // client decides to pay.
   const oneTimePlan: PlanInfo = {
     key: "one_time",
     name: "One-time",
-    tagline: "One payment, nothing recurring",
+    tagline: HOSTING_BILLING_ENABLED
+      ? "Pay once — first year of hosting included"
+      : "One payment, nothing recurring",
     priceMain: formatMoney(payableAmount, currency),
     priceSub: "once",
     recommended: false,
@@ -403,6 +416,11 @@ export function PublicProposalPayment({
       "Full delivery of the approved scope",
       "A single secure payment via Stripe",
       "We start the moment it clears",
+      ...(HOSTING_BILLING_ENABLED
+        ? [
+            `First year of hosting included — then ${formatMoney(HOSTING_YEARLY_USD, currency)}/yr or ${formatMoney(HOSTING_MONTHLY_USD, currency)}/mo`,
+          ]
+        : []),
     ],
   };
   const membershipPlan: PlanInfo =
@@ -420,7 +438,11 @@ export function PublicProposalPayment({
             "Everything in one-time, plus:",
             "Ongoing improvements after your project ships",
             "A monthly retainer for changes and new work",
-            "Set with your Noon PM — never charged automatically",
+            // M0-era copy said "never charged automatically" — with M1 live the
+            // monthly IS a real Stripe subscription. Say the truth per flag.
+            MEMBERSHIP_BILLING_ENABLED
+              ? "Billed monthly via Stripe — cancel anytime"
+              : "Set with your Noon PM — never charged automatically",
           ],
         }
       : {
@@ -583,7 +605,9 @@ export function PublicProposalPayment({
                 <p className="mt-5 text-[11px] leading-relaxed text-muted-foreground/70">
                   {isMembership && monthlyLabel
                     ? `The ${monthlyLabel}/mo membership is arranged with your Noon PM. Your project starts once payment is confirmed.`
-                    : "One payment, nothing recurring. Your project starts once payment is confirmed."}
+                    : HOSTING_BILLING_ENABLED
+                      ? `You pay the build today — your first year of hosting is included, then it renews at ${formatMoney(HOSTING_YEARLY_USD, currency)}/year (or ${formatMoney(HOSTING_MONTHLY_USD, currency)}/month). You confirm it on the secure Stripe form. Your project starts once payment is confirmed.`
+                      : "One payment, nothing recurring. Your project starts once payment is confirmed."}
                 </p>
               )}
 
