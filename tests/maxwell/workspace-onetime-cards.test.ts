@@ -76,6 +76,6 @@ describe("WorkspaceCodePanel", () => {
     const text = textOf(WorkspaceCodePanel());
     expect(text).toContain("Repository");
     expect(text).toContain("Download");
-    expect(text).toContain("yours to keep");
+    expect(text).toContain("the source is yours");
   });
 });
