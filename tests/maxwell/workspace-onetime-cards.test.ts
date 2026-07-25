@@ -51,9 +51,10 @@ describe("MembershipUpsellCard", () => {
     // Owner model 2026-07-23: taking a membership cancels the standalone
     // hosting. Without saying so, the client reads the monthly as a charge ON
     // TOP of what they already pay, and the step looks far pricier than it is.
+    // Compressed to the single-line card (2026-07-25): "includes your hosting"
+    // now carries that non-stacking point on its own.
     const text = render();
     expect(text).toContain("includes your hosting");
-    expect(text).toContain("stop paying that separately");
   });
 
   it("shows the monthly it was given, and nothing when there is none", () => {

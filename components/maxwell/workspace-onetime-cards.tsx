@@ -91,55 +91,36 @@ export function MembershipUpsellCard({
 }) {
   return (
     <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
-      {/* Two zones, not a stack: the pitch is one block on the left, the offer
-          (price + CTA) is its own panel on the right. The price gets real
-          prominence and the right side is filled with something meaningful —
-          fixing both the earlier empty gap and the full-width wall of text that
-          replaced it (owner 2026-07-25 "feo organizado"). */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-stretch sm:gap-6">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">
-            {delivered ? "Your project is delivered" : "Your project is being built"}
-          </p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
-            Your build is a fixed scope. Need changes or new features down the line? A
-            membership puts a team back on your project — continuous development whenever you
-            need it, cancel anytime.
-          </p>
-          {/* A membership REPLACES the standalone hosting, it isn't added to it
-              (owner model — see [[one-time-vs-membership-model]]). Without this
-              line the client reads the monthly as a charge ON TOP of the hosting
-              they already pay, which makes the step look far pricier than it is. */}
-          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            It <span className="font-medium text-foreground">includes your hosting</span> — you
-            stop paying that separately.
-          </p>
-        </div>
-        {/* The offer panel: the price anchors it, the CTA lives with the price. */}
-        <div className="flex shrink-0 flex-col justify-center gap-3 rounded-[6px] border border-border bg-background/60 p-4 sm:w-60">
+      {/* One line + the button (owner 2026-07-25): copy compressed to a single
+          sentence so it sits on one row beside the CTA. "includes your hosting"
+          carries the non-stacking point on its own now (the membership price
+          covers hosting, so it isn't a charge ON TOP — owner model, see
+          [[one-time-vs-membership-model]]); the fuller reassurance lives behind
+          the button. Two bolded anchors keep the line from being a gray smear. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <p className="text-[13px] leading-relaxed text-muted-foreground">
+          {delivered ? "Your project's delivered." : "Your project's being built."} Need changes
+          later? A membership adds a team and{" "}
+          <span className="font-medium text-foreground">includes your hosting</span>
           {monthlyAmountUsd != null && (
-            <div>
-              <p className="text-xl font-semibold text-foreground">
-                {formatProposalAmount(monthlyAmountUsd, currency)}
-                <span className="text-[13px] font-normal text-muted-foreground">/mo</span>
-              </p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">
-                No setup fee — your build is already paid.
-              </p>
-            </div>
+            <>
+              {" — "}
+              <span className="font-medium text-foreground">
+                {formatProposalAmount(monthlyAmountUsd, currency)}/mo
+              </span>
+            </>
           )}
-          <button
-            type="button"
-            onClick={() =>
-              goToWorkspaceChat(
-                "Hi — I'd like to add a membership to my project. How does it work?",
-              )
-            }
-            className="w-full rounded-[6px] bg-[#0056fd] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
-          >
-            Explore membership {"->"}
-          </button>
-        </div>
+          .
+        </p>
+        <button
+          type="button"
+          onClick={() =>
+            goToWorkspaceChat("Hi — I'd like to add a membership to my project. How does it work?")
+          }
+          className="shrink-0 self-start rounded-[6px] bg-[#0056fd] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0] sm:self-auto"
+        >
+          Explore membership {"->"}
+        </button>
       </div>
     </section>
   );
