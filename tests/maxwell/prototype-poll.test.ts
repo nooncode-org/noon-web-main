@@ -707,3 +707,171 @@ describe("prototype/poll — acción desconocida", () => {
   });
 });
 
+
+// ============================================================================
+// Etapa real (lib/maxwell/prototype-stage)
+//
+// El route distingue varias esperas genuinamente distintas y antes las
+// colapsaba TODAS en un `{ status: "pending" }` pelado. El cliente, sin nada
+// que renderizar, adivinaba por reloj. Esto fija que cada espera se identifique
+// a sí misma — la propiedad que hace que la traza del chat sea honesta.
+// ============================================================================
+
+describe("prototype/poll — etapa real en cada respuesta", () => {
+  const demoUrl = "https://preview.v0.dev/abc?token=xyz";
+
+  it("v0 pendiente → stage 'generating' + los archivos que ya lleva escritos", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "pending",
+      files: [
+        { name: "app/page.tsx", content: "x" },
+        { name: "components/hero.tsx", content: "x" },
+      ],
+    });
+    const res = await GET(buildUrl({ chatId: "c", session_id: "session-1", action: "create" }));
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.stage).toBe("generating");
+    // Recuento real, no inventado: v0 puede traer archivos parciales ya en pending.
+    expect(body.file_count).toBe(2);
+    expect(body.file_names).toEqual(["app/page.tsx", "components/hero.tsx"]);
+  });
+
+  it("firma inestable (sin token) → stage 'assembling'", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+    });
+    const res = await GET(buildUrl({ chatId: "c", session_id: "session-1", action: "create" }));
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(body.stage).toBe("assembling");
+  });
+
+  it("imports locales sin resolver → stage 'assembling' (v0 dijo listo pero faltan archivos)", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+      files: [{ name: "app/page.tsx", content: 'import Hero from "@/components/hero";' }],
+    });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: completionToken("v-1", demoUrl),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(body.stage).toBe("assembling");
+    expect(repos.createStudioVersion).not.toHaveBeenCalled();
+  });
+
+  it("preview aún fría → stage 'publishing' (el código ya está, falta el deploy)", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+    });
+    stubPreviewFetch({ ok: false, status: 404 });
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: completionToken("v-1", demoUrl),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.stage).toBe("publishing");
+  });
+
+  it("update que todavía sirve la URL vieja → stage 'publishing'", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+    });
+    stubPreviewFetch();
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "update",
+        confirmation_token: completionToken("v-1", demoUrl),
+        previous_demo_url: demoUrl,
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("pending");
+    expect(body.stage).toBe("publishing");
+  });
+
+  it("commit exitoso → stage 'ready'", async () => {
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+      files: [{ name: "app/page.tsx", content: "export default () => null;" }],
+    });
+    stubPreviewFetch();
+    vi.mocked(repos.getLatestStudioVersion).mockResolvedValue(null);
+    vi.mocked(repos.createStudioVersion).mockResolvedValue(fakeVersion({ versionNumber: 1 }));
+    const res = await GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: completionToken("v-1", demoUrl),
+      }),
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("completed");
+    expect(body.stage).toBe("ready");
+    expect(body.file_count).toBe(1);
+  });
+
+  it("NINGUNA respuesta 'pending' sale sin etapa", async () => {
+    // El guard de regresión: si alguien añade un `return { status: "pending" }`
+    // pelado, el cliente vuelve a quedarse a ciegas y a adivinar por reloj.
+    const cases: (() => Promise<Response>)[] = [
+      () => {
+        vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({ status: "pending" });
+        return GET(buildUrl({ chatId: "c", session_id: "session-1", action: "create" }));
+      },
+      () => {
+        vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+          status: "completed",
+          versionId: "v-1",
+          demoUrl,
+        });
+        return GET(buildUrl({ chatId: "c", session_id: "session-1", action: "create" }));
+      },
+      () => {
+        vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+          status: "completed",
+          versionId: "v-1",
+          demoUrl,
+        });
+        stubPreviewFetch({ ok: false, status: 404 });
+        return GET(
+          buildUrl({
+            chatId: "c",
+            session_id: "session-1",
+            action: "create",
+            confirmation_token: completionToken("v-1", demoUrl),
+          }),
+        );
+      },
+    ];
+
+    for (const run of cases) {
+      const body = (await (await run()).json()) as Record<string, unknown>;
+      if (body.status === "pending") {
+        expect(body.stage).toBeTruthy();
+      }
+    }
+  });
+});

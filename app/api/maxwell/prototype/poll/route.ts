@@ -18,9 +18,37 @@ import {
 import { log } from "@/lib/server/logger";
 import { serializeV0Source } from "@/lib/maxwell/serialize-v0-source";
 import { findMissingLocalImports } from "@/lib/maxwell/prototype-source-integrity";
+import type { PrototypeStage } from "@/lib/maxwell/prototype-stage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/**
+ * Every `pending` answer carries WHICH wait it is (`lib/maxwell/prototype-stage`)
+ * plus what v0 has emitted so far. This route distinguishes several genuinely
+ * different situations and used to collapse all of them into a bare
+ * `{ status: "pending" }`; the client, left with nothing to render, guessed from
+ * the clock. The information was always here — it just never crossed the wire.
+ *
+ * File names are sent (never contents — those are large and the client has no
+ * use for them here) so the trace can show real work landing instead of a
+ * spinner: they are the client's own generated prototype.
+ */
+const MAX_REPORTED_FILE_NAMES = 8;
+
+function pendingPayload(
+  stage: PrototypeStage,
+  files: { name: string }[] | undefined,
+  completionToken?: string,
+) {
+  return {
+    status: "pending" as const,
+    stage,
+    file_count: files?.length ?? 0,
+    file_names: (files ?? []).slice(0, MAX_REPORTED_FILE_NAMES).map((f) => f.name),
+    ...(completionToken ? { completion_token: completionToken } : {}),
+  };
+}
 
 /**
  * Revert an in-flight session out of its generating/revision state when the
@@ -138,7 +166,9 @@ export async function GET(request: Request) {
     }
 
     if (statusResult.status === "pending") {
-      return NextResponse.json({ status: "pending" });
+      // v0 is still writing code. Partial files can already be present here —
+      // that is the real "N files so far" the trace counts up.
+      return NextResponse.json(pendingPayload("generating", statusResult.files));
     }
 
     if (statusResult.status === "failed") {
@@ -167,7 +197,11 @@ export async function GET(request: Request) {
       // committing a cold URL. See lib/maxwell/prototype-poll-policy.ts.
       const stabilized = confirmationToken === completionSignature;
       if (!stabilized && !shouldRescueUnstableCompletion(attempt)) {
-        return NextResponse.json({ status: "pending", completion_token: completionSignature });
+        // "Completed" but the signature keeps moving — same user-facing truth as
+        // unresolved imports below: it says done, it isn't settled yet.
+        return NextResponse.json(
+          pendingPayload("assembling", statusResult.files, completionSignature),
+        );
       }
 
       // Content gate (W2, 2026-07-14 E2E): v0 can report completed while the
@@ -186,14 +220,19 @@ export async function GET(request: Request) {
           attempt,
           missing_imports: missingImports.slice(0, 10),
         });
-        return NextResponse.json({ status: "pending", completion_token: completionSignature });
+        return NextResponse.json(
+          pendingPayload("assembling", statusResult.files, completionSignature),
+        );
       }
 
       // Even when v0 reports completed, the preview endpoint can still be warming up.
       // Keep polling until the URL serves a real HTML response.
       const previewReady = await isPreviewUrlReady(statusResult.demoUrl);
       if (!previewReady) {
-        return NextResponse.json({ status: "pending", completion_token: completionSignature });
+        // Code is settled; the deployment is warming up.
+        return NextResponse.json(
+          pendingPayload("publishing", statusResult.files, completionSignature),
+        );
       }
 
       // v0 may briefly report "completed" while still serving the previous preview URL.
@@ -205,13 +244,14 @@ export async function GET(request: Request) {
           (previousVersionId && statusResult.versionId && statusResult.versionId === previousVersionId)
         )
       ) {
-        return NextResponse.json({ status: "pending" });
+        // The updated preview has not replaced the old one yet — still publishing.
+        return NextResponse.json(pendingPayload("publishing", statusResult.files));
       }
 
       // Additional guard to avoid storing duplicate versions when URL has not changed.
       const latestVersion = await getLatestStudioVersion(session.id);
       if (latestVersion && latestVersion.previewUrl.split("?")[0] === baseDemoUrl) {
-        return NextResponse.json({ status: "pending" });
+        return NextResponse.json(pendingPayload("publishing", statusResult.files));
       }
 
       // Generation successful. Commit to Database. Persist the V0 source code
@@ -240,6 +280,8 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
           status: "completed",
+          stage: "ready" satisfies PrototypeStage,
+          file_count: statusResult.files?.length ?? 0,
           chatId: chatId,
           demoUrl: statusResult.demoUrl,
           version_id: statusResult.versionId ?? null,
@@ -264,6 +306,8 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
           status: "completed",
+          stage: "ready" satisfies PrototypeStage,
+          file_count: statusResult.files?.length ?? 0,
           chatId: chatId,
           demoUrl: statusResult.demoUrl,
           version_id: statusResult.versionId ?? null,

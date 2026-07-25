@@ -11,6 +11,7 @@ import { getContactHref } from "@/lib/site-config";
 import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
 import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
+import { isPrototypeStage, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
 import { useResizableChatPane } from "@/hooks/use-resizable-chat-pane";
@@ -77,6 +78,17 @@ type PrototypePollResult = {
   version_number?: number;
   corrections_used?: number;
   max_corrections?: number;
+};
+
+/**
+ * What the chat's activity trace renders: the real stage of the run in flight
+ * plus the files v0 has emitted so far. Every field comes from the poll
+ * endpoint — nothing here is inferred from the clock.
+ */
+export type PrototypeTrace = {
+  stage: PrototypeStage;
+  fileCount: number;
+  fileNames: string[];
 };
 
 export type ActiveView = "chat" | "preview";
@@ -226,6 +238,15 @@ export function StudioShell({
    * limpia en handlePollSuccess / handlePollError.
    */
   const [pollingStartedAt, setPollingStartedAt] = useState<number | null>(null);
+  /**
+   * The REAL stage of the run in flight, as reported by the poll endpoint on
+   * every response (`lib/maxwell/prototype-stage`), plus what v0 has emitted so
+   * far. Drives the chat's activity trace. Lives and dies with `pollingStartedAt`
+   * — it is per-run and deliberately NOT persisted: it would not survive a
+   * reload, and a checkpoint that shows file counts only when you happen to have
+   * watched it live is worse than one that never does.
+   */
+  const [prototypeTrace, setPrototypeTrace] = useState<PrototypeTrace | null>(null);
   const [projectName, setProjectName] = useState("");
   const [sessionSummaries, setSessionSummaries] = useState<SessionSummary[]>([]);
   const [quotaSnapshot, setQuotaSnapshot] = useState<PrototypeQuotaSnapshot | null>(null);
@@ -440,6 +461,7 @@ export function StudioShell({
       setPrototypeFailed(rehydratedView.prototypeFailed);
       setPrototypeFailedReason("error");
       setPollingStartedAt(null);
+      setPrototypeTrace(null);
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
@@ -911,6 +933,7 @@ export function StudioShell({
   function handlePollSuccess(data: PrototypePollResult, action: string) {
     // B28 — Limpia el counter de polling (terminó OK).
     setPollingStartedAt(null);
+    setPrototypeTrace(null);
     if (action === "create") {
       const newVersion: PrototypeVersion = {
         chatId: data.chatId,
@@ -976,6 +999,7 @@ export function StudioShell({
   function handlePollError(action: string) {
     // B28 — Limpia el counter de polling (terminó por error).
     setPollingStartedAt(null);
+    setPrototypeTrace(null);
     if (action === "create") {
       setPhase("clarifying");
       setPrototypeFailed(true);
@@ -1063,6 +1087,20 @@ export function StudioShell({
         return void retryPollLater();
       }
       const data = await res.json();
+
+      // The real stage of this run, straight off the wire. Validated rather than
+      // trusted: an unrecognised value leaves the previous trace in place, which
+      // degrades to the honest default ("generating") instead of rendering a
+      // step nobody defined.
+      if (isPrototypeStage(data.stage)) {
+        setPrototypeTrace({
+          stage: data.stage,
+          fileCount: typeof data.file_count === "number" ? data.file_count : 0,
+          fileNames: Array.isArray(data.file_names)
+            ? data.file_names.filter((n: unknown): n is string => typeof n === "string")
+            : [],
+        });
+      }
 
       if (data.status === "pending") {
         // Defensive client-side stop: terminate even if the server keeps
@@ -1634,6 +1672,8 @@ export function StudioShell({
               inputRef={inputRef}
               canSend={canSendMessage}
               phase={phase}
+              prototypeTrace={prototypeTrace}
+              pollingStartedAt={pollingStartedAt}
               correctionsUsed={correctionsUsed}
               maxCorrections={maxCorrections}
               prototypeVersionNumber={currentVersion?.versionNumber ?? 0}

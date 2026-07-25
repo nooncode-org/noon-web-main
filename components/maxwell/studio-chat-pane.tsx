@@ -30,7 +30,21 @@ import {
 import { StudioThinkingBlock } from "./studio-thinking-block";
 import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
-import type { AttachedFile, ChatMessage, MessageFeedback, ReplyTarget, StudioPhase } from "./studio-shell";
+import type {
+  AttachedFile,
+  ChatMessage,
+  MessageFeedback,
+  PrototypeTrace,
+  ReplyTarget,
+  StudioPhase,
+} from "./studio-shell";
+import {
+  PROTOTYPE_STAGE_ORDER,
+  prototypeStageDetail,
+  prototypeStageLabel,
+  prototypeStepStatus,
+} from "@/lib/maxwell/prototype-stage";
+import { formatElapsed } from "@/lib/maxwell/polling-progress";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
@@ -329,6 +343,14 @@ type StudioChatPaneProps = {
   canSend: boolean;
   // Phase-aware props
   phase: StudioPhase;
+  /**
+   * Real stage of the run in flight (poll endpoint), or null when nothing is
+   * running / before the first poll answers. Only the most recent activity block
+   * consumes it — older ones in the history are finished checkpoints.
+   */
+  prototypeTrace?: PrototypeTrace | null;
+  /** Date.now() when polling started — the trace's elapsed counter. */
+  pollingStartedAt?: number | null;
   correctionsUsed: number;
   maxCorrections: number;
   prototypeVersionNumber: number;
@@ -368,41 +390,155 @@ function ReviewNoticeCard({ content }: { content: string }) {
   );
 }
 
-function StudioActivityBlock({ content, phase }: { content: string; phase: StudioPhase }) {
+/** Ticking elapsed counter for the live trace. Mirrors the preview pane's badge. */
+function TraceElapsed({ startedAt }: { startedAt: number }) {
+  const mounted = useHasMounted();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Until hydrated, render 0 so SSR and the first client paint agree.
+  const seconds = mounted ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
+  return <span className="shrink-0 tabular-nums text-muted-foreground/70">{formatElapsed(seconds)}</span>;
+}
+
+/** Status glyph per step. `pending` is an empty ring — work not started yet. */
+function StepGlyph({ status }: { status: "done" | "active" | "pending" }) {
+  if (status === "done") {
+    return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-foreground/70" aria-hidden />;
+  }
+  if (status === "active") {
+    return <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-foreground" aria-hidden />;
+  }
+  return (
+    <span
+      aria-hidden
+      className="h-3.5 w-3.5 shrink-0 rounded-full border border-border bg-transparent"
+    />
+  );
+}
+
+/**
+ * The chat's build trace.
+ *
+ * **What changed and why.** This block used to draw three hardcoded steps whose
+ * status was `complete = index < 1` — the first always ticked, the other two
+ * span forever, and none of it corresponded to anything happening on the server.
+ * It now renders the REAL stages the poll endpoint reports
+ * (`lib/maxwell/prototype-stage`), with real sub-results: the files v0 has
+ * actually emitted, by name.
+ *
+ * Elapsed time is shown; time REMAINING is not. v0's duration isn't predictable,
+ * and a countdown that slips is worse than no countdown.
+ *
+ * `trace` is passed only for the most recent block — older ones in the history
+ * are finished work and render as a static checkpoint.
+ */
+export function StudioActivityBlock({
+  content,
+  phase,
+  trace,
+  startedAt,
+}: {
+  content: string;
+  phase: StudioPhase;
+  trace?: PrototypeTrace | null;
+  startedAt?: number | null;
+}) {
   const isActive = phase === "generating_prototype" || phase === "revision_requested";
-  const steps = [
-    "Structuring the product direction",
-    "Preparing the prototype workspace",
-    "Generating the first interactive version",
-  ];
+  // Before the first poll answers we have no server stage yet, but we do know
+  // what was just started: v0 is generating. That is the run's known initial
+  // condition, not a guess about progress.
+  const stage = trace?.stage ?? "generating";
+  const fileCount = trace?.fileCount ?? 0;
+  const fileNames = trace?.fileNames ?? [];
 
   return (
-    <div className="max-w-[68ch] space-y-2.5">
+    <div
+      className="max-w-[68ch] space-y-3"
+      role={isActive ? "status" : undefined}
+      aria-live={isActive ? "polite" : undefined}
+    >
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         {isActive ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
         ) : (
-          <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" aria-hidden />
         )}
-        <span>{isActive ? "Building workspace" : "Checkpoint"}</span>
+        <span className="flex-1 truncate">{isActive ? "Building your prototype" : "Checkpoint"}</span>
+        {isActive && startedAt != null && <TraceElapsed startedAt={startedAt} />}
       </div>
+
       <p className="text-[13px] leading-6 text-foreground/90">{content}</p>
-      <div className="space-y-1.5 pl-0.5">
-        {steps.map((step, index) => {
-          const complete = !isActive || index < 1;
+
+      <ol className="space-y-0">
+        {PROTOTYPE_STAGE_ORDER.map((step, index) => {
+          // A finished block is a summary, not a live trace: every step reads
+          // done regardless of where the (now irrelevant) stage pointer sits.
+          const status = isActive ? prototypeStepStatus(step, stage) : "done";
+          const isLast = index === PROTOTYPE_STAGE_ORDER.length - 1;
+          // The files belong to the step that produced them, so they stay
+          // visible once generating is behind us.
+          const showFiles = step === "generating" && isActive && fileCount > 0;
 
           return (
-            <div key={step} className="flex items-center gap-2 text-xs text-muted-foreground">
-              {complete ? (
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-foreground/60" />
-              ) : (
-                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+            <li key={step} className="relative flex gap-2.5 pb-3 last:pb-0">
+              {/* Connector drawn as its own segment rather than a full-height
+                  rule behind the glyphs — no punch-through to keep in sync with
+                  the pane background. */}
+              {!isLast && (
+                <span
+                  aria-hidden
+                  className="absolute left-[6.5px] top-[18px] bottom-0 w-px bg-border"
+                />
               )}
-              <span>{step}</span>
-            </div>
+              <span className="relative z-[1] mt-0.5">
+                <StepGlyph status={status} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`text-xs leading-5 ${
+                    status === "pending" ? "text-muted-foreground/50" : "text-muted-foreground"
+                  }`}
+                >
+                  {prototypeStageLabel(step)}
+                </p>
+                {status === "active" && (
+                  <p className="mt-0.5 text-[11px] leading-5 text-muted-foreground/70">
+                    {prototypeStageDetail(step)}
+                  </p>
+                )}
+                {showFiles && (
+                  <div className="mt-1.5 space-y-1.5">
+                    <p className="text-[11px] leading-5 text-muted-foreground/70">
+                      {fileCount} {fileCount === 1 ? "file" : "files"} written
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {fileNames.slice(0, 4).map((name) => (
+                        <code
+                          key={name}
+                          title={name}
+                          className="max-w-[22ch] truncate rounded-[4px] border border-border bg-secondary/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                        >
+                          {name}
+                        </code>
+                      ))}
+                      {fileCount > 4 && (
+                        <span className="px-1 py-0.5 text-[10px] text-muted-foreground/60">
+                          +{fileCount - 4} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </div>
   );
 }
@@ -424,6 +560,8 @@ export function StudioChatPane({
   inputRef,
   canSend,
   phase,
+  prototypeTrace,
+  pollingStartedAt,
   correctionsUsed,
   maxCorrections,
   prototypeVersionNumber,
@@ -441,6 +579,14 @@ export function StudioChatPane({
 }: StudioChatPaneProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Only the newest activity block is the run in flight; every earlier one is
+  // finished work. Without this, starting a second generation would light up
+  // every past block in the history as if it were running again.
+  const liveActivityIndex = messages.reduce(
+    (last, msg, i) =>
+      msg.type === "system_event" && !msg.content.startsWith("The Noon team") ? i : last,
+    -1,
+  );
   const shouldStickToBottomRef = useRef(true);
   const mounted = useHasMounted();
   const [now, setNow] = useState(() => Date.now());
@@ -686,7 +832,16 @@ export function StudioChatPane({
               if (msg.content.startsWith("The Noon team")) {
                 return <ReviewNoticeCard key={messageId} content={msg.content} />;
               }
-              return <StudioActivityBlock key={messageId} content={msg.content} phase={phase} />;
+              const isLive = i === liveActivityIndex;
+              return (
+                <StudioActivityBlock
+                  key={messageId}
+                  content={msg.content}
+                  phase={isLive ? phase : "prototype_ready"}
+                  trace={isLive ? prototypeTrace : null}
+                  startedAt={isLive ? pollingStartedAt : null}
+                />
+              );
             }
             const persistedMessageId = msg.id;
             const feedback =
