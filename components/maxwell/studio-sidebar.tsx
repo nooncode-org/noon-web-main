@@ -256,18 +256,29 @@ export function StudioSidebar({
               New chat
             </button>
           )}
+          {/* A lone client project rides in the nav list itself, styled exactly
+              like the rows above (owner 2026-07-25: in its own padded block it
+              floated too far from the others) — so it keeps the list rhythm. */}
+          {soloClientProject && (
+            <Link
+              href={portalRows[0].workspaceHref!}
+              onClick={() => onNavigate?.()}
+              className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
+            >
+              <Monitor className="h-4 w-4 text-muted-foreground" />
+              My project
+            </Link>
+          )}
         </div>
 
-        {/* The client's live project(s), post-payment. A lone client project is a
-            single "My project" link (no kicker); several keep a "My projects"
-            heading + real names, and the studio keeps "Client portal". */}
-        {portalRows.length > 0 && (
-          <div className={`px-3 pt-3 pb-2 ${soloClientProject ? "" : "border-t border-border/60"}`}>
-            {!soloClientProject && (
-              <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
-                {clientPortal ? "My projects" : "Client portal"}
-              </p>
-            )}
+        {/* Several projects (or the studio, whose viewer may own multiple client
+            workspaces): a labelled section listing them by real name. A lone
+            client project is instead the single "My project" nav row above. */}
+        {portalRows.length > 0 && !soloClientProject && (
+          <div className="border-t border-border/60 px-3 pt-3 pb-2">
+            <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
+              {clientPortal ? "My projects" : "Client portal"}
+            </p>
             {portalRows.map((row) => (
               <Link
                 key={row.id}
@@ -276,7 +287,7 @@ export function StudioSidebar({
                 className="flex items-center gap-2.5 rounded-[8px] px-4 py-2.5 text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
               >
                 <Monitor className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="line-clamp-1">{soloClientProject ? "My project" : row.title}</span>
+                <span className="line-clamp-1">{row.title}</span>
               </Link>
             ))}
           </div>
