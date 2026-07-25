@@ -78,7 +78,7 @@ export function WorkspaceCodePanel() {
             />
             <span className="sr-only">About your code</span>
           </summary>
-          <div className="mt-2 max-w-xl space-y-2 pb-2 text-[13px] leading-relaxed text-muted-foreground">
+          <div className="mt-2 max-w-2xl space-y-2 pb-2 text-[13px] leading-relaxed text-muted-foreground">
             <p>
               You paid for your project, so the source is yours to keep — and you can host it
               wherever you like, whenever you like.
@@ -117,7 +117,12 @@ export function MembershipUpsellCard({
   return (
     <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-md">
+        {/* Readability cap, not a layout accident: a line running the full ~1300px
+            card is hard to scan. But max-w-md (448px) was tighter than the Code
+            card's own cap right below, so it broke into three short lines and
+            left a visible hole (owner 2026-07-24). max-w-2xl keeps a comfortable
+            measure while using the space the card actually has. */}
+        <div className="max-w-2xl">
           <p className="text-sm font-medium">
             {delivered ? "Your project is delivered" : "Your project is being built"}
           </p>
