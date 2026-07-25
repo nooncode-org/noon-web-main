@@ -418,6 +418,9 @@ describe("Noon App webhook — approved decision", () => {
         deliveryRecipient: "owner@noon.dev",
         approvedAmountUsd: 4500,
         approvedCurrency: "USD",
+        // The membership monthly is FROZEN at approval (alongside the
+        // activation), so the offer's price stops floating with the table.
+        monthlyAmountUsd: expect.any(Number),
       }),
     );
     expect(repos.updateStudioSessionStatus).toHaveBeenCalledWith(

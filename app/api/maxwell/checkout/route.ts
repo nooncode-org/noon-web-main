@@ -105,15 +105,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // v3 membership (M0): persist the client's chosen modality + the
-    // engine-derived recurring monthly BEFORE the Stripe session logic, so the
-    // choice is captured on every checkout attempt (incl. the reuse path below).
-    // The CHARGED amount stays the PM-approved activation (`approvedAmountUsd`);
-    // the monthly is NOT charged yet — membership is billed manually until M1.
+    // v3 membership (M0): persist the client's chosen modality. The monthly is
+    // the price FROZEN at approval (a sent proposal is a firm offer — it must
+    // not re-price when the table changes). Read the stored snapshot; only
+    // recompute as a fallback for a proposal approved before the freeze landed,
+    // and persist that so it's frozen from then on. Never overwrite a stored
+    // value with a fresh table lookup — that would defeat the freeze.
     const paymentModality = payload.payment_modality;
     const monthlyAmountUsd =
       paymentModality === "membership"
-        ? resolveProposalCommercialProfile(session).monthlyAmountUsd
+        ? proposal.monthlyAmountUsd ?? resolveProposalCommercialProfile(session).monthlyAmountUsd
         : null;
     await updateProposalRequest(proposal.id, { paymentModality, monthlyAmountUsd });
 

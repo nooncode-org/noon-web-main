@@ -1366,6 +1366,13 @@ export async function updateProposalRequestStatus(
     caseClassification?: ProposalCaseClassification;
     approvedAmountUsd?: number | null;
     approvedCurrency?: string | null;
+    /**
+     * Membership monthly, FROZEN at approval alongside the activation. A sent
+     * proposal is a firm offer, so its price must not float when the pricing
+     * table later changes (which it does often); the page + checkout read this
+     * stored value instead of recomputing.
+     */
+    monthlyAmountUsd?: number | null;
     stripeCheckoutSessionId?: string | null;
     stripePaymentIntentId?: string | null;
     stripePaidAt?: string | null;
@@ -1380,6 +1387,7 @@ export async function updateProposalRequestStatus(
     caseClassification: extra?.caseClassification,
     approvedAmountUsd: extra?.approvedAmountUsd,
     approvedCurrency: extra?.approvedCurrency,
+    monthlyAmountUsd: extra?.monthlyAmountUsd,
     stripeCheckoutSessionId: extra?.stripeCheckoutSessionId,
     stripePaymentIntentId: extra?.stripePaymentIntentId,
     stripePaidAt: extra?.stripePaidAt,

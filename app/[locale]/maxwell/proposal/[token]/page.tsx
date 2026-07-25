@@ -230,7 +230,10 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 approvedAmountUsd={proposal.approvedAmountUsd}
                 approvedCurrency={proposal.approvedCurrency}
                 membershipApplicable={commercialProfile?.membershipRecommended ?? false}
-                monthlyAmountUsd={commercialProfile?.monthlyAmountUsd ?? null}
+                // The price FROZEN at approval — a firm offer must not re-price
+                // when the table changes. Fall back to the live figure only for
+                // a proposal approved before the freeze landed (else null).
+                monthlyAmountUsd={proposal.monthlyAmountUsd ?? commercialProfile?.monthlyAmountUsd ?? null}
                 checkoutResult={checkoutResult}
                 studioSessionId={proposal.studioSessionId}
               />

@@ -176,6 +176,37 @@ describe("POST /api/maxwell/checkout — membership flag ON", () => {
     });
   });
 
+  it("charges the FROZEN monthly, ignoring a later table change", async () => {
+    // The proposal was approved at $69 (frozen on the row). The table has since
+    // moved to $104. A sent proposal is a firm offer, so checkout must bill the
+    // $69 it promised — reading the stored value, NOT recomputing. This is the
+    // guard against a price change silently re-quoting outstanding offers.
+    mocks.getProposalRequestByPublicToken.mockResolvedValue(proposal({ monthlyAmountUsd: 69 }));
+    mocks.getStudioSession.mockResolvedValue(session());
+    mocks.resolveProposalCommercialProfile.mockReturnValue({
+      category: "webapp",
+      tier: "medio",
+      pricing: { activation: "$4500 USD", monthly: "$104 USD/mes" },
+      monthlyAmountUsd: 104, // the NEW table price — must be ignored here
+      membershipRecommended: true,
+    });
+    mocks.createCheckoutSession.mockResolvedValue({ id: "cs_sub_2", url: "https://x.test" });
+
+    await POST(buildRequest({ public_token: "public-token-abc", payment_modality: "membership" }));
+    const [params] = mocks.createCheckoutSession.mock.calls[0];
+
+    const monthlyLine = params.line_items.find(
+      (li: { price_data: { recurring?: unknown } }) => li.price_data.recurring,
+    );
+    // $69 frozen → 6900 minor, NOT $104 → 10400.
+    expect(monthlyLine.price_data.unit_amount).toBe(6900);
+    // And the frozen value is not overwritten with the fresh table lookup.
+    expect(mocks.updateProposalRequest).toHaveBeenCalledWith("proposal-1", {
+      paymentModality: "membership",
+      monthlyAmountUsd: 69,
+    });
+  });
+
   it("falls back to one-time when modality is one_time even with the flag on", async () => {
     mocks.getProposalRequestByPublicToken.mockResolvedValue(proposal());
     mocks.getStudioSession.mockResolvedValue(session());

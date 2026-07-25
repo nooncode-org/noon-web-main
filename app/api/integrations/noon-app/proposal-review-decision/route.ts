@@ -19,6 +19,7 @@ import {
   sendProposalRejectedEmail,
 } from "@/lib/maxwell/proposal-email";
 import { buildPublicProposalUrl, buildStudioSessionUrl } from "@/lib/maxwell/public-url";
+import { resolveProposalCommercialProfile } from "@/lib/maxwell/proposal-rules";
 import { log } from "@/lib/server/logger";
 import {
   NoonAppIntegrationError,
@@ -166,6 +167,11 @@ async function applyReviewDecision(
       const publicUrl = buildPublicProposalUrl(proposal.publicToken, request);
       const approvedAmount = payload.proposal.amount;
       const approvedCurrency = payload.proposal.currency.toUpperCase();
+      // Freeze the membership monthly at the SAME moment the activation is set:
+      // approval turns the proposal into a firm offer, so its price must stop
+      // floating with the pricing table (which changes often). The page +
+      // checkout read this snapshot instead of recomputing.
+      const approvedMonthlyUsd = resolveProposalCommercialProfile(session).monthlyAmountUsd;
 
       if (!Number.isFinite(approvedAmount) || approvedAmount <= 0 || approvedCurrency !== "USD") {
         return NextResponse.json(
@@ -183,6 +189,7 @@ async function applyReviewDecision(
           await updateProposalRequestStatus(proposal.id, proposal.status, {
             approvedAmountUsd: approvedAmount,
             approvedCurrency,
+            monthlyAmountUsd: approvedMonthlyUsd,
           });
         }
 
@@ -207,6 +214,7 @@ async function applyReviewDecision(
         caseClassification: proposal.caseClassification,
         approvedAmountUsd: approvedAmount,
         approvedCurrency,
+        monthlyAmountUsd: approvedMonthlyUsd,
       });
 
       await updateSessionStatusIfNeeded(session.id, session.status, "proposal_sent");
