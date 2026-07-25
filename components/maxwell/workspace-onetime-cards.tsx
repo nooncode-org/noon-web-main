@@ -92,12 +92,12 @@ export function MembershipUpsellCard({
   return (
     <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        {/* Readability cap, not a layout accident: a line running the full ~1300px
-            card is hard to scan. But max-w-md (448px) was tighter than the Code
-            card's own cap right below, so it broke into three short lines and
-            left a visible hole (owner 2026-07-24). max-w-2xl keeps a comfortable
-            measure while using the space the card actually has. */}
-        <div className="max-w-2xl">
+        {/* Fill the width up to the button instead of capping the text and
+            leaving a hole on the right (owner flagged it twice — 2026-07-24
+            max-w-md, then 2026-07-25 max-w-2xl, both "mucho espacio a la
+            derecha"). flex-1 + min-w-0 grows the column right up to the button;
+            when it wraps on narrow widths this takes the full row. */}
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">
             {delivered ? "Your project is delivered" : "Your project is being built"}
           </p>
