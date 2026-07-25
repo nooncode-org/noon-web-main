@@ -96,11 +96,12 @@ type StudioSidebarProps = {
   footerExtra?: ReactNode;
   /**
    * Client-portal presentation (the workspace/portal mounts via ProposalSidebar).
-   * Titles the project section "My project" (/"My projects" with several) instead
-   * of "Client portal" — the client thinks of it as their project, not a "portal"
-   * (owner 2026-07-25). Nothing else changes: the shortcuts and Recent-chats list
-   * stay (the owner tried the trimmed-down version and it read as empty). Studio
-   * mounts (dashboard, chat) omit it, so they keep the "Client portal" label.
+   * A lone project shows as a single "My project" link — no section kicker, and
+   * labelled "My project" rather than its raw name (owner 2026-07-25). Several
+   * projects keep a "My projects" heading with their real names so they stay
+   * distinguishable. Nothing else changes — the shortcuts and Recent-chats list
+   * stay. Studio mounts (dashboard, chat) omit it, keeping the "Client portal"
+   * section with real project names.
    */
   clientPortal?: boolean;
 };
@@ -140,6 +141,11 @@ export function StudioSidebar({
   // Client portal — sessions with a provisioned workspace (post-payment).
   // Derived from the same list; usually 0 or 1 entries.
   const portalRows = draftSessions.filter((s) => s.workspaceHref);
+  // In the client portal a lone project renders as a single "My project" link —
+  // no section kicker, and labelled "My project" rather than its raw name (owner
+  // 2026-07-25). Several projects keep the heading + their real names so they
+  // stay distinguishable; the studio always keeps its "Client portal" section.
+  const soloClientProject = clientPortal && portalRows.length === 1;
 
   return (
     <>
@@ -252,14 +258,16 @@ export function StudioSidebar({
           )}
         </div>
 
-        {/* The client's live project(s), post-payment. Titled "My project" in the
-            client portal, "Client portal" in the studio; sits above the chats
-            list either way. */}
+        {/* The client's live project(s), post-payment. A lone client project is a
+            single "My project" link (no kicker); several keep a "My projects"
+            heading + real names, and the studio keeps "Client portal". */}
         {portalRows.length > 0 && (
           <div className="border-t border-border/60 px-3 pt-3 pb-2">
-            <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
-              {clientPortal ? (portalRows.length > 1 ? "My projects" : "My project") : "Client portal"}
-            </p>
+            {!soloClientProject && (
+              <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
+                {clientPortal ? "My projects" : "Client portal"}
+              </p>
+            )}
             {portalRows.map((row) => (
               <Link
                 key={row.id}
@@ -268,7 +276,7 @@ export function StudioSidebar({
                 className="flex items-center gap-2.5 rounded-[8px] px-4 py-2.5 text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
               >
                 <Monitor className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="line-clamp-1">{row.title}</span>
+                <span className="line-clamp-1">{soloClientProject ? "My project" : row.title}</span>
               </Link>
             ))}
           </div>
