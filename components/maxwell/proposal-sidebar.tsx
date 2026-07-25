@@ -147,6 +147,12 @@ export function ProposalSidebar({
     onNewDraftChat: () => router.push(maxwellHref()),
     onDeleteDraftSession: handleDelete,
     quotaSnapshot: null,
+    // Client-portal presentation (only the "My project" section — no studio
+    // shortcuts or chats list). collapsibleRail is set by exactly the
+    // workspace/portal mounts and never the proposal page, and this component's
+    // own doc defines it as "client workspace / portal", so it doubles as the
+    // client-mode signal — no separate prop to thread through every mount.
+    clientPortal: collapsibleRail,
     // The proposal page is NOT the home, so offer a Home link back to the studio.
     showHome: true,
     footerExtra,

@@ -94,6 +94,15 @@ type StudioSidebarProps = {
    * everywhere else (dashboard, chat, proposal), so the footer is unchanged there.
    */
   footerExtra?: ReactNode;
+  /**
+   * Client-portal presentation (the workspace/portal mounts via ProposalSidebar).
+   * Trims the panel to the client's own project: the section is titled "My
+   * project" and the studio-only pieces — Templates/Upgrade/Talk to agent/New
+   * chat, Home, and the whole Recent-chats list — are hidden (owner 2026-07-25:
+   * a client manages their delivered site, they don't prototype). Studio mounts
+   * (dashboard, chat) omit it, so they're unchanged.
+   */
+  clientPortal?: boolean;
 };
 
 export function StudioSidebar({
@@ -114,6 +123,7 @@ export function StudioSidebar({
   className = "",
   showHome = true,
   footerExtra,
+  clientPortal = false,
 }: StudioSidebarProps) {
   const [chatQuery, setChatQuery] = useState("");
   // B31 — Track the row staged for deletion. Single-row state is enough: the
@@ -191,8 +201,12 @@ export function StudioSidebar({
           )}
         </div>
 
-        {/* Studio shortcuts */}
-        <div className="px-3 py-3 space-y-1">
+        {/* Studio shortcuts — hidden in the client portal (owner 2026-07-25): a
+            client manages their delivered site, they don't prototype, so
+            Templates/Upgrade/Talk to agent/New chat and Home (which points back
+            to the studio composer) don't belong here. */}
+        {!clientPortal && (
+          <div className="px-3 py-3 space-y-1">
           {showHome && (
             <Link
               href={siteRoutes.home}
@@ -240,14 +254,16 @@ export function StudioSidebar({
               New chat
             </button>
           )}
-        </div>
+          </div>
+        )}
 
-        {/* Client portal — the live project workspace(s), post-payment. More
-            prominent than the chats list: it's the client's active project. */}
+        {/* The client's live project(s), post-payment. In the client portal this
+            is the ONLY section and it's titled "My project"; in the studio it's
+            the "Client portal" group sitting above the chats list. */}
         {portalRows.length > 0 && (
-          <div className="border-t border-border/60 px-3 pt-3 pb-2">
+          <div className={`px-3 pt-3 pb-2 ${clientPortal ? "" : "border-t border-border/60"}`}>
             <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
-              Client portal
+              {clientPortal ? (portalRows.length > 1 ? "My projects" : "My project") : "Client portal"}
             </p>
             {portalRows.map((row) => (
               <Link
@@ -263,10 +279,11 @@ export function StudioSidebar({
           </div>
         )}
 
-        {/* Chat switcher — search + recent chats. Same data source as always
-            (draftSessions); per-row actions (view proposal / open workspace /
-            delete) live on each row. */}
-        {draftSessions.length > 0 && (
+        {/* Chat switcher — search + recent chats. Studio only: the client portal
+            shows just their project, not the drafts list (clientPortal). Same
+            data source as always (draftSessions); per-row actions (view proposal
+            / open workspace / delete) live on each row. */}
+        {!clientPortal && draftSessions.length > 0 && (
           <div className="flex min-h-0 flex-1 flex-col border-t border-border/60 px-3 pt-3">
             <div className="px-1 pb-2">
               <div className="relative">
