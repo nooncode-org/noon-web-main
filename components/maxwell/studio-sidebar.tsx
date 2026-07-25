@@ -262,7 +262,7 @@ export function StudioSidebar({
             single "My project" link (no kicker); several keep a "My projects"
             heading + real names, and the studio keeps "Client portal". */}
         {portalRows.length > 0 && (
-          <div className="border-t border-border/60 px-3 pt-3 pb-2">
+          <div className={`px-3 pt-3 pb-2 ${soloClientProject ? "" : "border-t border-border/60"}`}>
             {!soloClientProject && (
               <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
                 {clientPortal ? "My projects" : "Client portal"}
