@@ -70,7 +70,7 @@ export function WorkspaceCodePanel() {
           <details>, the same dependency-free pattern the help menu uses. */}
       <div className="px-5 py-3">
         <details className="group">
-          <summary className="-ml-1 flex w-fit cursor-pointer list-none items-center rounded-[6px] p-1 text-muted-foreground/70 transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <summary className="-mr-1 flex w-full cursor-pointer list-none items-center justify-end rounded-[6px] p-1 text-muted-foreground/70 transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
             <ChevronDown
               className="h-4 w-4 transition-transform group-open:rotate-180"
               strokeWidth={1.75}
