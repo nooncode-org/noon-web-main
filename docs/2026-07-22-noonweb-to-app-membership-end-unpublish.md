@@ -5,6 +5,8 @@
 **De:** NoonWeb (`noon-web-main`).
 **Asunto:** El portal del cliente ya le **anuncia** que su sitio se apaga al terminar la membresía. Falta que el App lo **ejecute**. No hace falta cambiar el contrato: el wire ya lleva todo.
 
+> **⚠️ ADENDA 2026-07-24:** esto ya cubre **dos planes** — la membresía que termina **y** el hosting anual del one-time que no se renueva, que llega por el MISMO wire. Ver `docs/2026-07-24-noonweb-to-app-onetime-hosting-same-wire.md`.
+
 ---
 
 ## 0. TL;DR
