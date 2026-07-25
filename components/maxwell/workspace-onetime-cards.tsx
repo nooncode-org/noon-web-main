@@ -78,26 +78,31 @@ export function WorkspaceCodePanel() {
             />
             <span className="sr-only">About your code</span>
           </summary>
-          {/* This panel has nothing to its right, so a capped column left most of
-              a ~1800px card empty (owner 2026-07-24). Stretching one line that
-              far reads worse, so the width is used with INTENT instead: the two
-              action explanations sit side by side, mirroring the two buttons in
-              the header above them. Each column keeps a comfortable measure. */}
-          <div className="mt-2 space-y-3 pb-2 text-[13px] leading-relaxed text-muted-foreground">
+          {/* Two matched blurbs (title over description), split by a divider,
+              mirroring the two header buttons — reads as deliberate structure
+              rather than the ragged free-text columns that came before (owner
+              2026-07-25: "demasiado desorganizado"). Intro + note bracket it as
+              plain prose. */}
+          <div className="mt-2 space-y-4 pb-1 text-[13px] leading-relaxed text-muted-foreground">
             <p className="max-w-3xl">
               You paid for your project, so the source is yours to keep — and you can host it
               wherever you like, whenever you like.
             </p>
-            <div className="grid gap-3 text-[12px] md:grid-cols-2 md:gap-x-10">
-              <p>
-                <span className="font-medium text-foreground/85">Repository</span> — your code on
-                GitHub with its full history. Ask for access and you (or any developer) can clone
-                it and keep building on it.
-              </p>
-              <p>
-                <span className="font-medium text-foreground/85">Download .zip</span> — the whole
-                codebase in one file: a backup, or a handoff to another developer or host.
-              </p>
+            <div className="grid gap-4 rounded-[6px] border border-border bg-secondary/15 p-4 text-[12px] sm:grid-cols-2 sm:gap-8">
+              <div>
+                <p className="font-medium text-foreground">Repository</p>
+                <p className="mt-1">
+                  Your code on GitHub with its full history. Ask for access and clone it to keep
+                  building.
+                </p>
+              </div>
+              <div className="sm:border-l sm:border-border sm:pl-8">
+                <p className="font-medium text-foreground">Download .zip</p>
+                <p className="mt-1">
+                  The whole codebase in one file — a backup, or a handoff to another developer
+                  or host.
+                </p>
+              </div>
             </div>
             <p className="max-w-3xl text-[12px]">
               You don&apos;t have to do anything with it — your site keeps running with us either
