@@ -621,15 +621,18 @@ function ActiveWorkspace({
                 </div>
               )}
 
-              {/* One status voice (audit "sobra" #2): the hero already carries
-                  the phase dot + version state + "Updated X ago" — the fourth
-                  "Status updated <date>" repeated the same fact and is gone. */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
-                <p className="text-[13px] text-muted-foreground">{data.latestUpdateSummary ?? statusCfg.description}</p>
-                {/* One-time has no "request a change" — that channel is the
-                    membership. The upsell card below is their path instead. */}
-                {isMembershipPlan && <RequestChangeChip />}
-              </div>
+              {/* Latest-update caption + Request-a-change: membership only. For
+                  one-time this bar was redundant (owner 2026-07-25 "quita esto"):
+                  "delivered and live" is what the live preview already shows, and
+                  during the build it just repeated the "What's next" line above.
+                  Membership keeps it — it carries the "v2 shipped…" summary and is
+                  the home of the Request-a-change chip. */}
+              {isMembershipPlan && (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
+                  <p className="text-[13px] text-muted-foreground">{data.latestUpdateSummary ?? statusCfg.description}</p>
+                  <RequestChangeChip />
+                </div>
+              )}
             </section>
 
             {/* ── One-time upsell (Overview): sells ongoing development; monthly

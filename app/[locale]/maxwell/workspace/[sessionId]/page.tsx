@@ -899,14 +899,20 @@ export default async function WorkspacePage({ params }: Props) {
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
-                <p className="text-[13px] text-muted-foreground">
-                  {workspace.latestUpdateSummary ?? statusCfg.description}
-                </p>
-                {/* "Request a change" is membership machinery — the one-time
-                    chat is questions/support only (owner 2026-07-22). */}
-                {isMembershipPlan && !membershipEnded && <RequestChangeChip />}
-              </div>
+              {/* Latest-update caption + Request-a-change: membership only. For
+                  one-time this bar was redundant (owner 2026-07-25 "quita esto"):
+                  "delivered and live" is what the live preview already shows, and
+                  during the build the caption just repeated the "What's next" line
+                  above it. Membership keeps it — it carries the "v2 shipped…"
+                  summary and is the home of the Request-a-change chip. */}
+              {isMembershipPlan && (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
+                  <p className="text-[13px] text-muted-foreground">
+                    {workspace.latestUpdateSummary ?? statusCfg.description}
+                  </p>
+                  {!membershipEnded && <RequestChangeChip />}
+                </div>
+              )}
             </section>
 
             {/* ── One-time upsell (Overview): their path to changes — monthly
