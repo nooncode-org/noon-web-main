@@ -444,21 +444,28 @@ type TraceResult = { done: boolean; text: string; chips?: string[]; more?: numbe
 function TraceChips({ chips, more }: { chips?: string[]; more?: number }) {
   if (!chips?.length) return null;
   return (
-    <>
+    // Their OWN tighter gap: badges belong to each other more than to the words
+    // beside them, and inheriting the row's spacing scattered them.
+    <span className="flex flex-wrap items-center gap-1.5">
       {chips.map((chip) => (
         // Keyed by the full specifier (two dirs can hold the same file name) but
         // LABELLED with just the last segment: the full path truncates exactly
         // where the useful part is. The whole thing stays in the tooltip.
+        //
+        // Snug on purpose: this used to be px-2 py-1 at 11px, which rendered a
+        // 27px badge against a 20px line — 35% taller than the text it annotates,
+        // so it read as a button rather than a mark on the sentence. Now ~20px:
+        // the same height as the line it sits in.
         <code
           key={chip}
           title={chip}
-          className="rounded-[5px] border border-border bg-foreground/[0.07] px-2 py-1 font-mono text-[11px] font-medium text-foreground/90"
+          className="rounded-[4px] border border-border bg-foreground/[0.07] px-1.5 py-0.5 font-mono text-[12px] font-medium leading-[14px] text-foreground/90"
         >
           {chip.split("/").pop() || chip}
         </code>
       ))}
       {more ? <span className="font-mono text-[11px] text-muted-foreground">+{more}</span> : null}
-    </>
+    </span>
   );
 }
 
@@ -611,7 +618,7 @@ export function StudioActivityBlock({
                   className="absolute bottom-0 left-[7.5px] top-[21px] w-px bg-border"
                 />
               )}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
                 <StepGlyph status={status} />
                 <span
                   className={`text-[13px] leading-5 ${
