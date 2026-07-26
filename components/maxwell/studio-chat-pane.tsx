@@ -43,6 +43,8 @@ import {
   prototypeStageDetail,
   prototypeStageLabel,
   prototypeStepStatus,
+  type PrototypeStage,
+  type StepStatus,
 } from "@/lib/maxwell/prototype-stage";
 import { formatElapsed } from "@/lib/maxwell/polling-progress";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
@@ -402,16 +404,22 @@ function TraceElapsed({ startedAt }: { startedAt: number }) {
 
   // Until hydrated, render 0 so SSR and the first client paint agree.
   const seconds = mounted ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
-  return <span className="shrink-0 tabular-nums text-muted-foreground/70">{formatElapsed(seconds)}</span>;
+  // Same slot the reference gives its countdown, filled with what we can
+  // actually know: time spent, not time left.
+  return (
+    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wide tabular-nums text-muted-foreground/70">
+      {formatElapsed(seconds)} elapsed
+    </span>
+  );
 }
 
 /** Status glyph per step. `pending` is an empty ring — work not started yet. */
-function StepGlyph({ status }: { status: "done" | "active" | "pending" }) {
+function StepGlyph({ status }: { status: StepStatus }) {
   if (status === "done") {
     return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-foreground/70" aria-hidden />;
   }
   if (status === "active") {
-    return <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-foreground" aria-hidden />;
+    return <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-emerald-500" aria-hidden />;
   }
   return (
     <span
@@ -419,6 +427,41 @@ function StepGlyph({ status }: { status: "done" | "active" | "pending" }) {
       className="h-3.5 w-3.5 shrink-0 rounded-full border border-border bg-transparent"
     />
   );
+}
+
+/** A line inside a step's result box: a settled finding, or work in progress. */
+type TraceResult = { done: boolean; text: string; chips?: string[]; more?: number };
+
+/**
+ * What a step has to show inside its box. Only real data ever gets in here: the
+ * files v0 emitted, and the stage's own description while it runs. A step with
+ * nothing to report gets no box at all, rather than a box padded with filler.
+ */
+function stepResults(
+  step: PrototypeStage,
+  status: StepStatus,
+  fileCount: number,
+  fileNames: string[],
+): TraceResult[] {
+  const rows: TraceResult[] = [];
+  // The files belong to the step that produced them, so they stay on screen
+  // once generating is behind us — like the reference keeping a finished step's
+  // findings visible instead of collapsing them away.
+  if (step === "generating" && fileCount > 0) {
+    rows.push({
+      // A settled finding, even while the step keeps running — the files really
+      // are written. Same split as the reference: findings tick, work in
+      // progress spins.
+      done: true,
+      text: `${fileCount} ${fileCount === 1 ? "file" : "files"} written`,
+      chips: fileNames.slice(0, 3),
+      more: Math.max(0, fileCount - 3),
+    });
+  }
+  if (status === "active") {
+    rows.push({ done: false, text: prototypeStageDetail(step) });
+  }
+  return rows;
 }
 
 /**
@@ -462,79 +505,85 @@ export function StudioActivityBlock({
       role={isActive ? "status" : undefined}
       aria-live={isActive ? "polite" : undefined}
     >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <p className="text-[13px] leading-6 text-foreground/90">{content}</p>
+
+      {/* Status card. Bordered so the trace reads as one object in the
+          transcript rather than loose lines, with the meta slot hard right. */}
+      <div className="flex items-center gap-2.5 rounded-[6px] border border-border bg-card px-3 py-2.5">
         {isActive ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-500" aria-hidden />
         ) : (
-          <CheckCircle2 className="h-3.5 w-3.5 text-foreground/70" aria-hidden />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/70" aria-hidden />
         )}
-        <span className="flex-1 truncate">{isActive ? "Building your prototype" : "Checkpoint"}</span>
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+          {isActive ? "Building your prototype…" : "Build complete"}
+        </span>
         {isActive && startedAt != null && <TraceElapsed startedAt={startedAt} />}
       </div>
 
-      <p className="text-[13px] leading-6 text-foreground/90">{content}</p>
-
-      <ol className="space-y-0">
-        {PROTOTYPE_STAGE_ORDER.map((step, index) => {
+      {/* No connector rule between steps: the glyph column alone carries the
+          sequence, and the result boxes are what give the trace its structure. */}
+      <ol className="space-y-2">
+        {PROTOTYPE_STAGE_ORDER.map((step) => {
           // A finished block is a summary, not a live trace: every step reads
           // done regardless of where the (now irrelevant) stage pointer sits.
-          const status = isActive ? prototypeStepStatus(step, stage) : "done";
-          const isLast = index === PROTOTYPE_STAGE_ORDER.length - 1;
-          // The files belong to the step that produced them, so they stay
-          // visible once generating is behind us.
-          const showFiles = step === "generating" && isActive && fileCount > 0;
+          const status: StepStatus = isActive ? prototypeStepStatus(step, stage) : "done";
+          const results = isActive ? stepResults(step, status, fileCount, fileNames) : [];
 
           return (
-            <li key={step} className="relative flex gap-2.5 pb-3 last:pb-0">
-              {/* Connector drawn as its own segment rather than a full-height
-                  rule behind the glyphs — no punch-through to keep in sync with
-                  the pane background. */}
-              {!isLast && (
-                <span
-                  aria-hidden
-                  className="absolute left-[6.5px] top-[18px] bottom-0 w-px bg-border"
-                />
-              )}
-              <span className="relative z-[1] mt-0.5">
+            <li key={step}>
+              <div className="flex items-center gap-2.5">
                 <StepGlyph status={status} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`text-xs leading-5 ${
+                <span
+                  className={`min-w-0 truncate text-xs leading-5 ${
                     status === "pending" ? "text-muted-foreground/50" : "text-muted-foreground"
                   }`}
                 >
                   {prototypeStageLabel(step)}
-                </p>
-                {status === "active" && (
-                  <p className="mt-0.5 text-[11px] leading-5 text-muted-foreground/70">
-                    {prototypeStageDetail(step)}
-                  </p>
-                )}
-                {showFiles && (
-                  <div className="mt-1.5 space-y-1.5">
-                    <p className="text-[11px] leading-5 text-muted-foreground/70">
-                      {fileCount} {fileCount === 1 ? "file" : "files"} written
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {fileNames.slice(0, 4).map((name) => (
+                </span>
+              </div>
+
+              {results.length > 0 && (
+                <div className="ml-6 mt-1.5 space-y-1.5 rounded-[6px] border border-border bg-secondary/15 px-3 py-2.5">
+                  {results.map((result) => (
+                    // Chips sit INLINE with their line (flex-wrap), the way the
+                    // reference reads: "<what happened>  [value] [value]".
+                    <div
+                      key={result.text}
+                      className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-5 text-muted-foreground"
+                    >
+                      {result.done ? (
+                        <Check className="h-3 w-3 shrink-0 text-foreground/60" aria-hidden />
+                      ) : (
+                        <Loader2
+                          className="h-3 w-3 shrink-0 animate-spin text-muted-foreground/70"
+                          aria-hidden
+                        />
+                      )}
+                      <span>{result.text}</span>
+                      {result.chips?.map((chip) => (
+                        // Keyed by the full path (two dirs can hold the same
+                        // file name) but LABELLED with just the file name: the
+                        // full path truncates exactly where the useful part is
+                        // ("components/hero-…"), so the short form says more in
+                        // less space. The path stays in the tooltip.
                         <code
-                          key={name}
-                          title={name}
-                          className="max-w-[22ch] truncate rounded-[4px] border border-border bg-secondary/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                          key={chip}
+                          title={chip}
+                          className="rounded-[4px] border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
                         >
-                          {name}
+                          {chip.split("/").pop() || chip}
                         </code>
                       ))}
-                      {fileCount > 4 && (
-                        <span className="px-1 py-0.5 text-[10px] text-muted-foreground/60">
-                          +{fileCount - 4} more
+                      {result.more ? (
+                        <span className="font-mono text-[10px] text-muted-foreground/60">
+                          +{result.more}
                         </span>
-                      )}
+                      ) : null}
                     </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}
