@@ -356,7 +356,7 @@ export function HeroSection() {
               {/* Prompt Suggestions */}
               <div className="mt-4 lg:mt-5">
                 <p
-                  className="mb-2.5 text-[10px] uppercase tracking-[0.12em] text-[#9ca3af] dark:text-[#6b6b6b] text-center"
+                  className="mb-2.5 text-[10px] uppercase tracking-[0.12em] text-[#a2a2a2] dark:text-[#6b6b6b] text-center"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   {t("notSure")}
@@ -367,7 +367,7 @@ export function HeroSection() {
                       <button
                         key={index}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
+                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#727272] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#181818] dark:hover:text-white"
                       >
                         {s.label}
                       </button>
@@ -387,7 +387,7 @@ export function HeroSection() {
                       <button
                         key={index}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
+                        className="liquid-glass-pill shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#727272] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#181818] dark:hover:text-white"
                       >
                         {s.label}
                       </button>
@@ -396,7 +396,7 @@ export function HeroSection() {
                       <button
                         key={index + 3}
                         onClick={() => handleSuggestionClick(s.prompt)}
-                        className="liquid-glass-pill hidden sm:inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#111827] dark:hover:text-white"
+                        className="liquid-glass-pill hidden sm:inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#727272] dark:text-[#a3a3a3] transition-all duration-300 hover:text-[#181818] dark:hover:text-white"
                       >
                         {s.label}
                       </button>

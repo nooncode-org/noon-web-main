@@ -98,7 +98,7 @@ const SWATCHES = [
   ["Text", "var(--text-primary)", "primary"], ["Surface", "var(--surface)", "surface"], ["Border", "var(--border)", "border"],
   ["Success", "var(--success)", "#00C853"], ["Warning", "var(--warning)", "#FFB300"], ["Error", "var(--error)", "#FF3B6E"],
 ];
-const NEUTRALS = [["900", "#0A0A23"], ["800", "#1A1A2E"], ["700", "#2A2A44"], ["500", "#6B6B7D"], ["400", "#9CA3AF"], ["300", "#D1D5DB"], ["200", "#F3F4F6"]];
+const NEUTRALS = [["900", "#0A0A23"], ["800", "#1A1A2E"], ["700", "#2A2A44"], ["500", "#6B6B7D"], ["400", "#a2a2a2"], ["300", "#D1D5DB"], ["200", "#F3F4F6"]];
 const FAQ = [
   ["Do I own the code?", "Yes — completely. No lock-in, no per-seat licence on your own software. The repo is yours from day one, clean and documented."],
   ["What does 'human-reviewed' mean?", "A real engineer reviews every build before it ships — reading the diff, checking the logic, and signing off. AI drafts, a human decides."],

@@ -22,11 +22,14 @@
 .mxw-rd .font-display { font-family: var(--sans); }
 
 /* ── Token neutralization — theme-aware ──────────────────────────────────────
-   The global palette tints text blue (dark --foreground #e8edf7,
-   --card/popover-foreground #e8edf7, --muted-foreground #7a8aaa; light
-   --muted-foreground #66738b) and BOTH themes carry the OLD v3 blue for
-   --primary/--ring (#1200c5). -rd = neutral text (#fff / #a3a3a3 dark,
-   #000 / #6b7280 light) + brand #0056fd.
+   Historically the global palette tinted every grey blue and BOTH themes carried
+   the OLD v3 blue for --primary/--ring (#1200c5), so -rd overrode them here to
+   get neutral text + brand #0056fd. The blue tint was removed from the GLOBAL
+   palette site-wide on 2026-07-25 (see app/globals.css), so these overrides are
+   now belt-and-braces rather than the only defence — they stay because -rd
+   deliberately runs a higher-contrast text ramp (#fff / #000) than the global
+   one, and because --primary must be pinned to the current brand blue.
+   Values here are pure greys: any future edit must keep R=G=B.
 
    Set on `.mxw-rd` ITSELF (the subtree inherits these, overriding the blue
    :root values regardless of stylesheet load order — the earlier
@@ -35,10 +38,10 @@
    portals to <body> outside .mxw-rd. Remap base tokens + Tailwind-v4 --color-*. */
 .mxw-rd,
 :root:has(.mxw-rd) {
-  --muted-foreground: #6b7280;
+  --muted-foreground: #727272;
   --primary: #0056fd;
   --ring: #0056fd;
-  --color-muted-foreground: #6b7280;
+  --color-muted-foreground: #727272;
   --color-primary: #0056fd;
   --color-ring: #0056fd;
 }

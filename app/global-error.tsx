@@ -33,7 +33,7 @@ export default function GlobalError({
             padding: 48px 24px;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             background: #ffffff;
-            color: #111827;
+            color: #181818;
             -webkit-font-smoothing: antialiased;
           }
           .ge-card { width: 100%; max-width: 480px; }
@@ -42,7 +42,7 @@ export default function GlobalError({
             font-size: 13px;
             font-weight: 600;
             letter-spacing: -0.01em;
-            color: #111827;
+            color: #181818;
             margin-bottom: 32px;
           }
           .ge-heading {
@@ -50,13 +50,13 @@ export default function GlobalError({
             font-weight: 400;
             letter-spacing: -0.025em;
             line-height: 1.1;
-            color: #111827;
+            color: #181818;
             margin-bottom: 16px;
           }
           .ge-body {
             font-size: 14px;
             line-height: 1.65;
-            color: #6b7280;
+            color: #727272;
             margin-bottom: 32px;
             max-width: 40ch;
           }
@@ -77,10 +77,10 @@ export default function GlobalError({
             font-family: inherit;
             transition: transform .18s;
           }
-          .ge-btn-primary { background: #111827; color: #ffffff; }
+          .ge-btn-primary { background: #181818; color: #ffffff; }
           .ge-btn-primary:hover { transform: translateY(-1px); }
-          .ge-btn-secondary { border-color: #e8e8e8; color: #111827; }
-          .ge-btn-secondary:hover { background: #f7f8fc; }
+          .ge-btn-secondary { border-color: #e8e8e8; color: #181818; }
+          .ge-btn-secondary:hover { background: #f8f8f8; }
           @media (prefers-color-scheme: dark) {
             .ge-root { background: #000000; color: #ffffff; }
             .ge-brand, .ge-heading { color: #ffffff; }
