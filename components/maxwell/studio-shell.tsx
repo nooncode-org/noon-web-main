@@ -89,6 +89,13 @@ export type PrototypeTrace = {
   stage: PrototypeStage;
   fileCount: number;
   fileNames: string[];
+  /**
+   * Files v0's code imports but never emitted — the concrete reason an
+   * `assembling` wait is happening. Empty when the server didn't report any
+   * (the other assembling branch is an unstable version signature, which has no
+   * file list); the trace then shows its generic wait line instead of faking one.
+   */
+  missingFiles: string[];
 };
 
 export type ActiveView = "chat" | "preview";
@@ -1093,12 +1100,13 @@ export function StudioShell({
       // degrades to the honest default ("generating") instead of rendering a
       // step nobody defined.
       if (isPrototypeStage(data.stage)) {
+        const strings = (v: unknown): string[] =>
+          Array.isArray(v) ? v.filter((n: unknown): n is string => typeof n === "string") : [];
         setPrototypeTrace({
           stage: data.stage,
           fileCount: typeof data.file_count === "number" ? data.file_count : 0,
-          fileNames: Array.isArray(data.file_names)
-            ? data.file_names.filter((n: unknown): n is string => typeof n === "string")
-            : [],
+          fileNames: strings(data.file_names),
+          missingFiles: strings(data.missing_files),
         });
       }
 

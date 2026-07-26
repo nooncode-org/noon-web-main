@@ -51,6 +51,9 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
     stage,
     fileCount: stage === "generating" ? 3 : 12,
     fileNames: FILE_NAMES,
+    // Only `assembling` can carry these, and only on the unresolved-imports
+    // branch — see the poll endpoint.
+    missingFiles: stage === "assembling" ? ["@/components/plan-cards"] : [],
   };
 
   return (

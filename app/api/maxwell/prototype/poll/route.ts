@@ -40,12 +40,21 @@ function pendingPayload(
   stage: PrototypeStage,
   files: { name: string }[] | undefined,
   completionToken?: string,
+  /**
+   * The local imports v0 emitted code for but never generated. Sent ONLY on the
+   * unresolved-imports branch: it turns the trace's generic "waiting for the
+   * last files to land" into the actual names it is waiting on. Absent on the
+   * other `assembling` branch (an unstable version signature), where no such
+   * list exists — the UI falls back rather than inventing one.
+   */
+  missing?: string[],
 ) {
   return {
     status: "pending" as const,
     stage,
     file_count: files?.length ?? 0,
     file_names: (files ?? []).slice(0, MAX_REPORTED_FILE_NAMES).map((f) => f.name),
+    ...(missing?.length ? { missing_files: missing.slice(0, MAX_REPORTED_FILE_NAMES) } : {}),
     ...(completionToken ? { completion_token: completionToken } : {}),
   };
 }
@@ -221,7 +230,7 @@ export async function GET(request: Request) {
           missing_imports: missingImports.slice(0, 10),
         });
         return NextResponse.json(
-          pendingPayload("assembling", statusResult.files, completionSignature),
+          pendingPayload("assembling", statusResult.files, completionSignature, missingImports),
         );
       }
 

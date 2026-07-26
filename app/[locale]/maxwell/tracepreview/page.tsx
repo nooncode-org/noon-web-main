@@ -30,6 +30,14 @@ const FILE_NAMES = [
   "lib/utils.ts",
 ];
 
+/**
+ * Shaped like `findMissingLocalImports` really returns: the import SPECIFIER as
+ * v0 wrote it (no extension, alias intact) — not a resolved file path. The bench
+ * has to use the true shape or the badges get reviewed at a length they'll never
+ * actually have.
+ */
+const MISSING_FILES = ["@/components/plan-cards", "@/components/signup-form"];
+
 // Anchored at import rather than per render: the counter is a client-side clock
 // against this value, so a fixed anchor makes it tick like a real run instead of
 // resetting on every refresh (and keeps render pure).
@@ -74,6 +82,9 @@ export default async function TracePreviewPage() {
                   // has to be reviewed in its empty state too.
                   fileCount: stage === "generating" ? 3 : 12,
                   fileNames: stage === "generating" ? FILE_NAMES.slice(0, 3) : FILE_NAMES,
+                  // The named-files case. The generic-wait fallback (server sent
+                  // no list) gets its own card below, so both are reviewable.
+                  missingFiles: stage === "assembling" ? MISSING_FILES : [],
                 }}
               />
             </section>
@@ -88,6 +99,24 @@ export default async function TracePreviewPage() {
               phase="prototype_ready"
               trace={null}
               startedAt={null}
+            />
+          </section>
+
+          <section className="rounded-[8px] border border-border p-5">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+              assembling — no file list (generic wait)
+            </p>
+            <StudioActivityBlock
+              content="Turning your brief into an interactive prototype."
+              phase="generating_prototype"
+              startedAt={startedAt}
+              trace={{
+                stage: "assembling",
+                fileCount: 12,
+                fileNames: FILE_NAMES,
+                // The unstable-signature branch: same stage, no list to name.
+                missingFiles: [],
+              }}
             />
           </section>
 

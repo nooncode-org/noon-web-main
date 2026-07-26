@@ -875,3 +875,50 @@ describe("prototype/poll — etapa real en cada respuesta", () => {
     }
   });
 });
+
+describe("prototype/poll — nombres de los archivos que faltan", () => {
+  const demoUrl = "https://preview.v0.dev/abc?token=xyz";
+
+  it("imports sin resolver → manda los NOMBRES, no solo la etapa", () => {
+    // Antes se calculaban, se escribian en el log y se tiraban; la traza solo
+    // podia decir "esperando" sin decir a que.
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+      files: [
+        { name: "app/page.tsx", content: 'import Hero from "@/components/hero";' },
+      ],
+    });
+    return GET(
+      buildUrl({
+        chatId: "c",
+        session_id: "session-1",
+        action: "create",
+        confirmation_token: completionToken("v-1", demoUrl),
+      }),
+    )
+      .then((res) => res.json())
+      .then((body: Record<string, unknown>) => {
+        expect(body.stage).toBe("assembling");
+        // Lo que llega es el ESPECIFICADOR tal como v0 lo escribio, no una ruta
+        // resuelta con extension. La UI le hace basename para el badge.
+        expect(body.missing_files).toEqual(["@/components/hero"]);
+      });
+  });
+
+  it("firma inestable → NO inventa lista (esa rama no tiene una)", async () => {
+    // Mismo stage, causa distinta: sin token de confirmacion no hay analisis de
+    // imports, asi que el campo debe faltar y la UI cae a su frase generica.
+    vi.mocked(apiIa.getV0PrototypeStatus).mockResolvedValue({
+      status: "completed",
+      versionId: "v-1",
+      demoUrl,
+      files: [{ name: "app/page.tsx", content: "export default () => null;" }],
+    });
+    const res = await GET(buildUrl({ chatId: "c", session_id: "session-1", action: "create" }));
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.stage).toBe("assembling");
+    expect(body.missing_files).toBeUndefined();
+  });
+});

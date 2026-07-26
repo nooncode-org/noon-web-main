@@ -446,6 +446,7 @@ function stepResults(
   status: StepStatus,
   fileCount: number,
   fileNames: string[],
+  missingFiles: string[],
 ): TraceResult[] {
   const rows: TraceResult[] = [];
   // The files belong to the step that produced them, so they stay on screen
@@ -466,7 +467,20 @@ function stepResults(
     });
   }
   if (status === "active") {
-    rows.push({ done: false, text: prototypeStageDetail(step) });
+    // When the server told us WHICH files it is waiting on, name them: the value
+    // belongs in badges (treatment 3), not buried in a sentence. The generic
+    // line stays as the fallback for the other `assembling` cause (an unstable
+    // version signature), which has no file list — never a made-up one.
+    if (step === "assembling" && missingFiles.length > 0) {
+      rows.push({
+        done: false,
+        text: `Waiting for ${missingFiles.length} ${missingFiles.length === 1 ? "file" : "files"}`,
+        chips: missingFiles.slice(0, 2),
+        more: Math.max(0, missingFiles.length - 2),
+      });
+    } else {
+      rows.push({ done: false, text: prototypeStageDetail(step) });
+    }
   }
   return rows;
 }
@@ -505,6 +519,7 @@ export function StudioActivityBlock({
   const stage = trace?.stage ?? "generating";
   const fileCount = trace?.fileCount ?? 0;
   const fileNames = trace?.fileNames ?? [];
+  const missingFiles = trace?.missingFiles ?? [];
 
   return (
     <div
@@ -542,7 +557,9 @@ export function StudioActivityBlock({
           // A finished block is a summary, not a live trace: every step reads
           // done regardless of where the (now irrelevant) stage pointer sits.
           const status: StepStatus = isActive ? prototypeStepStatus(step, stage) : "done";
-          const results = isActive ? stepResults(step, status, fileCount, fileNames) : [];
+          const results = isActive
+            ? stepResults(step, status, fileCount, fileNames, missingFiles)
+            : [];
           const isLast = index === PROTOTYPE_STAGE_ORDER.length - 1;
 
           return (
