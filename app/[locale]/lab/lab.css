@@ -34,7 +34,7 @@
   --success: #00c853;
   --warning: #ffb300;
   --error: #ff3b6e;
-  --tint: rgba(17, 24, 39, 0.04);
+  --tint: rgba(24, 24, 24, 0.04);
 }
 .lab[data-theme="dark"] {
   --bg-base: #000000;

@@ -26,7 +26,7 @@
   --brand: #0056fd;
   --brand-hover: #0047e0;
   --success: #00c853;
-  --tint: rgba(17, 24, 39, 0.04);
+  --tint: rgba(24, 24, 24, 0.04);
 
   font-family: var(--sans);
   background: var(--bg-base);
@@ -136,10 +136,10 @@ html.dark .ct-rd {
     /* the actual visible bar: a clean 4px pill, right-aligned, full thumb height */
     position: absolute; right: 0; top: 0; bottom: 0; width: 4px;
     border-radius: 9999px;
-    background-color: rgba(17, 24, 39, 0.22);
+    background-color: rgba(24, 24, 24, 0.22);
     transition: background-color 0.15s ease;
   }
-  .ct-sb-thumb:hover .ct-sb-bar { background-color: rgba(17, 24, 39, 0.42); }
+  .ct-sb-thumb:hover .ct-sb-bar { background-color: rgba(24, 24, 24, 0.42); }
   html.dark .ct-rd .ct-sb-bar { background-color: rgba(255, 255, 255, 0.22); }
   html.dark .ct-rd .ct-sb-thumb:hover .ct-sb-bar { background-color: rgba(255, 255, 255, 0.42); }
 }
