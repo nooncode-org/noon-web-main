@@ -413,18 +413,22 @@ function TraceElapsed({ startedAt }: { startedAt: number }) {
   );
 }
 
-/** Status glyph per step. `pending` is an empty ring — work not started yet. */
+/**
+ * Status glyph per step. The reference's whole glyph inventory is three shapes —
+ * an empty ring, a ringed mark, and a thin spinning arc — so this uses the same
+ * three and nothing else. Sized 4 (16px) to sit with the larger step type.
+ */
 function StepGlyph({ status }: { status: StepStatus }) {
   if (status === "done") {
-    return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-foreground/70" aria-hidden />;
+    return <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/75" aria-hidden />;
   }
   if (status === "active") {
-    return <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-emerald-500" aria-hidden />;
+    return <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-500" aria-hidden />;
   }
   return (
     <span
       aria-hidden
-      className="h-3.5 w-3.5 shrink-0 rounded-full border border-border bg-transparent"
+      className="h-4 w-4 shrink-0 rounded-full border border-border bg-transparent"
     />
   );
 }
@@ -454,8 +458,11 @@ function stepResults(
       // progress spins.
       done: true,
       text: `${fileCount} ${fileCount === 1 ? "file" : "files"} written`,
-      chips: fileNames.slice(0, 3),
-      more: Math.max(0, fileCount - 3),
+      // Two, not three: at the chat pane's real width three file names wrap to a
+      // second line, and the reference's rows never wrap. The overflow count
+      // carries the rest.
+      chips: fileNames.slice(0, 2),
+      more: Math.max(0, fileCount - 2),
     });
   }
   if (status === "active") {
@@ -508,14 +515,16 @@ export function StudioActivityBlock({
       <p className="text-[13px] leading-6 text-foreground/90">{content}</p>
 
       {/* Status card. Bordered so the trace reads as one object in the
-          transcript rather than loose lines, with the meta slot hard right. */}
-      <div className="flex items-center gap-2.5 rounded-[6px] border border-border bg-card px-3 py-2.5">
+          transcript rather than loose lines, with the meta slot hard right. The
+          status itself is the heaviest type in the block (semibold, full
+          foreground) — in the reference it is the one thing that reads bold. */}
+      <div className="flex items-center gap-3 rounded-[8px] border border-border bg-card px-3.5 py-3">
         {isActive ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-500" aria-hidden />
         ) : (
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/70" aria-hidden />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground/75" aria-hidden />
         )}
-        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
           {isActive ? "Building your prototype…" : "Build complete"}
         </span>
         {isActive && startedAt != null && <TraceElapsed startedAt={startedAt} />}
@@ -539,16 +548,21 @@ export function StudioActivityBlock({
                   rule behind them: no punch-through to keep in sync with the
                   pane background. */}
               {!isLast && (
+                // left/top follow the 16px glyph: centre is 8px, and the segment
+                // starts just below it.
                 <span
                   aria-hidden
-                  className="absolute bottom-0 left-[6.5px] top-[18px] w-px bg-border"
+                  className="absolute bottom-0 left-[7.5px] top-[21px] w-px bg-border"
                 />
               )}
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <StepGlyph status={status} />
                 <span
-                  className={`min-w-0 truncate text-xs leading-5 ${
-                    status === "pending" ? "text-muted-foreground/50" : "text-muted-foreground"
+                  className={`min-w-0 truncate text-[13px] leading-5 ${
+                    // A step not started yet steps back, but only slightly: in
+                    // the reference every step label carries the same weight and
+                    // the glyph is what tells you where you are.
+                    status === "pending" ? "text-muted-foreground/60" : "text-muted-foreground"
                   }`}
                 >
                   {prototypeStageLabel(step)}
@@ -556,19 +570,22 @@ export function StudioActivityBlock({
               </div>
 
               {results.length > 0 && (
-                <div className="relative ml-6 mt-1.5 space-y-1.5 rounded-[6px] border border-border bg-secondary/15 px-3 py-2.5">
+                <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border bg-secondary/15 p-3.5">
                   {results.map((result) => (
                     // Chips sit INLINE with their line (flex-wrap), the way the
                     // reference reads: "<what happened>  [value] [value]".
                     <div
                       key={result.text}
-                      className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-5 text-muted-foreground"
+                      // Findings read at full contrast — they are the payload of
+                      // the trace, not metadata about it (the reference keeps
+                      // these lines near-black while step labels stay gray).
+                      className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[13px] leading-5 text-foreground/85"
                     >
                       {result.done ? (
-                        <Check className="h-3 w-3 shrink-0 text-foreground/60" aria-hidden />
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-foreground/60" aria-hidden />
                       ) : (
                         <Loader2
-                          className="h-3 w-3 shrink-0 animate-spin text-muted-foreground/70"
+                          className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground/70"
                           aria-hidden
                         />
                       )}
@@ -579,16 +596,19 @@ export function StudioActivityBlock({
                         // full path truncates exactly where the useful part is
                         // ("components/hero-…"), so the short form says more in
                         // less space. The path stays in the tooltip.
+                        // Filled surface, not the panel background: the
+                        // reference's chips sit slightly RAISED off the box, and
+                        // bg-background made them read as holes punched into it.
                         <code
                           key={chip}
                           title={chip}
-                          className="rounded-[4px] border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                          className="rounded-[5px] border border-border/70 bg-secondary/60 px-2 py-1 font-mono text-[11px] text-foreground/80"
                         >
                           {chip.split("/").pop() || chip}
                         </code>
                       ))}
                       {result.more ? (
-                        <span className="font-mono text-[10px] text-muted-foreground/60">
+                        <span className="font-mono text-[11px] text-muted-foreground/70">
                           +{result.more}
                         </span>
                       ) : null}
