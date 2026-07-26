@@ -570,7 +570,12 @@ export function StudioActivityBlock({
               </div>
 
               {results.length > 0 && (
-                <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border bg-secondary/15 p-3.5">
+                // Surfaces step off the page with `foreground` alpha, not
+                // `secondary` alpha. `secondary` is a light grey: over white it
+                // reads as a step, but in the studio's DARK theme it collapses
+                // into the background and the boxes vanish. foreground/x is
+                // white-on-dark and black-on-light, so the step survives both.
+                <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border bg-foreground/[0.035] p-3.5">
                   {results.map((result) => (
                     // Chips sit INLINE with their line (flex-wrap), the way the
                     // reference reads: "<what happened>  [value] [value]".
@@ -596,19 +601,19 @@ export function StudioActivityBlock({
                         // full path truncates exactly where the useful part is
                         // ("components/hero-…"), so the short form says more in
                         // less space. The path stays in the tooltip.
-                        // Filled surface, not the panel background: the
-                        // reference's chips sit slightly RAISED off the box, and
-                        // bg-background made them read as holes punched into it.
+                        // One step ABOVE the box it sits in (0.035 → 0.09), so
+                        // the chip reads as raised in either theme — the
+                        // reference's chips are a distinct surface, not a tint.
                         <code
                           key={chip}
                           title={chip}
-                          className="rounded-[5px] border border-border/70 bg-secondary/60 px-2 py-1 font-mono text-[11px] text-foreground/80"
+                          className="rounded-[5px] border border-border bg-foreground/[0.09] px-2 py-1 font-mono text-[11px] text-foreground/90"
                         >
                           {chip.split("/").pop() || chip}
                         </code>
                       ))}
                       {result.more ? (
-                        <span className="font-mono text-[11px] text-muted-foreground/70">
+                        <span className="font-mono text-[11px] text-muted-foreground">
                           +{result.more}
                         </span>
                       ) : null}
