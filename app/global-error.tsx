@@ -79,7 +79,7 @@ export default function GlobalError({
           }
           .ge-btn-primary { background: #111827; color: #ffffff; }
           .ge-btn-primary:hover { transform: translateY(-1px); }
-          .ge-btn-secondary { border-color: #e6e8f2; color: #111827; }
+          .ge-btn-secondary { border-color: #e8e8e8; color: #111827; }
           .ge-btn-secondary:hover { background: #f7f8fc; }
           @media (prefers-color-scheme: dark) {
             .ge-root { background: #000000; color: #ffffff; }

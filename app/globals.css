@@ -39,8 +39,12 @@
   --accent-foreground: #000000;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: #dbe3ef;
-  --input: #dfe6f1;
+  /* Neutral, not cool: the dark theme's borders are neutral (#262626) and the
+     light ones were a blue-tinted gray (#dbe3ef / #dfe6f1), so the two themes
+     didn't match tone (owner 2026-07-25). Neutralised at the SAME luminance —
+     same visual weight, just without the blue tilt. */
+  --border: #e2e2e2;
+  --input: #e5e5e5;
   --ring: #0056fd;
   --chart-1: #000000;
   --chart-2: #0056fd;
@@ -54,7 +58,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #edf1ff;
   --sidebar-accent-foreground: #000000;
-  --sidebar-border: #dbe3ef;
+  --sidebar-border: #e2e2e2;
   --sidebar-ring: #0056fd;
 
   /* Pipeline code-editor syntax — light (GitHub-light family) */
@@ -1108,7 +1112,7 @@
 
   /* Home single-screen frame — mirrors the redesign's framed pages
      (Work / Templates / About): a fixed inset border below the 60px nav.
-     Desktop only. Border color matches the redesign tokens (#e6e8f2/#262626). */
+     Desktop only. Border color matches the redesign tokens (#e8e8e8/#262626). */
   .home-frame { display: none; }
   @media (min-width: 768px) {
     /* Home nav sits a touch shorter than the site-wide 60px so the frame
@@ -1118,7 +1122,7 @@
     .home-frame {
       display: block; position: fixed;
       top: var(--nav-bar-h, 60px); left: 12px; right: 12px; bottom: 12px;
-      border: 1px solid #e6e8f2;
+      border: 1px solid #e8e8e8;
       pointer-events: none; z-index: 30;
     }
   }
