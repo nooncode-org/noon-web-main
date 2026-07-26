@@ -514,11 +514,14 @@ export function StudioActivityBlock({
     >
       <p className="text-[13px] leading-6 text-foreground/90">{content}</p>
 
-      {/* Status card. Bordered so the trace reads as one object in the
-          transcript rather than loose lines, with the meta slot hard right. The
-          status itself is the heaviest type in the block (semibold, full
-          foreground) — in the reference it is the one thing that reads bold. */}
-      <div className="flex items-center gap-3 rounded-[8px] border border-border bg-card px-3.5 py-3">
+      {/* TREATMENT 1 — a FILLED surface, and the only one in the block that
+          breaks away from the page. This is the headline state, so it has to be
+          the loudest thing here.
+          It used to use `bg-card`, which in this palette equals the page (white
+          on white / #080808 on #000) — so it had no elevation at all, and the
+          result boxes below actually out-shouted it. A large area needs only a
+          light fill to read as raised, hence 0.05 against the badge's 0.07. */}
+      <div className="flex items-center gap-3 rounded-[8px] border border-border bg-foreground/[0.05] px-3.5 py-3">
         {isActive ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-500" aria-hidden />
         ) : (
@@ -570,12 +573,13 @@ export function StudioActivityBlock({
               </div>
 
               {results.length > 0 && (
-                // Surfaces step off the page with `foreground` alpha, not
-                // `secondary` alpha. `secondary` is a light grey: over white it
-                // reads as a step, but in the studio's DARK theme it collapses
-                // into the background and the boxes vanish. foreground/x is
-                // white-on-dark and black-on-light, so the step survives both.
-                <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border bg-foreground/[0.035] p-3.5">
+                // TREATMENT 2 — the page's own value, defined ONLY by its border.
+                // This box GROUPS, it does not emphasise: its job is to say
+                // "these lines belong to that step". Giving it a fill (it had
+                // 0.035) made every step compete with the status card and
+                // flattened the hierarchy — the quietest treatment is the
+                // correct one here.
+                <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border p-3.5">
                   {results.map((result) => (
                     // Chips sit INLINE with their line (flex-wrap), the way the
                     // reference reads: "<what happened>  [value] [value]".
@@ -601,13 +605,17 @@ export function StudioActivityBlock({
                         // full path truncates exactly where the useful part is
                         // ("components/hero-…"), so the short form says more in
                         // less space. The path stays in the tooltip.
-                        // One step ABOVE the box it sits in (0.035 → 0.09), so
-                        // the chip reads as raised in either theme — the
-                        // reference's chips are a distinct surface, not a tint.
+                        // TREATMENT 3 — a small filled badge with WEIGHTED text.
+                        // Its job is pinpoint emphasis on one specific value, so
+                        // unlike the box it does get a fill, and unlike the prose
+                        // around it the text carries weight (it was 400, i.e. the
+                        // treatment was missing entirely). A small area needs
+                        // more fill than a large one to register: 0.07 vs the
+                        // status card's 0.05.
                         <code
                           key={chip}
                           title={chip}
-                          className="rounded-[5px] border border-border bg-foreground/[0.09] px-2 py-1 font-mono text-[11px] text-foreground/90"
+                          className="rounded-[5px] border border-border bg-foreground/[0.07] px-2 py-1 font-mono text-[11px] font-medium text-foreground/90"
                         >
                           {chip.split("/").pop() || chip}
                         </code>
