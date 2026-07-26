@@ -16,6 +16,7 @@ import { notFound } from "next/navigation";
 import { GeistSans } from "geist/font/sans";
 import { StudioActivityBlock } from "@/components/maxwell/studio-chat-pane";
 import { PROTOTYPE_STAGE_ORDER } from "@/lib/maxwell/prototype-stage";
+import { ChatBench } from "./chat-bench";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,15 @@ export default async function TracePreviewPage() {
           these at a time.
         </p>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        {/* In context first — the block on its own tells you nothing about how it
+            sits against the rest of the conversation. */}
+        <section className="mt-8">
+          <h2 className="mb-3 text-sm font-medium">In the chat</h2>
+          <ChatBench startedAt={BENCH_STARTED_AT} />
+        </section>
+
+        <h2 className="mb-3 mt-12 text-sm font-medium">Every stage, in isolation</h2>
+        <div className="grid gap-8 lg:grid-cols-2">
           {PROTOTYPE_STAGE_ORDER.map((stage) => (
             <section key={stage} className="rounded-[8px] border border-border p-5">
               <p className="mb-4 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
