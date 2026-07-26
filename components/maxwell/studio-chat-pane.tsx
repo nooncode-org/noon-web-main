@@ -437,6 +437,32 @@ function StepGlyph({ status }: { status: StepStatus }) {
 type TraceResult = { done: boolean; text: string; chips?: string[]; more?: number };
 
 /**
+ * TREATMENT 3 — small filled badges with weighted text: pinpoint emphasis on
+ * specific values. Shared by both row shapes (inline on a finished step, and
+ * inside the active step's box) so they can never drift apart.
+ */
+function TraceChips({ chips, more }: { chips?: string[]; more?: number }) {
+  if (!chips?.length) return null;
+  return (
+    <>
+      {chips.map((chip) => (
+        // Keyed by the full specifier (two dirs can hold the same file name) but
+        // LABELLED with just the last segment: the full path truncates exactly
+        // where the useful part is. The whole thing stays in the tooltip.
+        <code
+          key={chip}
+          title={chip}
+          className="rounded-[5px] border border-border bg-foreground/[0.07] px-2 py-1 font-mono text-[11px] font-medium text-foreground/90"
+        >
+          {chip.split("/").pop() || chip}
+        </code>
+      ))}
+      {more ? <span className="font-mono text-[11px] text-muted-foreground">+{more}</span> : null}
+    </>
+  );
+}
+
+/**
  * What a step has to show inside its box. Only real data ever gets in here: the
  * files v0 emitted, and the stage's own description while it runs. A step with
  * nothing to report gets no box at all, rather than a box padded with filler.
@@ -561,6 +587,16 @@ export function StudioActivityBlock({
             ? stepResults(step, status, fileCount, fileNames, missingFiles)
             : [];
           const isLast = index === PROTOTYPE_STAGE_ORDER.length - 1;
+          // TWO ROW SHAPES, and which one you get is the point:
+          //   · a FINISHED step states its value INLINE — "label: [chip] [chip]"
+          //   · the step IN FLIGHT opens a box showing the work under way
+          // Everything used to get a box, so the inline shape never appeared and
+          // a settled result was dressed up as ongoing work.
+          const inlineResult =
+            status === "done" && results.length === 1 && (results[0].chips?.length ?? 0) > 0
+              ? results[0]
+              : null;
+          const boxedResults = inlineResult ? [] : results;
 
           return (
             <li key={step} className="relative pb-2.5 last:pb-0">
@@ -575,10 +611,10 @@ export function StudioActivityBlock({
                   className="absolute bottom-0 left-[7.5px] top-[21px] w-px bg-border"
                 />
               )}
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <StepGlyph status={status} />
                 <span
-                  className={`min-w-0 truncate text-[13px] leading-5 ${
+                  className={`text-[13px] leading-5 ${
                     // A step not started yet steps back, but only slightly: in
                     // the reference every step label carries the same weight and
                     // the glyph is what tells you where you are.
@@ -586,10 +622,14 @@ export function StudioActivityBlock({
                   }`}
                 >
                   {prototypeStageLabel(step)}
+                  {inlineResult ? ":" : ""}
                 </span>
+                {inlineResult && (
+                  <TraceChips chips={inlineResult.chips} more={inlineResult.more} />
+                )}
               </div>
 
-              {results.length > 0 && (
+              {boxedResults.length > 0 && (
                 // TREATMENT 2 — the page's own value, defined ONLY by its border.
                 // This box GROUPS, it does not emphasise: its job is to say
                 // "these lines belong to that step". Giving it a fill (it had
@@ -597,7 +637,7 @@ export function StudioActivityBlock({
                 // flattened the hierarchy — the quietest treatment is the
                 // correct one here.
                 <div className="relative ml-7 mt-2 space-y-2.5 rounded-[8px] border border-border p-3.5">
-                  {results.map((result) => (
+                  {boxedResults.map((result) => (
                     // Chips sit INLINE with their line (flex-wrap), the way the
                     // reference reads: "<what happened>  [value] [value]".
                     <div
@@ -616,32 +656,7 @@ export function StudioActivityBlock({
                         />
                       )}
                       <span>{result.text}</span>
-                      {result.chips?.map((chip) => (
-                        // Keyed by the full path (two dirs can hold the same
-                        // file name) but LABELLED with just the file name: the
-                        // full path truncates exactly where the useful part is
-                        // ("components/hero-…"), so the short form says more in
-                        // less space. The path stays in the tooltip.
-                        // TREATMENT 3 — a small filled badge with WEIGHTED text.
-                        // Its job is pinpoint emphasis on one specific value, so
-                        // unlike the box it does get a fill, and unlike the prose
-                        // around it the text carries weight (it was 400, i.e. the
-                        // treatment was missing entirely). A small area needs
-                        // more fill than a large one to register: 0.07 vs the
-                        // status card's 0.05.
-                        <code
-                          key={chip}
-                          title={chip}
-                          className="rounded-[5px] border border-border bg-foreground/[0.07] px-2 py-1 font-mono text-[11px] font-medium text-foreground/90"
-                        >
-                          {chip.split("/").pop() || chip}
-                        </code>
-                      ))}
-                      {result.more ? (
-                        <span className="font-mono text-[11px] text-muted-foreground">
-                          +{result.more}
-                        </span>
-                      ) : null}
+                      <TraceChips chips={result.chips} more={result.more} />
                     </div>
                   ))}
                 </div>
