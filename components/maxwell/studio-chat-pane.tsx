@@ -521,17 +521,29 @@ export function StudioActivityBlock({
         {isActive && startedAt != null && <TraceElapsed startedAt={startedAt} />}
       </div>
 
-      {/* No connector rule between steps: the glyph column alone carries the
-          sequence, and the result boxes are what give the trace its structure. */}
-      <ol className="space-y-2">
-        {PROTOTYPE_STAGE_ORDER.map((step) => {
+      {/* The rail runs down the GLYPH column and the result boxes are indented
+          clear of it, so one continuous line threads the whole trace and the
+          boxes hang off it — the reference's anatomy. Spacing is per-item
+          padding (not a gap) so the line never breaks between steps. */}
+      <ol>
+        {PROTOTYPE_STAGE_ORDER.map((step, index) => {
           // A finished block is a summary, not a live trace: every step reads
           // done regardless of where the (now irrelevant) stage pointer sits.
           const status: StepStatus = isActive ? prototypeStepStatus(step, stage) : "done";
           const results = isActive ? stepResults(step, status, fileCount, fileNames) : [];
+          const isLast = index === PROTOTYPE_STAGE_ORDER.length - 1;
 
           return (
-            <li key={step}>
+            <li key={step} className="relative pb-2.5 last:pb-0">
+              {/* Drawn as a segment under each glyph rather than one full-height
+                  rule behind them: no punch-through to keep in sync with the
+                  pane background. */}
+              {!isLast && (
+                <span
+                  aria-hidden
+                  className="absolute bottom-0 left-[6.5px] top-[18px] w-px bg-border"
+                />
+              )}
               <div className="flex items-center gap-2.5">
                 <StepGlyph status={status} />
                 <span
@@ -544,7 +556,7 @@ export function StudioActivityBlock({
               </div>
 
               {results.length > 0 && (
-                <div className="ml-6 mt-1.5 space-y-1.5 rounded-[6px] border border-border bg-secondary/15 px-3 py-2.5">
+                <div className="relative ml-6 mt-1.5 space-y-1.5 rounded-[6px] border border-border bg-secondary/15 px-3 py-2.5">
                   {results.map((result) => (
                     // Chips sit INLINE with their line (flex-wrap), the way the
                     // reference reads: "<what happened>  [value] [value]".
