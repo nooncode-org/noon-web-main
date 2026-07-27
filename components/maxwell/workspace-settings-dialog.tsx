@@ -75,6 +75,8 @@ export function WorkspaceSettingsDialog({
   billingSlot,
   profile,
   onEditProfile,
+  onRequestCancel,
+  onRequestExport,
 }: {
   invoiceUrl?: string | null;
   /** true → membership plan (recurring): shows Manage billing + the danger zone. */
@@ -97,6 +99,14 @@ export function WorkspaceSettingsDialog({
   profile?: { name: string; photoUrl: string | null; email: string };
   /** Opens the profile editor (the sidebar owns that dialog + its state). */
   onEditProfile?: () => void;
+  /**
+   * Real transports — the workspace page passes Server Actions bound to the
+   * session that create a typed `support` request (the same §9 pipeline the
+   * chat rides, so the ask shows up in the thread and reaches the team).
+   * Absent → the mock's front-only close (wspreview).
+   */
+  onRequestCancel?: () => Promise<{ ok: true } | { ok: false; error: string }>;
+  onRequestExport?: () => Promise<{ ok: true } | { ok: false; error: string }>;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<SectionKey>("general");
@@ -110,6 +120,10 @@ export function WorkspaceSettingsDialog({
   const [exportOpen, setExportOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [exportRequested, setExportRequested] = useState(false);
+  const [cancelRequested, setCancelRequested] = useState(false);
+  // Shared by the two confirm dialogs — only one can be open at a time.
+  const [requestPending, setRequestPending] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
   // Portal language (owner ask 2026-07-19). TODO(logic later): wire to the
   // next-intl locale switch once the ES translation pass lands — until then
   // this is a front-only preference so the UI shape is settled.
@@ -132,14 +146,40 @@ export function WorkspaceSettingsDialog({
   ];
   const active = sections.find((s) => s.key === section) ?? sections[0];
 
-  function requestExport() {
-    // TODO(logic later): create an "export project data" request to the Noon team.
+  async function requestExport() {
+    if (!onRequestExport) {
+      // No transport (wspreview mock) — front-only close, as before.
+      setExportRequested(true);
+      setExportOpen(false);
+      return;
+    }
+    setRequestPending(true);
+    setRequestError(null);
+    const result = await onRequestExport();
+    setRequestPending(false);
+    if (!result.ok) {
+      setRequestError(result.error);
+      return;
+    }
     setExportRequested(true);
     setExportOpen(false);
   }
 
-  function requestCancel() {
-    // TODO(logic later): create a "cancel plan" request to the Noon team.
+  async function requestCancel() {
+    if (!onRequestCancel) {
+      // No transport (wspreview mock) — front-only close, as before.
+      setCancelOpen(false);
+      return;
+    }
+    setRequestPending(true);
+    setRequestError(null);
+    const result = await onRequestCancel();
+    setRequestPending(false);
+    if (!result.ok) {
+      setRequestError(result.error);
+      return;
+    }
+    setCancelRequested(true);
     setCancelOpen(false);
   }
 
@@ -414,16 +454,22 @@ export function WorkspaceSettingsDialog({
                       title="Cancel membership"
                       description="Nothing stops right away — your Noon team will reach out to confirm the details and walk you through what happens with your site, domain, and data."
                       footer={
-                        <>
-                          <span />
-                          <button
-                            type="button"
-                            onClick={() => setCancelOpen(true)}
-                            className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-red-700"
-                          >
-                            Cancel membership
-                          </button>
-                        </>
+                        cancelRequested ? (
+                          <p className="min-w-0 flex-1 text-[13px] font-medium text-red-700 dark:text-red-400">
+                            Cancellation requested — your Noon team will reach out.
+                          </p>
+                        ) : (
+                          <>
+                            <span />
+                            <button
+                              type="button"
+                              onClick={() => setCancelOpen(true)}
+                              className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-red-700"
+                            >
+                              Cancel membership
+                            </button>
+                          </>
+                        )
                       }
                     />
                   )}
@@ -476,7 +522,13 @@ export function WorkspaceSettingsDialog({
       </Dialog>
 
       {/* Export confirm — a request, not an instant download: the team prepares it. */}
-      <AlertDialog open={exportOpen} onOpenChange={setExportOpen}>
+      <AlertDialog
+        open={exportOpen}
+        onOpenChange={(o) => {
+          setExportOpen(o);
+          if (!o) setRequestError(null);
+        }}
+      >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Export your project data?</AlertDialogTitle>
@@ -485,14 +537,16 @@ export function WorkspaceSettingsDialog({
               you a secure download link by email. Usually within one business day.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {requestError && <p className="text-[13px] text-red-600">{requestError}</p>}
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-[6px]">Cancel</AlertDialogCancel>
             <button
               type="button"
               onClick={requestExport}
-              className="inline-flex items-center justify-center rounded-[6px] bg-[#0056fd] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0047e0]"
+              disabled={requestPending}
+              className="inline-flex items-center justify-center rounded-[6px] bg-[#0056fd] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0047e0] disabled:pointer-events-none disabled:opacity-60"
             >
-              Request export
+              {requestPending ? "Sending…" : "Request export"}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -501,7 +555,13 @@ export function WorkspaceSettingsDialog({
       {/* Cancel-plan confirm — nothing stops immediately; a human follows up.
           Plain red button (not AlertDialogAction) for the same portal reason as
           the domain menu: `.site-primary-action` would repaint it blue. */}
-      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
+      <AlertDialog
+        open={cancelOpen}
+        onOpenChange={(o) => {
+          setCancelOpen(o);
+          if (!o) setRequestError(null);
+        }}
+      >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel your membership?</AlertDialogTitle>
@@ -510,14 +570,16 @@ export function WorkspaceSettingsDialog({
               and walk you through what happens with your site, domain, and data.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {requestError && <p className="text-[13px] text-red-600">{requestError}</p>}
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-[6px]">Keep membership</AlertDialogCancel>
             <button
               type="button"
               onClick={requestCancel}
-              className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+              disabled={requestPending}
+              className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:pointer-events-none disabled:opacity-60"
             >
-              Request cancellation
+              {requestPending ? "Sending…" : "Request cancellation"}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -61,6 +61,9 @@ export function ProposalSidebar({
     advancedUnlocked?: boolean;
     /** Real billing action (e.g. the Stripe portal opener) for the Billing card. */
     billingSlot?: ReactNode;
+    /** Real transports (Server Actions) for the cancel/export confirm dialogs. */
+    onRequestCancel?: () => Promise<{ ok: true } | { ok: false; error: string }>;
+    onRequestExport?: () => Promise<{ ok: true } | { ok: false; error: string }>;
   };
 }) {
   const router = useRouter();
@@ -130,6 +133,8 @@ export function ProposalSidebar({
       billingSlot={settings.billingSlot}
       profile={{ name: profile.name, photoUrl: profile.photoUrl, email: viewerEmail }}
       onEditProfile={() => setProfileOpen(true)}
+      onRequestCancel={settings.onRequestCancel}
+      onRequestExport={settings.onRequestExport}
     />
   ) : null;
 

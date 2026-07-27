@@ -47,6 +47,7 @@ const BUY_PRICE: Record<string, number> = {
 export function AddDomainButtons({
   viaChat = false,
   hidden = false,
+  onConnectDomain,
 }: {
   /** Membership ended → the portal is read-only, so these actions don't exist. */
   hidden?: boolean;
@@ -57,9 +58,19 @@ export function AddDomainButtons({
    * front-only close.
    */
   viaChat?: boolean;
+  /**
+   * Realer mode for Add-Existing: creates the connect-domain request DIRECTLY
+   * (a typed `support` request on the §9 pipeline — it shows up in the chat
+   * thread and reaches the team with no extra click). Takes precedence over
+   * `viaChat` for the Add path; Buy stays on the chat handoff until the
+   * registrar purchase exists (#28).
+   */
+  onConnectDomain?: (domain: string) => Promise<{ ok: true } | { ok: false; error: string }>;
 } = {}) {
   const [addOpen, setAddOpen] = useState(false);
   const [domain, setDomain] = useState("");
+  const [addPending, setAddPending] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   const canAdd = domain.trim().length > 0;
 
   const [buyOpen, setBuyOpen] = useState(false);
@@ -79,14 +90,26 @@ export function AddDomainButtons({
       }))
     : [];
 
-  function submitAdd() {
-    if (!canAdd) return;
+  async function submitAdd() {
+    if (!canAdd || addPending) return;
+    if (onConnectDomain) {
+      setAddPending(true);
+      setAddError(null);
+      const result = await onConnectDomain(domain.trim());
+      setAddPending(false);
+      if (!result.ok) {
+        setAddError(result.error);
+        return;
+      }
+      setAddOpen(false);
+      setDomain("");
+      return;
+    }
     if (viaChat) {
       goToWorkspaceChat(
         `Hi — I'd like to connect my domain ${domain.trim()} to my site. Could you set it up?`,
       );
     }
-    // TODO(logic later): create a "connect domain" request automatically.
     setAddOpen(false);
     setDomain("");
   }
@@ -120,7 +143,13 @@ export function AddDomainButtons({
       </button>
 
       {/* Add Existing — connect a domain the client already owns. */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Dialog
+        open={addOpen}
+        onOpenChange={(o) => {
+          setAddOpen(o);
+          if (!o) setAddError(null);
+        }}
+      >
         <DialogContent className="rounded-[8px]">
           <DialogHeader>
             <DialogTitle>Add your domain</DialogTitle>
@@ -152,12 +181,19 @@ export function AddDomainButtons({
             />
           </div>
 
+          {addError && <p className="text-[13px] text-red-600">{addError}</p>}
+
           <DialogFooter>
             <button type="button" onClick={() => setAddOpen(false)} className={BTN_SECONDARY}>
               Cancel
             </button>
-            <button type="button" onClick={submitAdd} disabled={!canAdd} className={BTN_PRIMARY}>
-              Add domain
+            <button
+              type="button"
+              onClick={submitAdd}
+              disabled={!canAdd || addPending}
+              className={BTN_PRIMARY}
+            >
+              {addPending ? "Sending…" : "Add domain"}
             </button>
           </DialogFooter>
         </DialogContent>
