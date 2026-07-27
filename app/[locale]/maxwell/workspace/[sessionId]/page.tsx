@@ -470,6 +470,52 @@ export default async function WorkspacePage({ params }: Props) {
     }
     return { ok: true } as const;
   }
+  /**
+   * Settings + domain asks ride the SAME §9 pipeline as the chat, as `support`
+   * requests (the frozen 10-type wire has no cancel/export/domain types, and
+   * `support` is exactly "help, not new work" — allowed on one-time plans too).
+   * The request lands in the chat thread via the action's revalidate, so the
+   * client sees it tracked where everything else lives.
+   */
+  async function requestPlanCancellation() {
+    "use server";
+    const result = await submitRequestAction({
+      sessionId,
+      type: "support",
+      clientPriority: "high",
+      body:
+        "Cancel plan: the client pressed “Request cancellation” in the portal settings. " +
+        "Nothing was stopped automatically — please reach out to confirm the details and " +
+        "walk them through what happens with their site, domain, and data.",
+    });
+    return result.ok ? ({ ok: true } as const) : ({ ok: false, error: result.error } as const);
+  }
+  async function requestDataExport() {
+    "use server";
+    const result = await submitRequestAction({
+      sessionId,
+      type: "support",
+      clientPriority: DEFAULT_CLIENT_REQUEST_PRIORITY,
+      body:
+        "Export project data: the client requested a full export (code, content, assets) " +
+        "from the portal settings. Please prepare it and send a secure download link.",
+    });
+    return result.ok ? ({ ok: true } as const) : ({ ok: false, error: result.error } as const);
+  }
+  async function requestDomainConnect(domain: string) {
+    "use server";
+    const trimmed = domain.trim().slice(0, 253); // DNS length cap; body is free text
+    if (!trimmed) return { ok: false, error: "Please enter a domain." } as const;
+    const result = await submitRequestAction({
+      sessionId,
+      type: "support",
+      clientPriority: DEFAULT_CLIENT_REQUEST_PRIORITY,
+      body:
+        `Connect domain: the client wants ${trimmed} connected to their site ` +
+        "(portal “Add existing” form). Please set up the DNS with them.",
+    });
+    return result.ok ? ({ ok: true } as const) : ({ ok: false, error: result.error } as const);
+  }
   async function publishVersion(versionSequenceNumber: number) {
     "use server";
     const result = await submitVersionAction({ sessionId, versionSequenceNumber });
@@ -581,6 +627,8 @@ export default async function WorkspacePage({ params }: Props) {
           // the panel points the client at the Chat meanwhile.
           advancedUnlocked: false,
           billingSlot,
+          onRequestCancel: requestPlanCancellation,
+          onRequestExport: requestDataExport,
         }}
       />
 
@@ -1157,7 +1205,11 @@ export default async function WorkspacePage({ params }: Props) {
                   {/* Both dialogs hand off to the Chat with the request typed —
                       the channel that actually reaches the team (registrar
                       purchase + connect automation are #27/#28). */}
-                  <AddDomainButtons viaChat hidden={membershipEnded} />
+                  <AddDomainButtons
+                    viaChat
+                    hidden={membershipEnded}
+                    onConnectDomain={requestDomainConnect}
+                  />
                 </div>
                 <div className="p-5">
                   {/* The search earns its place from 5 domains up. */}
