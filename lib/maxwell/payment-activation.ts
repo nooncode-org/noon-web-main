@@ -358,6 +358,49 @@ async function notifyNoonApp(input: {
 }
 
 /**
+ * B9 heal — the idempotent path re-attempts the App handoff iff it never landed.
+ *
+ * The failure this closes: payment_event persists BEFORE notifyNoonApp (B10),
+ * so when the FIRST notify fails, every Stripe redelivery used to short-circuit
+ * on idempotency and return 200 without ever re-sending — the App never learned
+ * of the payment (no project, no earnings) and recovery was manual.
+ *
+ * The delivery receipt is `workspace.noonAppProjectId`: write-once, set ONLY
+ * from the App's payment-confirmed ack (notifyNoonApp). Null on an activated
+ * workspace ⇒ the handoff never succeeded ⇒ re-send. Re-sending is safe: the
+ * App receiver de-dupes on `external_payment_id` (= paymentReference, stable
+ * across webhook + return legs), so a duplicate is an idempotent ack — which
+ * also backfills the project id if only the response parse failed originally.
+ *
+ * A still-failing notify THROWS: the webhook then returns non-2xx and Stripe
+ * keeps redelivering (~72h of at-least-once), and the checkout-return leg
+ * swallows it by contract and just falls back. Beyond Stripe's retry window
+ * the audit trail (`noon_app_payment_failed`) remains the manual signal.
+ */
+async function healIdempotentActivation(
+  input: { proposalRequestId: string; paymentReference?: string | null; summary?: string | null },
+  existingEvent: PaymentEvent,
+): Promise<{
+  proposal: ProposalRequest;
+  session: StudioSession;
+  workspace: ClientWorkspace;
+  paymentEvent: PaymentEvent;
+  idempotent: true;
+}> {
+  const state = await loadIdempotentActivationState(input.proposalRequestId, existingEvent);
+  if (!state.workspace.noonAppProjectId) {
+    await notifyNoonApp({
+      session: state.session,
+      proposal: state.proposal,
+      workspaceId: state.workspace.id,
+      paymentReference: input.paymentReference ?? existingEvent.reference,
+      summary: input.summary,
+    });
+  }
+  return state;
+}
+
+/**
  * Re-load the {proposal, session, workspace} triple for an already-processed
  * payment so an idempotent confirmation can return the same shape as a fresh one
  * without redoing any writes (or re-notifying the App / re-sending emails).
@@ -409,7 +452,7 @@ export async function confirmProposalPayment(input: {
   if (input.providerEventId) {
     const existingEvent = await getPaymentEventByProviderEventId(input.providerEventId);
     if (existingEvent) {
-      return loadIdempotentActivationState(input.proposalRequestId, existingEvent);
+      return healIdempotentActivation(input, existingEvent);
     }
   }
 
@@ -422,7 +465,7 @@ export async function confirmProposalPayment(input: {
   if (input.providerSessionId) {
     const existingBySession = await getConfirmedPaymentEventBySessionId(input.providerSessionId);
     if (existingBySession) {
-      return loadIdempotentActivationState(input.proposalRequestId, existingBySession);
+      return healIdempotentActivation(input, existingBySession);
     }
   }
 
@@ -483,9 +526,10 @@ export async function confirmProposalPayment(input: {
   // payment_event row, so the next retry re-entered the full pipeline and reissued the
   // webhook every time.
   //
-  // The outbound retry/backoff itself is Bloque 5 (B9) — until then, a failed notify is
-  // recorded in audit (appendProposalReviewEvent `noon_app_payment_failed`) and surfaced
-  // to ops via the structured logger.
+  // The outbound retry is B9, closed 2026-07-27: a failed notify throws (→ Stripe
+  // redelivers) and the idempotent path re-attempts the handoff until it lands
+  // (healIdempotentActivation, keyed on the write-once workspace.noonAppProjectId).
+  // A failed notify is also recorded in audit (`noon_app_payment_failed`).
   const paymentEvent = await appendPaymentEvent({
     studioSessionId: session.id,
     eventType: "confirmed",

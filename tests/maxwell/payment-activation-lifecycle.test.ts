@@ -116,6 +116,7 @@ vi.mock("@/lib/server/logger", () => ({
 
 import * as repos from "@/lib/maxwell/repositories";
 import * as emails from "@/lib/maxwell/lifecycle-emails";
+import * as integration from "@/lib/noon-app-integration";
 import { confirmProposalPayment, confirmSessionPayment } from "@/lib/maxwell/payment-activation";
 
 // ---------------------------------------------------------------------------
@@ -373,8 +374,12 @@ describe("confirmProposalPayment — B8 skip conditions", () => {
   it("does NOT fire emails on idempotent retry (existing provider_event_id)", async () => {
     // Idempotency path: the same provider_event_id was processed before
     // → return the existing event, never recompute, never resend emails.
+    // noonAppProjectId set = the App handoff landed on the original confirm
+    // (the null case is the B9 heal, pinned in its own describe below).
     vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(fakePaymentEvent());
-    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(fakeWorkspace());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: "app-proj-1" }),
+    );
 
     const result = await confirmProposalPayment({
       proposalRequestId: "proposal-1",
@@ -395,10 +400,13 @@ describe("confirmProposalPayment — B8 skip conditions", () => {
     // Idempotency #2: the client's return-path confirm already wrote the
     // `confirmed` event for this checkout session (a DIFFERENT provider_event_id).
     // A subsequent webhook — carrying the same providerSessionId — must dedupe on
-    // the session id: no re-activation, no App re-notify, no duplicate emails.
+    // the session id: no re-activation, no App re-notify (the handoff landed —
+    // noonAppProjectId is set), no duplicate emails.
     vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(null);
     vi.mocked(repos.getConfirmedPaymentEventBySessionId).mockResolvedValue(fakePaymentEvent());
-    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(fakeWorkspace());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: "app-proj-1" }),
+    );
 
     const result = await confirmProposalPayment({
       proposalRequestId: "proposal-1",
@@ -445,6 +453,122 @@ describe("confirmProposalPayment — B8 skip conditions", () => {
     // B8 #3 is skipped entirely — a "workspace ready" email without
     // the link is useless.
     expect(emails.sendWorkspaceReadyEmail).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B9 heal — the idempotent path re-attempts the App handoff iff it never landed
+// ---------------------------------------------------------------------------
+//
+// payment_event persists BEFORE notifyNoonApp (B10). When the FIRST notify
+// fails, every redelivery used to short-circuit on idempotency without ever
+// re-sending — the App never learned of the payment. The heal keys on the
+// write-once workspace.noonAppProjectId (set only from the App's ack): null on
+// an activated workspace ⇒ re-send; set ⇒ the plain short-circuit above.
+
+describe("confirmProposalPayment — B9 heal (App handoff re-attempt)", () => {
+  it("re-sends payment-confirmed on idempotent retry when the handoff never landed", async () => {
+    vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(fakePaymentEvent());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: null }),
+    );
+    vi.mocked(integration.sendPaymentConfirmedToNoonApp).mockResolvedValueOnce({
+      projectId: "app-proj-9",
+    });
+
+    const result = await confirmProposalPayment({
+      proposalRequestId: "proposal-1",
+      actor: "stripe-webhook",
+      provider: "stripe",
+      providerEventId: "stripe_evt_1",
+      paidAmountMinor: 125000,
+      paidCurrency: "USD",
+    });
+    await flushFireAndForget();
+
+    expect(result.idempotent).toBe(true);
+    expect(integration.sendPaymentConfirmedToNoonApp).toHaveBeenCalledTimes(1);
+    // The ack's project id is captured — the receipt flips, so the NEXT retry
+    // takes the plain short-circuit.
+    expect(repos.setClientWorkspaceNoonAppProjectId).toHaveBeenCalledWith(
+      "workspace-1",
+      "app-proj-9",
+    );
+    // Heal ≠ re-activation: no new payment_event, no duplicate emails.
+    expect(repos.appendPaymentEvent).not.toHaveBeenCalled();
+    expect(emails.sendPaymentReceivedEmail).not.toHaveBeenCalled();
+    expect(emails.sendWorkspaceReadyEmail).not.toHaveBeenCalled();
+  });
+
+  it("does NOT re-send when the handoff already landed (noonAppProjectId set)", async () => {
+    vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(fakePaymentEvent());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: "app-proj-1" }),
+    );
+
+    const result = await confirmProposalPayment({
+      proposalRequestId: "proposal-1",
+      actor: "stripe-webhook",
+      provider: "stripe",
+      providerEventId: "stripe_evt_1",
+      paidAmountMinor: 125000,
+      paidCurrency: "USD",
+    });
+
+    expect(result.idempotent).toBe(true);
+    expect(integration.sendPaymentConfirmedToNoonApp).not.toHaveBeenCalled();
+  });
+
+  it("heals on the SESSION-id dedupe path too (return leg lost the race)", async () => {
+    vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(null);
+    vi.mocked(repos.getConfirmedPaymentEventBySessionId).mockResolvedValue(fakePaymentEvent());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: null }),
+    );
+    vi.mocked(integration.sendPaymentConfirmedToNoonApp).mockResolvedValueOnce({
+      projectId: "app-proj-9",
+    });
+
+    const result = await confirmProposalPayment({
+      proposalRequestId: "proposal-1",
+      actor: "stripe",
+      provider: "stripe",
+      providerEventId: "evt_webhook_after_return",
+      providerSessionId: "cs_shared_123",
+      paidAmountMinor: 125000,
+      paidCurrency: "USD",
+    });
+    await flushFireAndForget();
+
+    expect(result.idempotent).toBe(true);
+    expect(integration.sendPaymentConfirmedToNoonApp).toHaveBeenCalledTimes(1);
+    expect(repos.appendPaymentEvent).not.toHaveBeenCalled();
+  });
+
+  it("a still-failing heal THROWS so the webhook stays non-2xx and Stripe retries", async () => {
+    vi.mocked(repos.getPaymentEventByProviderEventId).mockResolvedValue(fakePaymentEvent());
+    vi.mocked(repos.getClientWorkspaceBySession).mockResolvedValue(
+      fakeWorkspace({ noonAppProjectId: null }),
+    );
+    vi.mocked(integration.sendPaymentConfirmedToNoonApp).mockRejectedValueOnce(
+      new integration.NoonAppIntegrationError("App unreachable", 502),
+    );
+
+    await expect(
+      confirmProposalPayment({
+        proposalRequestId: "proposal-1",
+        actor: "stripe-webhook",
+        provider: "stripe",
+        providerEventId: "stripe_evt_1",
+        paidAmountMinor: 125000,
+        paidCurrency: "USD",
+      }),
+    ).rejects.toThrow("App unreachable");
+
+    // The failure is audited each attempt (the ops trail beyond Stripe's window).
+    expect(repos.appendProposalReviewEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "noon_app_payment_failed" }),
+    );
   });
 });
 
