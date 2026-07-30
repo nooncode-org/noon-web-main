@@ -80,7 +80,11 @@ async function UpgradePageContent({ params, searchParams }: Props) {
                 background + padding) leaves the inputs as the only surfaces that
                 carry a fill — which is what makes them read as the interactive
                 bits now that nothing else competes. */}
-            <section aria-labelledby="upgrade-entry-title" className="upg-hero">
+            {/* .upg-solo-center replaces .upg-hero here: that class carries a
+                clamp(96px,10vw,128px) top padding meant to clear the marketing
+                page's FIXED nav, which this shell doesn't have — it was just a
+                gap pushing everything up and away from centre. */}
+            <section aria-labelledby="upgrade-entry-title" className="upg-solo-center">
               <div className="upg-solo min-w-0">
                 {/* Kept for document structure — a page with no h1 is an a11y
                     regression — but functional, not a pitch. */}

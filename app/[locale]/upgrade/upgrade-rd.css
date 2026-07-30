@@ -225,17 +225,60 @@ html.dark .upg-rd {
 .upg-hero-form { padding: clamp(24px, 3vw, 40px); background: var(--bg-secondary); }
 
 /* ── signed-in: the intake ALONE ────────────────────────────────────────────
-   No aside to sit beside, so the 2-up grid is gone and the frame is capped and
-   centred instead — left full-width it would stretch the fields across 1400px
-   and read like a form nobody finished. */
-.upg-solo { max-width: 680px; margin: 0 auto; }
+   No aside to sit beside, so the 2-up grid is gone and the column is capped and
+   centred instead — left full-width it would stretch the fields across 1400px and
+   read like a form nobody finished. 560px, down from 680: one input needs less.
+
+   `width: 100%` is load-bearing, not redundant: inside the flex column below, the
+   cross-axis `auto` margins cancel the default stretch, so the column collapsed to
+   its widest child's max-content width — measured 469px, a number set by the length
+   of a radio label. Copy edits must not move the layout. */
+.upg-solo { width: 100%; max-width: 560px; margin: 0 auto; }
+
+/* No card around the fields. UpgradeInput wears .liquid-glass-card for the
+   marketing hero, where it sits on a filled panel — here it was the last frame
+   left after .upg-hero-frame/.upg-hero-form came off (owner: "solo deja los
+   titulos y los inputs"). Barely visible on black, but a clear white-on-white
+   card in the light theme. Scoped to .upg-solo, which only the signed-in branch
+   renders, so the marketing hero is untouched; unlayered here, so it beats
+   globals.css's @layer rule without !important. */
+.upg-solo form.liquid-glass-card {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* the card's inner 16px inset goes with it — otherwise the fields sit narrower
+   than the title they belong to, for no reason the eye can explain. */
+.upg-solo form.liquid-glass-card > div { padding: 0; }
+
+/* Reads as the page's title, not a stray label: it was 17px, left-aligned, with a
+   62px gap that split it from the form it belongs to. Centred over the fields and
+   pulled close, the two become one block. */
 .upg-solo-title {
   font-family: var(--sans);
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 22px;
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-align: center;
+  margin: 0 0 32px;
   color: var(--text-primary);
+}
+
+/* Vertically centred, like the home's composer: the column is ~430px tall in a
+   720px viewport, so anchored to the top it left ~200px of dead space underneath.
+   min-height (not height) so it still scrolls when the note field is open on a
+   short screen. Plain 100dvh, NOT dvh-minus-padding: box-sizing is border-box
+   here, so subtracting the padding left the section 102px shorter than the
+   viewport and the "centred" content sat that much above centre. */
+.upg-solo-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: clamp(24px, 4vw, 56px) 0;
 }
 
 /* the two mini mockup cards inside .upg-hero-proof: stacked (narrow aside)

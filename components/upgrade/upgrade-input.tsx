@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Globe, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Globe, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildSignInHref } from "@/lib/auth/redirect";
 
@@ -61,6 +61,10 @@ export function UpgradeInput({
     initialMode === "answer_questions" ? "answer_questions" : "best_judgment"
   );
   const [note, setNote] = useState(initialNote);
+  // Own the disclosure instead of deriving it from `note.length > 0`: derived, a
+  // select-all-delete inside the field collapsed the panel out from under the
+  // cursor. Seeded open when there's a note to show, then the user's own toggles win.
+  const [noteOpen, setNoteOpen] = useState(initialNote.length > 0);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,6 +79,7 @@ export function UpgradeInput({
           const pending = JSON.parse(raw) as { url?: string; mode?: string; note?: string };
           if (pending.note) {
             setNote(pending.note);
+            setNoteOpen(true); // a restored note must not stay hidden behind the summary
           }
         }
       } catch {
@@ -157,7 +162,10 @@ export function UpgradeInput({
             onChange={(e) => setUrl(e.target.value)}
             placeholder="yourwebsite.com"
             autoComplete="url"
-            className="h-11 w-full rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] py-2.5 pl-10 pr-4 font-mono text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
+            // Taller and larger than the rest: this is THE input. It used to be
+            // 44px while the OPTIONAL note field was 166px — the one thing you
+            // must fill was the smallest thing on screen.
+            className="h-[52px] w-full rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] py-2.5 pl-11 pr-4 font-mono text-[15px] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
             disabled={isSubmitting}
           />
         </div>
@@ -194,23 +202,43 @@ export function UpgradeInput({
         </div>
       </fieldset>
 
-      {/* Optional context */}
-      <div className="space-y-2">
-        <label htmlFor="context-note" className="text-sm font-medium text-foreground">
-          Additional details <span className="text-muted-foreground">(optional)</span>
-        </label>
+      {/* Optional context — behind a disclosure, and only 3 rows when open.
+          It used to sit open at 7 rows (166px), making the field you can SKIP the
+          biggest thing on the page. Stays open once it has content, so a filled
+          note can never hide itself. */}
+      <details
+        open={noteOpen}
+        onToggle={(e) => setNoteOpen(e.currentTarget.open)}
+        className="group"
+      >
+        <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <ChevronDown
+            className="h-4 w-4 transition-transform group-open:rotate-180"
+            strokeWidth={1.75}
+            aria-hidden="true"
+          />
+          Additional details <span className="font-normal">(optional)</span>
+        </summary>
         <textarea
           id="context-note"
+          // The <summary> is the disclosure's own name, not this field's — with the
+          // visible <label> gone, this is what keeps the textarea from being
+          // announced as an unlabeled edit box.
+          aria-label="Additional details (optional)"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Add any details you’d like us to consider to improve your upgrade."
-          rows={7}
+          placeholder="Anything you’d like us to consider."
+          rows={3}
           maxLength={2000}
-          className="w-full resize-none rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] px-4 py-3 text-sm text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
+          className="mt-2.5 w-full resize-y rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] px-4 py-3 text-sm text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"
           disabled={isSubmitting}
         />
-        <p className="text-xs text-muted-foreground text-right">{note.length}/2000</p>
-      </div>
+        {/* Only once there IS something to count — "0/2000" under an empty
+            optional field is pure noise. */}
+        {note.length > 0 && (
+          <p className="mt-1.5 text-right text-xs text-muted-foreground">{note.length}/2000</p>
+        )}
+      </details>
 
       {/* Error */}
       {error && (
