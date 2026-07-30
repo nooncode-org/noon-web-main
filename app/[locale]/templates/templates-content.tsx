@@ -11,7 +11,13 @@ import { siteRoutes, getTemplateHref, getStartWithMaxwellHref } from "@/lib/site
 const LOCALES = ["en", "es", "fr", "de"];
 
 
-export function TemplatesContent() {
+/**
+ * `tool`: the signed-in rendering — the catalog WITHOUT the pitch around it. Same
+ * search, categories and grid; the hero headline/lead and the closing CTA come off,
+ * because a client who is already inside doesn't need to be sold the product they
+ * bought. Mirrors the signed-in home and /upgrade.
+ */
+export function TemplatesContent({ tool = false }: { tool?: boolean }) {
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
   const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
@@ -65,32 +71,53 @@ export function TemplatesContent() {
     return list;
   }, [activeFilter, query]);
 
+  // One search field, two headers — extracted so the marketing hero and the
+  // signed-in header can't drift apart.
+  const search = (
+    <label className="tpl-search">
+      <Search size={16} aria-hidden />
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search templates…"
+      />
+    </label>
+  );
+
   return (
     <>
-      {/* ── hero ─────────────────────────────────────────────────────────── */}
-      <section className="tpl-hero">
-        <div className="tpl-wrap">
-          <div className="tpl-hero-inner">
-            <h1 className="tpl-display">
-              Starting points for{" "}
-              <span style={{ color: "var(--text-secondary)" }}>real software.</span>
-            </h1>
-            <p className="tpl-lead tpl-hero-lead">
-              Each template is a pre-defined scope for a common software type — ready to adapt to
-              your business and delivered as production code you own.
-            </p>
-            <label className="tpl-search">
-              <Search size={16} aria-hidden />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search templates…"
-              />
-            </label>
+      {/* ── header ───────────────────────────────────────────────────────── */}
+      {tool ? (
+        // Signed in: a functional title over the search, at the same size and
+        // weight as /upgrade's — both surfaces live in the same app shell, so
+        // their headings have to look like siblings. No hero padding either:
+        // there's no fixed nav here to clear.
+        <section className="tpl-toolhead">
+          <div className="tpl-wrap">
+            <div className="tpl-hero-inner">
+              <h1 className="tpl-toolhead-title">Templates</h1>
+              {search}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="tpl-hero">
+          <div className="tpl-wrap">
+            <div className="tpl-hero-inner">
+              <h1 className="tpl-display">
+                Starting points for{" "}
+                <span style={{ color: "var(--text-secondary)" }}>real software.</span>
+              </h1>
+              <p className="tpl-lead tpl-hero-lead">
+                Each template is a pre-defined scope for a common software type — ready to adapt to
+                your business and delivered as production code you own.
+              </p>
+              {search}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── browse by category ────────────────────────────────────────────── */}
       <section className="tpl-section" style={{ paddingTop: 0, paddingBottom: 32 }}>
@@ -237,6 +264,10 @@ export function TemplatesContent() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
+      {/* Marketing only. Signed in, both of its buttons are already in the rail
+          ("New chat" is Start with Maxwell), so it would just be a pitch for
+          something the client is standing inside. */}
+      {!tool && (
       <section className="tpl-section" style={{ paddingTop: 0 }}>
         <div className="tpl-wrap">
           <div className="tpl-cta">
@@ -258,6 +289,7 @@ export function TemplatesContent() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }

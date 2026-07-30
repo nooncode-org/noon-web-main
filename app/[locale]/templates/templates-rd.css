@@ -153,6 +153,20 @@ html.dark .tpl-rd {
   text-align: center;
 }
 .tpl-hero-lead { margin-top: 20px; }
+
+/* signed-in header: no fixed nav above it to clear, so the 88–120px hero padding
+   would just be a hole. Title sized to match /upgrade's — same shell, sibling
+   headings. */
+.tpl-toolhead { padding: clamp(28px, 4vw, 56px) 0 clamp(20px, 3vw, 32px); }
+.tpl-toolhead-title {
+  font-family: var(--sans);
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--text-primary);
+}
 .tpl-search {
   margin-top: 28px;
   max-width: 520px;

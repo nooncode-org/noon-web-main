@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { ArrowRight, Mail } from "lucide-react";
+import { auth } from "@/auth";
 import { ContactIntakeForm } from "@/app/_components/site/contact-intake-form";
 import { SiteNav } from "@/app/_components/site/site-nav";
+import { ProposalSidebar } from "@/components/maxwell/proposal-sidebar";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import { ContactScroll } from "./contact-scroll";
-import { contactInbox, normalizeContactInquiry } from "@/lib/contact";
+import { normalizeContactInquiry } from "@/lib/contact";
 import "./contact-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
 
@@ -40,10 +40,63 @@ type Props = {
 };
 
 export default async function ContactRedesignPage({ params, searchParams }: Props) {
-  const [{ locale }, { inquiry, source, draft }] = await Promise.all([params, searchParams]);
-  const lp = (href: string) => `/${locale}${href}`;
+  const [{ locale }, { inquiry, source, draft }, session] = await Promise.all([
+    params,
+    searchParams,
+    auth(),
+  ]);
   const normalizedInquiry = normalizeContactInquiry(inquiry);
   const trimmedDraft = (draft ?? "").trim();
+  const viewerEmail = session?.user?.email ?? null;
+
+  // Signed in → the form ALONE, in the app shell. This is where the rail's "Talk
+  // to agent" lands, so it follows the same rule as the home, /upgrade and
+  // /templates: rail instead of marketing nav, no viewport frame, no footer.
+  //
+  // What comes off: the "Let's talk." hero and its lead, the "Start a
+  // conversation." aside, the response-time timeline and the FAQ. All three of
+  // those answer a PROSPECT's questions ("should I start with Maxwell or this
+  // form?", "how is pricing handled?"); a client's answers come from their own
+  // project. The one fact worth keeping is when someone replies, so it stays as a
+  // single line under the title.
+  //
+  // ContactScroll is skipped too: it turns the framed region into a custom scroll
+  // container, and here the shell's own overflow-y-auto column is the scroller —
+  // two nested scrollers would fight.
+  if (viewerEmail) {
+    return (
+      <div
+        className={`${GeistSans.variable} ${GeistMono.variable} ct-rd flex h-[100dvh] overflow-hidden bg-background`}
+      >
+        <ProposalSidebar
+          viewerEmail={viewerEmail}
+          locale={locale}
+          collapsibleRail
+          accountSettings
+        />
+
+        <div className="min-w-0 flex-1 overflow-y-auto">
+          <main className="ct-wrap">
+            <section aria-labelledby="contact-tool-title" className="ct-solo">
+              <h1 id="contact-tool-title" className="ct-solo-title">
+                Talk to an agent
+              </h1>
+              <p className="ct-solo-sub">
+                A person reads every message. We usually reply within 1–2 business days.
+              </p>
+              <ContactIntakeForm
+                initialInquiry={normalizedInquiry}
+                initialSource={source}
+                initialDraft={trimmedDraft}
+                layout="stacked"
+                showGuidance={false}
+              />
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} ct-rd`}>
