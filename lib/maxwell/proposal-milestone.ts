@@ -29,9 +29,6 @@ export type StudioMilestone = {
 
 export const PROPOSAL_MILESTONE_TITLE = "Proposal sent for review";
 
-export const PROPOSAL_MILESTONE_STATUS =
-  "A Project Manager is verifying it. You'll get the formal version by email once it's approved.";
-
 export type ProposalMilestoneInput = {
   /** `proposal_request.created_at`; the client's own clock when it just happened. */
   at: string | null;
@@ -71,7 +68,14 @@ export function buildProposalMilestone(input: ProposalMilestoneInput): StudioMil
 
   return {
     at: input.at,
-    status: PROPOSAL_MILESTONE_STATUS,
+    // No status line, deliberately. Seen inside the real chat, it repeated the
+    // proposal-phase panel sitting directly beneath it — and worse, it GOES
+    // STALE: this card is the record of an event at a point in time, rebuilt on
+    // every reload, so once the PM sends the proposal it would still be telling
+    // the client "a Project Manager is verifying it". Live state belongs to the
+    // phase panel, which updates; the card states what happened and when.
+    // (In the owner's reference the equivalent banner sits ABOVE the timeline,
+    // not inside an entry — which is exactly where our panel already is.)
     rows,
     action: input.proposalHref ? { label: "View proposal", href: input.proposalHref } : null,
   };

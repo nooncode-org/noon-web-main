@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildProposalMilestone,
-  PROPOSAL_MILESTONE_STATUS,
-} from "@/lib/maxwell/proposal-milestone";
+import { buildProposalMilestone } from "@/lib/maxwell/proposal-milestone";
 
 const FULL = {
   at: "2026-07-30T15:04:00.000Z",
@@ -19,7 +16,8 @@ describe("buildProposalMilestone", () => {
   it("states every fact it was given", () => {
     const m = buildProposalMilestone(FULL);
     expect(m.at).toBe(FULL.at);
-    expect(m.status).toBe(PROPOSAL_MILESTONE_STATUS);
+    // No status line: live state is the phase panel’s job, not a record’s.
+    expect(m.status).toBeUndefined();
     expect(label(m, "Requested by")?.value).toBe("priya@marlowcoffee.com");
     expect(label(m, "Project")?.value).toBe("A landing page for my coffee subscription");
     expect(label(m, "Built from")?.chips).toEqual(["Prototype v3"]);

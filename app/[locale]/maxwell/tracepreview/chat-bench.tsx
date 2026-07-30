@@ -12,7 +12,7 @@
  * Only the handlers are stubs. Nothing in `StudioChatPane` is reimplemented.
  */
 import { useRef, useState } from "react";
-import { StudioChatPane, StudioEventCard } from "@/components/maxwell/studio-chat-pane";
+import { StudioChatPane } from "@/components/maxwell/studio-chat-pane";
 import type { ChatMessage, PrototypeTrace } from "@/components/maxwell/studio-shell";
 import { PROTOTYPE_STAGE_ORDER, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
 import {
@@ -40,6 +40,49 @@ function buildMessages(startedAt: number): ChatMessage[] {
       role: "assistant",
       type: "system_event",
       content: "Turning your brief into an interactive prototype.",
+    },
+  ];
+}
+
+const PROJECT_NAME = "A landing page for my coffee subscription — hero, plans, and a signup form.";
+
+/**
+ * The same conversation, later: the prototype is approved and the client has just
+ * asked for the formal proposal. This is the moment the milestone card exists for,
+ * and the point of showing it here is the CONTRAST with the two ordinary bubbles
+ * right above it — which is exactly what the card is fixing.
+ */
+function buildProposalMessages(startedAt: number): ChatMessage[] {
+  return [
+    ...buildMessages(startedAt),
+    {
+      id: "m4",
+      role: "assistant",
+      content:
+        "Your prototype is ready — three plan tiers with the signup form wired to the hero CTA. Take a look and tell me what you'd change.",
+      createdAt: new Date(startedAt + 4 * 60_000).toISOString(),
+    },
+    { id: "m5", role: "user", content: "I'd like the formal proposal." },
+    {
+      id: "m6",
+      role: "assistant",
+      content: "Drafting the proposal based on everything we've covered.",
+      createdAt: new Date(startedAt + 9 * 60_000).toISOString(),
+    },
+    {
+      id: "m7",
+      role: "assistant",
+      type: "system_event",
+      content: PROPOSAL_MILESTONE_TITLE,
+      milestone: buildProposalMilestone({
+        at: new Date(startedAt + 9 * 60_000 + 4_000).toISOString(),
+        requestedBy: "priya@marlowcoffee.com",
+        projectName: PROJECT_NAME,
+        prototypeVersion: 3,
+        // Reload-after-send state, so the action is visible. Straight after
+        // requesting it there is no link yet and the button is simply absent.
+        proposalHref: "#",
+      }),
     },
   ];
 }
@@ -82,35 +125,19 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
         ))}
       </div>
 
-      {/* MILESTONE CARD — shown at the chat column's real inner width (the pane
-          pads 20px each side), because the whole question is whether the rows and
-          chips survive a 480px column. Standalone for now, on purpose: the design
-          gets reviewed before the payload is plumbed through messages.
-          Every value here is a field the client already holds at that moment —
-          see the wiring note in the studio shell. */}
-      <div className="mb-6 w-full max-w-[520px] rounded-[8px] border border-dashed border-border/70 p-5">
-        <p className="mb-4 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
-          milestone · proposal sent
-        </p>
-        {/* Built by the SAME function the chat calls, so the bench can't show a
-            card the client will never get. Only the inputs are sampled. */}
-        <StudioEventCard
-          title={PROPOSAL_MILESTONE_TITLE}
-          milestone={buildProposalMilestone({
-            at: new Date(startedAt).toISOString(),
-            requestedBy: "priya@marlowcoffee.com",
-            projectName: "A landing page for my coffee subscription — hero, plans, and a signup form.",
-            prototypeVersion: 3,
-            // The state AFTER the PM sends it: while in review there is no link,
-            // and the button is simply absent.
-            proposalHref: "#",
-          })}
-        />
-      </div>
-
-      {/* The studio's own chat column geometry (lg:w-[440px] in the shell, which
-          the resizable split can widen) with the height it really gets. */}
-      <div className="h-[760px] w-full max-w-[520px] overflow-hidden rounded-[8px] border border-border">
+      {/* Two moments of the SAME conversation, side by side, both in the real
+          <StudioChatPane> at the studio's own column geometry — no standalone
+          mock-up of the card any more. The milestone only makes sense judged
+          against the ordinary bubbles above it, which is the whole problem it was
+          built to fix. */}
+      <div className="flex flex-wrap gap-5">
+        <div>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+            chat · building
+          </p>
+          {/* The studio's own chat column geometry (lg:w-[440px] in the shell, which
+              the resizable split can widen) with the height it really gets. */}
+          <div className="h-[760px] w-[520px] max-w-full overflow-hidden rounded-[8px] border border-border">
         <StudioChatPane
           messages={buildMessages(startedAt)}
           isThinking={false}
@@ -142,6 +169,47 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
           agentHref="/en/contact"
           isWorkspaceVisible={false}
         />
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+            chat · proposal sent
+          </p>
+          <div className="h-[760px] w-[520px] max-w-full overflow-hidden rounded-[8px] border border-border">
+            <StudioChatPane
+              messages={buildProposalMessages(startedAt)}
+              isThinking={false}
+              input={input}
+              onInputChange={setInput}
+              onSend={() => {}}
+              attachedFile={null}
+              onAttachChange={() => {}}
+              onStop={() => {}}
+              replyTarget={null}
+              onReplyToMessage={() => {}}
+              onClearReply={() => {}}
+              onRegenerateLatest={() => {}}
+              stopNotice={null}
+              inputRef={inputRef}
+              // The real phase for this moment. It also drives what the pane puts
+              // under the conversation, so getting it wrong would misreport how
+              // much room the card actually has.
+              canSend
+              phase="proposal_pending_review"
+              prototypeTrace={null}
+              pollingStartedAt={null}
+              correctionsUsed={0}
+              maxCorrections={2}
+              prototypeVersionNumber={3}
+              onApprove={() => {}}
+              onRequestCorrection={() => {}}
+              onRequestProposal={() => {}}
+              agentHref="/en/contact"
+              isWorkspaceVisible={false}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
