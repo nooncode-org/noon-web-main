@@ -9,6 +9,7 @@ import { listUserSessions } from "@/lib/upgrade/repositories";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
 import { UpgradeBeforeAfter } from "@/components/upgrade/upgrade-before-after";
 import { SiteNav } from "@/app/_components/site/site-nav";
+import { ProposalSidebar } from "@/components/maxwell/proposal-sidebar";
 import { SiteFooterRd } from "@/app/_components/site/site-footer-rd";
 import "./upgrade-rd.css";
 import "@/app/_components/site/site-footer-rd.css";
@@ -52,7 +53,13 @@ async function UpgradePageContent({ params, searchParams }: Props) {
   if (isAuthenticated) {
     return (
       <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
-        <SiteNav locale={locale} active="services" />
+        {/* The signed-in shell, not the marketing nav: the SAME menu the home
+            gets (account, Templates, Upgrade, Talk to agent, New chat, recent
+            chats, Sign out) plus the account settings gear. Overlay mode — it
+            opens from the ▢ top-left exactly like the home's, which also starts
+            collapsed — so this page keeps its own document flow instead of
+            becoming a viewport-locked flex row. */}
+        <ProposalSidebar viewerEmail={session!.user!.email!} locale={locale} accountSettings />
         <div className="upg-frame" aria-hidden />
 
         <main className="upg-wrap">

@@ -35,6 +35,7 @@ export function ProposalSidebar({
   viewerName = null,
   locale,
   collapsibleRail = false,
+  accountSettings = false,
   settings,
 }: {
   viewerEmail: string;
@@ -42,6 +43,13 @@ export function ProposalSidebar({
   viewerName?: string | null;
   locale: string;
   collapsibleRail?: boolean;
+  /**
+   * Show the settings gear in ACCOUNT mode (profile / language / emails) on a
+   * surface that has no project of its own — the signed-in `/upgrade`. Opt-in so
+   * the proposal page's footer stays exactly as it was; when `settings` is passed
+   * the gear appears anyway, in full project mode.
+   */
+  accountSettings?: boolean;
   /**
    * When set, renders the project-settings gear (WorkspaceSettingsMenu) in the
    * sidebar footer, wired to the profile state owned here (identity row + edit
@@ -123,8 +131,9 @@ export function ProposalSidebar({
         : null,
   }));
 
-  // The proposal page passes no `settings`, so it keeps its gear-less footer.
-  const footerExtra: ReactNode = settings ? settingsGear : null;
+  // `settings` → project mode; `accountSettings` → account mode. Neither (the
+  // proposal page) keeps its gear-less footer.
+  const footerExtra: ReactNode = settings || accountSettings ? settingsGear : null;
 
   const sidebarProps = {
     viewerEmail,
