@@ -12,6 +12,11 @@ import type { PrototypeQuotaSnapshot } from "@/lib/maxwell/prototype-quota";
 import { resolveRehydratedStudioView } from "@/lib/maxwell/studio-rehydrate-view";
 import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
 import { isPrototypeStage, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
+import {
+  buildProposalMilestone,
+  PROPOSAL_MILESTONE_TITLE,
+  type StudioMilestone,
+} from "@/lib/maxwell/proposal-milestone";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
 import { useResizableChatPane } from "@/hooks/use-resizable-chat-pane";
@@ -35,6 +40,18 @@ export type ChatMessage = {
    * raw URL text. Client-ephemeral — these notices are not persisted.
    */
   agentHref?: string;
+  /**
+   * Structured payload for a deal milestone (proposal sent). Rendered by
+   * `<StudioEventCard>` instead of a text bubble, because these events change
+   * the state of the engagement and had been reading like small talk.
+   *
+   * Client-ephemeral, like `agentHref`: persisted rows carry only
+   * `messageType: system_event`, so on reload the milestone is REBUILT from
+   * session state (proposal status + timestamp) rather than stored — the same
+   * approach the share-decision and changes-requested notices already use, and
+   * it needs no DB migration.
+   */
+  milestone?: StudioMilestone;
 };
 
 export type MessageFeedback = "up" | "down";
@@ -450,6 +467,8 @@ export function StudioShell({
         workspace_pending?: boolean;
         proposal_status?: string | null;
         proposal_public_token?: string | null;
+        /** When the client requested it — the milestone card's timestamp. */
+        proposal_created_at?: string | null;
         // W5 — decision the client recorded on the shared prototipo link.
         share_decision?: { status: "accepted" | "rejected"; decidedAt: string | null } | null;
       };
@@ -509,8 +528,36 @@ export function StudioShell({
                 "The Noon team asked for adjustments before sending your formal proposal. Tell Maxwell what to change, then request the proposal again — the new draft is built from the full conversation.",
             })
           : null;
+      // The proposal milestone, rebuilt rather than restored. Persisted rows
+      // carry only their text, so a stored card would come back as a bare
+      // sentence; derived from session state it comes back whole — and gains its
+      // "View proposal" button the moment the proposal becomes viewable, without
+      // anything having to update a stored message.
+      //
+      // Suppressed while the draft is `returned`: the PM has asked for changes,
+      // so "in review with the Noon team" would be stale, and the notice below
+      // states the real situation.
+      const proposalMilestone =
+        data.proposal_status && data.proposal_status !== "returned"
+          ? createMessage({
+              role: "assistant" as const,
+              type: "system_event" as const,
+              content: PROPOSAL_MILESTONE_TITLE,
+              milestone: buildProposalMilestone({
+                at: data.proposal_created_at ?? null,
+                requestedBy: viewerEmail,
+                projectName: data.session.goalSummary,
+                prototypeVersion: data.versions.length || null,
+                proposalHref: data.proposal_public_token
+                  ? `/${locale}/maxwell/proposal/${data.proposal_public_token}`
+                  : null,
+              }),
+            })
+          : null;
+
       setMessages([
         ...restoredMessages,
+        ...(proposalMilestone ? [proposalMilestone] : []),
         ...(shareDecisionNotice ? [shareDecisionNotice] : []),
         ...(changesRequestedNotice ? [changesRequestedNotice] : []),
         ...(data.workspace_pending
@@ -1401,12 +1448,31 @@ export function StudioShell({
       if (data.proposal_request_id) {
         setMessages((prev) => [
           ...prev,
-          createMessage({
-            role: "assistant",
-            content: data.noon_app_handoff_skipped
-              ? "Your formal proposal draft is saved and marked for internal Noon review. Automatic delivery to the PM app is not configured on this server; the team can still open it from the proposal queue, or you can contact an agent."
-              : "Your proposal has been drafted and is now in review with the Noon team. A Project Manager will verify it before the formal version is sent by email.",
-          }),
+          data.noon_app_handoff_skipped
+            ? // Degraded path keeps its plain notice: it is an apology about this
+              // server's configuration, not a milestone in the client's deal.
+              createMessage({
+                role: "assistant",
+                content:
+                  "Your formal proposal draft is saved and marked for internal Noon review. Automatic delivery to the PM app is not configured on this server; the team can still open it from the proposal queue, or you can contact an agent.",
+              })
+            : createMessage({
+                role: "assistant",
+                type: "system_event",
+                content: PROPOSAL_MILESTONE_TITLE,
+                // The client's own clock: this event happened just now, and the
+                // row's created_at is not in the response. Rehydration replaces
+                // it with the stored timestamp on the next load.
+                milestone: buildProposalMilestone({
+                  at: new Date().toISOString(),
+                  requestedBy: viewerEmail,
+                  projectName: projectName || null,
+                  prototypeVersion: prototypeVersions.length || null,
+                  // No link yet: the proposal is not publicly viewable while it
+                  // is in review, so the button appears on reload once it is.
+                  proposalHref: null,
+                }),
+              }),
         ]);
       }
     } catch {

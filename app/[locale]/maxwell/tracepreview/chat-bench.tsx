@@ -12,9 +12,13 @@
  * Only the handlers are stubs. Nothing in `StudioChatPane` is reimplemented.
  */
 import { useRef, useState } from "react";
-import { StudioChatPane } from "@/components/maxwell/studio-chat-pane";
+import { StudioChatPane, StudioEventCard } from "@/components/maxwell/studio-chat-pane";
 import type { ChatMessage, PrototypeTrace } from "@/components/maxwell/studio-shell";
 import { PROTOTYPE_STAGE_ORDER, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
+import {
+  buildProposalMilestone,
+  PROPOSAL_MILESTONE_TITLE,
+} from "@/lib/maxwell/proposal-milestone";
 
 /** Anchored to the run's start so the "x ago" stamp reads like a real reply. */
 function buildMessages(startedAt: number): ChatMessage[] {
@@ -76,6 +80,32 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
             {s}
           </button>
         ))}
+      </div>
+
+      {/* MILESTONE CARD — shown at the chat column's real inner width (the pane
+          pads 20px each side), because the whole question is whether the rows and
+          chips survive a 480px column. Standalone for now, on purpose: the design
+          gets reviewed before the payload is plumbed through messages.
+          Every value here is a field the client already holds at that moment —
+          see the wiring note in the studio shell. */}
+      <div className="mb-6 w-full max-w-[520px] rounded-[8px] border border-dashed border-border/70 p-5">
+        <p className="mb-4 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+          milestone · proposal sent
+        </p>
+        {/* Built by the SAME function the chat calls, so the bench can't show a
+            card the client will never get. Only the inputs are sampled. */}
+        <StudioEventCard
+          title={PROPOSAL_MILESTONE_TITLE}
+          milestone={buildProposalMilestone({
+            at: new Date(startedAt).toISOString(),
+            requestedBy: "priya@marlowcoffee.com",
+            projectName: "A landing page for my coffee subscription — hero, plans, and a signup form.",
+            prototypeVersion: 3,
+            // The state AFTER the PM sends it: while in review there is no link,
+            // and the button is simply absent.
+            proposalHref: "#",
+          })}
+        />
       </div>
 
       {/* The studio's own chat column geometry (lg:w-[440px] in the shell, which

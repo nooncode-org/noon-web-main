@@ -127,6 +127,11 @@ export async function GET(request: Request) {
     // shared, still pending, already past the prototype stage, or unreachable).
     share_decision: shareDecision,
     proposal_status: proposal?.status ?? null,
+    // When the client asked for it — the timestamp on the "Proposal sent for
+    // review" milestone card, so the card survives a reload with the real time
+    // instead of the moment the page happened to be opened. Client-safe: it is
+    // the client's own action, and carries no operational detail.
+    proposal_created_at: proposal?.createdAt ?? null,
     // Owner-only deep-link token for the Studio "View your proposal" CTA.
     // Exposed ONLY for statuses the public proposal page actually renders, so
     // we never hand a token that would 404. The endpoint is already

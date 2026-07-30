@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   AlertCircle,
   ArrowUp,
+  ArrowUpRight,
   Check,
   CheckCircle2,
   Copy,
@@ -27,6 +28,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import type { StudioMilestone } from "@/lib/maxwell/proposal-milestone";
 import { StudioThinkingBlock } from "./studio-thinking-block";
 import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
@@ -390,6 +392,214 @@ function ReviewNoticeCard({ content }: { content: string }) {
       <p className="whitespace-pre-line text-sm leading-6 text-foreground">{content}</p>
     </div>
   );
+}
+
+/**
+ * MILESTONE CARD — for the moments that change the state of the deal, as opposed
+ * to the conversation around them.
+ *
+ * Why it exists: when a client requests the formal proposal, the chat answered
+ * with a plain assistant bubble ("Your proposal has been drafted and is now in
+ * review…"). The single most consequential event in the flow — the client has
+ * just committed — carried exactly the same visual weight as Maxwell's small
+ * talk, and scrolled away like it.
+ *
+ * Adapted from the owner's reference, keeping its LOGIC rather than its pixels:
+ *   · label → value rows, so the facts are scannable instead of buried in prose
+ *   · a footer action that goes to the thing being described
+ *   · one status line stating where it stands
+ * What the reference has and we don't: a connecting rail between events. Theirs
+ * shows three consecutive entries; ours land at separate points in a chat with
+ * conversation between them, so a rail would be drawing a line across messages
+ * it doesn't own.
+ *
+ * Every field is real or absent — no row is rendered to fill the shape out.
+ */
+function MilestoneRow({
+  label,
+  value,
+  chips,
+  noonAvatar,
+}: {
+  label: string;
+  value?: string | null;
+  chips?: string[];
+  /** Our mark as the row's avatar — the reference's "Submitted by 👤 John". */
+  noonAvatar?: boolean;
+}) {
+  if (!value && !chips?.length) return null;
+  return (
+    <div className="grid grid-cols-[92px_minmax(0,1fr)] items-start gap-3">
+      <span className="pt-px text-[12px] leading-5 text-muted-foreground">{label}</span>
+      {noonAvatar && value ? (
+        <span className="flex items-center gap-2 text-[13px] leading-5 text-foreground/90">
+          {/* Same avatar treatment the services chat already gives the mark: a
+              filled round chip, not a bare glyph floating next to the text.
+              NoonMark is our real vector — public/icon.svg in this repo is v0's
+              logo, not ours, and must never stand in for the brand. */}
+          {/* The brand tile itself (`/logo-icon.png` — the same asset the site
+              serves as its favicon: #0056fd, white mark, rounded corners baked
+              in), not a mark I compose into a circle at render time.
+              That composition was the bug: a 9px mark centred in a 16px circle
+              left 3.75px margins, which no device-pixel grid can split evenly, so
+              the mark sat visibly off-centre — and the flush-to-viewBox artwork
+              got its outline clipped by the SVG's default overflow:hidden on top.
+              The tile has its padding and centring drawn in at 1024px, so both
+              problems stop existing rather than getting corrected. */}
+          {/* Clipped to a circle: this is an AVATAR — it sits where the
+              reference puts a person's photo, and every other avatar on the web
+              is round. The tile's own corner radius stays underneath, so the
+              circle only trims blue, never the mark: the artwork's farthest
+              corner sits ~427px from centre in a 512px radius. */}
+          <Image
+            src="/logo-icon.png"
+            alt=""
+            width={16}
+            height={16}
+            className="h-4 w-4 shrink-0 rounded-full"
+          />
+          {value}
+        </span>
+      ) : chips?.length ? (
+        <span className="flex flex-wrap items-center gap-1.5">
+          {chips.map((chip) => (
+            // NOT <TraceChips>, deliberately. That one is built for file paths:
+            // monospaced, and it labels each chip with `split("/").pop()` — which
+            // on a project name is at best wrong typography and at worst silent
+            // truncation the day a name contains a slash. Same shape and fill,
+            // sans text: these carry human labels, not identifiers.
+            <span
+              key={chip}
+              className="max-w-full break-words rounded-[4px] border border-border bg-foreground/[0.07] px-1.5 py-0.5 text-[12px] font-medium leading-[16px] text-foreground/90"
+            >
+              {chip}
+            </span>
+          ))}
+        </span>
+      ) : (
+        // `break-words`: the grid column can shrink (minmax(0,1fr)), but a value
+        // with no spaces or hyphens — a long email, a URL pasted into the goal
+        // summary — has nowhere to wrap and spills out of the card. It doesn't
+        // show up by measuring the span's rect (its BOX stays inside; the text
+        // escapes it); only card.scrollWidth > clientWidth catches it.
+        <span className="break-words text-[13px] leading-5 text-foreground/90">{value}</span>
+      )}
+    </div>
+  );
+}
+
+export function StudioEventCard({
+  title,
+  milestone,
+}: {
+  title: string;
+  milestone: StudioMilestone;
+}) {
+  const rows = (milestone.rows ?? []).filter((r) => r.value || r.chips?.length);
+  const hasBody = rows.length > 0 || Boolean(milestone.status) || Boolean(milestone.action);
+  // Resolved BEFORE rendering: an unparseable timestamp formats to "", and an
+  // empty <time> element is a hole in the layout plus a datetime attribute
+  // pointing at nothing for a screen reader.
+  const timeLabel = milestone.at ? formatMilestoneTime(milestone.at) : "";
+
+  return (
+    <div className="relative max-w-[68ch] space-y-2.5">
+      {/* Heading on the page, not on a filled surface: the emphasis here comes
+          from the glyph and the weight, and the one filled thing in a block stays
+          reserved for a LIVE state (treatment 1 in the activity trace). A settled
+          milestone is not in flight. */}
+      <div className="flex items-baseline gap-2.5">
+        {/* Neutral, NOT emerald. In this chat emerald already means "running"
+            (the trace's spinner), and a green tick additionally reads "all
+            good — complete", which this isn't: the proposal has been sent and
+            is still awaiting a PM. The EVENT is done, so it gets the same
+            `foreground/75` tick the trace uses for a finished step; where it
+            actually stands is the status line's job, not the glyph's. */}
+        <CheckCircle2 className="h-4 w-4 shrink-0 translate-y-0.5 text-foreground/75" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">{title}</p>
+          {timeLabel && (
+            // Plain sans, normal case — not the mono/uppercase we use elsewhere
+            // for metadata. That treatment is for machine readouts (the trace's
+            // ticking counter); "Today, 4:50 PM" is a sentence a person reads, and
+            // in mono caps it shouted over the title it belongs to.
+            <time dateTime={milestone.at!} className="mt-0.5 block text-[12px] leading-5 text-muted-foreground">
+              {timeLabel}
+            </time>
+          )}
+        </div>
+      </div>
+
+      {/* The rail: down the GLYPH column, from just under the tick to the bottom
+          of the box it introduces. Same primitive and same geometry as the
+          activity trace's connector, not a line measured by eye — so two
+          milestones landing back to back read as one continuous timeline for
+          free, with no code that knows about "the next event".
+          Gated on there being a body: with no box under it, this would be a stub
+          hanging off a title, which is the decoration I was right to refuse. */}
+      {hasBody && (
+        <span
+          aria-hidden
+          // `mb-0` is load-bearing: `space-y-2.5` on the parent sets margin-bottom
+          // on every child but the last, and this span is a middle one — so
+          // `bottom-0` was landing 10px above the box's bottom edge and the line
+          // died just short of the corner. Absolute positioning does not exempt an
+          // element from the space-y selector.
+          className="absolute bottom-0 left-[7.5px] top-[21px] mb-0 w-px bg-border"
+        />
+      )}
+
+      {/* TREATMENT 2 — outline only. It GROUPS the facts; it doesn't shout over
+          the title. Indented to clear the glyph column, the same offset the trace
+          uses for its result boxes. */}
+      {hasBody && (
+        <div className="ml-[26px] space-y-2.5 rounded-[8px] border border-border p-3.5">
+          {milestone.status && (
+            <p className="text-[13px] leading-5 text-foreground/90">{milestone.status}</p>
+          )}
+          {rows.map((row) => (
+            <MilestoneRow key={row.label} {...row} />
+          ))}
+          {milestone.action && (
+            // Hairline above it, like the reference: the rows are FACTS and this
+            // is an ACTION. Without the divider the button read as one more row,
+            // and the eye had to work out that it was clickable.
+            <div className="-mx-3.5 border-t border-border pt-3.5">
+              {/* New tab, so the ↗ tells the truth and the conversation survives
+                  the click — losing your place in a long chat to read the
+                  proposal would be a poor trade. */}
+              <a
+                href={milestone.action.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mx-3.5 flex items-center justify-center gap-1.5 rounded-[6px] border border-border px-3 py-2 text-[13px] font-medium text-foreground transition-colors hover:bg-foreground/[0.05]"
+              >
+                {milestone.action.label}
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * "Today, 10:00 AM" while it's today, an explicit date once it isn't — a chat
+ * that stays open for days must not keep calling Tuesday "today".
+ */
+function formatMilestoneTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  // Pinned to en-US rather than the runtime default: the site launches
+  // English-only, and the visitor's OS locale was rendering "4:42 p. m." — which
+  // the uppercase styling then turned into "4:42 P. M.".
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const isToday = new Date().toDateString() === date.toDateString();
+  return isToday
+    ? `Today, ${time}`
+    : `${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}, ${time}`;
 }
 
 /** Ticking elapsed counter for the live trace. Mirrors the preview pane's badge. */
@@ -962,6 +1172,15 @@ export function StudioChatPane({
               );
             }
             if (msg.type === "system_event") {
+              // A milestone carries its facts as data, so it is matched on the
+              // payload — not on a content prefix like the review notice below,
+              // which has to sniff a string because those rows come back from the
+              // DB with nothing but their text.
+              if (msg.milestone) {
+                return (
+                  <StudioEventCard key={messageId} title={msg.content} milestone={msg.milestone} />
+                );
+              }
               if (msg.content.startsWith("The Noon team")) {
                 return <ReviewNoticeCard key={messageId} content={msg.content} />;
               }
