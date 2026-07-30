@@ -1,6 +1,15 @@
 /* Template detail page — scoped under .lgl-rd; inherits tokens from legal-rd.css */
 
 .td-main { padding-top: 60px; min-height: 100vh; }
+/* signed-in: both of those values do a job that no longer exists here — the 60px
+   cleared the fixed marketing nav, the 100vh pushed the footer down. Neither is on
+   this page inside the app shell, and the .td-back link brings its own top space. */
+.td-main.td-tool { padding-top: 0; min-height: 0; }
+/* …but the rail's ▢ toggle floats at top:12 as a 32px box, and this is the only
+   app-shell page whose first element is LEFT-aligned (the others open with a
+   centred title, which the toggle can't reach). At 390px the back link's text
+   started at y=32 and the toggle ran to y=44 — they collided. 56 clears it by 12. */
+.td-main.td-tool .td-back { padding-top: 56px; }
 
 .td-wrap { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
 @media (min-width: 768px) { .td-wrap { padding: 0 32px; } }
