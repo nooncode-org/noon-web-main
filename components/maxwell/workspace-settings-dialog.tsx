@@ -1,6 +1,12 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
+import { submitRequestAction } from "@/app/[locale]/maxwell/workspace/[sessionId]/_actions/submit-request";
+import {
+  portalSupportChatFallback,
+  portalSupportRequest,
+  type PortalSupportRequestKind,
+} from "@/lib/maxwell/portal-support-requests";
 import { CreditCard, Download, FileText, MessageCircle, Settings } from "lucide-react";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
 import {
@@ -73,6 +79,7 @@ export function WorkspaceSettingsDialog({
   membershipBadge,
   advancedUnlocked = false,
   billingSlot,
+  sessionId,
   profile,
   onEditProfile,
 }: {
@@ -97,6 +104,14 @@ export function WorkspaceSettingsDialog({
   profile?: { name: string; photoUrl: string | null; email: string };
   /** Opens the profile editor (the sidebar owns that dialog + its state). */
   onEditProfile?: () => void;
+  /**
+   * The studio session this portal belongs to. Its PRESENCE is what makes the
+   * cancellation and export buttons real: with it they file a support request
+   * that reaches the Noon team; without it they hand the client to the chat.
+   * Present on the live workspace only — absent on the proposal page and on the
+   * wspreview mock, which must never file real requests.
+   */
+  sessionId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<SectionKey>("general");
@@ -110,6 +125,10 @@ export function WorkspaceSettingsDialog({
   const [exportOpen, setExportOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [exportRequested, setExportRequested] = useState(false);
+  const [cancelRequested, setCancelRequested] = useState(false);
+  /** Why the last submission failed, shown in the confirm dialog it came from. */
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
   // Portal language (owner ask 2026-07-19). TODO(logic later): wire to the
   // next-intl locale switch once the ES translation pass lands — until then
   // this is a front-only preference so the UI shape is settled.
@@ -132,16 +151,49 @@ export function WorkspaceSettingsDialog({
   ];
   const active = sections.find((s) => s.key === section) ?? sections[0];
 
-  function requestExport() {
-    // TODO(logic later): create an "export project data" request to the Noon team.
-    setExportRequested(true);
-    setExportOpen(false);
+  /**
+   * File a real request with the Noon team.
+   *
+   * Both of these used to be front-only: the dialog closed and NOTHING happened.
+   * For the export that meant waiting for an email that never came; for the
+   * cancellation it meant a client believing they had cancelled and being charged
+   * again next month — a silent failure on a money path.
+   *
+   * They ride the existing `support` type on purpose. The 10 request types are
+   * FROZEN cross-repo (the App enforces them with a DB CHECK), so a dedicated
+   * `cancel_plan` type would need a coordinated migration on both sides; `support`
+   * is the right existing vocabulary ("help, not new work") and is one of the few
+   * types a one-time buyer may also file. The body says which flow it came from so
+   * whoever picks it up on the App side knows immediately.
+   */
+  function fileRequest(kind: PortalSupportRequestKind) {
+    if (!sessionId) {
+      // No session wired (proposal page / mock): hand off to a human rather than
+      // pretend. Never silently swallow the click.
+      contactTeam(portalSupportChatFallback(kind));
+      return;
+    }
+    setRequestError(null);
+    startTransition(async () => {
+      const result = await submitRequestAction({ sessionId, ...portalSupportRequest(kind) });
+      if (result.ok) {
+        if (kind === "cancel_membership") {
+          setCancelRequested(true);
+          setCancelOpen(false);
+        } else {
+          setExportRequested(true);
+          setExportOpen(false);
+        }
+      } else {
+        // Surface the real reason and KEEP the dialog open: a failed cancellation
+        // that looks like a success is the exact bug this replaces.
+        setRequestError(result.error);
+      }
+    });
   }
 
-  function requestCancel() {
-    // TODO(logic later): create a "cancel plan" request to the Noon team.
-    setCancelOpen(false);
-  }
+  const requestExport = () => fileRequest("export_project_data");
+  const requestCancel = () => fileRequest("cancel_membership");
 
   // Editing identity keeps its own focused dialog — close this one first so the
   // two never stack.
@@ -415,13 +467,20 @@ export function WorkspaceSettingsDialog({
                       description="Nothing stops right away — your Noon team will reach out to confirm the details and walk you through what happens with your site, domain, and data."
                       footer={
                         <>
-                          <span />
+                          {cancelRequested ? (
+                            <p className={hintClass}>
+                              Your Noon team has it and will reach out to confirm the details.
+                            </p>
+                          ) : (
+                            <span />
+                          )}
                           <button
                             type="button"
                             onClick={() => setCancelOpen(true)}
-                            className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-red-700"
+                            disabled={cancelRequested}
+                            className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-red-700 disabled:pointer-events-none disabled:opacity-45"
                           >
-                            Cancel membership
+                            {cancelRequested ? "Cancellation requested ✓" : "Cancel membership"}
                           </button>
                         </>
                       }
@@ -476,7 +535,13 @@ export function WorkspaceSettingsDialog({
       </Dialog>
 
       {/* Export confirm — a request, not an instant download: the team prepares it. */}
-      <AlertDialog open={exportOpen} onOpenChange={setExportOpen}>
+      <AlertDialog
+        open={exportOpen}
+        onOpenChange={(next) => {
+          setExportOpen(next);
+          if (!next) setRequestError(null);
+        }}
+      >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Export your project data?</AlertDialogTitle>
@@ -485,14 +550,16 @@ export function WorkspaceSettingsDialog({
               you a secure download link by email. Usually within one business day.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {requestError && <RequestError message={requestError} />}
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-[6px]">Cancel</AlertDialogCancel>
             <button
               type="button"
               onClick={requestExport}
-              className="inline-flex items-center justify-center rounded-[6px] bg-[#0056fd] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0047e0]"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center rounded-[6px] bg-[#0056fd] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0047e0] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Request export
+              {isSubmitting ? "Sending…" : "Request export"}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -501,7 +568,13 @@ export function WorkspaceSettingsDialog({
       {/* Cancel-plan confirm — nothing stops immediately; a human follows up.
           Plain red button (not AlertDialogAction) for the same portal reason as
           the domain menu: `.site-primary-action` would repaint it blue. */}
-      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
+      <AlertDialog
+        open={cancelOpen}
+        onOpenChange={(next) => {
+          setCancelOpen(next);
+          if (!next) setRequestError(null);
+        }}
+      >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel your membership?</AlertDialogTitle>
@@ -510,14 +583,16 @@ export function WorkspaceSettingsDialog({
               and walk you through what happens with your site, domain, and data.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {requestError && <RequestError message={requestError} />}
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-[6px]">Keep membership</AlertDialogCancel>
             <button
               type="button"
               onClick={requestCancel}
-              className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Request cancellation
+              {isSubmitting ? "Sending…" : "Request cancellation"}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -586,6 +661,22 @@ function SettingsCard({
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Why a submission failed, inside the dialog it came from. Deliberately loud:
+ * the whole point of this path is that the client must never walk away thinking
+ * a request landed when it didn't.
+ */
+function RequestError({ message }: { message: string }) {
+  return (
+    <p
+      role="alert"
+      className="rounded-[6px] border border-destructive/30 bg-destructive/5 px-3 py-2 text-[13px] leading-relaxed text-destructive"
+    >
+      {message} Nothing was sent — you can retry, or reach your Noon team in the Chat.
+    </p>
   );
 }
 

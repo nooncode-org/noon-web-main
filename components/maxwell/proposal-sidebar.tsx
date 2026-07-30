@@ -61,6 +61,13 @@ export function ProposalSidebar({
     advancedUnlocked?: boolean;
     /** Real billing action (e.g. the Stripe portal opener) for the Billing card. */
     billingSlot?: ReactNode;
+    /**
+     * Studio session id — its presence turns the settings dialog's cancellation
+     * and export buttons into REAL support requests. Passed only by the live
+     * workspace; the wspreview mock deliberately omits it so the playground can
+     * never file a request against a real project.
+     */
+    sessionId?: string;
   };
 }) {
   const router = useRouter();
@@ -128,6 +135,7 @@ export function ProposalSidebar({
       membershipBadge={settings.membershipBadge}
       advancedUnlocked={settings.advancedUnlocked}
       billingSlot={settings.billingSlot}
+      sessionId={settings.sessionId}
       profile={{ name: profile.name, photoUrl: profile.photoUrl, email: viewerEmail }}
       onEditProfile={() => setProfileOpen(true)}
     />

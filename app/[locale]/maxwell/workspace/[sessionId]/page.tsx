@@ -581,6 +581,9 @@ export default async function WorkspacePage({ params }: Props) {
           // the panel points the client at the Chat meanwhile.
           advancedUnlocked: false,
           billingSlot,
+          // Makes the settings dialog's cancellation + export buttons file REAL
+          // support requests instead of closing silently.
+          sessionId: session.id,
         }}
       />
 
