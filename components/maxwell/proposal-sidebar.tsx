@@ -149,12 +149,16 @@ export function ProposalSidebar({
     onNewDraftChat: () => router.push(maxwellHref()),
     onDeleteDraftSession: handleDelete,
     quotaSnapshot: null,
-    // Client-portal presentation: titles the project section "My project" instead
-    // of "Client portal". collapsibleRail is set by exactly the workspace/portal
-    // mounts and never the proposal page, and this component's own doc defines it
-    // as "client workspace / portal", so it doubles as the client-mode signal —
-    // no separate prop to thread through every mount.
-    clientPortal: collapsibleRail,
+    // Client-portal presentation ("My project" instead of "Client portal").
+    //
+    // Keyed on `settings`, NOT on `collapsibleRail`: the rail is a LAYOUT choice
+    // and the label is an AUDIENCE one. They only looked like the same thing
+    // while the workspace was the sole rail mount — the moment the signed-in
+    // /upgrade adopted the rail it silently started saying "My project" while the
+    // home still said "Client portal". `settings` is the honest signal: it means
+    // "this surface belongs to one project", which is exactly when the section is
+    // the client's own.
+    clientPortal: Boolean(settings),
     // The proposal page is NOT the home, so offer a Home link back to the studio.
     showHome: true,
     footerExtra,

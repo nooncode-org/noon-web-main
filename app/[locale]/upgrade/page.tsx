@@ -52,39 +52,51 @@ async function UpgradePageContent({ params, searchParams }: Props) {
   // signed in) and the session list, which is the client's own data.
   if (isAuthenticated) {
     return (
-      <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
-        {/* The signed-in shell, not the marketing nav: the SAME menu the home
-            gets (account, Templates, Upgrade, Talk to agent, New chat, recent
-            chats, Sign out) plus the account settings gear. Overlay mode — it
-            opens from the ▢ top-left exactly like the home's, which also starts
-            collapsed — so this page keeps its own document flow instead of
-            becoming a viewport-locked flex row. */}
-        <ProposalSidebar viewerEmail={session!.user!.email!} locale={locale} accountSettings />
-        <div className="upg-frame" aria-hidden />
+      // Viewport-locked flex row, exactly like the home and the client portal:
+      // that shape is what lets the sidebar be a PUSH RAIL (a flex child that
+      // reflows the content beside it) instead of a drawer floating over dimmed
+      // content. An overlay was tried first to avoid this restructure — the owner
+      // spotted the difference immediately, and they were right: two signed-in
+      // surfaces behaving differently is worse than the extra markup.
+      //
+      // No `.upg-frame` here either (owner: "quita el marco") — that fixed
+      // viewport border belongs to the marketing page, and inside an app shell it
+      // fought the rail's own edge.
+      <div
+        className={`${GeistSans.variable} ${GeistMono.variable} upg-rd flex h-[100dvh] overflow-hidden bg-background`}
+      >
+        <ProposalSidebar
+          viewerEmail={session!.user!.email!}
+          locale={locale}
+          collapsibleRail
+          accountSettings
+        />
 
-        <main className="upg-wrap">
-          <section aria-labelledby="upgrade-entry-title" className="upg-hero">
-            <div className="upg-hero-frame upg-solo">
-              <div className="upg-hero-form min-w-0">
-                {/* Kept for document structure — a page with no h1 is an a11y
-                    regression — but functional, not a pitch. */}
-                <h1 id="upgrade-entry-title" className="upg-solo-title">
-                  Upgrade a website
-                </h1>
-                <UpgradeInput
-                  isAuthenticated={isAuthenticated}
-                  initialUrl={initialUrl}
-                  initialMode={initialMode}
-                />
-                {sessions.length > 0 && (
-                  <div style={{ marginTop: 16 }}>
-                    <UpgradeSessionList sessions={sessions} />
-                  </div>
-                )}
+        <div className="min-w-0 flex-1 overflow-y-auto">
+          <main className="upg-wrap">
+            <section aria-labelledby="upgrade-entry-title" className="upg-hero">
+              <div className="upg-hero-frame upg-solo">
+                <div className="upg-hero-form min-w-0">
+                  {/* Kept for document structure — a page with no h1 is an a11y
+                      regression — but functional, not a pitch. */}
+                  <h1 id="upgrade-entry-title" className="upg-solo-title">
+                    Upgrade a website
+                  </h1>
+                  <UpgradeInput
+                    isAuthenticated={isAuthenticated}
+                    initialUrl={initialUrl}
+                    initialMode={initialMode}
+                  />
+                  {sessions.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <UpgradeSessionList sessions={sessions} />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </section>
-        </main>
+            </section>
+          </main>
+        </div>
       </div>
     );
   }
