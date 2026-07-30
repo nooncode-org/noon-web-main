@@ -62,13 +62,16 @@ type SectionKey = "general" | "billing" | "data";
  * hiding cancellation any further is a dark pattern (and "click to cancel"
  * rules require it be as easy as subscribing).
  *
- * Front only (logic later): toggles are local state; export + cancel open
- * confirm dialogs that would create a request to the Noon team.
+ * What is REAL vs still front-only here (2026-07-30):
+ *   - Cancellation + export DO file a request now (see `fileRequest`), and a
+ *     failure keeps the dialog open with the reason. They used to close silently.
+ *   - "Manage billing" is real — it opens the Stripe Billing Portal.
+ *   - Still local state only: the email toggles and the language select. Nothing
+ *     persists them, so they reset on reload.
  *
  * Per-modality (owner roadmap): a ONE-TIME buyer has nothing recurring, so the
  * danger zone is hidden for them and billing is just their invoice; a
- * MEMBERSHIP client gets "Manage billing" (→ the Stripe portal, logic later —
- * same destination as the Plan card's Manage membership) + the cancel flow.
+ * MEMBERSHIP client gets "Manage billing" (→ the Stripe portal) + the cancel flow.
  *
  * Refunds are deliberately NOT here: those go through a conversation with the
  * team (owner decision 2026-07-20).
