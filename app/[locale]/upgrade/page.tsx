@@ -74,25 +74,29 @@ async function UpgradePageContent({ params, searchParams }: Props) {
 
         <div className="min-w-0 flex-1 overflow-y-auto">
           <main className="upg-wrap">
+            {/* No panel: the title and the fields sit straight on the page
+                (owner: "solo deja los titulos y los inputs"). Dropping
+                .upg-hero-frame (its border) and .upg-hero-form (its filled
+                background + padding) leaves the inputs as the only surfaces that
+                carry a fill — which is what makes them read as the interactive
+                bits now that nothing else competes. */}
             <section aria-labelledby="upgrade-entry-title" className="upg-hero">
-              <div className="upg-hero-frame upg-solo">
-                <div className="upg-hero-form min-w-0">
-                  {/* Kept for document structure — a page with no h1 is an a11y
-                      regression — but functional, not a pitch. */}
-                  <h1 id="upgrade-entry-title" className="upg-solo-title">
-                    Upgrade a website
-                  </h1>
-                  <UpgradeInput
-                    isAuthenticated={isAuthenticated}
-                    initialUrl={initialUrl}
-                    initialMode={initialMode}
-                  />
-                  {sessions.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <UpgradeSessionList sessions={sessions} />
-                    </div>
-                  )}
-                </div>
+              <div className="upg-solo min-w-0">
+                {/* Kept for document structure — a page with no h1 is an a11y
+                    regression — but functional, not a pitch. */}
+                <h1 id="upgrade-entry-title" className="upg-solo-title">
+                  Upgrade a website
+                </h1>
+                <UpgradeInput
+                  isAuthenticated={isAuthenticated}
+                  initialUrl={initialUrl}
+                  initialMode={initialMode}
+                />
+                {sessions.length > 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <UpgradeSessionList sessions={sessions} />
+                  </div>
+                )}
               </div>
             </section>
           </main>
