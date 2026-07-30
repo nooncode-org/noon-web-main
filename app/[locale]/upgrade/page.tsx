@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { UpgradeInput } from "@/components/upgrade/upgrade-input";
 import { UpgradeSessionList } from "@/components/upgrade/upgrade-session-list";
 import { listUserSessions } from "@/lib/upgrade/repositories";
+import type { UpgradeSession } from "@/lib/upgrade/types";
 import { UpgradeSteps } from "@/components/upgrade/upgrade-steps";
 import { UpgradeBeforeAfter } from "@/components/upgrade/upgrade-before-after";
 import { SiteNav } from "@/app/_components/site/site-nav";
@@ -33,9 +34,25 @@ async function UpgradePageContent({ params, searchParams }: Props) {
     auth(),
   ]);
   const isAuthenticated = Boolean(session?.user?.email);
-  const sessions = isAuthenticated && session?.user?.email
-    ? await listUserSessions(session.user.email)
-    : [];
+
+  // The list of past analyses is SECONDARY; the intake is why this page exists.
+  // Unguarded, it took the whole page down — a dead Postgres threw ECONNREFUSED
+  // out of the server render, the error boundary swallowed the page, and you
+  // couldn't even type a URL. The one thing that needs no database was hostage to
+  // the one thing that does.
+  //
+  // Not silently empty, either: an empty list would claim you have no past
+  // analyses, which is a different lie. The failure is shown as a failure.
+  let sessions: UpgradeSession[] = [];
+  let sessionsUnavailable = false;
+  if (isAuthenticated && session?.user?.email) {
+    try {
+      sessions = await listUserSessions(session.user.email);
+    } catch (error) {
+      sessionsUnavailable = true;
+      console.error("[upgrade] could not load past sessions:", error);
+    }
+  }
 
   // Restore pre-auth state from URL params (set by UpgradeInput before signin redirect)
   const initialUrl = decodeURIComponent(url);
@@ -96,6 +113,12 @@ async function UpgradePageContent({ params, searchParams }: Props) {
                   initialUrl={initialUrl}
                   initialMode={initialMode}
                 />
+                {sessionsUnavailable && (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Couldn&apos;t load your past analyses right now — refresh to try again. You
+                    can still start a new one.
+                  </p>
+                )}
                 {sessions.length > 0 && (
                   <div style={{ marginTop: 16 }}>
                     <UpgradeSessionList sessions={sessions} />
@@ -139,16 +162,14 @@ async function UpgradePageContent({ params, searchParams }: Props) {
               </div>
 
               <div className="upg-hero-form min-w-0">
+                {/* No session list here: this branch only renders for signed-OUT
+                    visitors (the signed-in one returns above), so `sessions` is
+                    always empty. The block that used to sit here could not run. */}
                 <UpgradeInput
                   isAuthenticated={isAuthenticated}
                   initialUrl={initialUrl}
                   initialMode={initialMode}
                 />
-                {sessions.length > 0 && (
-                  <div style={{ maxWidth: 576, marginTop: 16 }}>
-                    <UpgradeSessionList sessions={sessions} />
-                  </div>
-                )}
               </div>
             </div>
           </div>
