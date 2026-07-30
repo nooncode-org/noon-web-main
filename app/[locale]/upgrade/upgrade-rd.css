@@ -224,6 +224,20 @@ html.dark .upg-rd {
 
 .upg-hero-form { padding: clamp(24px, 3vw, 40px); background: var(--bg-secondary); }
 
+/* ── signed-in: the intake ALONE ────────────────────────────────────────────
+   No aside to sit beside, so the 2-up grid is gone and the frame is capped and
+   centred instead — left full-width it would stretch the fields across 1400px
+   and read like a form nobody finished. */
+.upg-solo { max-width: 680px; margin: 0 auto; }
+.upg-solo-title {
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 22px;
+  color: var(--text-primary);
+}
+
 /* the two mini mockup cards inside .upg-hero-proof: stacked (narrow aside)
    vs. side-by-side once the aside is wide enough to read comfortably. */
 .upg-hero-proof-cards { display: flex; flex-direction: column; gap: 12px; }

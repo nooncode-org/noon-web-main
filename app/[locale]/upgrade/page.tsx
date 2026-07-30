@@ -31,7 +31,6 @@ async function UpgradePageContent({ params, searchParams }: Props) {
     searchParams,
     auth(),
   ]);
-  const lp = (href: string) => `/${locale}${href}`;
   const isAuthenticated = Boolean(session?.user?.email);
   const sessions = isAuthenticated && session?.user?.email
     ? await listUserSessions(session.user.email)
@@ -40,6 +39,48 @@ async function UpgradePageContent({ params, searchParams }: Props) {
   // Restore pre-auth state from URL params (set by UpgradeInput before signin redirect)
   const initialUrl = decodeURIComponent(url);
   const initialMode = mode === "answer_questions" ? "answer_questions" : "best_judgment";
+
+  // Signed in → this stops being a landing page and becomes a TOOL: just the
+  // intake and your own past analyses. Same rule the home follows (marketing
+  // hero for visitors, StudioDashboard once you're in) — a client who already
+  // bought doesn't need to be sold to again (owner 2026-07-30).
+  //
+  // What's dropped: the hero headline + lead, the before/after proof, the
+  // "Three steps" section and the marketing footer. What stays: the nav (it is
+  // the only way out of here, and it already hides its marketing links when
+  // signed in) and the session list, which is the client's own data.
+  if (isAuthenticated) {
+    return (
+      <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
+        <SiteNav locale={locale} active="services" />
+        <div className="upg-frame" aria-hidden />
+
+        <main className="upg-wrap">
+          <section aria-labelledby="upgrade-entry-title" className="upg-hero">
+            <div className="upg-hero-frame upg-solo">
+              <div className="upg-hero-form min-w-0">
+                {/* Kept for document structure — a page with no h1 is an a11y
+                    regression — but functional, not a pitch. */}
+                <h1 id="upgrade-entry-title" className="upg-solo-title">
+                  Upgrade a website
+                </h1>
+                <UpgradeInput
+                  isAuthenticated={isAuthenticated}
+                  initialUrl={initialUrl}
+                  initialMode={initialMode}
+                />
+                {sessions.length > 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <UpgradeSessionList sessions={sessions} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} upg-rd`}>
