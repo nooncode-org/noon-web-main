@@ -4,11 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PanelLeft } from "lucide-react";
 import { StudioSidebar, type StudioDraftSession } from "./studio-sidebar";
-import {
-  WorkspaceProfileDialog,
-  type ClientProfile,
-} from "@/components/maxwell/workspace-profile-dialog";
-import { WorkspaceSettingsDialog } from "@/components/maxwell/workspace-settings-dialog";
+import { useAccountSettings } from "./use-account-settings";
 import { getContactHref } from "@/lib/site-config";
 
 // Mirrors the shape the studio dashboard maps from GET /api/maxwell/studio/sessions.
@@ -74,14 +70,13 @@ export function ProposalSidebar({
   const [open, setOpen] = useState(false); // overlay drawer (mobile in rail mode; all widths otherwise)
   const [railOpen, setRailOpen] = useState(false); // desktop push rail (rail mode only)
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  // Client profile (name + photo) — editable via the sidebar identity. Front
-  // only (logic later): persistence is deferred; state lives here so both
-  // sidebar mounts (rail + drawer) share one identity.
-  const [profile, setProfile] = useState<ClientProfile>({
-    name: viewerName ?? "",
-    photoUrl: null,
+  // Profile state + the gear + the profile editor, shared with the signed-in
+  // home so there is one implementation of each (see use-account-settings).
+  const { profile, openProfile, settingsGear, profileDialog } = useAccountSettings({
+    viewerEmail,
+    viewerName,
+    scope: settings,
   });
-  const [profileOpen, setProfileOpen] = useState(false);
 
   async function refresh() {
     try {
@@ -128,24 +123,14 @@ export function ProposalSidebar({
         : null,
   }));
 
-  const footerExtra: ReactNode = settings ? (
-    <WorkspaceSettingsDialog
-      invoiceUrl={settings.invoiceUrl}
-      isMembership={settings.isMembership}
-      membershipBadge={settings.membershipBadge}
-      advancedUnlocked={settings.advancedUnlocked}
-      billingSlot={settings.billingSlot}
-      sessionId={settings.sessionId}
-      profile={{ name: profile.name, photoUrl: profile.photoUrl, email: viewerEmail }}
-      onEditProfile={() => setProfileOpen(true)}
-    />
-  ) : null;
+  // The proposal page passes no `settings`, so it keeps its gear-less footer.
+  const footerExtra: ReactNode = settings ? settingsGear : null;
 
   const sidebarProps = {
     viewerEmail,
     viewerName: profile.name || null,
     viewerPhotoUrl: profile.photoUrl,
-    onEditProfile: () => setProfileOpen(true),
+    onEditProfile: openProfile,
     locale,
     agentHref,
     draftSessions,
@@ -242,14 +227,8 @@ export function ProposalSidebar({
         />
       </div>
 
-      {/* Client profile editor — opened from the sidebar identity. */}
-      <WorkspaceProfileDialog
-        open={profileOpen}
-        onOpenChange={setProfileOpen}
-        email={viewerEmail}
-        profile={profile}
-        onSave={setProfile}
-      />
+      {/* Client profile editor — opened from the sidebar identity or the gear. */}
+      {profileDialog}
     </>
   );
 }

@@ -19,6 +19,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { StudioSidebar } from "./studio-sidebar";
 import type { StudioDraftSession } from "./studio-sidebar";
+import { useAccountSettings } from "./use-account-settings";
 import type { AttachedFile } from "./studio-shell";
 import { getContactHref } from "@/lib/site-config";
 import "./studio-rd.css";
@@ -227,8 +228,20 @@ export function StudioDashboard({
 
   // Shared by both sidebar mounts. quotaSnapshot is null here — it needs an
   // active session; the real quota shows inside the chat (/maxwell).
+  // Account settings on the HOME: profile + language + the plan-agnostic email
+  // preference. No `scope`, so Billing and Project data stay out — there is no
+  // project here. Before this, profile and language were reachable only from
+  // inside a project, which left a user with none unable to set their own name.
+  const { profile, openProfile, settingsGear, profileDialog } = useAccountSettings({
+    viewerEmail,
+  });
+
   const sidebarProps = {
     viewerEmail,
+    viewerName: profile.name || null,
+    viewerPhotoUrl: profile.photoUrl,
+    onEditProfile: openProfile,
+    footerExtra: settingsGear,
     locale,
     agentHref,
     draftSessions,
@@ -480,6 +493,9 @@ export function StudioDashboard({
           </div>
         </section>
       </main>
+
+      {/* Profile editor — opened from the sidebar identity or the settings gear. */}
+      {profileDialog}
     </div>
   );
 }

@@ -83,6 +83,7 @@ export function WorkspaceSettingsDialog({
   advancedUnlocked = false,
   billingSlot,
   sessionId,
+  accountOnly = false,
   profile,
   onEditProfile,
 }: {
@@ -115,6 +116,17 @@ export function WorkspaceSettingsDialog({
    * wspreview mock, which must never file real requests.
    */
   sessionId?: string;
+  /**
+   * ACCOUNT mode (the signed-in home). Shows only what belongs to the person
+   * rather than to a project: profile, language, and the one email preference
+   * that isn't plan-specific.
+   *
+   * Why it exists: profile and language were reachable ONLY from inside a
+   * project, so a user with no project yet had no way to set their own name or
+   * photo (owner spotted it 2026-07-30). Billing and Project data stay hidden
+   * here — without a project there is nothing to bill or export.
+   */
+  accountOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<SectionKey>("general");
@@ -141,14 +153,17 @@ export function WorkspaceSettingsDialog({
   // sub-page would be an empty shell.
   const sections: { key: SectionKey; label: string; blurb: string }[] = [
     { key: "general", label: "General", blurb: "Your profile, language, and what we email you." },
-    ...(invoiceUrl || isMembership
+    // Both of these are PROJECT-scoped, so account mode drops them outright
+    // rather than relying on the flags below (a future caller could pass an
+    // invoiceUrl into account mode and resurrect an empty Billing tab).
+    ...(!accountOnly && (invoiceUrl || isMembership)
       ? [{ key: "billing" as const, label: "Billing", blurb: "Your plan, payments, and invoices." }]
       : []),
     // Project-data export is the team-mediated path for clients who don't hold
     // their code directly (membership). A one-time buyer OWNS their code outright
     // (the Overview's "Your code" card — download + repo), so a gated "ask the
     // team to enable export" would be redundant and contradictory. Hidden for them.
-    ...(isMembership
+    ...(!accountOnly && isMembership
       ? [{ key: "data" as const, label: "Project data", blurb: "Exports and other project-wide actions." }]
       : []),
   ];
@@ -340,7 +355,20 @@ export function WorkspaceSettingsDialog({
                     }
                   >
                     <div className="space-y-2.5">
-                      {(isMembership
+                      {(accountOnly
+                        ? // Account mode: only the preference that isn't tied to a
+                          // plan. "New version" and "renewal reminders" both
+                          // presuppose a project, and this panel may be opened by
+                          // someone who has none yet.
+                          [
+                            {
+                              label: "Replies in Chat",
+                              hint: "When your Noon team or Maxwell answers you.",
+                              checked: notifyChat,
+                              set: setNotifyChat,
+                            },
+                          ]
+                        : isMembership
                         ? [
                             {
                               label: "A new version is ready",
