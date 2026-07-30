@@ -152,10 +152,22 @@ async function forwardMembershipLifecycle(input: {
   event: Stripe.Event;
   proposal: ProposalRequest;
   subscriptionId: string;
+  /**
+   * The subscription's own metadata, set at checkout. Forwarded so the App can
+   * tell a membership apart from a one-time buyer's yearly hosting ON THE EVENT
+   * ITSELF — both arrive on this one wire.
+   *
+   * This used to be dropped: only `stripe_event_type` was forwarded, so the App
+   * could only learn the modality from the initial `payment-confirmed` and was
+   * blind on every later lifecycle event. The 2026-07-24 addendum claimed the App
+   * already received these; it did not (App caught it, 2026-07-27).
+   */
+  subscriptionMetadata?: Stripe.Metadata | null;
   eventKind: MembershipEventKind;
   status: MembershipStatus;
   currentPeriodEnd: string | null;
 }) {
+  const subMeta = input.subscriptionMetadata ?? {};
   await sendMembershipLifecycleToNoonApp({
     externalSessionId: input.proposal.studioSessionId,
     externalProposalId: input.proposal.id,
@@ -168,7 +180,18 @@ async function forwardMembershipLifecycle(input: {
     // Stripe minor units. 0 only if a non-membership proposal slipped through.
     monthlyAmountUsd: input.proposal.monthlyAmountUsd ?? 0,
     created: input.event.created,
-    metadata: { stripe_event_type: input.event.type },
+    metadata: {
+      stripe_event_type: input.event.type,
+      // The three PLAN-IDENTIFYING keys only, not the whole blob: the rest of the
+      // subscription metadata is the proposal's public token plus amounts this
+      // payload already carries, and dumping it would ship every future key we
+      // ever add to checkout without deciding to.
+      // `billing_interval`/`hosting_price_usd` exist only on a hosting
+      // subscription, so their presence is itself the signal.
+      ...(subMeta.payment_modality ? { payment_modality: subMeta.payment_modality } : {}),
+      ...(subMeta.billing_interval ? { billing_interval: subMeta.billing_interval } : {}),
+      ...(subMeta.hosting_price_usd ? { hosting_price_usd: subMeta.hosting_price_usd } : {}),
+    },
   });
 }
 
@@ -246,6 +269,7 @@ async function handleSubscriptionCheckoutCompleted(event: Stripe.Event) {
     event,
     proposal: activation.proposal,
     subscriptionId,
+    subscriptionMetadata: subscription.metadata,
     eventKind: "activated",
     status: "active",
     currentPeriodEnd: isoFromUnixSeconds(readSubscriptionCurrentPeriodEnd(subscription)),
@@ -340,6 +364,7 @@ async function handleMembershipLifecycleEvent(event: Stripe.Event) {
     event,
     proposal,
     subscriptionId,
+    subscriptionMetadata: subscription.metadata,
     eventKind,
     status: explicitStatus ?? mapStripeSubscriptionStatusToWire(subscription.status),
     currentPeriodEnd: isoFromUnixSeconds(readSubscriptionCurrentPeriodEnd(subscription)),

@@ -18,7 +18,17 @@
 
 ## 1. Cómo distinguirlos (solo si les interesa — la acción es la misma)
 
-La metadata de la suscripción (que ya reciben en el checkout/webhook) los separa:
+> **⚠️ CORRECCIÓN 2026-07-27.** Esta sección decía que esta metadata "ya la reciben
+> en el checkout/webhook". **Era falso para el wire de lifecycle**: la metadata
+> vivía en la suscripción de Stripe pero `forwardMembershipLifecycle` reenviaba
+> solo `stripe_event_type`, así que el App solo conocía la modalidad por el
+> `payment-confirmed` inicial y quedaba ciego en todos los eventos posteriores.
+> Lo detectó el App (`docs/2026-07-27-app-to-noonweb-pricing-sync-applied-and-wire-findings.md`,
+> Hallazgo A) y **ya está arreglado**: el forward ahora sí lleva las tres claves
+> de abajo. Se reenvían ESAS TRES y nada más — volcar el blob entero enviaría el
+> token público de la propuesta y montos que el payload ya lleva.
+
+La metadata de la suscripción los separa:
 
 | Campo | Membresía | Hosting one-time |
 |---|---|---|

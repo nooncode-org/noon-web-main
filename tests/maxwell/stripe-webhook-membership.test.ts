@@ -425,3 +425,111 @@ describe("version-robustness fallbacks + metadata resolution + delivery", () => 
     expect(res.status).toBe(502);
   });
 });
+
+// ============================================================================
+// Metadata del plan en el forward de lifecycle
+//
+// Membresia y hosting anual del one-time llegan al App por ESTE MISMO wire. El
+// forward reenviaba solo `stripe_event_type`, asi que el App solo conocia la
+// modalidad por el `payment-confirmed` inicial y quedaba ciego en todos los
+// eventos posteriores. (El handoff del 2026-07-24 afirmaba que ya la recibian;
+// no era cierto — lo detecto el App el 2026-07-27.)
+// ============================================================================
+
+describe("lifecycle forward — metadata que identifica el plan", () => {
+  beforeEach(() => {
+    mocks.getProposalRequestBySub.mockResolvedValue(proposalFixture());
+  });
+
+  it("reenvia payment_modality de una membresia", async () => {
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_meta_1",
+      type: "customer.subscription.updated",
+      created: CREATED,
+      data: {
+        object: subscriptionFixture({
+          metadata: { external_proposal_id: "proposal-1", payment_modality: "membership" },
+        }),
+      },
+    });
+    await post();
+    expect(mocks.sendMembershipLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          stripe_event_type: "customer.subscription.updated",
+          payment_modality: "membership",
+        }),
+      }),
+    );
+  });
+
+  it("reenvia intervalo y precio del hosting one-time (su presencia ES la señal)", async () => {
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_meta_2",
+      type: "customer.subscription.deleted",
+      created: CREATED,
+      data: {
+        object: subscriptionFixture({
+          status: "canceled",
+          metadata: {
+            external_proposal_id: "proposal-1",
+            payment_modality: "one_time",
+            billing_interval: "year",
+            hosting_price_usd: "350",
+          },
+        }),
+      },
+    });
+    await post();
+    expect(mocks.sendMembershipLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          payment_modality: "one_time",
+          billing_interval: "year",
+          hosting_price_usd: "350",
+        }),
+      }),
+    );
+  });
+
+  it("NO reenvia el resto de la metadata (public_token, montos, ids internos)", async () => {
+    // Volcar el blob entero enviaria el token publico de la propuesta y montos
+    // que el payload ya lleva — y cualquier clave futura sin decidirlo.
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_meta_3",
+      type: "customer.subscription.updated",
+      created: CREATED,
+      data: {
+        object: subscriptionFixture({
+          metadata: {
+            external_proposal_id: "proposal-1",
+            payment_modality: "membership",
+            public_token: "tok_secreto",
+            amount_usd: "4500",
+            source: "noon_website",
+          },
+        }),
+      },
+    });
+    await post();
+    const sent = mocks.sendMembershipLifecycle.mock.calls.at(-1)?.[0] as {
+      metadata: Record<string, unknown>;
+    };
+    expect(Object.keys(sent.metadata).sort()).toEqual(["payment_modality", "stripe_event_type"]);
+    expect(JSON.stringify(sent.metadata)).not.toContain("tok_secreto");
+  });
+
+  it("una suscripcion sin esas claves no rompe el forward", async () => {
+    mocks.constructEvent.mockReturnValue({
+      id: "evt_meta_4",
+      type: "customer.subscription.updated",
+      created: CREATED,
+      data: { object: subscriptionFixture({ metadata: { external_proposal_id: "proposal-1" } }) },
+    });
+    await post();
+    const sent = mocks.sendMembershipLifecycle.mock.calls.at(-1)?.[0] as {
+      metadata: Record<string, unknown>;
+    };
+    expect(sent.metadata).toEqual({ stripe_event_type: "customer.subscription.updated" });
+  });
+});
