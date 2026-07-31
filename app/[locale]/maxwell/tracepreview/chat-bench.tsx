@@ -77,7 +77,11 @@ function buildProposalMessages(startedAt: number, stage: ProposalStage): ChatMes
       content: proposalMilestoneTitle(stage),
       milestone: buildProposalMilestone({
         stage,
-        at: new Date(startedAt + 9 * 60_000 + 4_000).toISOString(),
+        // In the PAST, unlike the bubbles above: this feeds the elapsed counter,
+        // and the mock conversation is anchored to page load, so a timestamp
+        // "9 minutes in" is 9 minutes into the future and the counter clamps to
+        // 0s forever. Four minutes ago reads like a real mid-wait.
+        at: new Date(startedAt - 4 * 60_000).toISOString(),
         requestedBy: "priya@marlowcoffee.com",
         projectName: PROJECT_NAME,
         prototypeVersion: 3,

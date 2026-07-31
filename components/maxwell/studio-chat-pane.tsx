@@ -500,6 +500,10 @@ export function StudioEventCard({
   // empty <time> element is a hole in the layout plus a datetime attribute
   // pointing at nothing for a screen reader.
   const timeLabel = milestone.at ? formatMilestoneTime(milestone.at) : "";
+  // Same instant, two readings: a label while it is a record, a running counter
+  // while it is live. Unparseable → no counter rather than a wrong one.
+  const parsedAt = milestone.at ? Date.parse(milestone.at) : Number.NaN;
+  const startedAtMs = Number.isNaN(parsedAt) ? null : parsedAt;
 
   return (
     <div className="relative max-w-[68ch] space-y-2.5">
@@ -507,36 +511,53 @@ export function StudioEventCard({
           from the glyph and the weight, and the one filled thing in a block stays
           reserved for a LIVE state (treatment 1 in the activity trace). A settled
           milestone is not in flight. */}
-      <div className="flex items-baseline gap-2.5">
-        {/* Neutral, NOT emerald. In this chat emerald already means "running"
-            (the trace's spinner), and a green tick additionally reads "all
-            good — complete", which this isn't: the proposal has been sent and
-            is still awaiting a PM. The EVENT is done, so it gets the same
-            `foreground/75` tick the trace uses for a finished step; where it
-            actually stands is the status line's job, not the glyph's. */}
-        {inProgress ? (
-          // Emerald spinner while it is genuinely running — the same signal the
-          // build trace uses, so "working" looks the same everywhere in this chat.
-          <Loader2
-            className="h-4 w-4 shrink-0 translate-y-0.5 animate-spin text-emerald-500"
-            aria-hidden
-          />
-        ) : (
-          <CheckCircle2 className="h-4 w-4 shrink-0 translate-y-0.5 text-foreground/75" aria-hidden />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">{title}</p>
-          {timeLabel && (
-            // Plain sans, normal case — not the mono/uppercase we use elsewhere
-            // for metadata. That treatment is for machine readouts (the trace's
-            // ticking counter); "Today, 4:50 PM" is a sentence a person reads, and
-            // in mono caps it shouted over the title it belongs to.
-            <time dateTime={milestone.at!} className="mt-0.5 block text-[12px] leading-5 text-muted-foreground">
-              {timeLabel}
-            </time>
-          )}
+      {inProgress ? (
+        // TREATMENT 1 — the block's one filled surface, exactly as the build
+        // trace does its "Building your prototype…". This is the headline state,
+        // so it has to be the loudest thing here; as bare text on the page it
+        // read as frozen next to a trace that visibly breathes.
+        //
+        // The counter is real, not decoration: the card knows `at` (when the
+        // proposal was requested), so this is time actually spent. And it does a
+        // job no copy can — past the 15-minute window the number simply keeps
+        // climbing, which IS the honest signal that something is slow, with no
+        // invented warning.
+        //
+        // No timestamp in this state: live gets elapsed, the settled record gets
+        // its "Today, 7:07 PM". Both at once would be two clocks for one event.
+        <div className="flex items-center gap-3 rounded-[8px] border border-border bg-foreground/[0.05] px-3.5 py-3">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-500" aria-hidden />
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+            {title}
+          </span>
+          {startedAtMs != null && <TraceElapsed startedAt={startedAtMs} />}
         </div>
-      </div>
+      ) : (
+        <div className="flex items-baseline gap-2.5">
+          {/* Neutral, NOT emerald. In this chat emerald already means "running"
+              (the trace's spinner), and a green tick additionally reads "all
+              good — complete", which this isn't: the proposal has been sent and
+              is still awaiting a PM. The EVENT is done, so it gets the same
+              `foreground/75` tick the trace uses for a finished step; where it
+              actually stands is the status line's job, not the glyph's. */}
+          <CheckCircle2 className="h-4 w-4 shrink-0 translate-y-0.5 text-foreground/75" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">{title}</p>
+            {timeLabel && (
+              // Plain sans, normal case — not the mono/uppercase we use elsewhere
+              // for metadata. That treatment is for machine readouts (the trace's
+              // ticking counter); "Today, 4:50 PM" is a sentence a person reads,
+              // and in mono caps it shouted over the title it belongs to.
+              <time
+                dateTime={milestone.at!}
+                className="mt-0.5 block text-[12px] leading-5 text-muted-foreground"
+              >
+                {timeLabel}
+              </time>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* The rail: down the GLYPH column, from just under the tick to the bottom
           of the box it introduces. Same primitive and same geometry as the
@@ -608,13 +629,18 @@ export function StudioEventCard({
                         >
                           {step.label}
                         </p>
-                        {step.detail && step.status === "active" && (
-                          <p className="text-[12px] leading-5 text-muted-foreground/70">
-                            {step.detail}
-                          </p>
-                        )}
                       </div>
                     </div>
+                    {/* The step IN FLIGHT opens a box, the same one the trace
+                        gives its running step — the note stopped being loose
+                        text under a label and became what that step is
+                        currently doing. `ml-7` clears the rail, so the box
+                        hangs off the line instead of crossing it. */}
+                    {step.detail && step.status === "active" && (
+                      <div className="relative ml-7 mt-2 rounded-[8px] border border-border p-3.5">
+                        <p className="text-[13px] leading-5 text-foreground/90">{step.detail}</p>
+                      </div>
+                    )}
                   </li>
                 );
               })}
