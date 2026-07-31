@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle, RotateCcw, FileText, User,
-  ArrowRight, Clock, Loader2, Share2, Copy, Check,
+  ArrowRight, Loader2, Share2, Copy, Check,
 } from "lucide-react";
 import type { StudioPhase } from "./studio-shell";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
@@ -20,11 +20,6 @@ type StudioProposalCtaProps = {
   onApprove: () => void;
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
-  /**
-   * W10 — always-visible recovery: re-send the pending draft to the Noon PM
-   * queue from the `proposal_pending_review` panel. Idempotent server-side.
-   */
-  onResendProposal?: () => Promise<void>;
   agentHref: string;
   /**
    * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
@@ -138,7 +133,6 @@ export function StudioProposalCta({
   onApprove,
   onRequestCorrection,
   onRequestProposal,
-  onResendProposal,
   agentHref,
   shareEnabled = false,
   shareUrl = null,
@@ -147,7 +141,6 @@ export function StudioProposalCta({
 }: StudioProposalCtaProps) {
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [isResending, setIsResending] = useState(false);
 
   const canCorrect = phase === "prototype_ready" && correctionsUsed < maxCorrections;
   const allUsed = correctionsUsed >= maxCorrections;
@@ -194,48 +187,16 @@ export function StudioProposalCta({
 
   // ── Proposal pending review ───────────────────────────────────────────────
 
-  if (phase === "proposal_pending_review") {
-    return (
-      <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card p-4">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-muted-foreground">
-          <Clock className="w-3.5 h-3.5" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium mb-0.5">Proposal under review</p>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            A Noon Project Manager is reviewing this before sending it to you.
-          </p>
-          <div className="flex flex-wrap items-center gap-3 mt-2">
-            {onResendProposal ? (
-              <button
-                type="button"
-                disabled={isResending}
-                onClick={() => {
-                  setIsResending(true);
-                  void Promise.resolve(onResendProposal()).finally(() => setIsResending(false));
-                }}
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-              >
-                {isResending ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : (
-                  <RotateCcw className="w-3 h-3" />
-                )}
-                Resend to review
-              </button>
-            ) : null}
-            <Link
-              href={agentHref}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <User className="w-3 h-3" />
-              Talk to an agent directly
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // No panel here any more (owner, 2026-07-30). Two reasons, and the second is
+  // the one that matters: "Proposal under review" read BACKWARDS — a client never
+  // submits a proposal to us for approval, we send one to them. And by now the
+  // milestone card in the conversation states the same wait in the right
+  // direction, with live steps and the 15-minute expectation.
+  //
+  // Its two recovery actions were NOT dropped: "Resend to review" (the W10 rail
+  // for a swallowed hand-off, which once stranded clients with no action at all)
+  // and the agent link moved into that card, shown while it is still in progress.
+  // See <StudioEventCard>.
 
   // ── Proposal sent — client reviews + pays ─────────────────────────────────
 

@@ -231,6 +231,10 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
               onApprove={() => {}}
               onRequestCorrection={() => {}}
               onRequestProposal={() => {}}
+              // Passed so the recovery rail is visible here: the live studio
+              // always supplies it, and a bench that hides it would misreport
+              // what the client can do while waiting.
+              onResendProposal={async () => {}}
               agentHref="/en/contact"
               isWorkspaceVisible={false}
             />

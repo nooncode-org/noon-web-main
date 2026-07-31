@@ -489,10 +489,23 @@ function MilestoneRow({
 export function StudioEventCard({
   title,
   milestone,
+  agentHref,
+  onResend,
 }: {
   title: string;
   milestone: StudioMilestone;
+  /**
+   * The two safety valves that used to live on the "Proposal under review" panel,
+   * removed at the owner's request (the title read backwards — the client never
+   * submits a proposal to us). They are NOT decoration: `onResend` re-queues a
+   * draft whose hand-off to the PM app was swallowed, which once left clients
+   * stranded with no action at all. Shown only while the card is still in
+   * progress; once it is a settled record there is nothing to recover.
+   */
+  agentHref?: string;
+  onResend?: () => Promise<void>;
 }) {
+  const [isResending, setIsResending] = useState(false);
   const rows = (milestone.rows ?? []).filter((r) => r.value || r.chips?.length);
   const steps = milestone.steps ?? [];
   const inProgress = steps.some((s) => s.status !== "done");
@@ -598,6 +611,39 @@ export function StudioEventCard({
           {rows.map((row) => (
             <MilestoneRow key={row.label} {...row} />
           ))}
+          {inProgress && (onResend || agentHref) && (
+            // Understated on purpose: these are for when something went wrong,
+            // and the normal path is to wait. Same weight they had on the panel.
+            <div className="flex flex-wrap items-center gap-3 pt-0.5">
+              {onResend && (
+                <button
+                  type="button"
+                  disabled={isResending}
+                  onClick={() => {
+                    setIsResending(true);
+                    void Promise.resolve(onResend()).finally(() => setIsResending(false));
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                >
+                  {isResending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                  ) : (
+                    <RefreshCw className="h-3 w-3" aria-hidden />
+                  )}
+                  Resend to review
+                </button>
+              )}
+              {agentHref && (
+                <Link
+                  href={agentHref}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <User className="h-3 w-3" aria-hidden />
+                  Talk to an agent
+                </Link>
+              )}
+            </div>
+          )}
           {milestone.action && (
             // Hairline above it, like the reference: the rows are FACTS and this
             // is an ACTION. Without the divider the button read as one more row,
@@ -1215,7 +1261,13 @@ export function StudioChatPane({
               // DB with nothing but their text.
               if (msg.milestone) {
                 return (
-                  <StudioEventCard key={messageId} title={msg.content} milestone={msg.milestone} />
+                  <StudioEventCard
+                    key={messageId}
+                    title={msg.content}
+                    milestone={msg.milestone}
+                    agentHref={agentHref}
+                    onResend={onResendProposal}
+                  />
                 );
               }
               if (msg.content.startsWith("The Noon team")) {
@@ -1297,7 +1349,6 @@ export function StudioChatPane({
             onApprove={onApprove}
             onRequestCorrection={onRequestCorrection}
             onRequestProposal={onRequestProposal}
-            onResendProposal={onResendProposal}
             agentHref={agentHref}
             shareEnabled={shareEnabled}
             shareUrl={shareUrl}
