@@ -649,6 +649,12 @@ export function StudioEventCard({
           {rows.map((row) => (
             <MilestoneRow key={row.label} {...row} />
           ))}
+          {milestone.note && (
+            // Quieter than the rows: they are the facts you scan, this is an
+            // aside. Sits with them, above the divider, because it belongs to
+            // what happened and not to the action.
+            <p className="text-[12px] leading-5 text-muted-foreground">{milestone.note}</p>
+          )}
           {/* No actions while it is preparing (owner, 2026-07-30). "Talk to an
               agent" was a copy of a link that lives permanently in the left rail,
               and "Nudge the team" was shown 100% of the time for a hand-off
@@ -1107,14 +1113,12 @@ export function StudioChatPane({
     }
   }
 
-  // NOT `proposal_pending_review`: its panel was removed, and this wrapper draws
-  // a top border plus 24px of padding on its own — so it kept rendering a bare
-  // divider with nothing under it. A container has to know when its contents
-  // stopped existing.
-  const showActionZone =
-    phase === "prototype_ready" ||
-    phase === "approved_for_proposal" ||
-    phase === "proposal_sent";
+  // Only the phases whose panel still exists. Both proposal phases are out: this
+  // wrapper draws a top border plus 24px of padding on its own, so listing a
+  // phase whose panel returns null leaves a bare divider with nothing under it —
+  // which is exactly what happened the first time and what the owner spotted. A
+  // container has to know when its contents stopped existing.
+  const showActionZone = phase === "prototype_ready" || phase === "approved_for_proposal";
 
   // W9 — no `approved_for_proposal` here: approving ends the adjustment loop
   // (approved_for_proposal → revision_requested is an illegal transition), so

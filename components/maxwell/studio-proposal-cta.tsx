@@ -200,50 +200,20 @@ export function StudioProposalCta({
 
   // ── Proposal sent — client reviews + pays ─────────────────────────────────
 
-  if (phase === "proposal_sent") {
-    return (
-      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 border border-border/70 bg-secondary text-foreground">
-            <FileText className="w-3.5 h-3.5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            {/* NOT "Your proposal is ready" any more: that is now the milestone
-                card's headline, sitting ~200px above this, and the two were saying
-                the same sentence twice. My own doing, when the card's title was
-                renamed to drop an ambiguous "sent".
-                This panel keeps the half the card does not have — the proposal
-                also went out by email — which is exactly its job: where things
-                stand, and the way out to a human. */}
-            <p className="text-sm font-medium mb-0.5">Sent to your email</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Check your inbox to review it and pay.
-            </p>
-          </div>
-        </div>
-
-        {/* No "View your proposal" button here any more (owner, 2026-07-30).
-            The milestone card in the conversation already carries that link, and
-            with the token present this panel put a second button to the SAME page
-            about 150px below the first one. One action, one place.
-
-            The two blocks keep different jobs: this panel states where things
-            stand and offers the way out to a human; the milestone card is the
-            record of the event and owns the link to what it describes. Trade-off
-            accepted knowingly: the in-app path is now one scroll up instead of
-            pinned, and the email remains the primary route either way. */}
-        <div className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-1">
-          <Link
-            href={agentHref}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <User className="w-3 h-3" />
-            Talk to an agent
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // No panel here either (owner, 2026-07-30). It had been emptied one honest
+  // decision at a time — first its "View your proposal" button (a second button
+  // to the same page, 150px under the card's), then its headline (the card's) —
+  // until what was left was a single sentence plus a copy of "Talk to an agent",
+  // a link that lives permanently in the left rail. That is not enough to earn a
+  // pinned strip with its own border, badge and divider.
+  //
+  // The sentence it did own — the proposal also went out by email — is now a note
+  // on the milestone card, where the record of this proposal lives.
+  //
+  // Both proposal phases have now lost their panel for the same reason: the card
+  // states them better and in the right place. The panel SURFACE is not obsolete
+  // — prototype_ready and approved_for_proposal keep it, because there it holds
+  // real actions (approve, request an adjustment, share, request the proposal).
 
   // ── Approved for proposal ─────────────────────────────────────────────────
 

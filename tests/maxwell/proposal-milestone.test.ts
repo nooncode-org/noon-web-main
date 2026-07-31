@@ -89,6 +89,15 @@ describe("buildProposalMilestone", () => {
     expect(m.rows?.length).toBeGreaterThan(0);
   });
 
+  // Inherited from the phase panel when it was removed. Unlike the status line
+  // that was deleted for going stale, this stays true forever — but only once
+  // there is something that has actually been emailed.
+  it("notes the email delivery only once ready", () => {
+    expect(buildProposalMilestone(FULL).note).toMatch(/emailed/i);
+    expect(buildProposalMilestone({ ...FULL, stage: "review" }).note).toBeUndefined();
+    expect(buildProposalMilestone({ ...FULL, stage: "drafting" }).note).toBeUndefined();
+  });
+
   // Only the step actually running carries its note; the others would be
   // promising a wait that isn't theirs.
   it("attaches the wait note to the review step only", () => {

@@ -31,6 +31,13 @@ export type StudioMilestone = {
   status?: string | null;
   /** Live progress — present only while the thing is still happening. */
   steps?: MilestoneStep[];
+  /**
+   * A permanent fact about the event, not its current state. Deliberately NOT
+   * `status`: that one was removed for going stale (a record cannot keep saying
+   * "a PM is verifying it" forever). Anything put here has to stay true for as
+   * long as the card exists.
+   */
+  note?: string | null;
   rows?: MilestoneRow[];
   action?: { label: string; href: string } | null;
 };
@@ -164,6 +171,11 @@ export function buildProposalMilestone(input: ProposalMilestoneInput): StudioMil
             status: proposalStepStatus(step, input.stage),
           })),
     rows: input.stage === "ready" ? rows : undefined,
+    // The one thing the phase panel knew that this card didn't, moved here when
+    // that panel came off: it was down to this sentence plus a copy of a link
+    // that already lives in the rail. True for good — the proposal was emailed
+    // when it was sent, and stays emailed.
+    note: input.stage === "ready" ? "We've also emailed it to you." : undefined,
     action: input.proposalHref ? { label: "View proposal", href: input.proposalHref } : null,
   };
 }
