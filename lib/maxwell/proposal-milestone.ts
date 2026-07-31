@@ -18,18 +18,92 @@ export type MilestoneRow = {
   noonAvatar?: boolean;
 };
 
+export type MilestoneStep = {
+  label: string;
+  detail?: string | null;
+  status: "done" | "active" | "pending";
+};
+
 export type StudioMilestone = {
   /** ISO timestamp of the event itself, not of the render. */
   at?: string | null;
   /** Where it stands right now, in one line. */
   status?: string | null;
+  /** Live progress — present only while the thing is still happening. */
+  steps?: MilestoneStep[];
   rows?: MilestoneRow[];
   action?: { label: string; href: string } | null;
 };
 
-export const PROPOSAL_MILESTONE_TITLE = "Proposal sent for review";
+/**
+ * The three states the client actually goes through, and nothing else.
+ *
+ *   drafting → the POST is in flight: the server is writing the proposal from
+ *              the conversation. Seconds.
+ *   review   → the draft exists and sits with the Noon team. A PM has a
+ *              PROPOSAL_REVIEW_AUTO_SEND_MINUTES window to intervene; if they
+ *              don't, it goes out on its own. Minutes, not days.
+ *   ready    → the status is one the public proposal page renders, so there is
+ *              something to open and pay.
+ *
+ * Sourced from the proposal's real status — no timers pretending to be progress.
+ */
+export type ProposalStage = "drafting" | "review" | "ready";
+
+export const PROPOSAL_STAGE_ORDER = ["drafting", "review", "ready"] as const;
+
+/** Statuses the public proposal page renders — mirrors proposal-visibility. */
+const READY_STATUSES = new Set([
+  "sent",
+  "payment_pending",
+  "payment_under_verification",
+  "paid",
+  "expired",
+]);
+
+export function proposalStageFromStatus(status: string | null | undefined): ProposalStage {
+  if (!status) return "drafting";
+  return READY_STATUSES.has(status) ? "ready" : "review";
+}
+
+export function proposalStepStatus(
+  step: ProposalStage,
+  current: ProposalStage,
+): "done" | "active" | "pending" {
+  // Positional, with no high-water mark: the stage IS the truth, so a step can
+  // never claim to be finished because it was finished a moment ago.
+  const stepIndex = PROPOSAL_STAGE_ORDER.indexOf(step);
+  const currentIndex = PROPOSAL_STAGE_ORDER.indexOf(current);
+  if (stepIndex < currentIndex) return "done";
+  return stepIndex === currentIndex ? "active" : "pending";
+}
+
+export function proposalStageLabel(step: ProposalStage): string {
+  switch (step) {
+    case "drafting":
+      return "Writing your proposal";
+    case "review":
+      return "Final check by the Noon team";
+    case "ready":
+      return "Ready to review and pay";
+  }
+}
+
+export function proposalStageDetail(step: ProposalStage): string | null {
+  // Only where there is something true to add. The 15 minutes is a product
+  // constant (PROPOSAL_REVIEW_AUTO_SEND_MINUTES), NOT this proposal's own
+  // deadline — those timestamps are ops-internal and never leave the server.
+  return step === "review" ? "Usually ready in about 15 minutes." : null;
+}
+
+/** The card's heading follows the stage: it must never outrun the facts. */
+export function proposalMilestoneTitle(stage: ProposalStage): string {
+  return stage === "ready" ? "Your proposal is ready" : "Preparing your proposal";
+}
 
 export type ProposalMilestoneInput = {
+  /** Where the proposal actually is, from its status. */
+  stage: ProposalStage;
   /** `proposal_request.created_at`; the client's own clock when it just happened. */
   at: string | null;
   requestedBy: string | null;
@@ -76,7 +150,20 @@ export function buildProposalMilestone(input: ProposalMilestoneInput): StudioMil
     // phase panel, which updates; the card states what happened and when.
     // (In the owner's reference the equivalent banner sits ABOVE the timeline,
     // not inside an entry — which is exactly where our panel already is.)
-    rows,
+    //
+    // While it is being prepared the card shows STEPS instead of facts: there is
+    // nothing settled to state yet, and a client who just clicked deserves to see
+    // the thing moving rather than a silent panel. Once ready the steps come off
+    // and the record takes their place — same card, two states.
+    steps:
+      input.stage === "ready"
+        ? undefined
+        : PROPOSAL_STAGE_ORDER.map((step) => ({
+            label: proposalStageLabel(step),
+            detail: proposalStageDetail(step),
+            status: proposalStepStatus(step, input.stage),
+          })),
+    rows: input.stage === "ready" ? rows : undefined,
     action: input.proposalHref ? { label: "View proposal", href: input.proposalHref } : null,
   };
 }

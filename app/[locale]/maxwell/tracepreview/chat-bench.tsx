@@ -17,7 +17,8 @@ import type { ChatMessage, PrototypeTrace } from "@/components/maxwell/studio-sh
 import { PROTOTYPE_STAGE_ORDER, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
 import {
   buildProposalMilestone,
-  PROPOSAL_MILESTONE_TITLE,
+  proposalMilestoneTitle,
+  type ProposalStage,
 } from "@/lib/maxwell/proposal-milestone";
 
 /** Anchored to the run's start so the "x ago" stamp reads like a real reply. */
@@ -52,7 +53,7 @@ const PROJECT_NAME = "A landing page for my coffee subscription — hero, plans,
  * and the point of showing it here is the CONTRAST with the two ordinary bubbles
  * right above it — which is exactly what the card is fixing.
  */
-function buildProposalMessages(startedAt: number, sent: boolean): ChatMessage[] {
+function buildProposalMessages(startedAt: number, stage: ProposalStage): ChatMessage[] {
   return [
     ...buildMessages(startedAt),
     {
@@ -73,8 +74,9 @@ function buildProposalMessages(startedAt: number, sent: boolean): ChatMessage[] 
       id: "m7",
       role: "assistant",
       type: "system_event",
-      content: PROPOSAL_MILESTONE_TITLE,
+      content: proposalMilestoneTitle(stage),
       milestone: buildProposalMilestone({
+        stage,
         at: new Date(startedAt + 9 * 60_000 + 4_000).toISOString(),
         requestedBy: "priya@marlowcoffee.com",
         projectName: PROJECT_NAME,
@@ -84,7 +86,7 @@ function buildProposalMessages(startedAt: number, sent: boolean): ChatMessage[] 
         // paid) — "under review" is not one of them, so right after requesting it
         // there is no link and the card carries no button. It appears by itself
         // once the PM sends it and the page is reloaded.
-        proposalHref: sent ? "#" : null,
+        proposalHref: stage === "ready" ? "#" : null,
       }),
     },
   ];
@@ -95,7 +97,7 @@ const FILE_NAMES = ["app/page.tsx", "components/hero-section.tsx", "components/p
 export function ChatBench({ startedAt }: { startedAt: number }) {
   const [stage, setStage] = useState<PrototypeStage>("assembling");
   // Which side of the PM's review the proposal column is showing.
-  const [proposalSent, setProposalSent] = useState(false);
+  const [proposalStage, setProposalStage] = useState<ProposalStage>("review");
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -185,27 +187,24 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
             <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
               chat · proposal
             </span>
-            {[
-              { on: false, label: "under review" },
-              { on: true, label: "sent by the PM" },
-            ].map((opt) => (
+            {(["drafting", "review", "ready"] as const).map((s) => (
               <button
-                key={opt.label}
+                key={s}
                 type="button"
-                onClick={() => setProposalSent(opt.on)}
+                onClick={() => setProposalStage(s)}
                 className={`rounded-[6px] border px-2.5 py-1 font-mono text-[11px] transition-colors ${
-                  opt.on === proposalSent
+                  s === proposalStage
                     ? "border-foreground/30 bg-secondary text-foreground"
                     : "border-border text-muted-foreground hover:bg-secondary/50"
                 }`}
               >
-                {opt.label}
+                {s}
               </button>
             ))}
           </div>
           <div className="h-[760px] w-[520px] max-w-full overflow-hidden rounded-[8px] border border-border">
             <StudioChatPane
-              messages={buildProposalMessages(startedAt, proposalSent)}
+              messages={buildProposalMessages(startedAt, proposalStage)}
               isThinking={false}
               input={input}
               onInputChange={setInput}
@@ -223,7 +222,7 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
               // under the conversation, so getting it wrong would misreport how
               // much room the card actually has.
               canSend
-              phase={proposalSent ? "proposal_sent" : "proposal_pending_review"}
+              phase={proposalStage === "ready" ? "proposal_sent" : "proposal_pending_review"}
               prototypeTrace={null}
               pollingStartedAt={null}
               correctionsUsed={0}

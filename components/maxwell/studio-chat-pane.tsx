@@ -494,7 +494,10 @@ export function StudioEventCard({
   milestone: StudioMilestone;
 }) {
   const rows = (milestone.rows ?? []).filter((r) => r.value || r.chips?.length);
-  const hasBody = rows.length > 0 || Boolean(milestone.status) || Boolean(milestone.action);
+  const steps = milestone.steps ?? [];
+  const inProgress = steps.some((s) => s.status !== "done");
+  const hasBody =
+    rows.length > 0 || steps.length > 0 || Boolean(milestone.status) || Boolean(milestone.action);
   // Resolved BEFORE rendering: an unparseable timestamp formats to "", and an
   // empty <time> element is a hole in the layout plus a datetime attribute
   // pointing at nothing for a screen reader.
@@ -513,7 +516,16 @@ export function StudioEventCard({
             is still awaiting a PM. The EVENT is done, so it gets the same
             `foreground/75` tick the trace uses for a finished step; where it
             actually stands is the status line's job, not the glyph's. */}
-        <CheckCircle2 className="h-4 w-4 shrink-0 translate-y-0.5 text-foreground/75" aria-hidden />
+        {inProgress ? (
+          // Emerald spinner while it is genuinely running — the same signal the
+          // build trace uses, so "working" looks the same everywhere in this chat.
+          <Loader2
+            className="h-4 w-4 shrink-0 translate-y-0.5 animate-spin text-emerald-500"
+            aria-hidden
+          />
+        ) : (
+          <CheckCircle2 className="h-4 w-4 shrink-0 translate-y-0.5 text-foreground/75" aria-hidden />
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground">{title}</p>
           {timeLabel && (
@@ -555,6 +567,34 @@ export function StudioEventCard({
           {milestone.status && (
             <p className="text-[13px] leading-5 text-foreground/90">{milestone.status}</p>
           )}
+          {steps.map((step) => (
+            <div key={step.label} className="flex items-start gap-2.5">
+              {step.status === "active" ? (
+                <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-emerald-500" aria-hidden />
+              ) : step.status === "done" ? (
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground/75" aria-hidden />
+              ) : (
+                // A hollow ring, not a greyed tick: a step that hasn't started
+                // must not be one glance away from looking finished.
+                <span
+                  className="mt-1 h-3 w-3 shrink-0 rounded-full border border-border"
+                  aria-hidden
+                />
+              )}
+              <div className="min-w-0">
+                <p
+                  className={`text-[13px] leading-5 ${
+                    step.status === "pending" ? "text-muted-foreground" : "text-foreground/90"
+                  }`}
+                >
+                  {step.label}
+                </p>
+                {step.detail && step.status === "active" && (
+                  <p className="text-[12px] leading-5 text-muted-foreground">{step.detail}</p>
+                )}
+              </div>
+            </div>
+          ))}
           {rows.map((row) => (
             <MilestoneRow key={row.label} {...row} />
           ))}

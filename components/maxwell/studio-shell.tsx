@@ -14,7 +14,9 @@ import { hasExceededPollBudget } from "@/lib/maxwell/prototype-poll-policy";
 import { isPrototypeStage, type PrototypeStage } from "@/lib/maxwell/prototype-stage";
 import {
   buildProposalMilestone,
-  PROPOSAL_MILESTONE_TITLE,
+  proposalMilestoneTitle,
+  proposalStageFromStatus,
+  type ProposalStage,
   type StudioMilestone,
 } from "@/lib/maxwell/proposal-milestone";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
@@ -53,6 +55,14 @@ export type ChatMessage = {
    */
   milestone?: StudioMilestone;
 };
+
+/**
+ * Stable id for the proposal milestone message. The poll REPLACES this message
+ * as the proposal advances, so it needs an identity that survives the update —
+ * without it the card would be re-appended on every state change and the client
+ * would collect a stack of near-identical blocks.
+ */
+export const PROPOSAL_MILESTONE_MESSAGE_ID = "proposal-milestone";
 
 export type MessageFeedback = "up" | "down";
 
@@ -279,6 +289,11 @@ export function StudioShell({
   // share (the URL is persisted server-side regardless of the next action).
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareUxState, setShareUxState] = useState<PrototipoShareUxState>({ kind: "idle" });
+  // Session whose proposal we are watching, or null when nothing is pending.
+  // Set when the client requests a proposal and when a rehydrate lands on one
+  // that is still with the team; cleared the moment it turns ready.
+  const [proposalPollingSessionId, setProposalPollingSessionId] = useState<string | null>(null);
+
   // NOTE: the proposal's public token is no longer held in state. It fed the
   // "View your proposal" button on the phase panel, which was removed (owner,
   // 2026-07-30) because the milestone card in the conversation already carries
@@ -533,13 +548,16 @@ export function StudioShell({
       // Suppressed while the draft is `returned`: the PM has asked for changes,
       // so "in review with the Noon team" would be stale, and the notice below
       // states the real situation.
+      const rehydratedStage: ProposalStage = proposalStageFromStatus(data.proposal_status);
       const proposalMilestone =
         data.proposal_status && data.proposal_status !== "returned"
           ? createMessage({
+              id: PROPOSAL_MILESTONE_MESSAGE_ID,
               role: "assistant" as const,
               type: "system_event" as const,
-              content: PROPOSAL_MILESTONE_TITLE,
+              content: proposalMilestoneTitle(rehydratedStage),
               milestone: buildProposalMilestone({
+                stage: rehydratedStage,
                 at: data.proposal_created_at ?? null,
                 requestedBy: viewerEmail,
                 projectName: data.session.goalSummary,
@@ -550,6 +568,11 @@ export function StudioShell({
               }),
             })
           : null;
+      // Come back to a tab left open mid-wait and the watch resumes; land on one
+      // that is already ready and it never starts.
+      setProposalPollingSessionId(
+        proposalMilestone && rehydratedStage !== "ready" ? data.session.id : null,
+      );
 
       setMessages([
         ...restoredMessages,
@@ -1368,6 +1391,82 @@ export function StudioShell({
     }
   }
 
+  // ── Proposal watch ──────────────────────────────────────────────────────────
+  // The wait is real but short (a PM has 15 minutes before it auto-sends), so it
+  // is worth watching: the card finishes in front of the client instead of
+  // needing a reload. Stops itself the moment the answer is `ready`, and gives up
+  // after the window plus a margin rather than polling a tab forever.
+  useEffect(() => {
+    if (!proposalPollingSessionId) return;
+    let cancelled = false;
+    const startedAt = Date.now();
+    const GIVE_UP_MS = 25 * 60_000;
+
+    async function tick() {
+      try {
+        const res = await fetch(
+          `/api/maxwell/proposal/poll?session_id=${encodeURIComponent(proposalPollingSessionId!)}`,
+          { cache: "no-store" },
+        );
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          stage?: ProposalStage;
+          created_at?: string | null;
+          public_token?: string | null;
+        };
+        if (cancelled || !data.stage) return;
+
+        // Replace the card in place, keyed by its stable id, so the client sees
+        // the same block resolve rather than a second one appearing below.
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.id === PROPOSAL_MILESTONE_MESSAGE_ID
+              ? {
+                  ...message,
+                  content: proposalMilestoneTitle(data.stage!),
+                  milestone: buildProposalMilestone({
+                    stage: data.stage!,
+                    at: data.created_at ?? message.milestone?.at ?? null,
+                    requestedBy: viewerEmail,
+                    projectName: projectName || null,
+                    prototypeVersion: prototypeVersions.length || null,
+                    proposalHref: data.public_token
+                      ? `/${locale}/maxwell/proposal/${data.public_token}`
+                      : null,
+                  }),
+                }
+              : message,
+          ),
+        );
+
+        if (data.stage === "ready") {
+          setProposalPollingSessionId(null);
+          // The panel below the conversation belongs to the phase, so it has to
+          // move too — otherwise it would still say "under review" beside a card
+          // that says the opposite.
+          setPhase("proposal_sent");
+        }
+      } catch {
+        // A failed tick is not an error worth showing: the next one retries, and
+        // the email arrives regardless.
+      }
+    }
+
+    void tick();
+    const id = window.setInterval(() => {
+      if (Date.now() - startedAt > GIVE_UP_MS) {
+        setProposalPollingSessionId(null);
+        return;
+      }
+      void tick();
+    }, 15_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposalPollingSessionId]);
+
   async function handleRequestProposal() {
     if (!sessionId) return;
 
@@ -1453,23 +1552,28 @@ export function StudioShell({
                   "Your formal proposal draft is saved and marked for internal Noon review. Automatic delivery to the PM app is not configured on this server; the team can still open it from the proposal queue, or you can contact an agent.",
               })
             : createMessage({
+                id: PROPOSAL_MILESTONE_MESSAGE_ID,
                 role: "assistant",
                 type: "system_event",
-                content: PROPOSAL_MILESTONE_TITLE,
-                // The client's own clock: this event happened just now, and the
-                // row's created_at is not in the response. Rehydration replaces
-                // it with the stored timestamp on the next load.
+                content: proposalMilestoneTitle("review"),
+                // The draft now exists and is with the team, so the card opens on
+                // `review` — not on `drafting`, which was the POST we just awaited.
+                // Its own clock: this happened just now and created_at is not in
+                // the response; the poll below replaces it with the stored one.
                 milestone: buildProposalMilestone({
+                  stage: "review",
                   at: new Date().toISOString(),
                   requestedBy: viewerEmail,
                   projectName: projectName || null,
                   prototypeVersion: prototypeVersions.length || null,
-                  // No link yet: the proposal is not publicly viewable while it
-                  // is in review, so the button appears on reload once it is.
                   proposalHref: null,
                 }),
               }),
         ]);
+        // Watch for the PM (or the 15-minute auto-send) turning it into something
+        // the client can open — without this the card would sit on "final check"
+        // until a reload.
+        setProposalPollingSessionId(sessionId);
       }
     } catch {
       setPhase(phaseBeforeRequest);
