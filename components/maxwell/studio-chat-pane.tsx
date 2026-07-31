@@ -612,9 +612,15 @@ export function StudioEventCard({
             <MilestoneRow key={row.label} {...row} />
           ))}
           {inProgress && (onResend || agentHref) && (
-            // Understated on purpose: these are for when something went wrong,
-            // and the normal path is to wait. Same weight they had on the panel.
-            <div className="flex flex-wrap items-center gap-3 pt-0.5">
+            // Behind the same hairline the finished card puts its action behind.
+            // Without it these sat at the steps' own left edge and on the steps'
+            // own 30px rhythm, so the eye read them as a fourth step — measured:
+            // identical x, zero separation. Facts on one side of the rule,
+            // actions on the other, in both states.
+            //
+            // Understated on purpose beyond that: these are for when something
+            // went wrong, and the normal path is simply to wait.
+            <div className="-mx-3.5 flex flex-wrap items-center gap-3 border-t border-border px-3.5 pt-3">
               {onResend && (
                 <button
                   type="button"
@@ -630,7 +636,11 @@ export function StudioEventCard({
                   ) : (
                     <RefreshCw className="h-3 w-3" aria-hidden />
                   )}
-                  Resend to review
+                  {/* Not "Resend to review": that is the same inverted voice the
+                      panel was removed for — the client never sends anything to
+                      us for approval. What this actually does is re-queue the
+                      draft with the team, so it says that, from their side. */}
+                  Nudge the team
                 </button>
               )}
               {agentHref && (
