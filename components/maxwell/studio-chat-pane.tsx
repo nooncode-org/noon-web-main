@@ -560,7 +560,7 @@ export function StudioEventCard({
           free, with no code that knows about "the next event".
           Gated on there being a body: with no box under it, this would be a stub
           hanging off a title, which is the decoration I was right to refuse. */}
-      {hasBody && (
+      {hasBody && !inProgress && (
         <span
           aria-hidden
           // `mb-0` is load-bearing: `space-y-2.5` on the parent sets margin-bottom
@@ -572,55 +572,79 @@ export function StudioEventCard({
         />
       )}
 
-      {/* TREATMENT 2 — outline only. It GROUPS the facts; it doesn't shout over
-          the title. Indented to clear the glyph column, the same offset the trace
-          uses for its result boxes. */}
+      {/* TWO SHAPES, because the content is of two kinds:
+          · IN PROGRESS — steps hanging off the rail, no box. Exactly the build
+            trace's anatomy: the connector runs down the steps' own glyph column
+            and ends on the last glyph. Boxing them and running a separate rail
+            outside is what made this read as unfinished beside the trace — the
+            list hung off nothing.
+          · SETTLED — the facts inside an outline box (treatment 2: it groups,
+            it doesn't shout), introduced by the rail above. */}
       {hasBody && (
-        <div className="ml-[26px] space-y-2.5 rounded-[8px] border border-border p-3.5">
+        <div
+          className={
+            inProgress
+              ? "space-y-2.5"
+              : "ml-[26px] space-y-2.5 rounded-[8px] border border-border p-3.5"
+          }
+        >
           {milestone.status && (
             <p className="text-[13px] leading-5 text-foreground/90">{milestone.status}</p>
           )}
-          {steps.map((step) => (
-            <div key={step.label} className="flex items-start gap-2.5">
-              {step.status === "active" ? (
-                <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-emerald-500" aria-hidden />
-              ) : step.status === "done" ? (
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground/75" aria-hidden />
-              ) : (
-                // A hollow ring, not a greyed tick: a step that hasn't started
-                // must not be one glance away from looking finished.
-                <span
-                  className="mt-1 h-3 w-3 shrink-0 rounded-full border border-border"
-                  aria-hidden
-                />
-              )}
-              <div className="min-w-0">
-                <p
-                  className={`text-[13px] leading-5 ${
-                    step.status === "pending" ? "text-muted-foreground" : "text-foreground/90"
-                  }`}
-                >
-                  {step.label}
-                </p>
-                {step.detail && step.status === "active" && (
-                  <p className="text-[12px] leading-5 text-muted-foreground">{step.detail}</p>
-                )}
-              </div>
-            </div>
-          ))}
+          {steps.length > 0 && (
+            // Same anatomy as the build trace, not a second invention: the rail
+            // runs down the STEPS' own glyph column and dies on the last glyph,
+            // instead of a list floating inside a box while an unrelated rail
+            // runs past it outside. `StepGlyph` and the segment geometry are the
+            // trace's, reused verbatim — two lists of steps in one chat must not
+            // be drawn by two different pieces of code.
+            <ol>
+              {steps.map((step, index) => {
+                const isLast = index === steps.length - 1;
+                return (
+                  <li key={step.label} className="relative pb-2.5 last:pb-0">
+                    {/* Segment under each glyph rather than one full-height rule
+                        behind them: nothing to keep in sync with the background. */}
+                    {!isLast && (
+                      <span
+                        aria-hidden
+                        className="absolute bottom-0 left-[7.5px] top-[21px] w-px bg-border"
+                      />
+                    )}
+                    <div className="flex items-start gap-2.5">
+                      <StepGlyph status={step.status} />
+                      <div className="min-w-0">
+                        <p
+                          className={`text-[13px] leading-5 ${
+                            step.status === "pending"
+                              ? "text-muted-foreground/60"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {step.label}
+                        </p>
+                        {step.detail && step.status === "active" && (
+                          <p className="text-[12px] leading-5 text-muted-foreground/70">
+                            {step.detail}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
           {rows.map((row) => (
             <MilestoneRow key={row.label} {...row} />
           ))}
           {inProgress && (onResend || agentHref) && (
-            // Behind the same hairline the finished card puts its action behind.
-            // Without it these sat at the steps' own left edge and on the steps'
-            // own 30px rhythm, so the eye read them as a fourth step — measured:
-            // identical x, zero separation. Facts on one side of the rule,
-            // actions on the other, in both states.
-            //
-            // Understated on purpose beyond that: these are for when something
-            // went wrong, and the normal path is simply to wait.
-            <div className="-mx-3.5 flex flex-wrap items-center gap-3 border-t border-border px-3.5 pt-3">
+            // Indented clear of the rail's column and set apart, so they can't be
+            // mistaken for a fourth step — which is exactly what happened when
+            // they shared the steps' left edge and rhythm (measured: identical x,
+            // zero separation). Understated beyond that: these are for when
+            // something went wrong, and the normal path is simply to wait.
+            <div className="ml-[26px] flex flex-wrap items-center gap-3 pt-0.5">
               {onResend && (
                 <button
                   type="button"
