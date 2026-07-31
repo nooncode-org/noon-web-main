@@ -1092,10 +1092,13 @@ export function StudioChatPane({
     }
   }
 
+  // NOT `proposal_pending_review`: its panel was removed, and this wrapper draws
+  // a top border plus 24px of padding on its own — so it kept rendering a bare
+  // divider with nothing under it. A container has to know when its contents
+  // stopped existing.
   const showActionZone =
     phase === "prototype_ready" ||
     phase === "approved_for_proposal" ||
-    phase === "proposal_pending_review" ||
     phase === "proposal_sent";
 
   // W9 — no `approved_for_proposal` here: approving ends the adjustment loop
