@@ -364,8 +364,6 @@ type StudioChatPaneProps = {
   /** W10 — re-send the pending draft to the Noon PM queue (proposal_pending_review CTA). */
   onResendProposal?: () => Promise<void>;
   agentHref: string;
-  /** Owner-only deep-link token to the public proposal page (proposal_sent CTA). */
-  proposalToken?: string | null;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
   shareEnabled?: boolean;
@@ -913,7 +911,6 @@ export function StudioChatPane({
   onRequestProposal,
   onResendProposal,
   agentHref,
-  proposalToken,
   isWorkspaceVisible,
   shareEnabled,
   shareUrl,
@@ -1262,7 +1259,6 @@ export function StudioChatPane({
             onRequestProposal={onRequestProposal}
             onResendProposal={onResendProposal}
             agentHref={agentHref}
-            proposalToken={proposalToken}
             shareEnabled={shareEnabled}
             shareUrl={shareUrl}
             shareUxState={shareUxState}

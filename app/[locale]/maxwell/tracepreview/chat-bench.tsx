@@ -52,7 +52,7 @@ const PROJECT_NAME = "A landing page for my coffee subscription — hero, plans,
  * and the point of showing it here is the CONTRAST with the two ordinary bubbles
  * right above it — which is exactly what the card is fixing.
  */
-function buildProposalMessages(startedAt: number): ChatMessage[] {
+function buildProposalMessages(startedAt: number, sent: boolean): ChatMessage[] {
   return [
     ...buildMessages(startedAt),
     {
@@ -79,9 +79,12 @@ function buildProposalMessages(startedAt: number): ChatMessage[] {
         requestedBy: "priya@marlowcoffee.com",
         projectName: PROJECT_NAME,
         prototypeVersion: 3,
-        // Reload-after-send state, so the action is visible. Straight after
-        // requesting it there is no link yet and the button is simply absent.
-        proposalHref: "#",
+        // THE point of the toggle. The token is only handed to the client for
+        // statuses the public proposal page actually renders (sent / payment_* /
+        // paid) — "under review" is not one of them, so right after requesting it
+        // there is no link and the card carries no button. It appears by itself
+        // once the PM sends it and the page is reloaded.
+        proposalHref: sent ? "#" : null,
       }),
     },
   ];
@@ -91,6 +94,8 @@ const FILE_NAMES = ["app/page.tsx", "components/hero-section.tsx", "components/p
 
 export function ChatBench({ startedAt }: { startedAt: number }) {
   const [stage, setStage] = useState<PrototypeStage>("assembling");
+  // Which side of the PM's review the proposal column is showing.
+  const [proposalSent, setProposalSent] = useState(false);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -173,12 +178,34 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
         </div>
 
         <div>
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
-            chat · proposal sent
-          </p>
+          {/* Both sides of the PM's review, because the difference between them
+              is the whole answer to "how can this show before I have the
+              proposal?": under review there is no button at all. */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+              chat · proposal
+            </span>
+            {[
+              { on: false, label: "under review" },
+              { on: true, label: "sent by the PM" },
+            ].map((opt) => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => setProposalSent(opt.on)}
+                className={`rounded-[6px] border px-2.5 py-1 font-mono text-[11px] transition-colors ${
+                  opt.on === proposalSent
+                    ? "border-foreground/30 bg-secondary text-foreground"
+                    : "border-border text-muted-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
           <div className="h-[760px] w-[520px] max-w-full overflow-hidden rounded-[8px] border border-border">
             <StudioChatPane
-              messages={buildProposalMessages(startedAt)}
+              messages={buildProposalMessages(startedAt, proposalSent)}
               isThinking={false}
               input={input}
               onInputChange={setInput}
@@ -196,7 +223,7 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
               // under the conversation, so getting it wrong would misreport how
               // much room the card actually has.
               canSend
-              phase="proposal_pending_review"
+              phase={proposalSent ? "proposal_sent" : "proposal_pending_review"}
               prototypeTrace={null}
               pollingStartedAt={null}
               correctionsUsed={0}

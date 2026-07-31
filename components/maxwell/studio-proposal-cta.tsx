@@ -27,13 +27,6 @@ type StudioProposalCtaProps = {
   onResendProposal?: () => Promise<void>;
   agentHref: string;
   /**
-   * Owner-only deep-link token to the public proposal page. Present (from the
-   * session rehydrate) once a sent proposal exists; drives the "View your
-   * proposal" button in the `proposal_sent` phase. Null/absent → the button is
-   * hidden and the copy falls back to "check your email".
-   */
-  proposalToken?: string | null;
-  /**
    * ADR-028 D11 — feature gate for the D-upstream wire. When `false`, the
    * "Get shareable link" CTA does not render (defence in depth: the Server
    * Action short-circuits too).
@@ -147,7 +140,6 @@ export function StudioProposalCta({
   onRequestProposal,
   onResendProposal,
   agentHref,
-  proposalToken,
   shareEnabled = false,
   shareUrl = null,
   shareUxState,
@@ -257,24 +249,22 @@ export function StudioProposalCta({
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium mb-0.5">Your proposal is ready</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {proposalToken
-                ? "Review the formal proposal and complete payment to get started."
-                : "We've emailed your proposal — check your inbox to review it and pay."}
+              We&apos;ve emailed your proposal — check your inbox to review it and pay.
             </p>
           </div>
         </div>
 
+        {/* No "View your proposal" button here any more (owner, 2026-07-30).
+            The milestone card in the conversation already carries that link, and
+            with the token present this panel put a second button to the SAME page
+            about 150px below the first one. One action, one place.
+
+            The two blocks keep different jobs: this panel states where things
+            stand and offers the way out to a human; the milestone card is the
+            record of the event and owns the link to what it describes. Trade-off
+            accepted knowingly: the in-app path is now one scroll up instead of
+            pinned, and the email remains the primary route either way. */}
         <div className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-1">
-          {proposalToken ? (
-            <Link
-              href={`/maxwell/proposal/${proposalToken}`}
-              className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              View your proposal
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          ) : null}
           <Link
             href={agentHref}
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"

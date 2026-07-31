@@ -279,12 +279,11 @@ export function StudioShell({
   // share (the URL is persisted server-side regardless of the next action).
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareUxState, setShareUxState] = useState<PrototipoShareUxState>({ kind: "idle" });
-  // The session owner's deep-link token to the public proposal page. The
-  // rehydrate endpoint surfaces it ONLY when the proposal is in a publicly
-  // viewable status (see lib/maxwell/proposal-visibility), so it is safe to
-  // pass straight into the "View your proposal" CTA. Null until a sent proposal
-  // exists for this session.
-  const [proposalPublicToken, setProposalPublicToken] = useState<string | null>(null);
+  // NOTE: the proposal's public token is no longer held in state. It fed the
+  // "View your proposal" button on the phase panel, which was removed (owner,
+  // 2026-07-30) because the milestone card in the conversation already carries
+  // that link. The card builds its href straight from the rehydrate response,
+  // so nothing needs to keep the token around between renders.
 
   // Hoisted above the hooks that need it (rail auto-collapse effect below);
   // also drives the chat/preview split in the render.
@@ -491,9 +490,6 @@ export function StudioShell({
       setProjectName(data.session.goalSummary ?? "");
       setCorrectionsUsed(data.session.correctionsUsed);
       setMaxCorrections(data.session.maxCorrections);
-      // Set explicitly each rehydrate so switching into a session without a
-      // sent proposal clears a stale token from a previously-viewed one.
-      setProposalPublicToken(data.proposal_public_token ?? null);
       // ADR-028 D6 — rehydrate share URL when the session is already in the
       // shared state. Empty string from the server (env-misconfig recovery
       // path) is treated as "no URL" so the CTA falls back to "share again".
@@ -1756,7 +1752,6 @@ export function StudioShell({
               onRequestProposal={handleRequestProposal}
               onResendProposal={handleResendProposal}
               agentHref={agentHref}
-              proposalToken={proposalPublicToken}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}
               onReplyToMessage={handleReplyToMessage}
