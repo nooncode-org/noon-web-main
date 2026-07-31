@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
 import { StudioSidebar } from "./studio-sidebar";
+import { useAccountSettings } from "./use-account-settings";
 import { StudioChatPane } from "./studio-chat-pane";
 import { StudioPreviewPane } from "./studio-preview-pane";
 import { WorkspaceReentryBanner } from "./workspace-reentry-banner";
@@ -289,6 +290,15 @@ export function StudioShell({
   // share (the URL is persisted server-side regardless of the next action).
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareUxState, setShareUxState] = useState<PrototipoShareUxState>({ kind: "idle" });
+  // The account gear + profile editor, in ACCOUNT mode (no project scope: this
+  // chat is a draft conversation, not a client workspace). Same hook the
+  // signed-in home and the ProposalSidebar surfaces use, so there is one
+  // implementation of the panel — the chat was simply never given it, which left
+  // the gear present everywhere EXCEPT where the client spends the most time.
+  const { profile, openProfile, settingsGear, profileDialog } = useAccountSettings({
+    viewerEmail,
+  });
+
   // Session whose proposal we are watching, or null when nothing is pending.
   // Set when the client requests a proposal and when a rehydrate lands on one
   // that is still with the team; cleared the moment it turns ready.
@@ -1707,6 +1717,10 @@ export function StudioShell({
         <div className="hidden min-h-0 w-72 shrink-0 border-r border-border/70 lg:flex">
           <StudioSidebar
             viewerEmail={viewerEmail}
+            viewerName={profile.name || null}
+            viewerPhotoUrl={profile.photoUrl}
+            onEditProfile={openProfile}
+            footerExtra={settingsGear}
             locale={locale}
             agentHref={agentHref}
             draftSessions={draftSessionsForHeader}
@@ -1729,6 +1743,12 @@ export function StudioShell({
         maxCorrections={maxCorrections}
         agentHref={agentHref}
         viewerEmail={viewerEmail}
+        // Same profile state as the desktop rail: one identity per page, not one
+        // per sidebar mount.
+        viewerName={profile.name || null}
+        viewerPhotoUrl={profile.photoUrl}
+        onEditProfile={openProfile}
+        footerExtra={settingsGear}
         locale={locale}
         activeView={activeView}
         onToggleView={setActiveView}
@@ -1902,6 +1922,11 @@ export function StudioShell({
         )}
       </main>
       </div>
+
+      {/* Profile editor — opened from the rail's identity row or from the gear.
+          Mounted once at the shell level so the rail and the mobile drawer share
+          the same dialog instead of each opening its own. */}
+      {profileDialog}
     </div>
   );
 }

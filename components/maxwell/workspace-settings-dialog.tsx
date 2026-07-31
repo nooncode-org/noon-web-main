@@ -238,8 +238,13 @@ export function WorkspaceSettingsDialog({
         <DialogTrigger asChild>
           <button
             type="button"
-            aria-label="Project settings"
-            title="Project settings"
+            // The label has to follow the mode: in account mode there IS no
+            // project (the studio chat is a draft conversation, the home has no
+            // project at all), and the panel shows only profile / language /
+            // emails. It said "Project settings" everywhere, which was wrong on
+            // every surface that isn't a client workspace.
+            aria-label={accountOnly ? "Account settings" : "Project settings"}
+            title={accountOnly ? "Account settings" : "Project settings"}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-border bg-background text-foreground/85 transition-colors hover:bg-secondary/60 data-[state=open]:bg-secondary/60"
           >
             <Settings className="h-4 w-4" strokeWidth={1.75} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ExternalLink,
   MessageSquare,
@@ -144,6 +144,15 @@ type StudioHeaderProps = {
   maxCorrections: number;
   agentHref: string;
   viewerEmail: string;
+  /**
+   * Account identity + the settings gear, owned by the shell so the rail and
+   * this drawer share one profile state. Optional only because the drawer is
+   * usable without them; the shell always passes them.
+   */
+  viewerName?: string | null;
+  viewerPhotoUrl?: string | null;
+  onEditProfile?: () => void;
+  footerExtra?: ReactNode;
   /** Current locale — forwarded to the drawer's StudioSidebar nav links. */
   locale: string;
   activeView: ActiveView;
@@ -183,6 +192,10 @@ export function StudioHeader({
   maxCorrections,
   agentHref,
   viewerEmail,
+  viewerName,
+  viewerPhotoUrl,
+  onEditProfile,
+  footerExtra,
   locale,
   activeView,
   onToggleView,
@@ -405,6 +418,10 @@ export function StudioHeader({
     >
       <StudioSidebar
         viewerEmail={viewerEmail}
+        viewerName={viewerName}
+        viewerPhotoUrl={viewerPhotoUrl}
+        onEditProfile={onEditProfile}
+        footerExtra={footerExtra}
         locale={locale}
         agentHref={agentHref}
         draftSessions={draftSessions}
