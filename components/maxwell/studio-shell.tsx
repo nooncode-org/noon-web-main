@@ -1588,43 +1588,14 @@ export function StudioShell({
     }
   }
 
-  // W10 — always-visible recovery rail for `proposal_pending_review`: re-POST
-  // the proposal endpoint, which re-sends the existing pending draft to the
-  // Noon PM queue (no new draft, no state change; App-side re-queue is
-  // idempotent). Exists because a swallowed handoff used to strand clients
-  // with no UI action at all.
-  async function handleResendProposal() {
-    if (!sessionId) return;
-    try {
-      const res = await fetch("/api/maxwell/proposal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId }),
-      });
-      const data = (await res.json().catch(() => null)) as { message?: string } | null;
-      setMessages((prev) => [
-        ...prev,
-        createMessage({
-          role: "assistant",
-          type: res.ok ? "system_event" : "error",
-          content: res.ok
-            ? "Your proposal was sent to the Noon review team again."
-            : typeof data?.message === "string"
-              ? data.message
-              : "Couldn't resend the proposal. Please try again.",
-        }),
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        createMessage({
-          role: "assistant",
-          type: "error",
-          content: "Couldn't resend the proposal. Please try again.",
-        }),
-      ]);
-    }
-  }
+  // W10, the re-send recovery, no longer has any UI: its button lived first on
+  // the "Proposal under review" panel and then on the milestone card, and both
+  // were removed (owner, 2026-07-30 — it was on screen 100% of the time for a
+  // hand-off failure that happens rarely). The POST endpoint still accepts the
+  // re-queue, so bringing it back is putting a button back, ideally only once
+  // the wait exceeds the expected window — which the card can tell on its own
+  // from the proposal's own timestamp. Until then a stuck proposal is an agent
+  // conversation, reachable from the rail.
 
   async function handleDeleteSessionList(id: string) {
     // Confirmation lives in the StudioSidebar AlertDialog (B31) — the only
@@ -1854,7 +1825,6 @@ export function StudioShell({
               onApprove={handleApprove}
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}
-              onResendProposal={handleResendProposal}
               agentHref={agentHref}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}

@@ -361,8 +361,6 @@ type StudioChatPaneProps = {
   onApprove: () => void;
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
-  /** W10 — re-send the pending draft to the Noon PM queue (proposal_pending_review CTA). */
-  onResendProposal?: () => Promise<void>;
   agentHref: string;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
@@ -489,23 +487,10 @@ function MilestoneRow({
 export function StudioEventCard({
   title,
   milestone,
-  agentHref,
-  onResend,
 }: {
   title: string;
   milestone: StudioMilestone;
-  /**
-   * The two safety valves that used to live on the "Proposal under review" panel,
-   * removed at the owner's request (the title read backwards — the client never
-   * submits a proposal to us). They are NOT decoration: `onResend` re-queues a
-   * draft whose hand-off to the PM app was swallowed, which once left clients
-   * stranded with no action at all. Shown only while the card is still in
-   * progress; once it is a settled record there is nothing to recover.
-   */
-  agentHref?: string;
-  onResend?: () => Promise<void>;
 }) {
-  const [isResending, setIsResending] = useState(false);
   const rows = (milestone.rows ?? []).filter((r) => r.value || r.chips?.length);
   const steps = milestone.steps ?? [];
   const inProgress = steps.some((s) => s.status !== "done");
@@ -638,46 +623,17 @@ export function StudioEventCard({
           {rows.map((row) => (
             <MilestoneRow key={row.label} {...row} />
           ))}
-          {inProgress && (onResend || agentHref) && (
-            // Indented clear of the rail's column and set apart, so they can't be
-            // mistaken for a fourth step — which is exactly what happened when
-            // they shared the steps' left edge and rhythm (measured: identical x,
-            // zero separation). Understated beyond that: these are for when
-            // something went wrong, and the normal path is simply to wait.
-            <div className="ml-[26px] flex flex-wrap items-center gap-3 pt-0.5">
-              {onResend && (
-                <button
-                  type="button"
-                  disabled={isResending}
-                  onClick={() => {
-                    setIsResending(true);
-                    void Promise.resolve(onResend()).finally(() => setIsResending(false));
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-                >
-                  {isResending ? (
-                    <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
-                  ) : (
-                    <RefreshCw className="h-3 w-3" aria-hidden />
-                  )}
-                  {/* Not "Resend to review": that is the same inverted voice the
-                      panel was removed for — the client never sends anything to
-                      us for approval. What this actually does is re-queue the
-                      draft with the team, so it says that, from their side. */}
-                  Nudge the team
-                </button>
-              )}
-              {agentHref && (
-                <Link
-                  href={agentHref}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <User className="h-3 w-3" aria-hidden />
-                  Talk to an agent
-                </Link>
-              )}
-            </div>
-          )}
+          {/* No actions while it is preparing (owner, 2026-07-30). "Talk to an
+              agent" was a copy of a link that lives permanently in the left rail,
+              and "Nudge the team" was shown 100% of the time for a hand-off
+              failure that happens rarely — inviting the client to poke a process
+              that is working, with a button whose point only makes sense if you
+              know the hand-off can fail, which they don't.
+              Cost, accepted knowingly: the self-service re-queue is gone from the
+              UI entirely, so a stuck proposal now needs an agent (reachable from
+              the rail). The endpoint still accepts it if we ever want the button
+              back — ideally gated on the wait exceeding the expected window,
+              which the card can tell from `at` alone. */}
           {milestone.action && (
             // Hairline above it, like the reference: the rows are FACTS and this
             // is an ACTION. Without the divider the button read as one more row,
@@ -1029,7 +985,6 @@ export function StudioChatPane({
   onApprove,
   onRequestCorrection,
   onRequestProposal,
-  onResendProposal,
   agentHref,
   isWorkspaceVisible,
   shareEnabled,
@@ -1302,8 +1257,6 @@ export function StudioChatPane({
                     key={messageId}
                     title={msg.content}
                     milestone={msg.milestone}
-                    agentHref={agentHref}
-                    onResend={onResendProposal}
                   />
                 );
               }
