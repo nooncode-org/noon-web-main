@@ -18,6 +18,10 @@ import {
   shouldAutoReloadPreview,
   type PreviewLoadStatus,
 } from "@/lib/maxwell/preview-load-state";
+import {
+  proposalMilestoneTitle,
+  proposalStageDetail,
+} from "@/lib/maxwell/proposal-milestone";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
 /**
@@ -690,21 +694,37 @@ export function StudioPreviewPane({
             </div>
           )}
 
-          {/* Proposal in review */}
+          {/* The proposal's state, for preview-ONLY mode. Not a duplicate of the
+              milestone card: in this mode the chat is off screen, so without this
+              the client would have no indication at all.
+              It does have to say the SAME thing, though, which is why the copy
+              comes from the card's own vocabulary instead of being written twice.
+
+              It used to read "Proposal under review", which was both the inverted
+              voice (a client never submits a proposal to us) and — for
+              `proposal_sent` — plainly FALSE: it kept claiming a PM was reviewing
+              something that had already been sent. Both phases now say what is
+              actually true of each. */}
           {isPendingReview && (
             <div
               className="flex items-start gap-3 px-4 py-4"
               style={{ backgroundColor: "var(--card)" }}
             >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-secondary text-muted-foreground"
-              >
-                <User className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border/70 bg-secondary text-muted-foreground">
+                {phase === "proposal_sent" ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                )}
               </div>
               <div>
-                <p className="text-sm font-medium mb-0.5">Proposal under review</p>
+                <p className="text-sm font-medium mb-0.5">
+                  {proposalMilestoneTitle(phase === "proposal_sent" ? "ready" : "review")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  A Noon Project Manager is reviewing this before sending it to you. You will receive it shortly.
+                  {phase === "proposal_sent"
+                    ? "We've also emailed it to you."
+                    : proposalStageDetail("review")}
                 </p>
               </div>
             </div>

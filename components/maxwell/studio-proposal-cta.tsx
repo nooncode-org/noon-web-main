@@ -174,7 +174,7 @@ export function StudioProposalCta({
 
   if (phase === "generating_prototype" || phase === "revision_requested") {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-4">
+      <div className="flex items-center gap-3 rounded-[8px] border border-border/70 bg-card p-4">
         <Loader2 className="w-4 h-4 animate-spin shrink-0 text-muted-foreground" />
         <p className="text-sm text-foreground/90">
           {phase === "generating_prototype"
@@ -219,7 +219,7 @@ export function StudioProposalCta({
 
   if (phase === "approved_for_proposal") {
     return (
-      <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
+      <div className="rounded-[8px] border border-border/70 bg-card p-4 space-y-3">
         <div>
           <p className="text-sm font-medium mb-0.5">
             Prototype approved
@@ -256,7 +256,7 @@ export function StudioProposalCta({
   // Correction input open
   if (showCorrectionInput) {
     return (
-      <div className="rounded-2xl border border-border/70 bg-card p-4">
+      <div className="rounded-[8px] border border-border/70 bg-card p-4">
         <InlineCorrectionInput
           remaining={remaining}
           onSubmit={(text) => {
@@ -270,7 +270,7 @@ export function StudioProposalCta({
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3">
+    <div className="rounded-[8px] border border-border/70 bg-card p-4 space-y-3">
       {/* Status line — the remaining-count lives on the "Request adjustment"
           badge below, so this line stays count-free and adds what approve does. */}
       <p className="text-xs text-muted-foreground">
