@@ -208,9 +208,16 @@ export function StudioProposalCta({
             <FileText className="w-3.5 h-3.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium mb-0.5">Your proposal is ready</p>
+            {/* NOT "Your proposal is ready" any more: that is now the milestone
+                card's headline, sitting ~200px above this, and the two were saying
+                the same sentence twice. My own doing, when the card's title was
+                renamed to drop an ambiguous "sent".
+                This panel keeps the half the card does not have — the proposal
+                also went out by email — which is exactly its job: where things
+                stand, and the way out to a human. */}
+            <p className="text-sm font-medium mb-0.5">Sent to your email</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              We&apos;ve emailed your proposal — check your inbox to review it and pay.
+              Check your inbox to review it and pay.
             </p>
           </div>
         </div>
