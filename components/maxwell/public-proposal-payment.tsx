@@ -106,6 +106,12 @@ const PPW_WASH_CSS = `
 
 function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: Modality) => void }) {
   const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
+  // Three is what every plan has in common, so three is what stays on screen:
+  // below that a card would stop saying anything, above it the row starts
+  // running to different heights again — which is the whole reason the overflow
+  // folds.
+  const visible = features.slice(0, 3);
+  const rest = features.slice(3);
   const ctaAccent = recommended
     ? "bg-[#0056fd] text-white hover:bg-[#0047e0]"
     : "bg-foreground text-background hover:bg-foreground/90";
@@ -182,8 +188,25 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
           the one they are weighing.
           <details> and not state: it keeps working before hydration, and the
           browser gives keyboard + AT behaviour for free. */}
-      {features.length > 0 && (
-        <details className="group mt-5 px-1.5">
+      {/* The first few points stay VISIBLE — they are what distinguishes one plan
+          from another, and a row of cards you cannot compare without opening
+          three disclosures is worse than a long one. Only the OVERFLOW folds
+          away, which is what keeps the cards from running to different heights.
+          <details> and not state: works before hydration, and the browser gives
+          keyboard + AT behaviour for free. */}
+      {visible.length > 0 && (
+        <ul className="mt-6 space-y-3.5 px-1.5">
+          {visible.map((feature) => (
+            <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
+              <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {rest.length > 0 && (
+        <details className="group mt-3.5 px-1.5">
           <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
             <ChevronDown
               className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
@@ -192,8 +215,8 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
             />
             Show details
           </summary>
-          <ul className="mt-4 space-y-3.5">
-            {features.map((feature) => (
+          <ul className="mt-3.5 space-y-3.5">
+            {rest.map((feature) => (
               <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
                 <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
                 <span>{feature}</span>
