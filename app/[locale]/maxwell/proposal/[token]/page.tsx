@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { ProposalDocument } from "@/components/maxwell/proposal-document";
 import { PublicProposalPayment } from "@/components/maxwell/public-proposal-payment";
-import { StatusBadge } from "@/app/[locale]/maxwell/review/_components/status-badge";
 import {
   getProposalRequestByPublicToken,
   getStudioSession,
@@ -190,36 +189,23 @@ export default async function PublicProposalPage({ params, searchParams }: Props
     >
       {viewer && <ProposalSidebar viewerEmail={viewer.email} locale={locale} />}
       <div className="px-6 py-12">
-        <div className="mx-auto max-w-3xl">
-          <header className="rounded-2xl border border-border bg-card p-6">
-            <p className="text-xs font-mono uppercase tracking-[0.24em] text-muted-foreground">
-              Noon Proposal
-            </p>
-            <h1 className="mt-2 text-2xl font-display">Project proposal</h1>
-            <div className="mt-4">
-              <StatusBadge status={proposal.status} />
+        {/* No header card any more (owner, 2026-07-31: "esto está horrible").
+            It opened the page with a block of audit data — version, sent, first
+            opened, valid through — before the client had seen a single thing they
+            could act on, and it repeated itself in every status: a PAID proposal
+            still announced "Valid through Aug 8", a date that no longer means
+            anything.
+            Redistributed by what each fact actually belongs to, rather than
+            copied into all three plan cards (that would have tripled the noise
+            the owner asked to remove): the offer's expiry sits once beside the
+            options, and the document's own metadata sits under the document. */}
+        {effectivelyExpired && (
+          <div className="mx-auto max-w-3xl">
+            <div className="rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+              This proposal has expired. Contact Noon if you need an updated version.
             </div>
-            <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-              <p>Version {proposal.versionNumber}</p>
-              <p>Sent: {proposal.sentAt ? formatDate(proposal.sentAt) : "Pending delivery record"}</p>
-              <p>
-                First opened: {proposal.firstOpenedAt ? formatDate(proposal.firstOpenedAt) : "This visit"}
-              </p>
-              <p>
-                Valid through: {proposal.expiresAt ? formatDate(proposal.expiresAt) : "15 days from first open"}
-              </p>
-              {/* E2-SEC LOW-1: en la vista expirada no se re-expone el recipient. */}
-              {!effectivelyExpired && proposal.deliveryRecipient && (
-                <p>Recipient: {proposal.deliveryRecipient}</p>
-              )}
-            </div>
-            {effectivelyExpired && (
-              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-                This proposal has expired. Contact Noon if you need an updated version.
-              </div>
-            )}
-          </header>
-        </div>
+          </div>
+        )}
 
         {!effectivelyExpired && (
           <>
@@ -236,12 +222,28 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 monthlyAmountUsd={proposal.monthlyAmountUsd ?? commercialProfile?.monthlyAmountUsd ?? null}
                 checkoutResult={checkoutResult}
                 studioSessionId={proposal.studioSessionId}
+                validThrough={proposal.expiresAt ? formatDate(proposal.expiresAt) : null}
               />
             </div>
 
             <div className="mx-auto mt-6 max-w-3xl">
-              <section className="rounded-2xl border border-border bg-card p-6">
+              <section className="rounded-[8px] border border-border bg-card p-6">
                 <ProposalDocument content={cleanDraft} />
+
+                {/* The document's own record, at its foot — where a document's
+                    metadata belongs, and out of the way of the decision. One
+                    quiet line instead of the four-row grid that used to open the
+                    page. "First opened" is gone for good: telling a client the
+                    moment they are currently looking at something tells them
+                    nothing they don't know. */}
+                <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
+                  Version {proposal.versionNumber}
+                  {proposal.sentAt && <> · Sent {formatDate(proposal.sentAt)}</>}
+                  {/* E2-SEC LOW-1: the expired view never re-exposes the recipient. */}
+                  {!effectivelyExpired && proposal.deliveryRecipient && (
+                    <> · To {proposal.deliveryRecipient}</>
+                  )}
+                </p>
               </section>
             </div>
           </>

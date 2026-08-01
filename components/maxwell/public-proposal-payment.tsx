@@ -3,7 +3,15 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Loader2, Lock } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+  Lock,
+} from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import type { ProposalStatus } from "@/lib/maxwell/repositories";
@@ -50,6 +58,8 @@ type PublicProposalPaymentProps = {
   checkoutResult?: CheckoutResult;
   /** Studio session id — links the post-payment CTA to the client's project workspace (the portal). */
   studioSessionId?: string;
+  /** Pre-formatted offer expiry, shown once beside the options. Null = no date on record. */
+  validThrough?: string | null;
 };
 
 function formatMoney(amount: number, currency: string) {
@@ -165,14 +175,33 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
 
       <p className="mt-6 px-1.5 text-[13px] text-muted-foreground">{tagline}</p>
 
-      <ul className="mt-6 space-y-3.5 px-1.5">
-        {features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
-            <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
+      {/* Details folded away (owner, 2026-07-31). Open, the three cards ran to
+          different lengths — the one with most bullets looked like the most
+          serious option purely because it was tallest, and the row stopped being
+          scannable. Collapsed they compare at a glance; the client opens only
+          the one they are weighing.
+          <details> and not state: it keeps working before hydration, and the
+          browser gives keyboard + AT behaviour for free. */}
+      {features.length > 0 && (
+        <details className="group mt-5 px-1.5">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+            <ChevronDown
+              className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+              strokeWidth={2}
+              aria-hidden
+            />
+            Show details
+          </summary>
+          <ul className="mt-4 space-y-3.5">
+            {features.map((feature) => (
+              <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
+                <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }
@@ -228,6 +257,7 @@ export function PublicProposalPayment({
   monthlyAmountUsd = null,
   checkoutResult = null,
   studioSessionId,
+  validThrough = null,
 }: PublicProposalPaymentProps) {
   // Two-step flow: pick a plan (null), then pay for it. `null` = step 1.
   const [selectedPlan, setSelectedPlan] = useState<Modality | null>(null);
@@ -653,6 +683,17 @@ export function PublicProposalPayment({
         <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Choose an option</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Your project starts once payment is confirmed.
+          {/* The one fact from the old header card that belongs to the DECISION —
+              how long the offer stands. Once, here, not repeated inside each of
+              the three cards: it is a property of the offer, not of a plan. The
+              rest of that card (version, sent date, recipient) is document
+              metadata and moved to the foot of the document. */}
+          {validThrough && (
+            <>
+              {" "}
+              <span className="text-foreground/70">Valid through {validThrough}.</span>
+            </>
+          )}
         </p>
       </div>
 
