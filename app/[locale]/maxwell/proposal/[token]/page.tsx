@@ -219,26 +219,20 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 folded into each card — three copies of the same text would look
                 like a comparison and be none. What differs per plan is only the
                 payment shape, and that lives in the cards. */}
-            <div className="mx-auto mt-6 max-w-3xl">
-              <section className="rounded-[8px] border border-border bg-card p-6">
-                <ProposalDocument content={cleanDraft} />
-
-                {/* The document's own record, at its foot — where a document's
-                    metadata belongs, and out of the way of the decision. One
-                    quiet line instead of the four-row grid that used to open the
-                    page. "First opened" is gone for good: telling a client the
-                    moment they are currently looking at something tells them
-                    nothing they don't know. */}
-                <p className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-                  Version {proposal.versionNumber}
-                  {proposal.sentAt && <> · Sent {formatDate(proposal.sentAt)}</>}
-                  {/* E2-SEC LOW-1: the expired view never re-exposes the recipient. */}
-                  {!effectivelyExpired && proposal.deliveryRecipient && (
-                    <> · To {proposal.deliveryRecipient}</>
-                  )}
-                </p>
-              </section>
-            </div>
+            {/* No document, no box. With nothing to show, the section was a
+                bordered card holding one italic apology and a metadata footer
+                propping up nothing — owner: "está horrible". It reads as a broken
+                component, which is worse than an absence.
+                (It is the seed that has no draft here. In production a proposal
+                should never be sent without one — if this state is ever reached
+                by a real client, the bug is upstream, not on this page.) */}
+            {cleanDraft?.trim() && (
+              <div className="mx-auto mt-6 max-w-3xl">
+                <section className="rounded-[8px] border border-border bg-card p-6">
+                  <ProposalDocument content={cleanDraft} />
+                </section>
+              </div>
+            )}
 
             <div className="mx-auto max-w-[1100px]">
               <PublicProposalPayment
@@ -256,6 +250,21 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 validThrough={proposal.expiresAt ? formatDate(proposal.expiresAt) : null}
               />
             </div>
+
+            {/* The proposal's own record, closing the page. It used to be the
+                document section's footer, which only worked while there WAS a
+                document; here it stands on its own and never props up an empty
+                box. Quiet on purpose — it is provenance, not something to act on.
+                "First opened" stays gone: telling clients the moment they are
+                currently looking at something tells them nothing. */}
+            <p className="mx-auto mt-10 max-w-3xl text-xs text-muted-foreground">
+              Version {proposal.versionNumber}
+              {proposal.sentAt && <> · Sent {formatDate(proposal.sentAt)}</>}
+              {/* E2-SEC LOW-1: the expired view never re-exposes the recipient. */}
+              {!effectivelyExpired && proposal.deliveryRecipient && (
+                <> · To {proposal.deliveryRecipient}</>
+              )}
+            </p>
           </>
         )}
       </div>
