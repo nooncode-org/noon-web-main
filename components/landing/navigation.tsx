@@ -97,11 +97,16 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
                       a chooser.
                       Each now goes straight to its own screen, which also saves
                       the hub click for everyone. */}
+                  {/* Boxed, not bare text (owner). Outlined against Sign up's
+                      fill: both read as buttons and the pair keeps its hierarchy
+                      — primary for the newcomer, secondary for the returning
+                      client — instead of one button beside a link. Same 8px
+                      radius and the same `sm` height, so they sit as a pair. */}
                   <Button
                     asChild
                     size="sm"
-                    variant="ghost"
-                    className="px-4 text-foreground/80 hover:text-foreground"
+                    variant="outline"
+                    className="px-5"
                     style={{ borderRadius: "8px" }}
                   >
                     <Link href={localHref("/signin/login")}>Log in</Link>
