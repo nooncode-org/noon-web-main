@@ -209,23 +209,16 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
         {!effectivelyExpired && (
           <>
-            <div className="mx-auto mt-6 max-w-[1100px]">
-              <PublicProposalPayment
-                publicToken={proposal.publicToken}
-                status={proposal.status}
-                approvedAmountUsd={proposal.approvedAmountUsd}
-                approvedCurrency={proposal.approvedCurrency}
-                membershipApplicable={commercialProfile?.membershipRecommended ?? false}
-                // The price FROZEN at approval — a firm offer must not re-price
-                // when the table changes. Fall back to the live figure only for
-                // a proposal approved before the freeze landed (else null).
-                monthlyAmountUsd={proposal.monthlyAmountUsd ?? commercialProfile?.monthlyAmountUsd ?? null}
-                checkoutResult={checkoutResult}
-                studioSessionId={proposal.studioSessionId}
-                validThrough={proposal.expiresAt ? formatDate(proposal.expiresAt) : null}
-              />
-            </div>
-
+            {/* THE DOCUMENT FIRST, then how to pay for it (owner, 2026-07-31).
+                It used to sit under the plan cards, which asked the client to
+                choose a plan before they could read what they were buying — and
+                left the proposal itself hanging at the foot of the page like an
+                appendix.
+                Note this is ONE document, not one per plan: it describes the work,
+                which is identical whichever way you pay. That is why it is not
+                folded into each card — three copies of the same text would look
+                like a comparison and be none. What differs per plan is only the
+                payment shape, and that lives in the cards. */}
             <div className="mx-auto mt-6 max-w-3xl">
               <section className="rounded-[8px] border border-border bg-card p-6">
                 <ProposalDocument content={cleanDraft} />
@@ -245,6 +238,23 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                   )}
                 </p>
               </section>
+            </div>
+
+            <div className="mx-auto max-w-[1100px]">
+              <PublicProposalPayment
+                publicToken={proposal.publicToken}
+                status={proposal.status}
+                approvedAmountUsd={proposal.approvedAmountUsd}
+                approvedCurrency={proposal.approvedCurrency}
+                membershipApplicable={commercialProfile?.membershipRecommended ?? false}
+                // The price FROZEN at approval — a firm offer must not re-price
+                // when the table changes. Fall back to the live figure only for
+                // a proposal approved before the freeze landed (else null).
+                monthlyAmountUsd={proposal.monthlyAmountUsd ?? commercialProfile?.monthlyAmountUsd ?? null}
+                checkoutResult={checkoutResult}
+                studioSessionId={proposal.studioSessionId}
+                validThrough={proposal.expiresAt ? formatDate(proposal.expiresAt) : null}
+              />
             </div>
           </>
         )}
