@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-import { ProposalDocument } from "@/components/maxwell/proposal-document";
 import { PublicProposalPayment } from "@/components/maxwell/public-proposal-payment";
 import {
   getProposalRequestByPublicToken,
@@ -14,7 +13,6 @@ import {
   isProposalPastCutoff,
   isProposalPubliclyViewable,
 } from "@/lib/maxwell/proposal-visibility";
-import { stripInternalReviewFlags } from "@/lib/maxwell/proposal-content";
 import { log } from "@/lib/server/logger";
 import { consumeDistributedToken } from "@/lib/server/rate-limit-distributed";
 import { recordProposalAccessSafe } from "@/lib/server/audit/proposal-access";
@@ -169,7 +167,6 @@ export default async function PublicProposalPage({ params, searchParams }: Props
   // contenido seguía visible para siempre (token bearer permanente).
   const effectivelyExpired = proposal.status === "expired" || isProposalPastCutoff(proposal);
 
-  const cleanDraft = stripInternalReviewFlags(proposal.draftContent);
 
   // v3 membership (M0): the commercial profile drives the modality selector on
   // the payment card. The session carries the project type / complexity the
@@ -209,30 +206,16 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
         {!effectivelyExpired && (
           <>
-            {/* THE DOCUMENT FIRST, then how to pay for it (owner, 2026-07-31).
-                It used to sit under the plan cards, which asked the client to
-                choose a plan before they could read what they were buying — and
-                left the proposal itself hanging at the foot of the page like an
-                appendix.
-                Note this is ONE document, not one per plan: it describes the work,
-                which is identical whichever way you pay. That is why it is not
-                folded into each card — three copies of the same text would look
-                like a comparison and be none. What differs per plan is only the
-                payment shape, and that lives in the cards. */}
-            {/* No document, no box. With nothing to show, the section was a
-                bordered card holding one italic apology and a metadata footer
-                propping up nothing — owner: "está horrible". It reads as a broken
-                component, which is worse than an absence.
-                (It is the seed that has no draft here. In production a proposal
-                should never be sent without one — if this state is ever reached
-                by a real client, the bug is upstream, not on this page.) */}
-            {cleanDraft?.trim() && (
-              <div className="mx-auto mt-6 max-w-3xl">
-                <section className="rounded-[8px] border border-border bg-card p-6">
-                  <ProposalDocument content={cleanDraft} />
-                </section>
-              </div>
-            )}
+            {/* El documento del cliente sale de aqui (owner, 2026-08-01:
+                "quita esto de aqui, te dire que haremos con eso"). Decision de
+                producto pendiente, no un borrado: el borrador SIGUE existiendo en
+                proposal_request.draft_content y el equipo lo lee entero en
+                /maxwell/review/[id]. Lo unico que cambia es que la pagina publica
+                ya no lo muestra.
+                ⚠️ Mientras tanto el cliente decide con lo que dicen las tarjetas y
+                con el correo que recibio — no hay alcance escrito en esta pagina.
+                Esto es un estado INTERMEDIO a la espera de que el owner defina que
+                se hace con el documento. */}
 
             <div className="mx-auto max-w-[1100px]">
               <PublicProposalPayment
