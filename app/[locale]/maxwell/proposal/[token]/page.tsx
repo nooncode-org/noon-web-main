@@ -251,20 +251,20 @@ export default async function PublicProposalPage({ params, searchParams }: Props
               />
             </div>
 
-            {/* The proposal's own record, closing the page. It used to be the
-                document section's footer, which only worked while there WAS a
-                document; here it stands on its own and never props up an empty
-                box. Quiet on purpose — it is provenance, not something to act on.
-                "First opened" stays gone: telling clients the moment they are
-                currently looking at something tells them nothing. */}
-            <p className="mx-auto mt-10 max-w-3xl text-xs text-muted-foreground">
-              Version {proposal.versionNumber}
-              {proposal.sentAt && <> · Sent {formatDate(proposal.sentAt)}</>}
-              {/* E2-SEC LOW-1: the expired view never re-exposes the recipient. */}
-              {!effectivelyExpired && proposal.deliveryRecipient && (
-                <> · To {proposal.deliveryRecipient}</>
-              )}
-            </p>
+            {/* Only when it SAYS something. This line has been moved twice and
+                looked wrong both times — propping up an empty box, then floating
+                alone on a black page — which was the real signal: on a first
+                version it carries nothing a reader doesn't already have. They
+                know they received it, and "Version 1" is only news if there was a
+                version 2.
+                From v2 on it IS news: this proposal replaced an earlier one, and
+                that is worth stating plainly. */}
+            {proposal.versionNumber > 1 && (
+              <p className="mx-auto mt-10 max-w-3xl text-xs text-muted-foreground">
+                Revised proposal · version {proposal.versionNumber}
+                {proposal.sentAt && <> · sent {formatDate(proposal.sentAt)}</>}
+              </p>
+            )}
           </>
         )}
       </div>
