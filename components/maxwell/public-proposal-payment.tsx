@@ -106,12 +106,15 @@ const PPW_WASH_CSS = `
 
 function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: Modality) => void }) {
   const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
-  // Three is what every plan has in common, so three is what stays on screen:
-  // below that a card would stop saying anything, above it the row starts
-  // running to different heights again — which is the whole reason the overflow
-  // folds.
-  const visible = features.slice(0, 3);
-  const rest = features.slice(3);
+  // Folding has to EARN its control. Hiding a single bullet behind a summary —
+  // a click, a chevron, an expand — costs the reader more than the line it saves
+  // (owner: "para que colocas ese show details solo para mostrar una linea mas?").
+  // So the disclosure appears only when at least two points would stay hidden;
+  // otherwise the card simply shows everything and is a row taller.
+  const MAX_INLINE = 3;
+  const worthFolding = features.length - MAX_INLINE >= 2;
+  const visible = worthFolding ? features.slice(0, MAX_INLINE) : features;
+  const rest = worthFolding ? features.slice(MAX_INLINE) : [];
   const ctaAccent = recommended
     ? "bg-[#0056fd] text-white hover:bg-[#0047e0]"
     : "bg-foreground text-background hover:bg-foreground/90";
