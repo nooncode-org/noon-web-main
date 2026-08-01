@@ -87,14 +87,34 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
               {viewer ? (
                 <UserMenu viewer={viewer} locale={currentLocale} />
               ) : (
-                <Button
-                  asChild
-                  size="sm"
-                  className="px-6"
-                  style={{ borderRadius: "8px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
-                >
-                  <Link href={localHref("/signin")}>Sign up</Link>
-                </Button>
+                <>
+                  {/* Two doors, because there are two people. The nav used to
+                      offer only "Sign up", so a client who already HAS an account
+                      had no affordance that looked like theirs — they could still
+                      get in (that button led to the /signin hub, which offers
+                      both), but nothing on screen said so. The label also
+                      disagreed with its destination: it said "Sign up" and opened
+                      a chooser.
+                      Each now goes straight to its own screen, which also saves
+                      the hub click for everyone. */}
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="ghost"
+                    className="px-4 text-foreground/80 hover:text-foreground"
+                    style={{ borderRadius: "8px" }}
+                  >
+                    <Link href={localHref("/signin/login")}>Log in</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="px-6"
+                    style={{ borderRadius: "8px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
+                  >
+                    <Link href={localHref("/signin/signup")}>Sign up</Link>
+                  </Button>
+                </>
               )}
             </div>
 
@@ -191,15 +211,30 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
                 </form>
               </>
             ) : (
-              <Button
-                asChild
-                variant="outline"
-                className="h-11 w-full rounded-[8px] text-sm font-medium"
-              >
-                <Link href={localHref("/signin")} onClick={() => setIsMobileMenuOpen(false)}>
-                  Sign up
-                </Link>
-              </Button>
+              // Same two doors as the desktop bar — the drawer had the same
+              // single "Sign up" and the same missing one.
+              <div className="flex flex-col gap-2">
+                <Button asChild className="h-11 w-full rounded-[8px] text-sm font-medium">
+                  <Link
+                    href={localHref("/signin/signup")}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign up
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 w-full rounded-[8px] text-sm font-medium"
+                >
+                  <Link
+                    href={localHref("/signin/login")}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>
