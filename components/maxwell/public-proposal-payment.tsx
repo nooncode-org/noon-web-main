@@ -544,7 +544,10 @@ export function PublicProposalPayment({
       ? "Pay once — first year of hosting included"
       : "One payment, nothing recurring",
     priceMain: formatMoney(payableAmount, currency),
-    priceSub: "once",
+    // The currency code, spelled out (owner): "$" alone is ambiguous for a
+    // client in Mexico, Canada or Argentina — "$4,500" could be five different
+    // amounts. The real code from the proposal, never hardcoded.
+    priceSub: `${currency} · once`,
     recommended: false,
     ctaLabel: "Get started",
     selectModality: "one_time",
@@ -584,7 +587,7 @@ export function PublicProposalPayment({
           name: "Membership",
           tagline: "Activation now, plus ongoing monthly",
           priceMain: formatMoney(payableAmount, currency),
-          priceSub: `activation + ${formatMoney(monthlyAmountUsd, currency)}/mo`,
+          priceSub: `${currency} · activation + ${formatMoney(monthlyAmountUsd, currency)}/mo`,
           recommended: true,
           ctaLabel: "Get started",
           selectModality: "membership",
