@@ -8,6 +8,15 @@
  * session; the brief builder then injects the references into the v0 prompt
  * so the generated prototype has explicit aesthetic direction.
  *
+ * Fase A (Quality Layer v2, 2026-08-02): each pack now ALSO carries a
+ * concrete visual `token` — exact palette hexes, a Google-Fonts pairing and a
+ * photo-search modifier. Reason: v0 cannot browse, so a reference URL only
+ * works as far as the model already knows the brand. The token is the part
+ * v0 can execute LITERALLY (colors it can paste, fonts it can load, imagery
+ * language that matches the family), which closes the gap between "knows of
+ * aman.com" and "ships something that looks like it". Values are curated by
+ * hand from the reference brands — same PR-review rule as the URLs.
+ *
  * Source of truth for the URL list: docs/maxwell/quality-layer.md (handoff
  * doc from PM) + the original `maxwell-style-packs.md` catalogue. Each URL
  * was approved manually after `web_fetch`-verification — DO NOT add new ones
@@ -15,7 +24,7 @@
  * site").
  *
  * Why TypeScript constant and not a DB table:
- *   - 72 rows × 3 columns is small enough to ship in-bundle.
+ *   - 24 rows is small enough to ship in-bundle.
  *   - Editing requires PR review (visual-direction debates), not an ops
  *     migration.
  *   - `getStylePackById()` is sync — no DB call on every prototype build.
@@ -31,6 +40,21 @@ export type StyleReference = {
   v0Hint?: string;
 };
 
+export type StyleToken = {
+  /**
+   * Exact hexes v0 pastes into the theme. `bg`/`ink` set the page; `accent`
+   * is THE one interactive/emphasis color (single-accent discipline — more
+   * than one accent is where AI-slop starts). Packs whose real-world family
+   * is monochrome (galleries, B&W consultancies) repeat ink as accent on
+   * purpose: color there comes from photography, not UI chrome.
+   */
+  palette: { bg: string; ink: string; accent: string };
+  /** Google Fonts pairing — display carries headlines, body carries everything else. */
+  fonts: { display: string; body: string };
+  /** Photo-search modifier (English) capturing the family's aesthetic — combined with the project's domain terms when searching real stock imagery. */
+  imagery: string;
+};
+
 export type StylePack = {
   /** Kebab-case id stored in DB. Stable across catalogue edits. */
   id: string;
@@ -40,6 +64,8 @@ export type StylePack = {
   feel: string;
   /** Exactly 3 references. The classifier expects this shape; tests guard the cardinality. */
   refs: [StyleReference, StyleReference, StyleReference];
+  /** Concrete, literally-executable visual direction (Fase A). */
+  token: StyleToken;
 };
 
 export const STYLE_PACKS: readonly StylePack[] = [
@@ -52,6 +78,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "fabriquebakery.com", v0Hint: "Escandinavo / video hero" },
       { url: "darioush.com", v0Hint: "Winery neoclásico persa" },
     ],
+    token: {
+      palette: { bg: "#FAF6EF", ink: "#2B2118", accent: "#A15C2F" },
+      fonts: { display: "Fraunces", body: "Inter" },
+      imagery: "artisan craft, warm natural light, honest textures",
+    },
   },
   {
     id: "premium-experiential",
@@ -62,6 +93,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "noma.dk", v0Hint: "Fine dining / poético escandinavo" },
       { url: "tiffany.com", v0Hint: "Joyería / luxury brand" },
     ],
+    token: {
+      palette: { bg: "#F4F1EA", ink: "#17150F", accent: "#90754C" },
+      fonts: { display: "Cormorant Garamond", body: "Inter" },
+      imagery: "serene luxury spaces, muted tones, generous negative space",
+    },
   },
   {
     id: "clean-professional",
@@ -72,6 +108,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "lippincott.com", v0Hint: "Brand consultancy / light clean" },
       { url: "pentagram.com", v0Hint: "Design partnership / ultra minimal" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#111111", accent: "#111111" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "architectural geometry, black and white, strong composition",
+    },
   },
   {
     id: "trust-care",
@@ -82,6 +123,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "alto.com", v0Hint: "Farmacia digital / Framer" },
       { url: "headspace.com", v0Hint: "Salud mental / wellness" },
     ],
+    token: {
+      palette: { bg: "#F7FAF8", ink: "#1E2A28", accent: "#2F8F6B" },
+      fonts: { display: "DM Sans", body: "Inter" },
+      imagery: "calm wellness, soft daylight, real people, gentle color",
+    },
   },
   {
     id: "mind-wellness",
@@ -92,6 +138,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "mindbodygreen.com", v0Hint: "Wellness editorial / lifestyle" },
       { url: "theclass.com", v0Hint: "Somatic / mindful movement" },
     ],
+    token: {
+      palette: { bg: "#FBF8F4", ink: "#26221E", accent: "#7C6BAB" },
+      fonts: { display: "Playfair Display", body: "Inter" },
+      imagery: "mindful lifestyle editorial, soft neutrals, natural movement",
+    },
   },
   {
     id: "energy-performance",
@@ -102,6 +153,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "whoop.com", v0Hint: "Performance tech / athlete tracking" },
       { url: "barrys.com", v0Hint: "Boutique HIIT" },
     ],
+    token: {
+      palette: { bg: "#0C0C0D", ink: "#F5F5F5", accent: "#E10600" },
+      fonts: { display: "Archivo", body: "Inter" },
+      imagery: "athletic intensity, dramatic gym lighting, bodies in motion",
+    },
   },
   {
     id: "beauty-lifestyle",
@@ -112,6 +168,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "heydayskincare.com", v0Hint: "Skincare studio / booking-first" },
       { url: "madison-reed.com", v0Hint: "Hair salon + DTC / dual model" },
     ],
+    token: {
+      palette: { bg: "#FFF7F5", ink: "#26201E", accent: "#E6788E" },
+      fonts: { display: "Lora", body: "Inter" },
+      imagery: "beauty editorial, soft skin tones, clean studio light",
+    },
   },
   {
     id: "education-community",
@@ -122,6 +183,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "maven.com", v0Hint: "Profesional / live cohorts" },
       { url: "duolingo.com", v0Hint: "Consumer / gamificado / accesible" },
     ],
+    token: {
+      palette: { bg: "#101014", ink: "#F2F2F2", accent: "#D4A24E" },
+      fonts: { display: "Sora", body: "Inter" },
+      imagery: "focused learning, cinematic portrait lighting, real classrooms",
+    },
   },
   {
     id: "tech-digital",
@@ -132,6 +198,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "linear.app", v0Hint: "Dev tool / dark ultra-minimal / AI era" },
       { url: "vercel.com", v0Hint: "Deploy infra / developer-first / tier-1 craft" },
     ],
+    token: {
+      palette: { bg: "#0A0A0B", ink: "#EDEDEF", accent: "#5E6AD2" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "abstract gradients, product UI close-ups, dark ambient glow",
+    },
   },
   {
     id: "commerce-retail",
@@ -142,6 +213,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "awaytravel.com", v0Hint: "Travel accessories / lifestyle premium" },
       { url: "everlane.com", v0Hint: "Moda sostenible / editorial / minimal" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#1A1A1A", accent: "#B08D57" },
+      fonts: { display: "Libre Caslon Text", body: "Inter" },
+      imagery: "product lifestyle, natural daylight, editorial styling",
+    },
   },
   {
     id: "hospitality-travel",
@@ -152,6 +228,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "blacktomato.com", v0Hint: "Agencia bespoke / editorial" },
       { url: "designhotels.com", v0Hint: "Hoteles de autor / booking + magazine" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#222222", accent: "#E0565B" },
+      fonts: { display: "Crimson Pro", body: "Inter" },
+      imagery: "evocative destinations, golden hour, human travel moments",
+    },
   },
   {
     id: "events-celebrations",
@@ -162,6 +243,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "paperlesspost.com", v0Hint: "Invitaciones premium / design-forward" },
       { url: "partiful.com", v0Hint: "Events Gen Z / visual-first / Framer" },
     ],
+    token: {
+      palette: { bg: "#FFFBF7", ink: "#2A2438", accent: "#7B5CD6" },
+      fonts: { display: "Space Grotesk", body: "Inter" },
+      imagery: "celebration candids, joyful color, festive light",
+    },
   },
   {
     id: "local-services",
@@ -172,6 +258,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "thumbtack.com", v0Hint: "Match con pros locales" },
       { url: "tidy.com", v0Hint: "AI + humans / property management moderno" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#1F1F1F", accent: "#10845C" },
+      fonts: { display: "Manrope", body: "Inter" },
+      imagery: "real professionals at work, homes, honest daylight",
+    },
   },
   {
     id: "real-estate",
@@ -182,6 +273,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "zillow.com", v0Hint: "Marketplace líder / search-first" },
       { url: "opendoor.com", v0Hint: "iBuyer proptech / sell-first" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#16181D", accent: "#1B4AEF" },
+      fonts: { display: "Libre Franklin", body: "Inter" },
+      imagery: "architecture exteriors, bright interiors, wide angles",
+    },
   },
   {
     id: "automotive",
@@ -192,6 +288,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "rivian.com", v0Hint: "Adventure EV / storytelling" },
       { url: "carvana.com", v0Hint: "E-commerce automotriz / 360°" },
     ],
+    token: {
+      palette: { bg: "#0B0C0E", ink: "#F4F4F4", accent: "#3E6AE1" },
+      fonts: { display: "Archivo", body: "Inter" },
+      imagery: "vehicles in landscape, dusk light, cinematic wide shots",
+    },
   },
   {
     id: "entertainment-media",
@@ -202,6 +303,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "mubi.com", v0Hint: "Cine curado / editorial" },
       { url: "substack.com", v0Hint: "Media independiente / writer-first" },
     ],
+    token: {
+      palette: { bg: "#0F0F0F", ink: "#FFFFFF", accent: "#1DB954" },
+      fonts: { display: "Space Grotesk", body: "Inter" },
+      imagery: "stage light, film-still mood, bold contrast",
+    },
   },
   {
     id: "creative-design-services",
@@ -212,6 +318,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "obys.agency", v0Hint: "Concept-driven / tipográfico / modernista" },
       { url: "dogstudio.co", v0Hint: "Art + design + tech / WebGL inmersivo" },
     ],
+    token: {
+      palette: { bg: "#F2F2F0", ink: "#101010", accent: "#FF4D00" },
+      fonts: { display: "Space Grotesk", body: "Inter" },
+      imagery: "studio process, typographic posters, bold graphic shapes",
+    },
   },
   {
     id: "sustainability-environment",
@@ -222,6 +333,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "watershed.com", v0Hint: "Sustainability AI platform / B2B" },
       { url: "allbirds.com", v0Hint: "Retail eco-friendly / B Corp" },
     ],
+    token: {
+      palette: { bg: "#F6F5EF", ink: "#1C231C", accent: "#3F6B3F" },
+      fonts: { display: "Manrope", body: "Inter" },
+      imagery: "wild landscapes, natural materials, overcast light",
+    },
   },
   {
     id: "logistics-transport",
@@ -232,6 +348,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "goshippo.com", v0Hint: "Multi-carrier shipping SaaS / clean" },
       { url: "uber.com", v0Hint: "Movilidad urbana / B&W minimal" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#121212", accent: "#276EF1" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "ports and routes, aerial logistics, precise geometry",
+    },
   },
   {
     id: "industrial-manufacturing",
@@ -242,6 +363,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "formlabs.com", v0Hint: "3D printing industrial / product-forward" },
       { url: "spacex.com", v0Hint: "Aerospace manufacturing / dark B&W / full-bleed" },
     ],
+    token: {
+      palette: { bg: "#0A0B0C", ink: "#EDEDED", accent: "#7A8CA3" },
+      fonts: { display: "IBM Plex Sans", body: "Inter" },
+      imagery: "precision hardware, dark industrial, machined detail",
+    },
   },
   {
     id: "finance-fintech",
@@ -252,6 +378,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "wise.com", v0Hint: "Pagos internacionales / bright green / transparency" },
       { url: "coinbase.com", v0Hint: "Cripto exchange / blue clean" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#0B1220", accent: "#0052FF" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "architectural glass, city daylight, clean money abstractions",
+    },
   },
   {
     id: "government-public",
@@ -262,6 +393,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "khanacademy.org", v0Hint: "Educación pública libre / joyful" },
       { url: "propublica.org", v0Hint: "Periodismo de investigación / bold editorial" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#191919", accent: "#E62B1E" },
+      fonts: { display: "Source Serif 4", body: "Inter" },
+      imagery: "civic spaces, real communities, documentary honesty",
+    },
   },
   {
     id: "pets-animals",
@@ -272,6 +408,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "modernanimal.com", v0Hint: "Vet clinic tech-forward / video hero" },
       { url: "bark.co", v0Hint: "DTC subscription / playful / cultura pop" },
     ],
+    token: {
+      palette: { bg: "#FFFDF8", ink: "#26221C", accent: "#F2A93B" },
+      fonts: { display: "DM Sans", body: "Inter" },
+      imagery: "expressive pets, bright playful light, clean backgrounds",
+    },
   },
   {
     id: "art-culture",
@@ -282,6 +423,11 @@ export const STYLE_PACKS: readonly StylePack[] = [
       { url: "sothebys.com", v0Hint: "Casa de subastas / luxury editorial" },
       { url: "frieze.com", v0Hint: "Art media + fairs / Pentagram rebrand" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#111111", accent: "#111111" },
+      fonts: { display: "Libre Caslon Text", body: "Inter" },
+      imagery: "gallery installations, artworks in situ, museum light",
+    },
   },
 ];
 

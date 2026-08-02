@@ -2,15 +2,22 @@
  * lib/maxwell/style-classifier.ts
  *
  * Bloque 11 — picks one of the 24 style packs for a studio session.
+ * Fase A (Quality Layer v2) — the SAME cheap LLM call now also extracts 2-3
+ * English photo-search queries describing the client's business domain
+ * ("artisan bakery interior", "fresh sourdough close-up"). They feed the
+ * design dossier's real-image search, so v0 receives concrete photography
+ * instead of inventing placeholders. One call, two outputs — no extra
+ * latency or spend.
  *
  * Strategy (in order, each tier falls back to the next on failure):
  *   1. LLM call with `gpt-4.1-mini` — cheap + low-latency model for a
- *      1-of-24 classification task. We pass the list of pack ids + a short
- *      context blurb and ask for a single id back.
+ *      1-of-24 classification + keyword extraction. JSON contract with a
+ *      lenient parser (bare id replies from older prompts still work).
  *   2. Deterministic fallback by `session.projectType` — a hand-mapped
  *      best-guess so the system still returns something useful when the
  *      LLM is unavailable, mis-configured (no OPENAI_API_KEY), or returns
- *      a value we can't recognise.
+ *      a value we can't recognise. Image queries degrade to [] (the dossier
+ *      then leans on the pack's aesthetic imagery terms).
  *   3. Final fallback to `clean-professional` — broad, B&W minimal,
  *      acceptable as a "neutral default" for almost any project.
  *
@@ -29,6 +36,16 @@ import {
 } from "./style-packs";
 
 const DEFAULT_PACK_ID = "clean-professional";
+
+export type StyleClassification = {
+  pack: StylePack;
+  /**
+   * English photo-search queries for the project's DOMAIN (not its aesthetic
+   * — that lives in the pack token). Empty when the LLM tier was skipped or
+   * its reply unusable; callers must treat [] as "no domain imagery".
+   */
+  imageQueries: string[];
+};
 
 /**
  * Hand-mapped fallback when the LLM is unavailable. Conservative on purpose:
@@ -76,7 +93,7 @@ function buildClassifierPrompt(session: StudioSession, contextHint: string): str
     .filter(Boolean)
     .join("\n");
 
-  return `Pick the single best style pack id for this project.
+  return `Classify this project and extract photo-search terms.
 
 CATALOGUE:
 ${catalogue}
@@ -87,11 +104,49 @@ ${sessionFacts || "(none captured yet)"}
 CLIENT CONTEXT:
 ${contextHint.slice(0, 1500)}
 
-Reply with ONLY the id string (e.g. "tech-digital"). No quotes, no explanation, no markdown.`;
+Reply with ONLY minified JSON, no markdown fences, exactly this shape:
+{"pack_id":"<one id from the catalogue>","image_queries":["<q1>","<q2>","<q3>"]}
+
+image_queries rules: 2-3 ENGLISH stock-photo search queries for this business's real-world DOMAIN (concrete nouns a photographer would tag — e.g. "artisan bakery interior", "barista pouring latte"). Never brand names, never UI/abstract terms, never the aesthetic (that is handled separately).`;
 }
 
 /**
- * Public entry point. Always returns a valid StylePack.
+ * Lenient reply parser. Accepts:
+ *   - the requested JSON (with or without ```json fences),
+ *   - a bare pack id string (the pre-Fase-A contract) → queries degrade to [].
+ * Returns null when no known pack id can be recovered at all.
+ */
+function parseClassifierReply(
+  reply: string,
+): { pack: StylePack; imageQueries: string[] } | null {
+  const raw = reply.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+
+  try {
+    const parsed = JSON.parse(raw) as { pack_id?: unknown; image_queries?: unknown };
+    if (typeof parsed.pack_id === "string") {
+      const pack = getStylePackById(parsed.pack_id.trim().toLowerCase());
+      if (pack) {
+        const imageQueries = Array.isArray(parsed.image_queries)
+          ? parsed.image_queries
+              .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+              .map((q) => q.trim())
+              .slice(0, 3)
+          : [];
+        return { pack, imageQueries };
+      }
+    }
+  } catch {
+    // Not JSON — fall through to the bare-id path.
+  }
+
+  const bareId = raw.replace(/^["']|["']$/g, "").toLowerCase();
+  const pack = getStylePackById(bareId);
+  return pack ? { pack, imageQueries: [] } : null;
+}
+
+/**
+ * Public entry point. Always returns a valid StylePack (+ possibly-empty
+ * image queries).
  *
  * @param session  Current studio session (read-only; we only consume its facts).
  * @param contextHint  Free-form string — the last user message, the goal
@@ -101,7 +156,7 @@ Reply with ONLY the id string (e.g. "tech-digital"). No quotes, no explanation, 
 export async function classifyStylePack(
   session: StudioSession,
   contextHint: string,
-): Promise<StylePack> {
+): Promise<StyleClassification> {
   // Tier 1 — LLM
   try {
     if (!process.env.OPENAI_API_KEY) {
@@ -110,13 +165,13 @@ export async function classifyStylePack(
         "OPENAI_API_KEY missing — skipping LLM classification, using fallback",
         { session_id: session.id },
       );
-      return fallbackByProjectType(session.projectType);
+      return { pack: fallbackByProjectType(session.projectType), imageQueries: [] };
     }
 
     const { reply } = await chatWithOpenAI({
       model: "gpt-4.1-mini",
       systemPrompt:
-        "You are a precise classifier. Reply with exactly one id from the catalogue. No prose, no quotes.",
+        "You are a precise classifier. Reply with exactly the requested minified JSON. No prose, no markdown.",
       prompt: buildClassifierPrompt(session, contextHint),
       // G-D2: tag for monthly LLM-budget attribution. gpt-4.1-mini is
       // ~25x cheaper than gpt-5.5, so this category should stay tiny
@@ -125,19 +180,18 @@ export async function classifyStylePack(
       requestId: session.id,
     });
 
-    const candidateId = reply.trim().replace(/^["']|["']$/g, "").toLowerCase();
-    const pack = getStylePackById(candidateId);
-    if (pack) return pack;
+    const parsed = parseClassifierReply(reply);
+    if (parsed) return parsed;
 
     log.warn(
       "maxwell.style-classifier",
-      "LLM returned unknown style id — falling back by projectType",
-      { session_id: session.id, raw_reply: reply.slice(0, 60) },
+      "LLM returned unusable classification — falling back by projectType",
+      { session_id: session.id, raw_reply: reply.slice(0, 80) },
     );
   } catch (error) {
     log.error("maxwell.style-classifier", error, { session_id: session.id });
   }
 
   // Tier 2 + Tier 3 (handled inside)
-  return fallbackByProjectType(session.projectType);
+  return { pack: fallbackByProjectType(session.projectType), imageQueries: [] };
 }

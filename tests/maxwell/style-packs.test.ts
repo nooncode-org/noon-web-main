@@ -57,6 +57,30 @@ describe("STYLE_PACKS catalogue", () => {
     }
   });
 
+  // Fase A (Quality Layer v2): the token is what v0 executes literally —
+  // a malformed hex or empty font would inject garbage into every prompt
+  // of that family.
+  it("every pack token carries valid hex palette values", () => {
+    for (const pack of STYLE_PACKS) {
+      for (const [slot, hex] of Object.entries(pack.token.palette)) {
+        expect(hex, `Pack "${pack.name}" palette.${slot}`).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      }
+    }
+  });
+
+  it("every pack token names a display and body font", () => {
+    for (const pack of STYLE_PACKS) {
+      expect(pack.token.fonts.display.trim(), `Pack "${pack.name}" display font`).not.toBe("");
+      expect(pack.token.fonts.body.trim(), `Pack "${pack.name}" body font`).not.toBe("");
+    }
+  });
+
+  it("every pack token carries an imagery search modifier", () => {
+    for (const pack of STYLE_PACKS) {
+      expect(pack.token.imagery.trim(), `Pack "${pack.name}" imagery`).not.toBe("");
+    }
+  });
+
   it("includes the deterministic fallbacks the classifier expects", () => {
     // These ids are hardcoded into style-classifier.ts PROJECT_TYPE_FALLBACK.
     // If a pack is renamed without updating the classifier, the fallback path

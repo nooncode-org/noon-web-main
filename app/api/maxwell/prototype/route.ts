@@ -16,6 +16,7 @@ import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/stu
 import { isGenerationLikelyInFlight } from "@/lib/maxwell/prototype-poll-policy";
 import { evaluateInitialPrototypeCreate } from "@/lib/maxwell/prototype-quota";
 import { classifyStylePack } from "@/lib/maxwell/style-classifier";
+import { buildDesignDossier } from "@/lib/maxwell/design-dossier";
 import {
   buildCorrectionBrief,
   buildPrototypeBrief,
@@ -118,14 +119,22 @@ export async function POST(request: Request) {
 
       await updateStudioSessionStatus(session.id, "generating_prototype");
 
-      // ── Quality Layer pipeline (Bloque 11) ──────────────────────────────
-      // Classify → persist style pack id → read brief (may be null) →
-      // assemble multi-section prompt. All four steps are best-effort:
-      // classifyStylePack never throws, getStudioBrief returns null gracefully,
-      // and buildPrototypeBrief tolerates a null brief.
-      const stylePack = await classifyStylePack(session, payload.last_user_msg);
+      // ── Quality Layer pipeline (Bloque 11 + Fase A v2) ──────────────────
+      // Classify (pack + domain image queries) → persist style pack id →
+      // gather REAL imagery (design dossier) → read brief (may be null) →
+      // assemble the v0-structured prompt. Every step is best-effort:
+      // classifyStylePack never throws, buildDesignDossier returns null when
+      // unconfigured/failing, getStudioBrief returns null gracefully, and
+      // buildPrototypeBrief tolerates null brief/dossier.
+      const { pack: stylePack, imageQueries } = await classifyStylePack(
+        session,
+        payload.last_user_msg,
+      );
       await setStylePackId(session.id, stylePack.id);
-      const brief = await getStudioBrief(session.id);
+      const [dossier, brief] = await Promise.all([
+        buildDesignDossier(imageQueries, stylePack),
+        getStudioBrief(session.id),
+      ]);
       const prototypeBrief = buildPrototypeBrief(
         session,
         brief,
@@ -133,11 +142,14 @@ export async function POST(request: Request) {
         payload.last_user_msg,
         payload.last_assistant_msg,
         stylePack,
+        dossier,
       );
       log.info("maxwell.prototype", "Quality Layer applied", {
         session_id: session.id,
         style_pack_id: stylePack.id,
         brief_available: brief !== null,
+        imagery_available: dossier !== null,
+        image_queries: imageQueries.length,
       });
       // ────────────────────────────────────────────────────────────────────
 

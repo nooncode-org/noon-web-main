@@ -67,21 +67,60 @@ describe("classifyStylePack — tier 1 (LLM success)", () => {
   it("returns the pack matching the LLM's id reply", async () => {
     vi.mocked(chatWithOpenAI).mockResolvedValueOnce({ reply: "tech-digital" });
 
-    const pack = await classifyStylePack(fakeSession(), "I want a Linear clone");
+    const { pack } = await classifyStylePack(fakeSession(), "I want a Linear clone");
     expect(pack.id).toBe("tech-digital");
+  });
+
+  it("parses the Fase A JSON contract: pack id + image queries", async () => {
+    vi.mocked(chatWithOpenAI).mockResolvedValueOnce({
+      reply: '{"pack_id":"warm-artisanal","image_queries":["artisan bakery interior","fresh sourdough close-up"]}',
+    });
+
+    const result = await classifyStylePack(fakeSession(), "Bakery site");
+    expect(result.pack.id).toBe("warm-artisanal");
+    expect(result.imageQueries).toEqual([
+      "artisan bakery interior",
+      "fresh sourdough close-up",
+    ]);
+  });
+
+  it("strips markdown fences around the JSON reply", async () => {
+    vi.mocked(chatWithOpenAI).mockResolvedValueOnce({
+      reply: '```json\n{"pack_id":"tech-digital","image_queries":["developer workspace"]}\n```',
+    });
+
+    const result = await classifyStylePack(fakeSession(), "dev tool");
+    expect(result.pack.id).toBe("tech-digital");
+    expect(result.imageQueries).toEqual(["developer workspace"]);
+  });
+
+  it("caps image queries at 3 and drops non-string entries", async () => {
+    vi.mocked(chatWithOpenAI).mockResolvedValueOnce({
+      reply: '{"pack_id":"tech-digital","image_queries":["a","b","c","d", 7, "  "]}',
+    });
+
+    const result = await classifyStylePack(fakeSession(), "dev tool");
+    expect(result.imageQueries).toEqual(["a", "b", "c"]);
+  });
+
+  it("bare-id replies (legacy contract) degrade to empty image queries", async () => {
+    vi.mocked(chatWithOpenAI).mockResolvedValueOnce({ reply: "tech-digital" });
+
+    const result = await classifyStylePack(fakeSession(), "dev tool");
+    expect(result.imageQueries).toEqual([]);
   });
 
   it("accepts a reply with surrounding whitespace and quotes", async () => {
     vi.mocked(chatWithOpenAI).mockResolvedValueOnce({ reply: '  "warm-artisanal"  \n' });
 
-    const pack = await classifyStylePack(fakeSession(), "Bakery landing");
+    const { pack } = await classifyStylePack(fakeSession(), "Bakery landing");
     expect(pack.id).toBe("warm-artisanal");
   });
 
   it("is case-insensitive on the LLM reply", async () => {
     vi.mocked(chatWithOpenAI).mockResolvedValueOnce({ reply: "TECH-DIGITAL" });
 
-    const pack = await classifyStylePack(fakeSession(), "dev tool");
+    const { pack } = await classifyStylePack(fakeSession(), "dev tool");
     expect(pack.id).toBe("tech-digital");
   });
 });
@@ -90,7 +129,7 @@ describe("classifyStylePack — tier 2 (projectType fallback)", () => {
   it("falls back by projectType when LLM returns an unknown id", async () => {
     vi.mocked(chatWithOpenAI).mockResolvedValueOnce({ reply: "totally-made-up-pack" });
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: "ecommerce" }),
       "",
     );
@@ -100,7 +139,7 @@ describe("classifyStylePack — tier 2 (projectType fallback)", () => {
   it("falls back by projectType when LLM throws", async () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("network down"));
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: "webapp" }),
       "",
     );
@@ -110,7 +149,7 @@ describe("classifyStylePack — tier 2 (projectType fallback)", () => {
   it("maps landing → clean-professional (per fallback table)", async () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("down"));
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: "landing" }),
       "",
     );
@@ -120,7 +159,7 @@ describe("classifyStylePack — tier 2 (projectType fallback)", () => {
   it("maps mobile → tech-digital", async () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("down"));
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: "mobile" }),
       "",
     );
@@ -132,7 +171,7 @@ describe("classifyStylePack — tier 3 (final default)", () => {
   it("returns clean-professional when no projectType and LLM unavailable", async () => {
     delete process.env.OPENAI_API_KEY;
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: null }),
       "vague hint",
     );
@@ -142,7 +181,7 @@ describe("classifyStylePack — tier 3 (final default)", () => {
   it("returns clean-professional when projectType is unknown to fallback table", async () => {
     vi.mocked(chatWithOpenAI).mockRejectedValueOnce(new Error("down"));
 
-    const pack = await classifyStylePack(
+    const { pack } = await classifyStylePack(
       fakeSession({ projectType: "exotic-unknown-type" }),
       "",
     );

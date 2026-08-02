@@ -2,25 +2,35 @@
  * lib/maxwell/prototype-brief.ts
  *
  * Bloque 11 — server-side prompt builder for v0.
+ * Fase A (Quality Layer v2, 2026-08-02) — the brief now follows v0's OWN
+ * published prompting structure and ships with every resource pre-gathered,
+ * so v0 has no gap it must fill with something generic:
  *
- * Replaces `buildPrototypeBrief()` that used to live in the client
- * (`components/maxwell/studio-shell.tsx`). Two reasons it moved:
+ *   - v0's official template is "Build [product surface] / Used by [who], in
+ *     [what moment], to [what outcome] / Constraints" (vercel.com/blog/
+ *     how-to-prompt-v0). Vague prompts measurably make v0 INVENT features —
+ *     the exact failure the owner banned ("no quiero cosas extras
+ *     inventadas"). Sections 2 and the purpose rules encode that template.
+ *   - The style pack's token (exact palette hexes, font pairing) turns
+ *     "visual direction" from adjectives into values v0 can paste.
+ *   - The design dossier injects REAL hotlinkable photography with role
+ *     mapping (hero / sections / people), replacing grey placeholders and
+ *     invented image URLs.
  *
- *   1. We now blend in server-only data (the StudioBrief from the brief
- *      extractor, and the classified StylePack with its 3 reference URLs).
- *   2. Keeping prompt construction in one place — the prototype route —
- *      lets us audit what we actually send to v0 from a single grep.
+ * Section headers 1-5 are a stable contract pinned by tests; Fase A upgrades
+ * their CONTENT and inserts the imagery block between 3 and 4.
  *
  * Two exports:
  *   - buildPrototypeBrief: full brief for `action: create` (a fresh prototype)
  *   - buildCorrectionBrief: minimal augment for `action: update` (correction)
  *
- * Both are pure functions. The route owns IO (DB reads, v0 calls); this
- * module is straight string assembly so tests are trivial.
+ * Both are pure functions. The route owns IO (DB reads, image search, v0
+ * calls); this module is straight string assembly so tests are trivial.
  */
 
 import type { StudioBrief, StudioSession } from "./repositories";
 import type { StylePack } from "./style-packs";
+import { dossierHasImagery, type DesignDossier } from "./design-dossier";
 
 /**
  * Shape of a chat message accepted by the builder. Loosely typed on purpose:
@@ -73,18 +83,55 @@ function buildReferencesBlock(pack: StylePack): string {
 }
 
 /**
+ * Role-mapped real imagery. Every URL is a hotlinkable CDN asset found for
+ * THIS project before generation — v0 must use exactly these instead of
+ * placeholders. Alt text ships alongside so `<img alt>` is real too.
+ */
+function buildImageryBlock(dossier: DesignDossier): string {
+  const lines: string[] = [];
+
+  if (dossier.hero.length > 0) {
+    lines.push("HERO (pick 1, use urlLarge-quality for full-bleed):");
+    dossier.hero.forEach((img, i) =>
+      lines.push(`  H${i + 1}. ${img.urlLarge}  — alt: ${img.alt}`),
+    );
+  }
+  if (dossier.support.length > 0) {
+    lines.push("SECTIONS (feature/context imagery):");
+    dossier.support.forEach((img, i) =>
+      lines.push(`  S${i + 1}. ${img.url}  — alt: ${img.alt}`),
+    );
+  }
+  if (dossier.portraits.length > 0) {
+    lines.push("PEOPLE (testimonials, avatars, team — crop to circles/cards as needed):");
+    dossier.portraits.forEach((img, i) =>
+      lines.push(`  P${i + 1}. ${img.url}  — alt: ${img.alt}`),
+    );
+  }
+
+  lines.push(
+    "",
+    "Imagery rules: use ONLY these URLs for photos — never invent image URLs, never use placeholder/grey boxes.",
+    "Every <img> gets its real alt text. If a section needs no photo, prefer typography and whitespace over decoration.",
+  );
+
+  return lines.join("\n");
+}
+
+/**
  * Assemble the full multi-section prompt sent to v0 for an initial prototype.
  *
  * Section structure (each section has a comment header v0 will see):
  *   1. MASTER INSTRUCTION — frontend-only, static mock data, landing exception
- *   2. WHAT TO BUILD       — product summary + type/complexity/lang facts
- *   3. VISUAL DIRECTION    — style family name + feel + 3 reference URLs
+ *   2. WHAT TO BUILD       — v0's official Build/Used-by/Outcome template
+ *   3. VISUAL DIRECTION    — palette hexes + fonts + style family + references
+ *   IMAGERY (conditional)  — real, role-mapped photo URLs from the dossier
  *   4. PRODUCT CONTEXT     — structured brief (only when extractor succeeded)
  *   5. CONVERSATION        — distilled last 8 turns
  *
- * The `brief` parameter is nullable — graceful degradation when the
- * fire-and-forget extractor in chat/route.ts hasn't finished yet. Sections
- * 1/2/3/5 still ship; section 4 is simply omitted.
+ * `brief` and `dossier` are nullable — graceful degradation when the
+ * fire-and-forget extractor hasn't finished or image search is unconfigured.
+ * Sections 1/2/3/5 always ship.
  */
 export function buildPrototypeBrief(
   session: StudioSession,
@@ -93,10 +140,13 @@ export function buildPrototypeBrief(
   lastUserMsg: string,
   lastAssistantMsg: string,
   stylePack: StylePack,
+  dossier: DesignDossier | null = null,
 ): string {
   const context = distillContext(messages, lastUserMsg, lastAssistantMsg);
   const references = buildReferencesBlock(stylePack);
   const isLanding = session.projectType === "landing";
+  const { palette, fonts } = stylePack.token;
+  const monochrome = palette.accent.toLowerCase() === palette.ink.toLowerCase();
 
   const parts: string[] = [];
 
@@ -104,6 +154,10 @@ export function buildPrototypeBrief(
   parts.push(
     "// ─── 1. MASTER INSTRUCTION ───────────────────────────────────────────────────",
     "Frontend-only prototype. Static mock data only. No backend, no APIs.",
+    // The purpose rule, up top where it governs everything below. v0's own
+    // guidance: insufficient context makes it invent features — so we forbid
+    // invention explicitly and give it the test to apply instead.
+    "PURPOSE RULE: build ONLY what serves the objective and core flow below. Every section, card and button must have a clear job the client would recognise; if you cannot name its job, leave it out. No invented features, no decorative filler sections.",
   );
   if (isLanding) {
     // v0's system prompt usually contains "Do NOT build a landing page
@@ -113,26 +167,47 @@ export function buildPrototypeBrief(
   }
   parts.push("");
 
-  // 2. WHAT TO BUILD
+  // 2. WHAT TO BUILD — v0's published Build/Used-by/Outcome shape.
   parts.push(
     "// ─── 2. WHAT TO BUILD ────────────────────────────────────────────────────────",
-    "PRODUCT",
-    session.goalSummary ?? session.initialPrompt,
-    "",
-    `TYPE: ${session.projectType ?? "unknown"}   COMPLEXITY: ${session.complexityHint ?? "unknown"}   LANG: ${session.language}`,
+    `Build: ${session.goalSummary ?? session.initialPrompt}`,
+  );
+  if (brief?.users || brief?.primaryUser) {
+    parts.push(`Used by: ${brief.primaryUser ?? brief.users}`);
+  }
+  if (brief?.objective) {
+    parts.push(`To: ${brief.objective}`);
+  }
+  parts.push(
+    `TYPE: ${session.projectType ?? "unknown"}   COMPLEXITY: ${session.complexityHint ?? "unknown"}   UI LANGUAGE: ${session.language}`,
+    "All UI copy in the language above — realistic labels and data for THIS business, never lorem ipsum.",
     "",
   );
 
-  // 3. VISUAL DIRECTION
+  // 3. VISUAL DIRECTION — exact values first, prose second.
   parts.push(
     "// ─── 3. VISUAL DIRECTION ─────────────────────────────────────────────────────",
     `Style family: ${stylePack.name}`,
     `Feel: ${stylePack.feel}`,
+    `Palette (use these EXACT values): background ${palette.bg} · ink ${palette.ink} · accent ${palette.accent}`,
+    monochrome
+      ? "Monochrome identity: the accent IS the ink — hierarchy comes from type weight, size and spacing; photography carries the color."
+      : "Single-accent discipline: the accent is the ONLY emphasis color (primary actions, active states, key highlights). Everything else stays in background/ink neutrals.",
+    `Typography (Google Fonts): "${fonts.display}" for headlines, "${fonts.body}" for everything else. No third family.`,
     "",
     "References (adapt the aesthetic, not the content):",
     references,
     "",
   );
+
+  // IMAGERY — only when the dossier gathered real assets.
+  if (dossierHasImagery(dossier)) {
+    parts.push(
+      "// ─── IMAGERY — REAL ASSETS, GATHERED FOR THIS PROJECT ────────────────────────",
+      buildImageryBlock(dossier),
+      "",
+    );
+  }
 
   // 4. PRODUCT CONTEXT (only when brief is available)
   if (brief) {
@@ -168,6 +243,7 @@ export function buildCorrectionBrief(
   if (!stylePack) return correctionPrompt;
 
   const refUrls = stylePack.refs.map((r) => r.url).join(", ");
+  const { palette, fonts } = stylePack.token;
 
   return [
     correctionPrompt,
@@ -175,6 +251,8 @@ export function buildCorrectionBrief(
     "[Visual direction — maintain this]:",
     `Style family: ${stylePack.name}`,
     `Feel: ${stylePack.feel}`,
+    `Palette: background ${palette.bg} · ink ${palette.ink} · accent ${palette.accent}`,
+    `Typography: "${fonts.display}" headlines / "${fonts.body}" body`,
     `References: ${refUrls}`,
   ].join("\n");
 }

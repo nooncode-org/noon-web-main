@@ -78,6 +78,11 @@ function fakePack(overrides: Partial<StylePack> = {}): StylePack {
       { url: "wise.com" }, // intentionally no v0Hint to exercise both branches
       { url: "coinbase.com", v0Hint: "Cripto exchange / blue clean" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#0B1220", accent: "#0052FF" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "architectural glass, city daylight",
+    },
     ...overrides,
   };
 }

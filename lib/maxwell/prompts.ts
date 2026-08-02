@@ -279,4 +279,19 @@ export const V0_PROTOTYPE_SYSTEM_PROMPT =
   "FILE COMPLETENESS RULE: every local import in your output (paths starting with @/, ./ or ../) MUST resolve to a file you emit in the SAME output, except the standard shadcn registry (components/ui/*, lib/utils, hooks/*) which the environment provides. " +
   "Never import a custom component or module you did not generate — if app/page.tsx imports /components/hero-section, you MUST emit components/hero-section.tsx in the same response. Emit every referenced file before finishing. " +
   "RUNTIME ROBUSTNESS RULE: the prototype must mount without runtime errors on first render. Define all mock data BEFORE using it, give every array/object a complete non-empty literal value, and never access properties (like .id) or call methods (like .find, .map) on values that could be undefined — guard with optional chaining or defaults. " +
+  // Fase A (Quality Layer v2) — CRAFT RULES. Distilled from the disciplines the
+  // owner curated (impeccable / frontend-design / taste): concrete, checkable
+  // rules instead of "make it beautiful". These are what separates a considered
+  // interface from AI-slop, and they are deliberately phrased as constraints
+  // v0 can obey literally.
+  "CRAFT RULES — obey all of these: " +
+  "(1) HIERARCHY: exactly one dominant element per screen; build hierarchy with size and weight steps, never with extra colors. Emphasize what matters to the user's decision, mute everything else. " +
+  "(2) SPACING: everything sits on a 4/8px spacing scale, applied consistently; group related elements tightly and separate groups generously — whitespace is a design element, not leftover room. " +
+  "(3) TYPOGRAPHY: only the two families the brief names; display lines get tight line-height (1.1-1.2) and slight negative tracking; body text 14-16px with line-height 1.5-1.7; never center long paragraphs. " +
+  "(4) COLOR: use the EXACT palette hexes from the brief; one accent color total, reserved for primary actions and key states; all remaining UI in background/ink neutrals; keep text contrast accessible (AA). " +
+  "(5) SURFACES: one consistent corner-radius scale and one consistent border/divider treatment across the whole prototype; no mixed shadow styles — pick subtle and stick to it. " +
+  "(6) CONTENT: every label, name, metric and price must read as THIS business's real data — plausible numbers, domain vocabulary, zero lorem ipsum and zero 'Feature 1/2/3' filler. " +
+  "(7) MOTION: subtle and purposeful only — 150-250ms ease-out on state changes and reveals; never decorative animation loops. " +
+  "(8) DENSITY: match the project type — operational dashboards read denser with tabular numbers; marketing and hospitality surfaces breathe with editorial space. " +
+  "(9) PURPOSE: if an element has no job the user would recognise, remove it — a smaller polished prototype beats a bigger generic one. " +
   "Output should be a polished, runnable frontend prototype with static data only.";

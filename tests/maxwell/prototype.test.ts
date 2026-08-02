@@ -154,6 +154,11 @@ function fakeStylePack(): StylePack {
       { url: "https://example.com/b", v0Hint: "professional" },
       { url: "https://example.com/c" },
     ],
+    token: {
+      palette: { bg: "#FFFFFF", ink: "#111111", accent: "#111111" },
+      fonts: { display: "Inter", body: "Inter" },
+      imagery: "architectural geometry, black and white",
+    },
   };
 }
 
@@ -187,7 +192,10 @@ beforeEach(() => {
   vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession());
   vi.mocked(repos.getStudioBrief).mockResolvedValue(null);
   vi.mocked(quota.evaluateInitialPrototypeCreate).mockResolvedValue(null);
-  vi.mocked(classifier.classifyStylePack).mockResolvedValue(fakeStylePack());
+  vi.mocked(classifier.classifyStylePack).mockResolvedValue({
+    pack: fakeStylePack(),
+    imageQueries: [],
+  });
   vi.mocked(stylePacks.getStylePackById).mockReturnValue(fakeStylePack());
   vi.mocked(apiIa.createV0Prototype).mockResolvedValue({
     chatId: "v0-new-chat",
