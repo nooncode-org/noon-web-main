@@ -197,10 +197,10 @@ We will build a booking and scheduling platform for yoga studios.
 - Mobile native apps
 - Third-party API integrations beyond payment
 
-**Estimated Timeline**
-- Phase 1 — Discovery & Design: 1 week
-- Phase 2 — Core Development: 4 weeks
-- Phase 3 — Testing & Launch: 1 week
+**How delivery works**
+- The AI starts generating the MVP the moment payment is confirmed.
+- The Noon team completes, tests and ships it.
+- You follow progress live in your portal.
 
 **Investment**
 Pago único: $179 USD

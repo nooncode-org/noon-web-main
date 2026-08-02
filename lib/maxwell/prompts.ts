@@ -165,11 +165,12 @@ A specific, numbered list of modules, features, and deliverables included. Be co
 **Exclusions**
 A clear list of what is NOT included in this engagement. This prevents scope disputes.
 
-**Estimated Timeline**
-Realistic phase breakdown with durations. Example:
-- Phase 1 - Discovery & Design: 1 week
-- Phase 2 - Core Development: 3-4 weeks
-- Phase 3 - Testing & Launch: 1 week
+**How delivery works**
+Describe delivery as it actually happens at Noon — do NOT invent discovery phases or week-by-week timelines. The real model, in this order:
+- The AI starts generating the MVP the moment payment is confirmed.
+- The Noon team completes, tests and ships it.
+- The client follows progress live in their portal.
+Never promise a specific duration unless one was explicitly agreed in the conversation.
 
 **Investment**
 
