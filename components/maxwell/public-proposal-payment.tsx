@@ -8,7 +8,7 @@ import {
   ArrowRight,
   Check,
   CheckCircle2,
-  ChevronDown,
+  ExternalLink,
   Loader2,
   Lock,
 } from "lucide-react";
@@ -23,6 +23,10 @@ import {
   HOSTING_YEARLY_USD,
 } from "@/lib/maxwell/hosting-billing";
 import { AutoRefresh } from "@/components/maxwell/auto-refresh";
+import {
+  DELIVERY_STEPS,
+  type ProposalScope,
+} from "@/components/maxwell/proposal-scope-summary";
 import { useEscalated } from "@/components/maxwell/workspace-preparing-body";
 
 // Stripe.js loads once per module. The publishable key is public by design (it
@@ -60,6 +64,19 @@ type PublicProposalPaymentProps = {
   studioSessionId?: string;
   /** Pre-formatted offer expiry, shown once beside the options. Null = no date on record. */
   validThrough?: string | null;
+  /**
+   * The client's own project, in their words (the session's goal summary, or
+   * their opening request as a fallback). The page had no way of saying WHICH
+   * project it was quoting: someone opening the emailed link days later — or
+   * holding two proposals — read "Choose an option" with nothing tying it to
+   * their build.
+   */
+  projectName?: string | null;
+  /**
+   * Client-facing slice of the proposal draft (the scope items). Spread into
+   * each plan's own list, so every card states the whole plan on its own.
+   */
+  scope?: ProposalScope | null;
 };
 
 function formatMoney(amount: number, currency: string) {
@@ -76,7 +93,13 @@ type PlanInfo = {
   tagline: string;
   priceMain: string;
   priceSub: string;
-  features: string[];
+  /**
+   * A plain string is a bare line; the object form adds the sentence under it
+   * that says what the line actually means. Both accepted so a list only carries
+   * a description where there is something true to add, instead of padding every
+   * row to fill the shape.
+   */
+  features: (string | { title: string; detail: string })[];
   recommended: boolean;
   /** Membership when the engine doesn't offer it → rendered disabled, not selectable. */
   unavailable?: boolean;
@@ -104,25 +127,63 @@ const PPW_WASH_CSS = `
 @media (prefers-reduced-motion:reduce){.ppw-blob{animation:none}}
 `;
 
-function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: Modality) => void }) {
+type PlanFeature = PlanInfo["features"][number];
+
+const featureTitle = (feature: PlanFeature) =>
+  typeof feature === "string" ? feature : feature.title;
+const featureKey = featureTitle;
+
+/**
+ * One line of "what this includes": the claim in the card's own voice, and
+ * under it the sentence that says what the claim actually means.
+ *
+ * The zebra band is doing work, not decoration — once a row is two lines tall,
+ * a flat list stops showing you where one point ends and the next begins, and
+ * the eye has to use the checkmarks as fenceposts. The alternating fill draws
+ * the boundary instead.
+ */
+function FeatureRow({ feature, striped }: { feature: PlanFeature; striped: boolean }) {
+  const detail = typeof feature === "string" ? null : feature.detail;
+  return (
+    <li className={`flex items-start gap-2.5 px-3 py-2.5 ${striped ? "bg-foreground/[0.035]" : ""}`}>
+      <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
+      <span className="min-w-0">
+        <span className="block text-[13px] font-medium leading-snug text-foreground">
+          {featureTitle(feature)}
+        </span>
+        {detail && (
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-muted-foreground">
+            {detail}
+          </span>
+        )}
+      </span>
+    </li>
+  );
+}
+
+function PlanColumn({
+  plan,
+  onSelect,
+  first,
+}: {
+  plan: PlanInfo;
+  onSelect: (modality: Modality) => void;
+  /** First column draws no divider; the rest carry it on their leading edge. */
+  first: boolean;
+}) {
   const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
-  // Folding has to EARN its control. Hiding a single bullet behind a summary —
-  // a click, a chevron, an expand — costs the reader more than the line it saves
-  // (owner: "para que colocas ese show details solo para mostrar una linea mas?").
-  // So the disclosure appears only when at least two points would stay hidden;
-  // otherwise the card simply shows everything and is a row taller.
-  const MAX_INLINE = 3;
-  const worthFolding = features.length - MAX_INLINE >= 2;
-  const visible = worthFolding ? features.slice(0, MAX_INLINE) : features;
-  const rest = worthFolding ? features.slice(MAX_INLINE) : [];
+  // Compact, content-width, small radius (owner, a la the reference's "Get
+  // started"): a full-width pill reads as a slab; a small button under the
+  // price reads as an action. Fills keep our hierarchy — blue only on the
+  // recommended plan, hover deepens.
   const ctaAccent = recommended
     ? "bg-[#0056fd] text-white hover:bg-[#0047e0]"
     : "bg-foreground text-background hover:bg-foreground/90";
-  const ctaClass = `inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-medium transition-colors ${ctaAccent}`;
+  const ctaClass = `inline-flex w-fit items-center justify-center rounded-[6px] px-4 py-2 text-[13px] font-medium transition-colors ${ctaAccent}`;
   const cta = unavailable ? (
     <span
       aria-disabled
-      className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full bg-foreground/10 px-4 py-3 text-sm font-medium text-muted-foreground"
+      className="inline-flex w-fit cursor-not-allowed items-center justify-center rounded-[6px] bg-foreground/10 px-4 py-2 text-[13px] font-medium text-muted-foreground"
     >
       {plan.ctaLabel}
     </span>
@@ -140,26 +201,49 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
     </button>
   );
   return (
+    // One column of the JOINED plans table (owner, 2026-08-01: "junta estas 3
+    // cards"). No outer card, no inner price panel: the shared container draws
+    // the single border, and columns separate with a hairline on the leading
+    // edge — border, not grid gap, so it snaps to 1px at fractional dpi
+    // (border-t stacked on mobile, border-l side by side from sm).
+    // Horizontal padding lives on the ZONES, not the column: the rule under
+    // the button row must run edge to edge so it reads as one line across the
+    // whole table (padding on the column would stop it 24px short of each
+    // divider, cutting it into three dashes).
     <div
-      className={`flex flex-col rounded-2xl border border-border bg-card p-2.5 pb-10 ${
-        unavailable ? "opacity-55" : ""
-      }`}
+      className={`relative flex flex-col overflow-hidden pb-6 pt-7 ${
+        first ? "" : "border-t border-border sm:border-l sm:border-t-0"
+      } ${unavailable ? "opacity-55" : ""}`}
     >
-      {/* Price panel — name up top; price + CTA down at the bottom. The
-          recommended card carries the blue→purple wash contained inside this
-          box (the rounded border-box clips it); the others keep a plain fill. */}
-      <div className="relative flex min-h-[248px] flex-col justify-between overflow-hidden rounded-xl bg-foreground/[0.05] px-6 pt-7 pb-4">
-        {recommended && (
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <span className="ppw-blob ppw-blob-blue" />
-            <span className="ppw-blob ppw-blob-purple" />
-            <style>{PPW_WASH_CSS}</style>
-          </div>
-        )}
-        <div className="relative flex items-center justify-between gap-3">
+      {/* The recommended wash survives the join, confined to the pricing zone:
+          the blobs are %-sized, so against the full column they would flood the
+          feature rows. A ~260px stage keeps their approved geometry (the old
+          panel was 248px) and the mask fades the wash out instead of cutting
+          it — a hard clip line through a 34px blur would read as a seam. */}
+      {recommended && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[260px] overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
+        >
+          <span className="ppw-blob ppw-blob-blue" />
+          <span className="ppw-blob ppw-blob-purple" />
+          <style>{PPW_WASH_CSS}</style>
+        </div>
+      )}
+
+      {/* Header zone: name → tagline → price → CTA, then the plan's own ✓ list
+          (owner: "mejor dejalo como antes" — per-column lists, à la the Notion
+          reference, not a ✓-matrix). Every slot here is one line tall in every
+          plan (min-h where a chip could stretch one), so the rule under the
+          buttons lands at the same y in all three columns and joins into a
+          single line across the table. */}
+      <div className="relative border-b border-border px-6 pb-7">
+        {/* min-h = the chip's height, so a column WITH a chip and one without
+            keep every later row at the same y (measured: 2px drift without it). */}
+        <div className="flex min-h-[26px] items-center justify-between gap-3">
           <span className="text-[15px] font-medium text-foreground">{name}</span>
           {recommended && (
-            <span className="rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-foreground">
+            <span className="rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-white">
               Popular
             </span>
           )}
@@ -169,64 +253,33 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
             </span>
           )}
         </div>
-        <div className="relative">
+
+        <p className="mt-1.5 text-[13px] text-muted-foreground">{tagline}</p>
+
+        <div className="mt-20 flex min-h-[28px] items-baseline gap-1.5">
           {unavailable ? (
             <span className="text-lg font-medium text-muted-foreground">Not available</span>
           ) : (
-            <div className="flex items-baseline gap-1.5">
+            <>
               <span className="text-[28px] font-semibold leading-none text-foreground">{priceMain}</span>
               {priceSub && <span className="text-xs text-muted-foreground">{priceSub}</span>}
-            </div>
+            </>
           )}
-          <div className="-mx-3 mt-5">{cta}</div>
         </div>
+
+        <div className="mt-5">{cta}</div>
       </div>
 
-      <p className="mt-6 px-1.5 text-[13px] text-muted-foreground">{tagline}</p>
-
-      {/* Details folded away (owner, 2026-07-31). Open, the three cards ran to
-          different lengths — the one with most bullets looked like the most
-          serious option purely because it was tallest, and the row stopped being
-          scannable. Collapsed they compare at a glance; the client opens only
-          the one they are weighing.
-          <details> and not state: it keeps working before hydration, and the
-          browser gives keyboard + AT behaviour for free. */}
-      {/* The first few points stay VISIBLE — they are what distinguishes one plan
-          from another, and a row of cards you cannot compare without opening
-          three disclosures is worse than a long one. Only the OVERFLOW folds
-          away, which is what keeps the cards from running to different heights.
-          <details> and not state: works before hydration, and the browser gives
-          keyboard + AT behaviour for free. */}
-      {visible.length > 0 && (
-        <ul className="mt-6 space-y-3.5 px-1.5">
-          {visible.map((feature) => (
-            <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
-              <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
-              <span>{feature}</span>
-            </li>
+      {/* The plan's own list — self-contained (owner: "en cada card debe tener
+          lo que incluye"), never "everything in X, plus:". `relative` like the
+          header zone: the wash blobs are absolutely positioned, so unpositioned
+          in-flow content would paint UNDER them. */}
+      {features.length > 0 && (
+        <ul className="relative mx-6 mt-6 overflow-hidden rounded-[6px]">
+          {features.map((feature, index) => (
+            <FeatureRow key={featureKey(feature)} feature={feature} striped={index % 2 === 0} />
           ))}
         </ul>
-      )}
-
-      {rest.length > 0 && (
-        <details className="group mt-3.5 px-1.5">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
-            <ChevronDown
-              className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
-              strokeWidth={2}
-              aria-hidden
-            />
-            Show details
-          </summary>
-          <ul className="mt-3.5 space-y-3.5">
-            {rest.map((feature) => (
-              <li key={feature} className="flex items-start gap-2 text-[13px] text-muted-foreground">
-                <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
       )}
     </div>
   );
@@ -244,7 +297,7 @@ function PlanColumn({ plan, onSelect }: { plan: PlanInfo; onSelect: (modality: M
 function ConfirmingPaymentBox() {
   const escalated = useEscalated(75_000);
   return (
-    <section className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
+    <section className="rounded-[8px] border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
       <AutoRefresh intervalMs={7_000} />
       <div className="flex items-start gap-3">
         <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
@@ -284,6 +337,8 @@ export function PublicProposalPayment({
   checkoutResult = null,
   studioSessionId,
   validThrough = null,
+  projectName = null,
+  scope = null,
 }: PublicProposalPaymentProps) {
   // Two-step flow: pick a plan (null), then pay for it. `null` = step 1.
   const [selectedPlan, setSelectedPlan] = useState<Modality | null>(null);
@@ -336,7 +391,7 @@ export function PublicProposalPayment({
       : localeHref(siteRoutes.maxwellStudio);
     return (
       <section className="pt-12">
-        <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="mx-auto max-w-3xl overflow-hidden rounded-[8px] border border-border bg-card">
           <div className="grid md:grid-cols-2">
             {/* LEFT — confirmation + CTA */}
             <div className="flex flex-col items-center justify-center p-8 text-center sm:p-10">
@@ -416,7 +471,7 @@ export function PublicProposalPayment({
 
   if (status === "expired") {
     return (
-      <section className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5 text-sm text-amber-900">
+      <section className="rounded-[8px] border border-amber-500/25 bg-amber-500/10 p-5 text-sm text-amber-900">
         This proposal expired. Ask Noon for a refreshed quote before paying.
       </section>
     );
@@ -424,7 +479,7 @@ export function PublicProposalPayment({
 
   if (status === "payment_under_verification") {
     return (
-      <section className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
+      <section className="rounded-[8px] border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
         Payment is under verification. The project will activate once the payment is confirmed.
       </section>
     );
@@ -440,7 +495,7 @@ export function PublicProposalPayment({
 
   if (!payable) {
     return (
-      <section className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
+      <section className="rounded-[8px] border border-border bg-card p-5 text-sm text-muted-foreground">
         Payment is not available for this proposal yet. Noon must approve and publish a final USD amount first.
       </section>
     );
@@ -450,6 +505,31 @@ export function PublicProposalPayment({
   if (payableAmount == null) return null;
 
   const hasMembership = membershipApplicable && monthlyAmountUsd != null;
+  const scopeShown = Boolean(scope && scope.scope.length > 0);
+
+  // Per-column lists (owner: "mejor dejalo como antes"): each plan states its
+  // OWN list, self-contained, never "everything in X, plus:". These rows open
+  // every buyable plan's list — the project's actual deliverables, then the
+  // rows every plan carries. Yes, the two columns repeat them; that is the
+  // cost of a card that can be read on its own, which is the call the owner
+  // made when this shape was first built.
+  const sharedRows: PlanInfo["features"] = [
+    ...(scopeShown
+      ? (scope?.scope ?? []).map((item) =>
+          item.detail ? { title: item.title, detail: item.detail } : item.title,
+        )
+      : // No readable scope on this proposal → one honest summary row instead
+        // of six concrete ones. The list is never empty.
+        [{ title: "Full scope delivered", detail: "Everything written into this proposal" }]),
+    { title: "Immediate start", detail: "Queued the moment the payment clears" },
+    // The portal claims only the tabs that actually ship
+    // (workspace page: overview / chat / versions / domains).
+    { title: "Client portal", detail: "Live progress, previews and direct chat" },
+  ];
+  // No "Not included" anywhere client-facing (owner: "no se coloca lo que no
+  // incluye" — the page states what we offer, never what we don't). The
+  // exclusions still exist where they do their real job: the team-side
+  // document on /maxwell/review, which fences scope disputes.
 
   // The one-time card must describe what the checkout will actually do, which
   // depends on the hosting flag: OFF → a single payment and truly nothing
@@ -466,17 +546,35 @@ export function PublicProposalPayment({
     priceMain: formatMoney(payableAmount, currency),
     priceSub: "once",
     recommended: false,
-    ctaLabel: "Continue",
+    ctaLabel: "Get started",
     selectModality: "one_time",
     features: [
-      "Full delivery of the approved scope",
-      "A single secure payment via Stripe",
-      "We start the moment it clears",
+      // Label + fragment, not two sentences. A pricing card is scanned, not
+      // read: the title has to be findable at a glance and the line under it
+      // has to finish in one breath.
+      ...sharedRows,
+      { title: "Code ownership", detail: "Repository access and a full download" },
+      // What happens AFTER the build — the real difference between the two
+      // routes. The two variants are exclusive: with hosting billing ON the
+      // first year IS included, so saying "arranged separately" alongside it
+      // would contradict the line right under it (it did, until now).
       ...(HOSTING_BILLING_ENABLED
+        // Same title family as the membership row — "Hosting included" against
+        // "Hosting available" is a difference you catch scanning across.
         ? [
-            `First year of hosting included — then ${formatMoney(HOSTING_YEARLY_USD, currency)}/yr or ${formatMoney(HOSTING_MONTHLY_USD, currency)}/mo`,
+            {
+              title: "Hosting included for a year",
+              detail: `Servers and database — then ${formatMoney(HOSTING_YEARLY_USD, currency)}/yr or ${formatMoney(HOSTING_MONTHLY_USD, currency)}/mo`,
+            },
           ]
-        : []),
+        : [
+            // Stated as what we DO offer (owner): hosting exists and we set it
+            // up, it just is not inside this price.
+            {
+              title: "Hosting available",
+              detail: "Servers and database, priced separately",
+            },
+          ]),
     ],
   };
   const membershipPlan: PlanInfo =
@@ -488,17 +586,29 @@ export function PublicProposalPayment({
           priceMain: formatMoney(payableAmount, currency),
           priceSub: `activation + ${formatMoney(monthlyAmountUsd, currency)}/mo`,
           recommended: true,
-          ctaLabel: "Continue",
+          ctaLabel: "Get started",
           selectModality: "membership",
           features: [
-            "Everything in one-time, plus:",
-            "Ongoing improvements after your project ships",
-            "A monthly retainer for changes and new work",
-            // M0-era copy said "never charged automatically" — with M1 live the
-            // monthly IS a real Stripe subscription. Say the truth per flag.
+            // Self-contained (owner: "en cada card debe tener lo que incluye").
+            // It used to open with "Everything in one-time, plus:", which made
+            // the reader look at the other card and add the two lists in their
+            // head. A card that describes a plan describes the whole plan.
+            ...sharedRows,
+            // Hosting is ONE charge covering two services (the servers that run
+            // the site and the database behind it), so it stays one row: two
+            // rows would read as two bills. Title carries the fact, detail says
+            // what is inside it.
+            { title: "Hosting included", detail: "Servers and database, inside the monthly" },
+            { title: "Ongoing improvements", detail: "Work continues after your project ships" },
+            { title: "Changes and new work", detail: "Send them as they come up, every month" },
+            // Owner: "esto qué tiene que ver con lo que ofrecemos?" — nothing.
+            // "Monthly Stripe billing" named the payment rail, which is our
+            // plumbing, not their benefit. The fact underneath it IS an offer
+            // though, and a real one for a recurring plan: they are not tied in.
+            // So the title now states that, and the mechanic is gone.
             MEMBERSHIP_BILLING_ENABLED
-              ? "Billed monthly via Stripe — cancel anytime"
-              : "Set with your Noon PM — never charged automatically",
+              ? { title: "No lock-in", detail: "Cancel anytime from your portal" }
+              : { title: "No lock-in", detail: "Nothing recurring without your say-so" },
           ],
         }
       : {
@@ -528,9 +638,8 @@ export function PublicProposalPayment({
     ctaLabel: "Contact us",
     ctaHref: getContactHref(),
     features: [
-      "A different scope, budget, or timeline",
-      "Questions before you commit",
-      "Prefer to talk it through first",
+      { title: "A different scope or budget", detail: "Tell us what you need and we'll re-quote" },
+      { title: "Questions first", detail: "Nothing is charged while we work it out" },
     ],
   };
   const plans = [oneTimePlan, membershipPlan, otherPlan];
@@ -575,7 +684,7 @@ export function PublicProposalPayment({
                 Subscribe button inside its own widget: one charge, no redirect,
                 PCI-safe. `key={selectedPlan}` remounts it if the client goes back
                 and switches plans, so it re-fetches the matching session. */}
-            <div className="min-h-[440px] overflow-hidden rounded-2xl border border-border bg-white">
+            <div className="min-h-[440px] overflow-hidden rounded-[8px] border border-border bg-white">
               {stripePromise ? (
                 <EmbeddedCheckoutProvider
                   key={selectedPlan}
@@ -598,11 +707,11 @@ export function PublicProposalPayment({
             </div>
 
             {/* RIGHT — plan summary sidebar: features, price breakdown, pay CTA. */}
-            <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
+            <div className="rounded-[8px] border border-border bg-card p-6 sm:p-7">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-xl font-medium text-foreground">{chosen.name}</p>
                 {isMembership && (
-                  <span className="shrink-0 rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-foreground">
+                  <span className="shrink-0 rounded-full bg-[#141414] px-2.5 py-1 text-[11px] font-medium text-white">
                     Popular
                   </span>
                 )}
@@ -610,13 +719,17 @@ export function PublicProposalPayment({
 
               {chosen.features.length > 0 && (
                 <ul className="mt-5 space-y-3.5">
+                  {/* Titles only here. Step 2 is the payment screen: the client
+                      has already chosen, so this list is a reminder of what they
+                      picked, not the pitch. The descriptions belong on step 1,
+                      where the decision is actually being made. */}
                   {chosen.features.map((feature) => (
                     <li
-                      key={feature}
+                      key={featureKey(feature)}
                       className="flex items-start gap-2.5 text-[13px] text-muted-foreground"
                     >
                       <Check className="mt-[3px] h-4 w-4 shrink-0 text-[#0056fd]" strokeWidth={2.5} />
-                      <span>{feature}</span>
+                      <span>{featureTitle(feature)}</span>
                     </li>
                   ))}
                 </ul>
@@ -650,7 +763,7 @@ export function PublicProposalPayment({
               <p className="mt-2 text-[11px] text-muted-foreground/60">Amounts in {currency}.</p>
 
               {billsMonthlyNow && monthlyLabel && (
-                <p className="mt-5 rounded-xl border border-border bg-background px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                <p className="mt-5 rounded-[8px] border border-border bg-background px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
                   You authorize {formatMoney(totalTodayUsd, currency)} today, then {monthlyLabel}/month
                   on a recurring basis until you cancel — you confirm it on the secure Stripe form to
                   the left. Cancel anytime from your account.
@@ -691,7 +804,7 @@ export function PublicProposalPayment({
               </p>
 
               {checkoutResult === "cancelled" && (
-                <p className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+                <p className="mt-4 rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
                   Payment was cancelled. You can try again whenever you&apos;re ready.
                 </p>
               )}
@@ -705,32 +818,91 @@ export function PublicProposalPayment({
   // ── STEP 1 — choose a plan ────────────────────────────────────────────────
   return (
     <section className="pt-12">
-      <div className="text-center">
+      <div className="flex flex-col items-center gap-3 text-center">
+        {/* Whose project this is, in the client's own words. Above the heading
+            and quiet: it identifies the page, it is not the thing being asked
+            of them. */}
+        {projectName && (
+          <p className="text-[13px] text-muted-foreground">
+            Proposal for <span className="text-foreground">{projectName}</span>
+          </p>
+        )}
         <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Choose an option</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your project starts once payment is confirmed.
-          {/* The one fact from the old header card that belongs to the DECISION —
-              how long the offer stands. Once, here, not repeated inside each of
-              the three cards: it is a property of the offer, not of a plan. The
-              rest of that card (version, sent date, recipient) is document
-              metadata and moved to the foot of the document. */}
-          {validThrough && (
-            <>
-              {" "}
-              <span className="text-foreground/70">Valid through {validThrough}.</span>
-            </>
-          )}
-        </p>
+        {/* The deadline sits WITH the decision (owner: the closing line was
+            three unrelated things joined by a dot — a promise, a date and a
+            link). A date only matters while you are choosing, so it belongs
+            under the heading that asks you to choose, not at the far end of
+            the page where it lands after the decision is already made.
+            Same chip recipe as the studio trace's file chips, verbatim: 4px
+            radius, hairline border, 7% fill, mono 12/14. A date is a value,
+            and a value with its own edges is what the eye lands on. */}
+        {validThrough && (
+          <span className="inline-flex items-center rounded-[4px] border border-border bg-foreground/[0.07] px-1.5 py-0.5 font-mono text-[12px] font-medium leading-[14px] text-foreground/90">
+            Valid through {validThrough}
+          </span>
+        )}
       </div>
 
-      <div className={`mt-8 grid gap-6 ${plans.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-        {plans.map((plan) => (
-          <PlanColumn
-            key={plan.key}
-            plan={plan}
-            onSelect={(modality) => setSelectedPlan(modality)}
-          />
+      {/* ONE surface (owner: "junta estas 3 cards", à la Notion's pricing
+          table): a single bordered container, columns divided by hairlines the
+          columns themselves draw. overflow-hidden so the recommended column's
+          wash clips against the shared rounded corner. */}
+      <div className="mt-8 overflow-hidden rounded-[8px] border border-border bg-card">
+        <div className={`grid ${plans.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+          {plans.map((plan, index) => (
+            <PlanColumn
+              key={plan.key}
+              plan={plan}
+              first={index === 0}
+              onSelect={(modality) => setSelectedPlan(modality)}
+            />
+          ))}
+        </div>
+
+      </div>
+
+      {/* Delivery as it actually happens — the AI starts on payment; no
+          invented discovery weeks. Outside the table: it is the page's story,
+          not a per-plan fact. */}
+      <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        {DELIVERY_STEPS.map((step, index) => (
+          <div key={step.title}>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <p className="mt-1.5 text-[13px] font-medium leading-snug text-foreground">
+              {step.title}
+            </p>
+            <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">{step.detail}</p>
+          </div>
         ))}
+      </div>
+
+      {/* The link, alone. It used to share a line with the deadline and with
+          "Your project starts once payment is confirmed" — three unrelated
+          things joined by a dot. The sentence is gone outright: step 02 above
+          says the same thing better ("The AI begins generating it the moment
+          payment clears"), so it was a duplicate arriving one line late. What
+          survives is the one thing the page cannot answer inline, and it reads
+          as an invitation to go deeper. */}
+      <div className="mt-8 flex justify-center">
+        {/* Destination is a placeholder on purpose. The page this deserves —
+            what the client gets and how the project is delivered — is still to
+            be written; until it exists this points at /services, which is the
+            only page that honestly answers part of the question. When that page
+            ships, re-point this href and the wording stays as it is. */}
+        <Link
+          href={siteRoutes.howItWorksHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          // Brand blue, and the hover DEEPENS — the site's rule everywhere a
+          // blue is interactive. Lightening on hover is the one thing it must
+          // not do.
+          className="inline-flex items-center gap-2 text-center text-[13px] text-[#0056fd] transition-colors hover:text-[#0047e0]"
+        >
+          <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          Learn how your project is delivered
+        </Link>
       </div>
     </section>
   );

@@ -18,6 +18,10 @@ import { consumeDistributedToken } from "@/lib/server/rate-limit-distributed";
 import { recordProposalAccessSafe } from "@/lib/server/audit/proposal-access";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import {
+  extractProposalScope,
+  ProposalScopeSummary,
+} from "@/components/maxwell/proposal-scope-summary";
 import { ProposalSidebar } from "@/components/maxwell/proposal-sidebar";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import "@/components/maxwell/studio-rd.css";
@@ -179,6 +183,11 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
   const viewer = await getAuthenticatedViewer();
 
+  // Client-facing slice of the draft (scope + exclusions). Computed once:
+  // the summary renders it and the cards' "Full scope delivered" row points
+  // at it only when it actually shows.
+  const proposalScope = extractProposalScope(proposal.draftContent);
+
   return (
     <main
       className={`${GeistSans.variable} ${GeistMono.variable} mxw-rd min-h-screen bg-background`}
@@ -206,18 +215,7 @@ export default async function PublicProposalPage({ params, searchParams }: Props
 
         {!effectivelyExpired && (
           <>
-            {/* El documento del cliente sale de aqui (owner, 2026-08-01:
-                "quita esto de aqui, te dire que haremos con eso"). Decision de
-                producto pendiente, no un borrado: el borrador SIGUE existiendo en
-                proposal_request.draft_content y el equipo lo lee entero en
-                /maxwell/review/[id]. Lo unico que cambia es que la pagina publica
-                ya no lo muestra.
-                ⚠️ Mientras tanto el cliente decide con lo que dicen las tarjetas y
-                con el correo que recibio — no hay alcance escrito en esta pagina.
-                Esto es un estado INTERMEDIO a la espera de que el owner defina que
-                se hace con el documento. */}
-
-            <div className="mx-auto max-w-[1100px]">
+            <div className="mx-auto max-w-[1180px]">
               <PublicProposalPayment
                 publicToken={proposal.publicToken}
                 status={proposal.status}
@@ -231,8 +229,32 @@ export default async function PublicProposalPage({ params, searchParams }: Props
                 checkoutResult={checkoutResult}
                 studioSessionId={proposal.studioSessionId}
                 validThrough={proposal.expiresAt ? formatDate(proposal.expiresAt) : null}
+                // The goal summary is the PM/Maxwell-refined name; the initial
+                // prompt is the client's own opening words. Either identifies
+                // the project; null only if the session row is missing.
+                projectName={session?.goalSummary ?? session?.initialPrompt ?? null}
+                scope={proposalScope}
               />
             </div>
+
+            {/* La resolucion de "te dire que haremos con eso" (owner,
+                2026-08-01): el DOCUMENTO de propuesta no vuelve — su formato de
+                consultora (fases de discovery, semanas) contradecia el modelo
+                real, donde la IA empieza a generar el MVP en cuanto se confirma
+                el pago. En su lugar, el alcance se dice directamente y DENTRO
+                de la tabla de planes (owner: "eso no deberia ir en las
+                cards?") como banda compartida — ver PublicProposalPayment. El
+                documento completo sigue siendo el registro del equipo en
+                /maxwell/review/[id].
+                Para los estados SIN selector (paid, under_verification) la
+                tabla no se monta, asi que el alcance se renderiza suelto aqui —
+                lo que compraste sigue escrito despues de pagar. Sin borrador o
+                sin seccion de alcance no se pinta nada: nunca una caja vacia. */}
+            {(proposal.status === "paid" || proposal.status === "payment_under_verification") && (
+              <div className="mt-16">
+                <ProposalScopeSummary {...proposalScope} />
+              </div>
+            )}
 
             {/* Only when it SAYS something. This line has been moved twice and
                 looked wrong both times — propping up an empty box, then floating
