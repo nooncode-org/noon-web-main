@@ -14,6 +14,29 @@ aprobado — deja de ser prototipo y pasa a app funcional —, lo despliega en e
 **proyectos independientes nombrados por cliente**. El cliente lo sigue en su
 portal; el one-time puede exportar código y datos; la membresía, sus datos.
 
+## Regla 0 — el cliente nunca ve un error (transversal, owner)
+
+> "Muy importante que el cliente nunca vea que nos está dando error algo, no
+> queremos asustarlo." — owner, 2026-08-01
+
+Todo fallo es **interno**. Implicaciones duras para cualquier superficie que el
+cliente pueda ver (portal, chat, correos, página de propuesta):
+
+- Las palabras "error", "failed", "retry" y equivalentes **no existen** de cara
+  al cliente. Tampoco contadores de intentos ni trazas.
+- Un build fallando por dentro se ve por fuera como progreso tranquilo:
+  "in development" con actividad. El bucle de arreglo (punto 9) y las alertas
+  son invisibles.
+- Si un rescate se alarga, la escalada visible es **calma y honesta**, nunca
+  técnica: "taking a little longer than usual — it's still on the way" + vía de
+  contacto. (Patrón ya implantado en el sitio: `workspace-preparing-body.tsx` y
+  la caja de confirmación de pago escalan así a los 75s; el poll del hito de
+  propuesta se rinde en silencio.)
+- La máquina de estados del portal **no tiene estado de error visible**: los
+  estados del cliente son progreso, entregado o en pausa — el resto es interno.
+- Los correos al cliente siguen la misma regla; los correos con el fallo real
+  van SOLO al equipo.
+
 ## Las 10 decisiones (cerradas)
 
 1. **Dónde vive el pipeline → en el App.** El App ya es dueño de los proyectos
