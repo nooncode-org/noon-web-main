@@ -5,7 +5,6 @@ import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { SiteNavRd } from "@/app/_components/site/site-nav-rd";
-import { getContactHref } from "@/lib/site-config";
 import "@/app/_components/site/legal-rd.css";
 import "./not-found.css";
 
@@ -22,8 +21,6 @@ export default function GlobalErrorBoundary({
     console.error("App Router error boundary caught:", error);
   }, [error]);
 
-  const contactHref = getContactHref({ inquiry: "general", source: "error-page" });
-
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
       <SiteNavRd locale="en" />
@@ -35,9 +32,12 @@ export default function GlobalErrorBoundary({
           <h1 className="nf-display">
             That didn&apos;t go<br />as planned.
           </h1>
+          {/* The copy follows the buttons. It used to offer a third door
+              ("or contact us"), which now points at nothing — a sentence naming
+              an action the page no longer has is worse than a shorter one. */}
           <p className="nf-lead">
-            We hit an unexpected error. Try again, head back home, or contact us if it keeps
-            happening — we&apos;ll dig in.
+            We hit an unexpected error. Try again, or head back home — we&apos;ve logged it and
+            we&apos;ll dig in.
           </p>
           {error.digest && (
             <p
@@ -59,16 +59,9 @@ export default function GlobalErrorBoundary({
             <Link href="/" className="lgl-btn lgl-btn-secondary">
               Back to home
             </Link>
-            <Link href={contactHref} className="lgl-btn lgl-btn-secondary">
-              Contact Noon
-            </Link>
           </div>
         </div>
       </main>
-
-      <footer className="nf-footer">
-        <span>© 2026 Noon</span>
-      </footer>
     </div>
   );
 }

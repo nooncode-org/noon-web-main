@@ -38,10 +38,6 @@ export default function NotFound() {
           </div>
         </div>
       </main>
-
-      <footer className="nf-footer">
-        <span>© 2026 Noon</span>
-      </footer>
     </div>
   );
 }
