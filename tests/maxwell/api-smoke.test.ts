@@ -203,12 +203,12 @@ We will build a booking and scheduling platform for yoga studios.
 - You follow progress live in your portal.
 
 **Investment**
-Pago único: $179 USD
+One-time payment: $179 USD
 
-Membresía — Recomendado: $179 USD activación + $69 USD/mes
-Incluye hosting, base de datos básica, soporte, actualizaciones menores y avance gradual del proyecto.
+Membership — Recommended: $179 USD activation + $69 USD/month
+Includes hosting, basic database, support, minor updates and gradual project improvements.
 
-Pago flexible (opcion secundaria): disponible solo mediante coordinacion con un agente de Noon para casos que requieran avance por etapas.
+Flexible payment (secondary option): available only through coordination with a Noon agent for cases that require staged delivery.
 
 **Activation Conditions**
 The project activates exclusively upon confirmed payment.
