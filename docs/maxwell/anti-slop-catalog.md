@@ -1,108 +1,119 @@
-# Catálogo anti-slop — los tells de UI generada por IA (2026-08-02)
+# Catálogo anti-slop — los tells de UI generada, anotados (2026-08-02)
 
 > Investigación encargada por el owner ("NO AI SLOP… como el típico tag en cada
 > título, investiga bien para que los tengamos identificados"). Consolidado de
-> los catálogos de la comunidad — el de **Impeccable** (61 patrones,
-> impeccable.style/slop) y el de Developers Digest (16 patrones) más las guías
-> de 2026 — deduplicado y ordenado por severidad.
+> los catálogos de la comunidad — **Impeccable** (61 patrones,
+> impeccable.style/slop) y Developers Digest (16) más guías de 2026 —
+> deduplicado, ordenado por severidad y **anotado patrón a patrón** bajo la
+> doctrina del owner:
 >
-> **Definición operativa de slop** (la que gobierna el sistema): slop es lo que
-> aparece cuando el ejecutor tuvo que decidir algo que el orquestador no
-> especificó. No es "hecho por IA" — es "hecho por IA sin que nadie eligiera".
+> **"Solo deben utilizarse cuando la situación lo amerite, cuando entren
+> mejor — nunca porque sí."**
 >
-> **Uso previsto** (pendiente del cierre de definiciones del Quality Layer):
-> (1) léxico de la rúbrica del juez visual; (2) lista prohibida del copy que
-> escribe el orquestador; (3) reglas negativas del system prompt de v0.
+> **Definición operativa de slop:** slop es lo que aparece cuando el ejecutor
+> tuvo que decidir algo que el orquestador no especificó. No es "hecho por IA"
+> — es "no elegido por nadie".
+>
+> **Cómo lo usa el juez:** no pregunta "¿está el patrón?" sino "¿está SIN
+> mérito?" — ¿lo pide la referencia o la familia? ¿cumple una función que se
+> puede nombrar? Sin respuesta = slop. Los marcados **[sin excepción]** son
+> defectos absolutos: no existe situación que los amerite.
 
-## Nivel S — los inequívocos (uno solo ya delata)
+## Nivel S — los inequívocos (máxima vigilancia)
 
-| # | Tell | Descripción |
+| Tell | Slop cuando (default) | Amerita cuando |
 |---|---|---|
-| S1 | **Badge/pill sobre el H1** | La pastillita ("✨ New", "AI-powered") justo encima del titular del hero. El tell del owner. |
-| S2 | **Kicker/eyebrow en CADA sección** | Micro-etiqueta uppercase con tracking sobre cada título. (Ya vetado en el sitio de Noon: feedback-no-kicker-tags.) |
-| S3 | **Borde de color lateral en cards** | Franja de 3-4px morada/azul en el borde izquierdo o superior de cards/quotes — "tan fiable como los em-dashes". |
-| S4 | **Paleta IA: morado/violeta + cian sobre oscuro** | El "VibeCode purple", gradientes morado→azul en hero/CTA/fondos. |
-| S5 | **Dark mode permanente con glows de color** | Fondo oscuro + box-shadows de color brillando + texto gris medio que suspende AA. |
-| S6 | **Inter / Space Grotesk / Instrument Serif por reflejo** | Las fuentes default de todas las herramientas; sola o "serif itálica para UNA palabra del hero". |
-| S7 | **Hero centrado genérico + grid de cards idénticas icon-top** | La plantilla universal: hero centrado → 3×2 features con iconito arriba → stats → CTA. |
-| S8 | **Emoji como iconografía** | Emojis en nav, features o titulares en lugar de un sistema de iconos. |
-| S9 | **Buzzwords + em-dashes** | "Streamline / empower / unlock / enterprise-grade", métricas inventadas (10x, 99%), em-dashes en cadencia de IA. |
+| **S1 · Badge/pill sobre el H1** | Pastilla genérica ("✨ AI-powered") puesta por plantilla | Anuncio REAL y noticiable (lanzamiento, versión, fecha), una sola vez en el hero, estilado al sistema — como lo usan Vercel/Linear |
+| **S2 · Kicker/eyebrow uppercase por sección** | Muletilla en cada título | La identidad editorial/mono de la referencia lo posee (es voz del sistema, no relleno) — y aun así con moderación |
+| **S3 · Borde lateral de color en cards** | Decoración de cards normales | Semántica real: callouts/alertas donde el color codifica tipo (warning/info), o blockquote editorial clásico |
+| **S4 · Morado/violeta + cian sobre oscuro** | Paleta por defecto sin marca detrás | La MARCA del cliente es esa, o la familia la posee por referencia (Linear ES #5E6AD2 — nuestro pack tech-digital lo usa por eso, no por default) |
+| **S5 · Dark mode + glows de color** | Glow decorativo en todo, gris medio que suspende AA | Familias cinematic (automotive, industrial, energy) con glow mínimo y FUNCIONAL (foco, estado) — jamás halos de fondo porque sí |
+| **S6 · Inter / Space Grotesk / Instrument Serif** | Elegidas por reflejo (son el default de todas las herramientas) | El token de la familia las elige a propósito (Inter es correcto en fintech/logistics); Instrument Serif casi nunca |
+| **S7 · Hero centrado + grid de cards idénticas icon-top** | La plantilla universal para cualquier negocio | Hero centrado si el mensaje es UNA frase y la familia lo pide; grid solo si los items son genuinamente paralelos, ≤6, con iconos distintivos |
+| **S8 · Emoji como iconografía** | En nav, features o titulares | Producto consumer juguetón (eventos Gen Z, mascotas) cuyo tono lo pide — acentos puntuales, nunca sistema de iconos |
+| **S9 · Buzzwords / métricas inventadas / em-dashes** | "Streamline/empower/unlock", "10x · 99%", em-dashes en cadencia de IA | Buzzwords y métricas inventadas: **[sin excepción]**. Em-dash: puntuación editorial real, máx. una por párrafo |
 
-## Catálogo completo por categoría
+## Detalle visual
 
-### Detalle visual
-- Grid decorativo de fondo sin función (no es canvas/mapa/medida)
-- Glassmorphism decorativo (blur sin propósito)
-- Hairline border + sombra ancha difusa (firma de UI generada)
-- Rayas por repeating-gradient como decoración
-- Border-radius extremo (24px+, cards amorfas)
-- SVG "hand-drawn" amateur
-- Glow radial de acento tras secciones / halo saturado en fondos oscuros
-- Texto en gradiente (ilegible al escanear)
-- Beige/crema elegido por reflejo (no por familia)
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Grid decorativo de fondo | Textura sin función | El grid evoca el producto real (canvas, mapa, plano, dev-tool) |
+| Glassmorphism | Blur en cards estáticas | Overlays reales (modal, barra sticky) donde el blur conserva contexto |
+| Hairline border + sombra ancha | Los dos a la vez como firma generada | Elegir UNO; sombra difusa solo en elevación real (popover, menú) |
+| Rayas repeating-gradient | Decoración de superficie | Textura de marca que la referencia posee (rara) |
+| Border-radius extremo (24px+) | Cards de contenido amorfas | Pills/chips por naturaleza; familias soft (beauty, pets) con escala consistente |
+| SVG "hand-drawn" amateur | Ilustración cruda accidental | **[sin excepción]** en generado — lo naive solo funciona como dirección de arte encargada |
+| Halo/spotlight radial | Haze de acento tras secciones | UN punto focal en hero dark de familia cinematic, sutil |
+| Texto en gradiente | Titulares ilegibles al escanear | Máx. una palabra display en familias creative si la referencia lo hace |
+| Beige/crema por defecto | Fallback cálido sin sistema detrás | La familia ES warm con paleta completa (warm-artisanal, premium-experiential lo tienen POR token) |
 
-### Tipografía
-- Jerarquía plana (tamaños demasiado próximos)
-- Texto funcional <11px; body <12px; line-height <1.3
-- Icon-tile (cuadradito redondeado con icono) apilado sobre el título
-- Serif itálica gigante como titular principal
-- Letter-spacing aplastado en display / tracking ancho (>0.05em) en body
-- Una sola fuente para todo, sin jerarquía
-- Body largo en ALL-CAPS
-- Headline de frase completa a escala masiva dominando el viewport
+## Tipografía
 
-### Layout y espacio
-- Numeritos editoriales junto a títulos imitando estructura de revista
-- Hero-metric layout: número grande + label chico + 3 stats + acento gradiente
-- Stat banners uniformes en fila
-- Secuencias "1, 2, 3" de pasos como muletilla
-- Cards dentro de cards dentro de cards
-- Espaciado monótono (un solo valor, sin ritmo)
-- Grids de cards idénticas (icono+título+texto ×6)
-- Líneas de texto >80 caracteres
-- Contenido desbordando contenedores; tooltips/menús recortados por overflow
-- Columna que estira más allá del viewport (espacio muerto)
-- Títulos pegados al bloque anterior; texto pegado a los bordes
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Jerarquía plana (tamaños próximos) | — | **[sin excepción]** — es defecto, no patrón |
+| Texto funcional <11px / body <12px | Links, labels, tablas ilegibles | Solo metadata técnica densa (tablas de dashboard, mono labels) con AA |
+| Icon-tile apilado sobre título | Cuadradito idéntico de relleno ×6 | Features B2B con iconos genuinamente distintivos, si la referencia usa el patrón (Stripe) |
+| Serif itálica display gigante | Una palabra itálica suelta en página Inter (cliché) | La familia editorial la posee como voz consistente (fashion, arte) |
+| Letter-spacing aplastado | Ilegible en display | Display grande admite tracking negativo LEVE (−0.01/−0.02em) |
+| Una sola fuente para todo | Sin jerarquía compensatoria | Sistema mono-tipo deliberado (nuestro clean-professional Inter/Inter) donde peso+tamaño hacen la jerarquía — el token lo especifica |
+| Body en ALL-CAPS | Párrafos completos | Caps solo en labels cortos con tracking |
+| Headline frase-completa a escala masiva | Domina el viewport sin mensaje | Mensaje CORTO en familia display-driven (creative, automotive) |
 
-### Motion
-- Status dot pulsante DECORATIVO (si no representa estado real, es slop)
-- Cursor parpadeante falso en copy del hero
-- Marquee auto-scroll
-- Easing con rebote/elástico en dialogs y cards
-- Animar width/height/padding (jank)
-- Escalar/rotar imágenes en hover por defecto
+## Layout y espacio
 
-### Copy
-- Mismo texto repetido dentro de un contenedor
-- Cadencia aforística ("Not X. Just Y.") y el framing "theater"
-- Buzzwords genéricos sin el vocabulario del negocio
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Numeritos editoriales junto a títulos | Muletilla de estructura de revista | El sistema editorial/mono los posee (el sitio de Noon los usa POR decisión del owner) |
+| Hero-metric layout (número grande + 3 stats) | Fórmula con métricas inventadas | Productos de datos donde el número ES el producto — y las métricas son reales |
+| Stat banners uniformes | Fila de stats porque sí | Solo métricas reales, si la referencia usa el patrón |
+| Secuencias "1, 2, 3" | Tres columnas idénticas de muletilla | El proceso real TIENE pasos y se diseña con voz propia |
+| Cards anidadas | Cards dentro de cards dentro de cards | Máx. 2 niveles con jerarquía clara de superficie |
+| Espaciado monótono | Un solo valor en toda la página | **[sin excepción]** — el ritmo (juntar lo relacionado, separar grupos) es regla de craft |
+| Líneas >80 caracteres · overflow · clipping · títulos pegados · texto al borde | — | **[sin excepción]** — defectos |
 
-### Imaginería
-- Ilustración ensamblada de formas SVG genéricas
-- Imágenes rotas o placeholder (src vacío, cajas grises)
+## Motion
 
-### Calidad general (el suelo)
-- Errores de script al cargar; contenido en opacity:0 sin reveal
-- Contraste que suspende WCAG AA (4.5:1 body)
-- Saltos de nivel de heading (h1→h3)
-- Texto justificado sin hyphenation
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Status dot pulsante | Decorativo sobre estado estático | El estado es REAL y vivo (el dot semántico del studio) |
+| Cursor parpadeante falso | Caret fake en copy del hero | Solo si evoca un editor real (producto de escritura/terminal) |
+| Marquee auto-scroll | Esconde contenido, velocidad de feria | Strip de logos en familias editorial/fashion: lento, pausable, respeta prefers-reduced-motion |
+| Bounce/elastic easing | Dialogs y cards de trabajo | Productos juguetones (pets, eventos) con moderación |
+| Animar width/height/padding | — | **[sin excepción]** — jank; transform/opacity siempre |
+| Zoom de imagen en hover | Zoom dramático por defecto | Sutil (1.02–1.03) en galerías/e-commerce donde indica clic |
 
-## El matiz que evita malentendidos
+## Copy
 
-Un patrón NO es slop si la **referencia** lo usa con intención y el orquestador
-lo especificó — slop es el *default no elegido*. Ejemplos: el mono-uppercase
-del sitio de Noon es una decisión de sistema del owner (spine mono-forward);
-un status dot que representa estado REAL (el del studio) es semántica, no
-decoración. La vara del juez: **¿esto fue elegido o fue lo que salió?** —
-combinada con la regla de fidelidad (¿está en la referencia?).
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Mismo texto repetido en un contenedor | — | **[sin excepción]** — defecto |
+| Cadencia aforística ("Not X. Just Y.") / framing "theater" | Copy de manifiesto en prototipo de cliente | **[sin excepción]** en prototipos — el negocio habla, no el modelo |
+| Buzzwords genéricos | Cualquier aparición | **[sin excepción]** — vocabulario del negocio siempre |
+
+## Imaginería
+
+| Tell | Slop cuando | Amerita cuando |
+|---|---|---|
+| Ilustración ensamblada de formas SVG | Hero de shapes genéricas | Solo como sistema de marca deliberado; en nuestro flujo, preferir foto verificada |
+| Imagen rota / placeholder / caja gris | — | **[sin excepción]** — la regla de imaginería ya lo prohíbe |
+
+## Calidad general — el suelo **[todo sin excepción]**
+
+Errores de script al cargar · contenido en `opacity: 0` sin reveal · contraste
+que suspende WCAG AA (4.5:1 body) · saltos de nivel de heading (h1→h3) ·
+line-height <1.3 · body <12px · justificado sin hyphenation · padding
+asfixiado. No hay familia, referencia ni "situación" que los amerite: son
+defectos y el juez los suspende directo.
 
 ## Cruce con lo ya construido
 
-Las 9 craft rules del system prompt de v0 (c8a1f62) ya bloquean: un solo
-acento, jerarquía por peso, contenido real sin lorem, motion 150-250ms,
-contraste AA, escala de espaciado. Este catálogo añade la lista NEGATIVA
-explícita (S1-S9 + categorías) que faltaba para: el juez, el copy del
-orquestador y las reglas negativas del prompt de v0.
+Las 9 craft rules del system prompt de v0 (c8a1f62) ya bloquean varios por la
+vía positiva (un acento, jerarquía por peso, contenido real, motion 150-250ms,
+AA, escala de espaciado). Este catálogo aporta la **doctrina de mérito** que
+faltaba: el juez evalúa presencia-sin-mérito, el copy del orquestador respeta
+los [sin excepción], y el prompt de v0 recibe los Nivel S como reglas
+negativas explícitas con sus excepciones nombradas.
 
 ## Fuentes
 
