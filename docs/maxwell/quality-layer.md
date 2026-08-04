@@ -1,6 +1,12 @@
 # Maxwell Studio — Quality Layer
 ## Handoff Document para Claude Code · Versión Definitiva
 
+> **⚠️ SUPERSEDIDO (2026-08-04):** la fuente de verdad del pipeline de
+> generación es ahora [`fase-a-spec.md`](./fase-a-spec.md) (Quality Layer v2,
+> cerrada punto por punto con el owner). Este documento queda como registro
+> histórico de la v1; sus modelos (gpt-5.5 / gpt-4.1-mini) y su flujo sin
+> estudio de referencias ya no describen el diseño vigente.
+
 Fecha: 15 mayo 2026
 Repo: `noon-web-main`
 Objetivo: Mejorar la calidad visual de los prototipos que Maxwell genera via v0, añadiendo un sistema de 24 familias visuales con 72 referencias de sitios reales, extracción estructurada del brief del proyecto, y refuerzo visual en correcciones.
