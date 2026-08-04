@@ -292,6 +292,15 @@ como la versión №1.
 
 ## Construcción en 3 entregas (aprobado 2026-08-04)
 
+**Principio de construcción (owner, 2026-08-04): modificar, no sobrescribir.**
+Lo ya construido (clasificador, prototype-brief, style packs, Pexels, craft
+rules) se **evoluciona en su sitio** hasta dejarlo actualizado — nunca un
+sistema nuevo en paralelo compitiendo con el viejo, nunca dos fuentes de
+verdad chocando. En cada paso intermedio el pipeline completo sigue
+funcionando y coherente. El único "camino viejo" que sobrevive es la red de
+emergencia dormida de la Regla 0 — que es el mismo pipeline degradado, no un
+rival.
+
 1. **El cerebro** — estudio + análisis + ficha + caché · la orden (shot list
    + copy + datos) · verificación en lote · ensamblaje del prompt ·
    degradaciones. Se prueba en privado con el antes/después. *Checkpoint: el
