@@ -98,6 +98,58 @@ function buildProposalMessages(startedAt: number, stage: ProposalStage): ChatMes
 
 const FILE_NAMES = ["app/page.tsx", "components/hero-section.tsx", "components/plan-cards.tsx"];
 
+/**
+ * Fase A bench column: the visual-direction confirmation card inside the real
+ * chat. Demo data uses the two REAL captures taken with the same machinery the
+ * pipeline will use (public/dev-refs/, working-tree only). Spanish labels here
+ * because labels travel with the session's language — this mock client is
+ * Spanish-speaking.
+ */
+function buildDirectionMessages(startedAt: number): ChatMessage[] {
+  return [
+    {
+      id: "d1",
+      role: "user",
+      content: "Quiero una página para mi panadería artesanal, con pedidos por WhatsApp.",
+    },
+    {
+      id: "d2",
+      role: "assistant",
+      content:
+        "Perfecto. Estudié tu proyecto y elegí la dirección visual. Apruébala y genero tu prototipo.",
+      createdAt: new Date(startedAt).toISOString(),
+    },
+    {
+      id: "d3",
+      role: "assistant",
+      type: "system_event",
+      content: "Dirección visual de tu prototipo",
+      referenceDirection: {
+        title: "Dirección visual de tu prototipo",
+        references: [
+          {
+            name: "Poilâne · París",
+            why: "Editorial y cálida",
+            imageUrl: "/dev-refs/ref-poilane.png",
+            primary: true,
+          },
+          {
+            name: "Fabrique · Estocolmo",
+            why: "Escandinava, hero de producto",
+            imageUrl: "/dev-refs/ref-fabrique.png",
+          },
+        ],
+        labels: {
+          continue: "Continuar con esta dirección",
+          preferAnother: "Prefiero otra",
+          useMine: "Usar mi referencia",
+          primaryChip: "Primaria",
+        },
+      },
+    },
+  ];
+}
+
 export function ChatBench({ startedAt }: { startedAt: number }) {
   const [stage, setStage] = useState<PrototypeStage>("assembling");
   // Which side of the PM's review the proposal column is showing.
@@ -136,12 +188,47 @@ export function ChatBench({ startedAt }: { startedAt: number }) {
         ))}
       </div>
 
-      {/* Two moments of the SAME conversation, side by side, both in the real
+      {/* Three moments of the SAME product, side by side, all in the real
           <StudioChatPane> at the studio's own column geometry — no standalone
-          mock-up of the card any more. The milestone only makes sense judged
-          against the ordinary bubbles above it, which is the whole problem it was
-          built to fix. */}
+          mock-up of any card. Each card only makes sense judged against the
+          ordinary bubbles above it, which is the whole problem they fix. */}
       <div className="flex flex-wrap gap-5">
+        <div>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
+            chat · dirección visual (Fase A)
+          </p>
+          <div className="h-[760px] w-[520px] max-w-full overflow-hidden rounded-[8px] border border-border">
+            <StudioChatPane
+              messages={buildDirectionMessages(startedAt)}
+              isThinking={false}
+              input={input}
+              onInputChange={setInput}
+              onSend={() => {}}
+              attachedFile={null}
+              onAttachChange={() => {}}
+              onStop={() => {}}
+              replyTarget={null}
+              onReplyToMessage={() => {}}
+              onClearReply={() => {}}
+              onRegenerateLatest={() => {}}
+              stopNotice={null}
+              inputRef={inputRef}
+              canSend
+              phase="clarifying"
+              prototypeTrace={null}
+              pollingStartedAt={null}
+              correctionsUsed={0}
+              maxCorrections={2}
+              prototypeVersionNumber={0}
+              onApprove={() => {}}
+              onRequestCorrection={() => {}}
+              onRequestProposal={() => {}}
+              agentHref="/en/contact"
+              isWorkspaceVisible={false}
+            />
+          </div>
+        </div>
+
         <div>
           <p className="mb-2 font-mono text-[11px] uppercase tracking-wide text-muted-foreground/70">
             chat · building

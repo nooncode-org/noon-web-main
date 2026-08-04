@@ -20,6 +20,7 @@ import {
   type ProposalStage,
   type StudioMilestone,
 } from "@/lib/maxwell/proposal-milestone";
+import type { ReferenceDirectionData } from "@/components/maxwell/reference-direction-card";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
 import { useResizableChatPane } from "@/hooks/use-resizable-chat-pane";
@@ -55,6 +56,14 @@ export type ChatMessage = {
    * it needs no DB migration.
    */
   milestone?: StudioMilestone;
+  /**
+   * Fase A (Quality Layer v2) — the visual-direction confirmation card: the
+   * 2-3 selected references shown as quality captures for a one-tap approve
+   * before generating. Carried as data (like `milestone`) so it can be
+   * rebuilt from session state on reload. Currently rendered from the dev
+   * bench; live wiring lands with the Fase A build.
+   */
+  referenceDirection?: ReferenceDirectionData;
 };
 
 /**

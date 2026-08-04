@@ -65,3 +65,7 @@ next-env.d.ts
 
 # Postgres de desarrollo embebido (scripts/dev-db-server.mjs)
 .pglite*/
+
+# Capturas de referencia de demo para el banco dev (/maxwell/tracepreview) —
+# se toman en local con la maquinaria del pipeline; nunca se versionan
+/public/dev-refs/
