@@ -28,9 +28,37 @@
  * calls); this module is straight string assembly so tests are trivial.
  */
 
+import type { CreativeOrder } from "./creative-order";
+import { dossierHasImagery, type DesignDossier } from "./design-dossier";
+import type { VerifiedSlot } from "./image-verify";
+import type { ReferenceDossier } from "./reference-study/dossier";
 import type { StudioBrief, StudioSession } from "./repositories";
 import type { StylePack } from "./style-packs";
-import { dossierHasImagery, type DesignDossier } from "./design-dossier";
+
+/**
+ * Fase A (Entrega 1) — everything the brain adds to the brief, in one bag.
+ * All nullable: with `null`/absent pieces the brief degrades to exactly the
+ * pre-brain output (modificar-no-sobrescribir: the emergency net is this
+ * same assembly, minus blocks).
+ */
+export type BriefExtras = {
+  /** The primary reference's ficha — its values COMMAND over the family token. */
+  referenceDossier?: ReferenceDossier | null;
+  /** The creative order — fixed copy, data and the shot list's intent. */
+  order?: CreativeOrder | null;
+  /** Customs-approved imagery per slot (replaces the fixed-bucket dossier). */
+  verifiedSlots?: VerifiedSlot[] | null;
+};
+
+/**
+ * Size budget (Fase A §7): the brief must stay compact. If a draft
+ * overruns, trimming climbs a ladder that only ever cuts the expendable
+ * (old conversation turns, ficha fine detail, the extractor brief) and
+ * NEVER the passport (copy, imagery, palette, craft/negative rules).
+ * ~15k chars ≈ 3.7k tokens — with the telegraphic style this almost
+ * never fires.
+ */
+const MAX_BRIEF_CHARS = 15_000;
 
 /**
  * Shape of a chat message accepted by the builder. Loosely typed on purpose:
@@ -60,6 +88,7 @@ function distillContext(
   messages: HistoryMessage[],
   lastUserMsg: string,
   lastAssistantMsg: string,
+  turns = 8,
 ): string {
   return messages
     .filter((m) => m.type !== "thinking" && m.type !== "system_event" && m.type !== "error")
@@ -67,7 +96,7 @@ function distillContext(
       { role: "user", content: lastUserMsg },
       { role: "assistant", content: lastAssistantMsg },
     )
-    .slice(-8)
+    .slice(-turns)
     .map((m) => {
       const speaker = m.role === "user" ? "Client" : "Maxwell";
       const compact = m.content.replace(/\s+/g, " ").trim().slice(0, 300);
@@ -119,6 +148,135 @@ function buildImageryBlock(dossier: DesignDossier): string {
 }
 
 /**
+ * Fase A — the ficha's values, telegraphic. The primary reference COMMANDS;
+ * the family token (already printed above it) stays as fallback context.
+ * `detail` trims the judged fine-grain when the size budget bites — the
+ * measured values are the passport and always ship.
+ */
+function buildFichaBlock(ficha: ReferenceDossier, detail: "full" | "essential"): string {
+  const m = ficha.measured;
+  const lines: string[] = [
+    "PRIMARY REFERENCE — measured values. These COMMAND; family values above are fallback:",
+    `Fonts: ${m.fonts.map((f) => `${f.family} [${f.weights.join(",")}]`).join(" · ")}`,
+  ];
+
+  if (m.textStyles.length > 0) {
+    lines.push(
+      `Type scale: ${m.textStyles
+        .map((t) => `${t.role} ${t.fontSizePx}px/${t.fontWeight} lh${t.lineHeight}${t.letterSpacingPx ? ` ls${t.letterSpacingPx}px` : ""}`)
+        .join(" · ")}`,
+    );
+  }
+  if (m.palette.length > 0) {
+    lines.push(
+      `Palette (dominance order): ${m.palette
+        .slice(0, 8)
+        .map((c) => `${c.role}:${c.hex}`)
+        .join(" · ")}`,
+    );
+  }
+  if (m.containerWidthPx) lines.push(`Container: ${m.containerWidthPx}px`);
+  if (m.borderRadiiPx.length > 0) lines.push(`Radii: ${m.borderRadiiPx.join("px, ")}px`);
+  if (m.buttons.length > 0) {
+    const b = m.buttons[0];
+    lines.push(
+      `Primary button: bg ${b.backgroundHex ?? "n/a"} · text ${b.textHex ?? "n/a"} · radius ${b.borderRadiusPx}px · ${b.fontSizePx}px`,
+    );
+  }
+  if (ficha.judged.heroRecipe) lines.push(`Hero recipe: ${ficha.judged.heroRecipe}`);
+  if (ficha.judged.hierarchy) lines.push(`Hierarchy: ${ficha.judged.hierarchy}`);
+
+  if (detail === "full") {
+    if (ficha.judged.sections.length > 0) {
+      lines.push(
+        "Section patterns:",
+        ...ficha.judged.sections
+          .slice(0, 8)
+          .map((s) => `  - ${s.label}: ${s.pattern} (job: ${s.purpose})`),
+      );
+    }
+    if (ficha.judged.responsive) lines.push(`Responsive: ${ficha.judged.responsive}`);
+    if (ficha.judged.whyItWorks.length > 0) {
+      lines.push(`Why it works: ${ficha.judged.whyItWorks.slice(0, 4).join(" | ")}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Fase A — customs-approved imagery, slot by slot, geometry attached.
+ * Empty slots are stated explicitly: v0 must reach for typography there,
+ * never for a placeholder (an empty slot beats a wrong photo).
+ */
+function buildSlotImageryBlock(slots: VerifiedSlot[]): string {
+  const lines: string[] = [];
+  for (const { slot, image } of slots) {
+    const geo = `${slot.geometry.ratio}, focal ${slot.geometry.focalPoint}`;
+    if (image) {
+      const url = slot.role === "hero" ? image.urlLarge : image.url;
+      lines.push(`SLOT ${slot.slotId} [${slot.role}, ${geo}]: ${url}  — alt: ${image.alt}`);
+    } else {
+      lines.push(
+        `SLOT ${slot.slotId} [${slot.role}]: NO APPROVED PHOTO — design this moment with typography and whitespace. Never a placeholder, never an invented URL.`,
+      );
+    }
+  }
+  lines.push(
+    "",
+    "Imagery rules: use ONLY these URLs, each in ITS slot, cropped to the slot's ratio with object-cover anchored on the focal point.",
+    "Every <img> gets its real alt text. Sibling images (cards, portraits) render at IDENTICAL sizes — same width, same ratio.",
+    "Logos, if any, align by visual height, not by bounding box.",
+  );
+  return lines.join("\n");
+}
+
+/** Fase A — fixed copy & data: content, not suggestion. */
+function buildCopyBlock(order: CreativeOrder): string {
+  const c = order.copy;
+  const lines: string[] = [
+    `All copy below is FINAL CONTENT in ${order.language} — use verbatim, do not rewrite, do not translate:`,
+    `Headline: ${c.headline}`,
+  ];
+  if (c.subheadline) lines.push(`Subheadline: ${c.subheadline}`);
+  if (c.primaryCta) {
+    lines.push(`Primary CTA: ${c.primaryCta}${c.secondaryCta ? `   Secondary CTA: ${c.secondaryCta}` : ""}`);
+  }
+  if (c.sections.length > 0) {
+    lines.push("Sections (each exists because its job is nameable):");
+    c.sections.forEach((s, i) => {
+      lines.push(`  ${i + 1}. ${s.name} — job: ${s.purpose}`);
+      if (s.body) lines.push(`     ${s.body}`);
+    });
+  }
+  if (order.data.length > 0) {
+    lines.push(`Data (seeded, realistic): ${order.data.map((d) => `${d.label} — ${d.value}`).join(" · ")}`);
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Fase A — the anti-slop Nivel S tells as explicit negative rules with the
+ * merit doctrine (docs/maxwell/anti-slop-catalog.md). Ships whenever the
+ * brain path is active; the craft rules in the system prompt state what TO
+ * do, this block closes the door on the reflexes.
+ */
+const NEGATIVE_RULES_BLOCK = [
+  "BANNED unless the reference explicitly owns the pattern AND its job here is nameable:",
+  "- Badge/pill above the H1 ('AI-powered' style).",
+  "- Uppercase kicker/eyebrow micro-labels over section titles.",
+  "- Colored left-border cards as decoration.",
+  "- Purple/violet + cyan on dark as a default palette.",
+  "- Decorative glows, halos or radial spotlights.",
+  "- Emoji as iconography.",
+  "- Buzzwords and invented metrics ('10x', '99%', 'streamline', 'empower') — banned with NO exception.",
+  "- The universal template: centered hero + grid of identical icon-top cards.",
+  "- Gradient text; 'hand-drawn' SVG illustration.",
+  "- Fonts outside the two families named above (no reflexive Inter/Space Grotesk/Instrument Serif).",
+  "Merit doctrine: a banned pattern may appear ONLY if the visual direction above demands it and you can name its job.",
+].join("\n");
+
+/**
  * Assemble the full multi-section prompt sent to v0 for an initial prototype.
  *
  * Section structure (each section has a comment header v0 will see):
@@ -132,6 +290,11 @@ function buildImageryBlock(dossier: DesignDossier): string {
  * `brief` and `dossier` are nullable — graceful degradation when the
  * fire-and-forget extractor hasn't finished or image search is unconfigured.
  * Sections 1/2/3/5 always ship.
+ *
+ * Fase A: `extras` carries the brain's pieces (ficha, order, verified
+ * slots). With extras null/empty the output is byte-identical to the
+ * pre-brain brief. Oversized drafts climb the trim ladder (see
+ * MAX_BRIEF_CHARS) — the passport never gets cut.
  */
 export function buildPrototypeBrief(
   session: StudioSession,
@@ -141,12 +304,53 @@ export function buildPrototypeBrief(
   lastAssistantMsg: string,
   stylePack: StylePack,
   dossier: DesignDossier | null = null,
+  extras: BriefExtras | null = null,
 ): string {
-  const context = distillContext(messages, lastUserMsg, lastAssistantMsg);
+  for (const trimLevel of [0, 1, 2] as const) {
+    const out = assembleBrief(
+      session,
+      brief,
+      messages,
+      lastUserMsg,
+      lastAssistantMsg,
+      stylePack,
+      dossier,
+      extras,
+      trimLevel,
+    );
+    if (out.length <= MAX_BRIEF_CHARS || trimLevel === 2) return out;
+  }
+  // Unreachable (level 2 always returns above) — satisfies control flow.
+  throw new Error("unreachable");
+}
+
+function assembleBrief(
+  session: StudioSession,
+  brief: StudioBrief | null,
+  messages: HistoryMessage[],
+  lastUserMsg: string,
+  lastAssistantMsg: string,
+  stylePack: StylePack,
+  dossier: DesignDossier | null,
+  extras: BriefExtras | null,
+  trimLevel: 0 | 1 | 2,
+): string {
+  const context = distillContext(
+    messages,
+    lastUserMsg,
+    lastAssistantMsg,
+    trimLevel === 0 ? 8 : 4,
+  );
   const references = buildReferencesBlock(stylePack);
   const isLanding = session.projectType === "landing";
   const { palette, fonts } = stylePack.token;
   const monochrome = palette.accent.toLowerCase() === palette.ink.toLowerCase();
+
+  const ficha = extras?.referenceDossier ?? null;
+  const order = extras?.order ?? null;
+  const verifiedSlots =
+    extras?.verifiedSlots && extras.verifiedSlots.length > 0 ? extras.verifiedSlots : null;
+  const brainActive = Boolean(ficha || order || verifiedSlots);
 
   const parts: string[] = [];
 
@@ -200,8 +404,21 @@ export function buildPrototypeBrief(
     "",
   );
 
-  // IMAGERY — only when the dossier gathered real assets.
-  if (dossierHasImagery(dossier)) {
+  // Fase A — the primary reference's ficha: measured values that COMMAND
+  // over the family token printed above (spec §5, conflict rule).
+  if (ficha) {
+    parts.push(buildFichaBlock(ficha, trimLevel === 2 ? "essential" : "full"), "");
+  }
+
+  // IMAGERY — customs-approved slots when the brain ran; otherwise the
+  // legacy fixed-bucket dossier (the emergency net, today's behaviour).
+  if (verifiedSlots) {
+    parts.push(
+      "// ─── IMAGERY — CUSTOMS-APPROVED, ONE PHOTO PER SLOT ──────────────────────────",
+      buildSlotImageryBlock(verifiedSlots),
+      "",
+    );
+  } else if (dossierHasImagery(dossier)) {
     parts.push(
       "// ─── IMAGERY — REAL ASSETS, GATHERED FOR THIS PROJECT ────────────────────────",
       buildImageryBlock(dossier),
@@ -209,8 +426,28 @@ export function buildPrototypeBrief(
     );
   }
 
-  // 4. PRODUCT CONTEXT (only when brief is available)
-  if (brief) {
+  // Fase A — fixed copy & data from the creative order: content, not
+  // suggestion (spec §7 — "el copy y datos fijos").
+  if (order) {
+    parts.push(
+      "// ─── COPY & DATA — FIXED CONTENT ─────────────────────────────────────────────",
+      buildCopyBlock(order),
+      "",
+    );
+  }
+
+  // Fase A — anti-slop Nivel S as explicit negatives (merit doctrine).
+  if (brainActive) {
+    parts.push(
+      "// ─── NEGATIVE RULES — ANTI-SLOP ──────────────────────────────────────────────",
+      NEGATIVE_RULES_BLOCK,
+      "",
+    );
+  }
+
+  // 4. PRODUCT CONTEXT (only when brief is available; first casualty of
+  // the deepest trim — its facts already live in sections 2 and the copy)
+  if (brief && trimLevel < 2) {
     parts.push("// ─── 4. PRODUCT CONTEXT ──────────────────────────────────────────────────────");
     if (brief.objective) parts.push(`Objective: ${brief.objective}`);
     if (brief.users) parts.push(`Users: ${brief.users}`);

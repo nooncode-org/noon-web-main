@@ -260,6 +260,188 @@ describe("buildPrototypeBrief", () => {
   });
 });
 
+describe("buildPrototypeBrief — Fase A extras (the brain path)", () => {
+  const baseHistory: HistoryMessage[] = [
+    { role: "user", content: "Una página para mi panadería." },
+  ];
+
+  function fakeExtras() {
+    const ficha = {
+      version: 1 as const,
+      url: "https://www.poilane.com",
+      analyzedAt: "2026-08-05T00:00:00Z",
+      measured: {
+        fonts: [{ family: "aktiv-grotesk", weights: [400, 500] }],
+        textStyles: [
+          {
+            role: "h1",
+            fontFamily: "aktiv-grotesk",
+            fontSizePx: 85,
+            fontWeight: 500,
+            lineHeight: 0.95,
+            letterSpacingPx: 0,
+          },
+        ],
+        palette: [{ hex: "#3a312e", role: "text" as const, count: 523 }],
+        containerWidthPx: 1440,
+        sectionGapsPx: [0, 1],
+        borderRadiiPx: [8],
+        buttons: [
+          {
+            backgroundHex: "#3a312e",
+            textHex: "#ffffff",
+            borderRadiusPx: 50,
+            paddingPx: "12 24",
+            fontSizePx: 14,
+          },
+        ],
+      },
+      judged: {
+        sections: [
+          { label: "section.hero", purpose: "sell bread at a glance", pattern: "full-bleed photo, left text" },
+        ],
+        hierarchy: "h1 85px/500 vs body 24px/400",
+        composition: "single column 1440px",
+        uxPatterns: [],
+        ctas: [],
+        imagery: [{ subject: "bread close-ups", treatment: "warm, 4:3" }],
+        motion: [],
+        responsive: "h1 drops to 40px",
+        whyItWorks: ["one brown #3a312e carries the brand"],
+        heroRecipe: "photo full-bleed, headline 85px overlaid",
+      },
+    };
+    const order = {
+      version: 1 as const,
+      shotList: [],
+      copy: {
+        headline: "Pan de masa madre, cada mañana",
+        subheadline: "Recogida o entrega",
+        primaryCta: "Pedir por WhatsApp",
+        secondaryCta: "",
+        sections: [{ name: "Nuestro pan", purpose: "show the range", body: "Cinco panes diarios." }],
+      },
+      data: [{ label: "Hogaza", value: "$4.50" }],
+      language: "es",
+    };
+    const verifiedSlots = [
+      {
+        slot: {
+          slotId: "hero",
+          role: "hero" as const,
+          subject: "sourdough loaves",
+          composition: "front",
+          context: "bakery",
+          light: "soft",
+          perspective: "eye",
+          feeling: "warmth",
+          searchQuery: "sourdough bakery",
+          geometry: { ratio: "16:9", minWidthPx: 1600, focalPoint: "center" },
+        },
+        image: {
+          url: "https://cdn.example/hero.jpg",
+          urlLarge: "https://cdn.example/hero@2x.jpg",
+          alt: "sourdough loaves on wood",
+          avgColor: "#8a6f4d",
+        },
+        verdict: "verified" as const,
+      },
+      {
+        slot: {
+          slotId: "portrait-1",
+          role: "portrait" as const,
+          subject: "baker portrait",
+          composition: "bust",
+          context: "bakery",
+          light: "window",
+          perspective: "eye",
+          feeling: "trust",
+          searchQuery: "baker portrait",
+          geometry: { ratio: "1:1", minWidthPx: 400, focalPoint: "face centered" },
+        },
+        image: null,
+        verdict: "empty" as const,
+      },
+    ];
+    return { referenceDossier: ficha, order, verifiedSlots };
+  }
+
+  it("ships ficha, slot imagery, fixed copy and negative rules — sections still 1→5", () => {
+    const out = buildPrototypeBrief(
+      fakeSession({ language: "es" }),
+      fakeBrief(),
+      baseHistory,
+      "Genera el prototipo",
+      "Voy.",
+      fakePack(),
+      null,
+      fakeExtras(),
+    );
+
+    // The brain blocks, present and anchored.
+    expect(out).toContain("PRIMARY REFERENCE — measured values");
+    expect(out).toContain("h1 85px/500");
+    expect(out).toContain("CUSTOMS-APPROVED, ONE PHOTO PER SLOT");
+    expect(out).toContain("SLOT hero [hero, 16:9, focal center]: https://cdn.example/hero@2x.jpg");
+    expect(out).toContain("NO APPROVED PHOTO");
+    expect(out).toContain("COPY & DATA — FIXED CONTENT");
+    expect(out).toContain("Headline: Pan de masa madre, cada mañana");
+    expect(out).toContain("NEGATIVE RULES — ANTI-SLOP");
+    expect(out).toContain("Merit doctrine");
+
+    // The pinned 1-5 contract survives the new blocks.
+    const order = [
+      out.indexOf("1. MASTER INSTRUCTION"),
+      out.indexOf("2. WHAT TO BUILD"),
+      out.indexOf("3. VISUAL DIRECTION"),
+      out.indexOf("4. PRODUCT CONTEXT"),
+      out.indexOf("5. CONVERSATION CONTEXT"),
+    ];
+    expect(order.every((i) => i >= 0)).toBe(true);
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i]).toBeGreaterThan(order[i - 1]);
+    }
+  });
+
+  it("without extras the brief carries NONE of the brain blocks (emergency net intact)", () => {
+    const out = buildPrototypeBrief(
+      fakeSession(),
+      null,
+      baseHistory,
+      "Lead",
+      "Lead reply",
+      fakePack(),
+    );
+    expect(out).not.toContain("PRIMARY REFERENCE");
+    expect(out).not.toContain("CUSTOMS-APPROVED");
+    expect(out).not.toContain("FIXED CONTENT");
+    expect(out).not.toContain("NEGATIVE RULES");
+  });
+
+  it("trim ladder cuts the expendable, never the passport", () => {
+    // A pathological extractor brief pushes the draft over budget; the
+    // ladder must drop PRODUCT CONTEXT while copy, slots and palette stay.
+    const out = buildPrototypeBrief(
+      fakeSession({ language: "es" }),
+      fakeBrief({ styleDirection: "y".repeat(20_000) }),
+      baseHistory,
+      "Genera",
+      "Voy.",
+      fakePack(),
+      null,
+      fakeExtras(),
+    );
+
+    expect(out.length).toBeLessThanOrEqual(15_000);
+    expect(out).not.toContain("4. PRODUCT CONTEXT");
+    // The passport survives the deepest trim.
+    expect(out).toContain("Headline: Pan de masa madre, cada mañana");
+    expect(out).toContain("SLOT hero");
+    expect(out).toContain("Palette (dominance order): text:#3a312e");
+    expect(out).toContain("NEGATIVE RULES — ANTI-SLOP");
+  });
+});
+
 describe("buildCorrectionBrief", () => {
   it("passes through the raw prompt unchanged when no style pack", () => {
     const raw = "Make the hero darker and remove the second CTA.";
