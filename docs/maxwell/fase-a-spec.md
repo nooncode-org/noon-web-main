@@ -118,8 +118,18 @@
   **[Continuar con esta dirección]** (primario, ancho completo) +
   **[Prefiero otra] · [Usar mi referencia]** (mitades exactas).
 - **Un tap decide.** Solo se enseña lo ejecutable — nunca prometemos lo que no
-  cumpliremos. **Sin respuesta en N minutos → continúa con la primaria** (al
-  volver encuentra su prototipo, no un flujo congelado).
+  cumpliremos.
+- **Sin confirmación NO se genera** (owner, 2026-08-05 — revierte el
+  auto-continuar por timeout): si el cliente no responde, puede que
+  simplemente se haya ido — y el gasto grande no se hace sin señal de
+  interés. El flujo espera en la tarjeta; no es un flujo congelado, es una
+  decisión pendiente DEL cliente. Al volver, la tarjeta sigue ahí y los
+  análisis están cacheados: su tap retoma al instante. Sin confirmación, la
+  única exposición son los céntimos del estudio (mayormente cacheado) —
+  jamás la generación.
+- Consecuencia: toda dirección generada fue confirmada explícitamente por el
+  cliente, así que un cambio de estilo posterior es una corrección normal
+  (no existe el caso "dirección elegida por silencio").
 - **La dirección es pegajosa**: se confirma UNA vez por sesión; correcciones y
   regeneraciones no re-preguntan (el barbero pregunta al sentarte, no en cada
   tijeretazo). Solo se re-pregunta si el cliente pide cambiar de estilo.
