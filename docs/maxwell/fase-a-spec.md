@@ -282,13 +282,17 @@ como la versión №1.
 
 ## Aceptación (antes de desplegar nada)
 
+- **Existe SOLO al inicio, antes de operar** (aclarado por el owner
+  2026-08-05): es el examen de graduación del cerebro nuevo — se hace una
+  vez, para confirmar y verificar internamente, y **después deja de
+  existir**. En operación real jamás se generan dos versiones.
 - **Prueba antes/después, manual y única**: 2-3 proyectos de prueba de
   familias distintas, cada uno generado dos veces (sistema viejo vs. cerebro
   nuevo), capturas lado a lado — **el owner juzga con los ojos**. No se
   despliega lo que no gane. Nada se genera solo, nada queda corriendo; tras
   la prueba sigue siendo **un prototipo por cliente, cuando lo pide**.
-- El arnés de comparación **se retira después**: un camino principal + el
-  camino simple como red de emergencia dormida (Regla 0).
+- El arnés de comparación **se desmonta al aprobar**: un camino principal +
+  el camino simple como red de emergencia dormida (Regla 0).
 
 ## Construcción en 3 entregas (aprobado 2026-08-04)
 
