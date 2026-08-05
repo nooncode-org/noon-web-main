@@ -106,6 +106,13 @@ export type LLMCategory =
   | "upgrade_generator"
   | "v0_prototype_create"
   | "v0_prototype_update"
+  // Fase A (Quality Layer v2) — the generation brain's three LLM moments:
+  // judging a reference into its dossier (orchestrator), writing the
+  // creative order (orchestrator), and batch-verifying photo candidates
+  // (executor). See docs/maxwell/fase-a-spec.md § Modelos por asiento.
+  | "reference_analysis"
+  | "creative_order"
+  | "image_verify"
   | "unlabeled";
 
 export type RecordLLMCallInput = {

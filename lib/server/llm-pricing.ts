@@ -13,8 +13,9 @@
  * cost-bearing decision (we don't poll provider APIs for live pricing).
  *
  * Multi-provider coverage:
- *   - OpenAI: gpt-5.5, gpt-4.1, gpt-4.1-mini (the 3 models actually
- *     used by website per the codebase grep)
+ *   - OpenAI: the GPT-5.6 family (sol/terra/luna — the Fase A seats),
+ *     plus gpt-5.5, gpt-4.1, gpt-4.1-mini (legacy defaults / rollback
+ *     targets still reachable via env overrides)
  *   - Anthropic: claude-opus-4, claude-sonnet-4, claude-haiku-4 (not
  *     wired today, but the spec confirmed they're on the roadmap)
  *   - v0: per-generation pricing (not token-based; the v0 SDK doesn't
@@ -54,6 +55,23 @@ export type LLMProvider = "openai" | "anthropic" | "v0";
  */
 export const LLM_PRICING: Readonly<Record<string, LLMPricing>> = {
   // ── OpenAI ────────────────────────────────────────────────────────────────
+  // GPT-5.6 family (released 2026-07-09) — the Fase A seats
+  // (lib/maxwell/model-seats.ts): Sol orchestrates, Luna executes.
+  // Prices verified against openai.com/pricing on 2026-08-04.
+  "openai:gpt-5.6-sol": {
+    inputUsdPerMillion: 5.0,
+    outputUsdPerMillion: 30.0,
+  },
+  "openai:gpt-5.6-terra": {
+    // Mid tier — not seated today; priced so an env-var seat swap
+    // (MAXWELL_MODEL_*) never records $0-cost calls.
+    inputUsdPerMillion: 2.0,
+    outputUsdPerMillion: 12.0,
+  },
+  "openai:gpt-5.6-luna": {
+    inputUsdPerMillion: 0.2,
+    outputUsdPerMillion: 1.2,
+  },
   "openai:gpt-5.5": {
     inputUsdPerMillion: 5.0,
     outputUsdPerMillion: 30.0,

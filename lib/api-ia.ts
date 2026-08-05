@@ -63,6 +63,14 @@ export type OpenAIParams = {
   prompt?: string;
   /** URL de imagen opcional para visión */
   imageUrl?: string;
+  /**
+   * Fase A — multiple vision inputs in ONE call. The reference analysis
+   * sends sectioned captures of one page; the batch image verifier sends
+   * every candidate photo at once ("una sola llamada, un solo lote").
+   * Appended after `imageUrl` when both are present. Accepts https CDN
+   * URLs and data: URLs (base64 captures).
+   */
+  imageUrls?: string[];
   /** Historial previo de mensajes */
   history?: ChatMessage[];
   /** Prompt de sistema */
@@ -153,6 +161,7 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
   const {
     prompt,
     imageUrl,
+    imageUrls = [],
     history = [],
     systemPrompt,
     model = resolveDefaultOpenAIModel(),
@@ -161,8 +170,8 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
     requestId,
   } = params;
 
-  if (!prompt && !imageUrl) {
-    throw new Error("Se requiere al menos un prompt o imageUrl.");
+  if (!prompt && !imageUrl && imageUrls.length === 0) {
+    throw new Error("Se requiere al menos un prompt, imageUrl o imageUrls.");
   }
 
   // G-D2: hard-stop check BEFORE the LLM call. Throws
@@ -174,13 +183,18 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
 
   let userContent: OpenAI.Chat.Completions.ChatCompletionContentPart[] | string;
 
-  if (imageUrl && prompt) {
+  // Single-image callers keep their exact shape; imageUrls appends after
+  // imageUrl so mixed callers get a stable, documented order.
+  const allImageUrls = [...(imageUrl ? [imageUrl] : []), ...imageUrls];
+
+  if (allImageUrls.length > 0) {
     userContent = [
-      { type: "text", text: prompt },
-      { type: "image_url", image_url: { url: imageUrl } },
+      ...(prompt ? [{ type: "text" as const, text: prompt }] : []),
+      ...allImageUrls.map((url) => ({
+        type: "image_url" as const,
+        image_url: { url },
+      })),
     ];
-  } else if (imageUrl) {
-    userContent = [{ type: "image_url", image_url: { url: imageUrl } }];
   } else {
     userContent = prompt!;
   }

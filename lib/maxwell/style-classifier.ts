@@ -10,9 +10,11 @@
  * latency or spend.
  *
  * Strategy (in order, each tier falls back to the next on failure):
- *   1. LLM call with `gpt-4.1-mini` — cheap + low-latency model for a
- *      1-of-24 classification + keyword extraction. JSON contract with a
- *      lenient parser (bare id replies from older prompts still work).
+ *   1. LLM call with the EXECUTOR seat (default gpt-5.6-luna; env
+ *      MAXWELL_MODEL_EXECUTOR — see lib/maxwell/model-seats.ts). A 1-of-24
+ *      classification + keyword extraction is a complete order, exactly
+ *      what the cheap seat exists for. JSON contract with a lenient
+ *      parser (bare id replies from older prompts still work).
  *   2. Deterministic fallback by `session.projectType` — a hand-mapped
  *      best-guess so the system still returns something useful when the
  *      LLM is unavailable, mis-configured (no OPENAI_API_KEY), or returns
@@ -28,6 +30,7 @@
 
 import { chatWithOpenAI } from "@/lib/api-ia";
 import { log } from "@/lib/server/logger";
+import { resolveExecutorModel } from "./model-seats";
 import type { StudioSession } from "./repositories";
 import {
   STYLE_PACKS,
@@ -169,13 +172,13 @@ export async function classifyStylePack(
     }
 
     const { reply } = await chatWithOpenAI({
-      model: "gpt-4.1-mini",
+      model: resolveExecutorModel(),
       systemPrompt:
         "You are a precise classifier. Reply with exactly the requested minified JSON. No prose, no markdown.",
       prompt: buildClassifierPrompt(session, contextHint),
-      // G-D2: tag for monthly LLM-budget attribution. gpt-4.1-mini is
-      // ~25x cheaper than gpt-5.5, so this category should stay tiny
-      // even with high prototype throughput.
+      // G-D2: tag for monthly LLM-budget attribution. The executor seat
+      // (gpt-5.6-luna, $0.20/$1.20) is ~25x cheaper than the orchestrator,
+      // so this category stays tiny even with high prototype throughput.
       category: "style_classifier",
       requestId: session.id,
     });
