@@ -24,6 +24,11 @@ import type {
 export type StudioStatus =
   | "intake"
   | "clarifying"
+  // Fase A · Entrega 2 — the confirmation card's pause: the study ran, the
+  // 2-3 references are on screen, and NOTHING generates until the client
+  // taps (owner rule 2026-08-05: sin confirmación no se genera). Only
+  // entered with the brain flag on; legacy flows never see it.
+  | "awaiting_direction"
   | "generating_prototype"
   | "prototype_ready"
   | "revision_requested"

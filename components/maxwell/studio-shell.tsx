@@ -91,6 +91,9 @@ export type ReplyTarget = {
 export type StudioPhase =
   | "intake"
   | "clarifying"
+  // Fase A · E2 — the confirmation card's pause (brain flag on): the study
+  // ran and nothing generates until the client taps a direction.
+  | "awaiting_direction"
   | "generating_prototype"
   | "prototype_ready"
   | "revision_requested"

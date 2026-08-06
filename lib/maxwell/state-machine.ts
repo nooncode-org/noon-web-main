@@ -15,7 +15,13 @@ import type { StudioStatus } from "./repositories";
  */
 const VALID_TRANSITIONS: Record<StudioStatus, StudioStatus[]> = {
   intake: ["clarifying"],
-  clarifying: ["generating_prototype"],
+  // awaiting_direction = Fase A card pause (brain flag on): study done, the
+  // client confirms the visual direction before anything generates.
+  clarifying: ["generating_prototype", "awaiting_direction"],
+  // → generating on the client's tap; → clarifying when the client steps
+  // back into conversation (e.g. "usa mi referencia") or the card can't be
+  // served (Regla 0 degrades to the direct path).
+  awaiting_direction: ["generating_prototype", "clarifying"],
   generating_prototype: ["prototype_ready", "clarifying"],       // clarifying = v0 failure fallback
   // Sharing became an ATTRIBUTE (the share columns) on 2026-07-14 — nothing
   // transitions INTO `prototype_shared` anymore. The status itself stays in
@@ -61,6 +67,9 @@ export function canReceiveMessage(status: StudioStatus): boolean {
   return (
     status === "intake" ||
     status === "clarifying" ||
+    // The card is a decision, not a lock — the client can keep talking
+    // ("usa mi referencia", "prefiero otra") while the direction waits.
+    status === "awaiting_direction" ||
     status === "prototype_ready" ||
     status === "prototype_shared" ||
     status === "approved_for_proposal" ||

@@ -3,6 +3,7 @@ import type { StudioStatus } from "./repositories";
 export const STUDIO_STATUS_META: Record<StudioStatus, { label: string }> = {
   intake: { label: "Starting" },
   clarifying: { label: "Clarifying" },
+  awaiting_direction: { label: "Choosing direction" },
   generating_prototype: { label: "Building prototype" },
   prototype_ready: { label: "Prototype ready" },
   revision_requested: { label: "Applying adjustment" },

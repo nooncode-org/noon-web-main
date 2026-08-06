@@ -28,6 +28,7 @@ export type { StudioDraftSession } from "./studio-sidebar";
 const phaseLabels: Record<StudioPhase, string> = {
   intake: `${STUDIO_STATUS_META.intake.label}...`,
   clarifying: STUDIO_STATUS_META.clarifying.label,
+  awaiting_direction: STUDIO_STATUS_META.awaiting_direction.label,
   generating_prototype: `${STUDIO_STATUS_META.generating_prototype.label}...`,
   prototype_ready: STUDIO_STATUS_META.prototype_ready.label,
   revision_requested: `${STUDIO_STATUS_META.revision_requested.label}...`,
@@ -47,7 +48,9 @@ const phaseIsActive = (phase: StudioPhase) =>
 // Muted = neutral / informational state.
 const phaseDotColor = (phase: StudioPhase, isProcessing: boolean): string => {
   if (isProcessing) return "var(--foreground)";
-  if (phase === "clarifying" || phase === "prototype_ready" || phase === "revision_applied" || phase === "prototype_shared")
+  // awaiting_direction is green: the study is done and it's the CLIENT's
+  // turn (a tap on the card) — same "your move" semantics as clarifying.
+  if (phase === "clarifying" || phase === "awaiting_direction" || phase === "prototype_ready" || phase === "revision_applied" || phase === "prototype_shared")
     return "#22c55e"; // green-500
   return "var(--muted-foreground)";
 };
