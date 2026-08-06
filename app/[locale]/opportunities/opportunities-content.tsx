@@ -64,7 +64,9 @@ export function OpportunitiesContent() {
           <div className="opp-hero-grid">
             <div className="opp-hero-text">
               <h1 id="opp-title" className="opp-display">
-                <span className="dim">Four ways to be part of the</span>{" "}
+                {/* Emphasis by meaning (#39): the invitation ("be part of")
+                    stays lit; only the count dims. */}
+                <span className="dim">Four ways to</span> be part of the{" "}
                 <span className="opp-accent">Noon</span> ecosystem.
               </h1>
               <p className="opp-lead opp-hero-lead">

@@ -75,7 +75,6 @@
     "hero": {
       "eyebrow": "Entreprise",
       "headline": "Une entreprise de développement technologique",
-      "headlineMuted": "construite autour d'une livraison réelle.",
       "description": "Vous avez un problème métier qui nécessite du logiciel. Nous définissons exactement quoi construire, le construisons et le livrons en code que vous possédez.",
       "startWithMaxwell": "Commencer avec Maxwell",
       "contactNoon": "Contacter Noon"

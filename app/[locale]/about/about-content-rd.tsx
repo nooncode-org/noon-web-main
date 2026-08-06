@@ -253,8 +253,10 @@ export function AboutContentRd() {
         <div className="abt-wrap">
           <div className="abt-hero-inner">
             <h1 className="abt-display">
-              A technology development company{" "}
-              <span style={{ color: "var(--text-secondary)" }}>built around real delivery.</span>
+              {/* Emphasis by meaning, not position (#39): the category is the
+                  scaffold, the delivery thesis is the promise — it stays lit. */}
+              <span style={{ color: "var(--text-secondary)" }}>A technology development company</span>{" "}
+              built around real delivery.
             </h1>
             <p className="abt-lead abt-hero-lead">
               You have a business problem that needs software. We define exactly what to build, build it, and deliver it in code you own.
@@ -367,8 +369,8 @@ export function AboutContentRd() {
             <div className="abt-panel-anchor">
               <p className="abt-kicker"><span className="abt-kicker-idx">03</span>Process</p>
               <h2 className="abt-h2">
-                From idea to launch.{" "}
-                <span style={{ color: "var(--text-secondary)" }}>Reviewed the whole way.</span>
+                <span style={{ color: "var(--text-secondary)" }}>From idea to launch.</span>{" "}
+                Reviewed the whole way.
               </h2>
               <div className="abt-anchor-meta">
                 <p className="abt-anchor-meta-label">At a glance</p>
@@ -403,8 +405,8 @@ export function AboutContentRd() {
               <div>
                 <p className="abt-kicker" style={{ marginBottom: 16 }}><span className="abt-kicker-idx">04</span>Human review gate</p>
                 <h2 className="abt-h2">
-                  AI drafts.{" "}
-                  <span style={{ color: "var(--text-secondary)" }}>A person decides.</span>
+                  <span style={{ color: "var(--text-secondary)" }}>AI drafts.</span>{" "}
+                  A person decides.
                 </h2>
                 <p className="abt-lead" style={{ marginTop: 16 }}>
                   Every output — scope, code, architecture decision — is read, corrected, and approved by a senior engineer before it reaches you. That&apos;s the gate that makes the difference.

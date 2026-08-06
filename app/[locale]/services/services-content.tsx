@@ -121,7 +121,9 @@ export function ServicesContent() {
         <div className="svc-wrap">
           <div className="svc-hero-inner">
             <h1 className="svc-display">
-              <span className="dim">Four ways </span><span className="accent">Noon </span>drives better outcomes{" "}
+              {/* Emphasis by meaning (#39): the concrete promise ("four ways")
+                  stays lit with the claim; only the trailing qualifier dims. */}
+              Four ways <span className="accent">Noon </span>drives better outcomes{" "}
               <span className="dim">with solutions built to scale.</span>
             </h1>
           </div>
@@ -200,8 +202,8 @@ export function ServicesContent() {
       <section className="svc-section" style={{ paddingTop: 0 }}>
         <div className="svc-wrap">
           <p className="svc-statement">
-            We don&apos;t build to a spec sheet —{" "}
-            <span className="dim">we build around how your business actually runs.</span>
+            <span className="dim">We don&apos;t build to a spec sheet —</span>{" "}
+            we build around how your business actually runs.
           </p>
           <div className="svc-how-grid">
             {HOW_STEPS.map((step) => (
