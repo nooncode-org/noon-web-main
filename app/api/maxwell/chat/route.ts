@@ -32,6 +32,8 @@ import {
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
 import { readClientReference } from "@/lib/maxwell/client-reference";
 import { intakeClientImage } from "@/lib/maxwell/image-intake";
+import { guardClientReferenceUrl } from "@/lib/maxwell/client-reference-guard";
+import { studyReference } from "@/lib/maxwell/reference-study/study";
 import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
@@ -388,6 +390,49 @@ export async function POST(request: Request) {
     }
 
     let referenceNote = "";
+
+    // ── Fase A · E3.5 — the client pasted a LINK as their reference ───────
+    // Their own URL never reaches a browser unguarded (SSRF guard), and it
+    // is studied at most once per session: setting the direction stops this
+    // path from re-triggering on any later message that happens to have a
+    // link in it.
+    const pastedUrl =
+      isBrainEnabled() &&
+      safeImages.length === 0 &&
+      !session.direction &&
+      (session.status === "clarifying" || session.status === "awaiting_direction")
+        ? /https?:\/\/[^\s<>"')]+/i.exec(userText)?.[0]
+        : undefined;
+
+    if (pastedUrl) {
+      const guarded = await guardClientReferenceUrl(pastedUrl);
+      const study = guarded.ok ? await studyReference(guarded.url) : null;
+
+      if (guarded.ok && study?.dossier) {
+        await setStudioDirection(session.id, {
+          primaryUrl: guarded.url,
+          source: "client_url",
+          confirmedAt: null,
+        });
+        referenceNote =
+          `\n\n[INTERNAL — the client shared a page as their reference and we studied it.` +
+          ` Hero recipe: ${study.dossier.judged.heroRecipe || "n/a"}.` +
+          ` Why it works: ${study.dossier.judged.whyItWorks.slice(0, 2).join(" | ") || "n/a"}.` +
+          ` Say in ONE sentence, in their language, what you understood they like about it, and ask if that is right.` +
+          ` Also ask — once, briefly — whether it is their CURRENT site or a page they admire, since that changes whether we reuse their brand.]`;
+      } else {
+        // Their choice is never ignored in silence (Regla 0, refined).
+        referenceNote =
+          `\n\n[INTERNAL — the client shared a link we could not open.` +
+          ` Tell them plainly, without blaming them, and offer: another link, a screenshot of the page,` +
+          ` or letting Noon pick references. Do not mention any technical reason.]`;
+        log.warn("maxwell.chat", "client reference URL unusable", {
+          session_id: session.id,
+          guarded_ok: guarded.ok,
+        });
+      }
+    }
+
     // Every image was turned away at the door — say so warmly and ask for
     // another. The client never learns it was a security check.
     if (isBrainEnabled() && refusedImages > 0 && safeImages.length === 0) {

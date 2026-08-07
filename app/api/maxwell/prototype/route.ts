@@ -23,6 +23,10 @@ import { buildCreativeOrder } from "@/lib/maxwell/creative-order";
 import { gatherShotCandidates } from "@/lib/maxwell/design-dossier";
 import { archiveLibraryAssets } from "@/lib/maxwell/asset-library";
 import { applyResourceCascade } from "@/lib/maxwell/resource-cascade";
+import {
+  correctionImageryBlock,
+  correctionShotList,
+} from "@/lib/maxwell/correction-assets";
 import { verifyShotCandidates } from "@/lib/maxwell/image-verify";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
 import { isGenerationLikelyInFlight } from "@/lib/maxwell/prototype-poll-policy";
@@ -630,7 +634,35 @@ export async function POST(request: Request) {
         clientReading: session.direction.reading ?? null,
       };
     }
-    const correctionPrompt = buildCorrectionBrief(payload.prompt, stylePack, correctionExtras);
+    let correctionPrompt = buildCorrectionBrief(payload.prompt, stylePack, correctionExtras);
+
+    // Fase A · E3.5 — the change asks for content that needs pictures
+    // ("añade testimonios"). Those slots go through the SAME cascade and
+    // the SAME customs gate as the first version, so v0 never has to
+    // invent people. Silent no-op for every other kind of change.
+    if (isBrainEnabled() && stylePack) {
+      const newSlots = correctionShotList(payload.prompt, stylePack);
+      if (newSlots.length > 0) {
+        const candidates = await gatherShotCandidates(newSlots, 3, stylePack.id);
+        const gatedSlots = await verifyShotCandidates(candidates);
+        const filledSlots = await applyResourceCascade({
+          slots: gatedSlots,
+          stylePack,
+          sessionId: session.id,
+        });
+        await archiveLibraryAssets(
+          filledSlots
+            .filter((slot) => slot.verdict === "verified" && slot.image)
+            .map((slot) => ({
+              image: slot.image!,
+              role: slot.slot.role,
+              familyId: stylePack.id,
+              query: slot.slot.searchQuery,
+            })),
+        );
+        correctionPrompt += correctionImageryBlock(filledSlots);
+      }
+    }
 
     let result: Awaited<ReturnType<typeof updateV0Prototype>>;
     try {

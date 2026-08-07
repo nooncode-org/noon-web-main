@@ -64,11 +64,21 @@ vi.mock("@/lib/maxwell/client-reference", () => ({
   readClientReference: vi.fn(),
 }));
 
+// Fase A · E3.5 — the client pasting a LINK as their reference.
+vi.mock("@/lib/maxwell/client-reference-guard", () => ({
+  guardClientReferenceUrl: vi.fn(),
+}));
+vi.mock("@/lib/maxwell/reference-study/study", () => ({
+  studyReference: vi.fn(),
+}));
+
 import * as apiIa from "@/lib/api-ia";
 import * as authSession from "@/lib/auth/session";
 import * as ownership from "@/lib/auth/ownership";
 import * as repos from "@/lib/maxwell/repositories";
 import * as clientReference from "@/lib/maxwell/client-reference";
+import { guardClientReferenceUrl } from "@/lib/maxwell/client-reference-guard";
+import { studyReference } from "@/lib/maxwell/reference-study/study";
 import { POST } from "@/app/api/maxwell/chat/route";
 
 const ROUTE = "http://localhost/api/maxwell/chat";
@@ -703,5 +713,86 @@ describe("chat — up to 3 images of ONE reference (E2.4)", () => {
       }),
     );
     expect(res.status).toBe(400);
+  });
+});
+
+// ============================================================================
+// Fase A · E3.5 — the client pastes a LINK as their reference
+// ============================================================================
+
+describe("chat — client's reference URL (Fase A flag)", () => {
+  const dossier = {
+    judged: {
+      heroRecipe: "full-bleed photo, headline 85px overlaid",
+      whyItWorks: ["one brown carries the brand", "two lines answer what+where"],
+    },
+  };
+
+  function linkReq() {
+    return postReq({
+      message: "me gusta esta: https://poilane.example/menu",
+      session_id: "session-1",
+    });
+  }
+
+  it("with the brain OFF a pasted link is just text (no guard, no study)", async () => {
+    await POST(linkReq());
+
+    expect(guardClientReferenceUrl).not.toHaveBeenCalled();
+    expect(studyReference).not.toHaveBeenCalled();
+  });
+
+  it("guards the URL before any browser opens it, studies it, and confirms", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(guardClientReferenceUrl).mockResolvedValue({
+      ok: true,
+      url: "https://poilane.example/menu",
+    });
+    vi.mocked(studyReference).mockResolvedValue({
+      dossier: dossier as never,
+      source: "fresh",
+      stale: false,
+    });
+
+    await POST(linkReq());
+
+    // The guard runs FIRST — the study only sees a URL it approved.
+    expect(guardClientReferenceUrl).toHaveBeenCalledWith("https://poilane.example/menu");
+    expect(studyReference).toHaveBeenCalledWith("https://poilane.example/menu");
+    expect(repos.setStudioDirection).toHaveBeenCalledWith(
+      "session-1",
+      expect.objectContaining({ source: "client_url", confirmedAt: null }),
+    );
+
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.prompt).toContain("ask if that is right");
+    expect(call.prompt).toContain("their CURRENT site or a page they admire");
+  });
+
+  it("a refused URL never reaches the study, and the client is told plainly", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(guardClientReferenceUrl).mockResolvedValue({ ok: false, reason: "private" });
+
+    await POST(linkReq());
+
+    expect(studyReference).not.toHaveBeenCalled();
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.prompt).toContain("could not open");
+    expect(call.prompt).toContain("Do not mention any technical reason");
+  });
+
+  it("does not re-study once a direction exists (one study per session)", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({
+        direction: { primaryUrl: "https://x.example", source: "pool", confirmedAt: null },
+      }),
+    );
+
+    await POST(linkReq());
+
+    expect(guardClientReferenceUrl).not.toHaveBeenCalled();
+    expect(studyReference).not.toHaveBeenCalled();
   });
 });
