@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { buildSignInHref } from "@/lib/auth/redirect";
 import { Search } from "lucide-react";
@@ -90,8 +91,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(iso: string, locale: string) {
+  // #30 — the client's locale, not ours: a Spanish client reads "7 ago 2026".
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -99,8 +101,8 @@ function formatDate(iso: string) {
 }
 
 // Chat bubble stamps — same shape the old Messages log used.
-function formatStamp(iso: string | Date) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatStamp(iso: string | Date, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -108,9 +110,9 @@ function formatStamp(iso: string | Date) {
   }).format(new Date(iso));
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string, locale: string, justNow: string): string {
   const diffSec = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const units: [Intl.RelativeTimeFormatUnit, number][] = [
     ["year", 31536000],
     ["month", 2592000],
@@ -122,34 +124,23 @@ function relativeTime(iso: string): string {
   for (const [unit, sec] of units) {
     if (Math.abs(diffSec) >= sec) return rtf.format(-Math.round(diffSec / sec), unit);
   }
-  return "just now";
+  return justNow;
 }
 
 // Domain status → label + detail + colored dot (same vocabulary as the mock;
 // today only "valid" occurs — the default published domain — the rest arrive
 // with the custom-domain pipeline, #27/#28).
 type DomainStatus = "valid" | "pending" | "verifying" | "action_needed";
-const DOMAIN_STATUS: Record<DomainStatus, { label: string; detail: string; dot: string }> = {
-  valid: {
-    label: "In production",
-    detail: "Live and serving your project.",
-    dot: "bg-emerald-500",
-  },
-  pending: {
-    label: "Setting up",
-    detail: "Your Noon team is configuring it.",
-    dot: "bg-amber-500",
-  },
-  verifying: {
-    label: "Verifying DNS",
-    detail: "Waiting for the records to propagate — usually a few minutes.",
-    dot: "bg-[#0056fd]",
-  },
-  action_needed: {
-    label: "Action needed",
-    detail: "Add a DNS record to finish connecting — or let your team do it.",
-    dot: "bg-red-500",
-  },
+/**
+ * #30 — only the COLOUR lives here now. The words are message keys, looked
+ * up at render with the client's locale: a module constant cannot be
+ * translated, and this map is what the client reads about their own domain.
+ */
+const DOMAIN_STATUS: Record<DomainStatus, { key: string; dot: string }> = {
+  valid: { key: "valid", dot: "bg-emerald-500" },
+  pending: { key: "pending", dot: "bg-amber-500" },
+  verifying: { key: "verifying", dot: "bg-[#0056fd]" },
+  action_needed: { key: "actionNeeded", dot: "bg-red-500" },
 };
 
 // The workspace's secondary-action chip (shared visual vocabulary with the
@@ -160,7 +151,7 @@ const CHIP =
 // The one pre-workspace state a client can actually land on: the brief
 // provisioning blip after a confirmed payment. Everything else (not-yet-paid)
 // is redirected to the proposal — the real payment screens — never shown here.
-function WorkspacePreparing({
+async function WorkspacePreparing({
   projectName,
   contactHref,
   viewerEmail,
@@ -171,6 +162,7 @@ function WorkspacePreparing({
   viewerEmail: string;
   locale: string;
 }) {
+  const t = await getTranslations({ locale, namespace: "workspace" });
   return (
     // Same chrome as the live portal (sidebar + h-14 header + viewport-locked
     // scroll column) so the client never lands on a differently-shaped page
@@ -182,10 +174,10 @@ function WorkspacePreparing({
         <header className="flex h-14 items-center border-b border-border bg-card px-6 pl-14 lg:px-14">
           <div className="flex w-full items-center justify-between gap-4">
             <h1 className="min-w-0 truncate text-base font-medium leading-tight">
-              {projectName ?? "Your project"}
+              {projectName ?? t("general.yourProject")}
             </h1>
             <span className="shrink-0 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-700">
-              Preparing workspace
+              {t("general.preparingWorkspace")}
             </span>
           </div>
         </header>
@@ -198,6 +190,10 @@ function WorkspacePreparing({
 
 export default async function WorkspacePage({ params }: Props) {
   const { locale, sessionId } = await params;
+  // #30 — the portal speaks the client's language. Every user-facing
+  // string on this page comes from messages/<locale>.json; nothing that
+  // reaches a client is written inline anymore.
+  const t = await getTranslations({ locale, namespace: "workspace" });
   // Single auth entry point: same NextAuth session in production, plus the
   // documented dev bypass so the portal can actually be run locally (calling
   // `auth()` directly skipped it, which is why it was never clickable in dev).
@@ -306,23 +302,26 @@ export default async function WorkspacePage({ params }: Props) {
   // Build-phase status: label + color dot on the hero title (amber → blue →
   // green) — the page's single status voice.
   const phase = appPublishedUrl
-    ? { label: "In production", dot: "bg-emerald-500" }
+    ? { label: t("status.inProduction"), dot: "bg-emerald-500" }
     : latestVersion
-      ? { label: "In review", dot: "bg-[#0056fd]" }
-      : { label: "In progress", dot: "bg-amber-500" };
+      ? { label: t("status.inReview"), dot: "bg-[#0056fd]" }
+      : { label: t("status.inProgress"), dot: "bg-amber-500" };
   // A version awaiting the client's decision → the Overview review banner.
   const reviewVersion =
     latestVersion?.state === "ready_for_client_preview" ? latestVersion : null;
 
   const projectStatus = appStatusData?.project.status ?? null;
   const milestonesList = [
-    { label: "Kickoff", done: true },
+    { label: t("milestones.kickoff"), done: true },
     {
-      label: "First preview",
+      label: t("milestones.firstPreview"),
       done: appVersions.length > 0 || milestone?.kind === "version-ready",
     },
-    { label: "Delivery", done: projectStatus === "delivered" || projectStatus === "completed" },
-    { label: "Live", done: Boolean(appPublishedUrl) },
+    {
+      label: t("milestones.delivery"),
+      done: projectStatus === "delivered" || projectStatus === "completed",
+    },
+    { label: t("milestones.live"), done: Boolean(appPublishedUrl) },
   ];
   const milestonesDone = milestonesList.filter((m) => m.done).length;
 
@@ -369,7 +368,7 @@ export default async function WorkspacePage({ params }: Props) {
     MEMBERSHIP_BILLING_ENABLED && planProposal?.stripeCustomerId ? (
       <ManageMembershipButton
         sessionId={sessionId}
-        label={isMembershipPlan ? "Manage membership" : "Manage hosting"}
+        label={isMembershipPlan ? t("plan.manageMembership") : t("plan.manageHosting")}
       />
     ) : undefined;
 
@@ -397,7 +396,8 @@ export default async function WorkspacePage({ params }: Props) {
     updates: timeline,
     materials,
     requests,
-    formatStamp,
+    // The thread's stamps follow the client's locale too.
+    formatStamp: (iso: string | Date) => formatStamp(iso, locale),
   });
 
   // ── Chat transports — inline Server Actions bound to THIS session, handed to
@@ -441,7 +441,7 @@ export default async function WorkspacePage({ params }: Props) {
     "use server";
     const file = form.get("file");
     if (!(file instanceof File)) {
-      return { ok: false, error: "Please choose a file." } as const;
+      return { ok: false, error: t("errors.chooseFile") } as const;
     }
     const note = String(form.get("note") ?? "").trim();
     const created = await submitRequestAction({
@@ -496,8 +496,8 @@ export default async function WorkspacePage({ params }: Props) {
           {
             id: `nv-${reviewVersion.sequence}`,
             kind: "version" as const,
-            title: `Version ${reviewVersion.sequence} is ready for your review`,
-            at: relativeTime(reviewVersion.at),
+            title: t("notifications.versionReady", { sequence: reviewVersion.sequence }),
+            at: relativeTime(reviewVersion.at, locale, t("general.justNow")),
             tab: "versions",
             unread: true,
           },
@@ -508,9 +508,9 @@ export default async function WorkspacePage({ params }: Props) {
           {
             id: "nb-pastdue",
             kind: "billing" as const,
-            title: "Your last payment didn't go through",
-            detail: "Update your payment method to keep your project active.",
-            at: "now",
+            title: t("payment.failedTitle"),
+            detail: t("payment.failedDetail"),
+            at: t("notifications.now"),
             tab: "overview",
             unread: true,
           },
@@ -521,9 +521,9 @@ export default async function WorkspacePage({ params }: Props) {
           {
             id: "nd-live",
             kind: "domain" as const,
-            title: "Your site is live",
+            title: t("live.title"),
             detail: host ?? undefined,
-            at: relativeTime(latestVersion?.at ?? workspace.createdAt),
+            at: relativeTime(latestVersion?.at ?? workspace.createdAt, locale, t("general.justNow")),
             tab: "domain",
           },
         ]
@@ -533,7 +533,7 @@ export default async function WorkspacePage({ params }: Props) {
       kind: "milestone" as const,
       title: u.title,
       detail: u.content?.slice(0, 90) ?? undefined,
-      at: relativeTime(u.createdAt),
+      at: relativeTime(u.createdAt, locale, t("general.justNow")),
       tab: "overview",
     })),
   ];
@@ -541,24 +541,24 @@ export default async function WorkspacePage({ params }: Props) {
   // Consolidated to 4 tabs (owner 2026-07-18): Overview · Chat · Versions ·
   // Domains. Support/Materials/Activity/Brand-assets all fold into the Chat.
   const sections = [
-    { id: "overview", label: "Overview" },
-    { id: "chat", label: "Chat" },
+    { id: "overview", label: t("tabs.overview") },
+    { id: "chat", label: t("tabs.chat") },
     ...(appVersions.length > 0
       ? [
           {
             id: "versions",
-            label: "Versions",
+            label: t("tabs.versions"),
             // The amber "action" dot asks them to resolve a review — a
             // membership decision; one-time versions are read-only.
             ...(reviewVersion && isMembershipPlan ? { pending: "action" as const } : {}),
           },
         ]
       : []),
-    ...(appPublishedUrl ? [{ id: "domain", label: "Domains" }] : []),
+    ...(appPublishedUrl ? [{ id: "domain", label: t("tabs.domains") }] : []),
     // "Code" is a one-time buyer's own tab (they own the source) — once a build
     // exists to hand over. LAST tab (owner 2026-07-22). A membership doesn't get
     // it (ongoing service, not a bought-and-done deliverable).
-    ...(!isMembershipPlan && latestVersion ? [{ id: "code", label: "Code" }] : []),
+    ...(!isMembershipPlan && latestVersion ? [{ id: "code", label: t("tabs.code") }] : []),
   ];
 
   const projectName = session.goalSummary ?? session.initialPrompt;
@@ -610,7 +610,7 @@ export default async function WorkspacePage({ params }: Props) {
             <p className="text-sm text-amber-800 dark:text-amber-200">
               <span className="font-medium">
                 {membershipEndsOn
-                  ? `Your ${planNoun} ends on ${formatDate(membershipEndsOn)}.`
+                  ? `Your ${planNoun} ends on ${formatDate(membershipEndsOn, locale)}.`
                   : `Your ${planNoun} is set to end.`}
               </span>{" "}
               Your site stays online until then — after that it goes offline until you renew.
@@ -652,8 +652,8 @@ export default async function WorkspacePage({ params }: Props) {
         {isPastDue && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-red-500/30 bg-red-500/[0.07] px-6 py-3 lg:px-14">
             <p className="text-sm text-red-700 dark:text-red-300">
-              <span className="font-medium">Your last payment didn&apos;t go through.</span>{" "}
-              Update your payment method to keep your project active.
+              <span className="font-medium">{t("payment.failedInline")}</span>{" "}
+              {t("payment.failedDetail")}
             </p>
             {billingSlot ?? (
               <a
@@ -705,7 +705,7 @@ export default async function WorkspacePage({ params }: Props) {
                       rel="noopener noreferrer"
                       // The wireframe inside is pure decoration — without a name
                       // a screen reader announces this as just "link".
-                      aria-label="Open your live site"
+                      aria-label={t("live.openLiveSite")}
                       className="group block"
                     >
                       <div className="flex aspect-[16/10] flex-col overflow-hidden rounded-[6px] border border-border bg-secondary/20 transition-colors group-hover:border-foreground/25">
@@ -739,7 +739,7 @@ export default async function WorkspacePage({ params }: Props) {
                   <div className="grid content-start gap-5">
                     {appPublishedUrl && (
                       <div>
-                        <p className="text-[13px] text-muted-foreground">Live site</p>
+                        <p className="text-[13px] text-muted-foreground">{t("live.liveSite")}</p>
                         <div className="mt-1 flex items-center gap-1 text-sm text-foreground">
                           <a
                             href={appPublishedUrl}
@@ -749,12 +749,12 @@ export default async function WorkspacePage({ params }: Props) {
                           >
                             {host}
                           </a>
-                          <WorkspaceCopyButton value={appPublishedUrl} label="Copy site URL" />
+                          <WorkspaceCopyButton value={appPublishedUrl} label={t("live.copySiteUrl")} />
                         </div>
                       </div>
                     )}
                     <div>
-                      <p className="text-[13px] text-muted-foreground">Version</p>
+                      <p className="text-[13px] text-muted-foreground">{t("fields.version")}</p>
                       <div className="mt-1 text-sm text-foreground">
                         <span className="inline-flex items-center gap-2">
                           v{latestVersion.sequence}
@@ -771,10 +771,10 @@ export default async function WorkspacePage({ params }: Props) {
                       </div>
                     </div>
                     <div>
-                      <p className="text-[13px] text-muted-foreground">Updated</p>
+                      <p className="text-[13px] text-muted-foreground">{t("fields.updated")}</p>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-foreground">
-                        <span title={formatDate(latestVersion.at)}>
-                          {relativeTime(latestVersion.at)} · by your Noon team
+                        <span title={formatDate(latestVersion.at, locale)}>
+                          {relativeTime(latestVersion.at, locale, t("general.justNow"))} · by your Noon team
                         </span>
                         <span
                           aria-hidden
@@ -786,7 +786,7 @@ export default async function WorkspacePage({ params }: Props) {
                     </div>
                     {appProposal && (
                       <div>
-                        <p className="text-[13px] text-muted-foreground">Proposal</p>
+                        <p className="text-[13px] text-muted-foreground">{t("fields.proposal")}</p>
                         <div className="mt-1 text-sm text-foreground">
                           {appProposal.title} ·{" "}
                           {formatProposalAmount(appProposal.amount, appProposal.currency)}
@@ -808,7 +808,7 @@ export default async function WorkspacePage({ params }: Props) {
                       href={approvedPrototypeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="Open your approved prototype"
+                      aria-label={t("prototype.open")}
                       className="group block"
                     >
                       <div className="flex aspect-[16/10] flex-col overflow-hidden rounded-[6px] border border-border bg-secondary/20 transition-colors group-hover:border-foreground/25">
@@ -841,7 +841,7 @@ export default async function WorkspacePage({ params }: Props) {
                   </div>
                   <div className="grid content-start gap-5">
                     <div>
-                      <p className="text-[13px] text-muted-foreground">Prototype</p>
+                      <p className="text-[13px] text-muted-foreground">{t("fields.prototype")}</p>
                       <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
                         <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                         Approved by you
@@ -856,7 +856,7 @@ export default async function WorkspacePage({ params }: Props) {
                       </a>
                     </div>
                     <div>
-                      <p className="text-[13px] text-muted-foreground">What&apos;s next</p>
+                      <p className="text-[13px] text-muted-foreground">{t("fields.whatsNext")}</p>
                       <p className="mt-1 max-w-sm text-sm leading-relaxed text-foreground">
                         {milestoneCopy?.description ??
                           "Your Noon team is turning it into your MVP — the first real version lands right here, and you'll get an email."}
@@ -880,7 +880,7 @@ export default async function WorkspacePage({ params }: Props) {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {milestoneCopy?.label ?? "Your first preview is on the way"}
+                      {milestoneCopy?.label ?? t("prototype.firstPreviewOnTheWay")}
                     </p>
                     <p className="mx-auto mt-1 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
                       {milestoneCopy?.description ??
@@ -935,7 +935,7 @@ export default async function WorkspacePage({ params }: Props) {
             <section className={`grid gap-5 ${showPlanCard ? "md:grid-cols-2" : ""}`}>
               <div className="rounded-[6px] border border-border bg-card p-5">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm font-medium">Milestones</p>
+                  <p className="text-sm font-medium">{t("milestones.title")}</p>
                   <span className="text-[13px] text-muted-foreground">
                     {milestonesDone}/{milestonesList.length}
                   </span>
@@ -957,7 +957,7 @@ export default async function WorkspacePage({ params }: Props) {
                         {m.label}
                       </span>
                       {m.done && (
-                        <span className="ml-auto text-[11px] text-muted-foreground/70">Done</span>
+                        <span className="ml-auto text-[11px] text-muted-foreground/70">{t("milestones.done")}</span>
                       )}
                     </div>
                   ))}
@@ -967,7 +967,7 @@ export default async function WorkspacePage({ params }: Props) {
               {showPlanCard && planProposal && (
                 <div className="rounded-[6px] border border-border bg-card p-5">
                   <div className="mb-4 flex items-center justify-between">
-                    <p className="text-sm font-medium">Plan</p>
+                    <p className="text-sm font-medium">{t("plan.title")}</p>
                     {membershipMeta && (
                       <span
                         className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${membershipMeta.color}`}
@@ -977,7 +977,7 @@ export default async function WorkspacePage({ params }: Props) {
                     )}
                   </div>
                   <p className="text-xl font-semibold tracking-tight">
-                    {isMembershipPlan ? "Membership" : "One-time"}
+                    {isMembershipPlan ? t("plan.membership") : t("plan.oneTime")}
                     {isMembershipPlan && planProposal.monthlyAmountUsd != null && (
                       <span className="text-sm font-normal text-muted-foreground">
                         {" "}
@@ -995,7 +995,7 @@ export default async function WorkspacePage({ params }: Props) {
                     {isMembershipPlan
                       ? membershipMeta
                         ? membershipMeta.description
-                        : "Monthly membership is coordinated with your Noon PM."
+                        : t("plan.coordinated")
                       : `Paid once for the build — your first year of hosting is included. After that: ${formatProposalAmount(
                           HOSTING_YEARLY_USD,
                           planCurrency,
@@ -1016,9 +1016,9 @@ export default async function WorkspacePage({ params }: Props) {
                       Good standing only; past_due gets the banner instead. */}
                   {appMembership?.status === "active" && appMembership.currentPeriodEnd && (
                     <p className="mt-2 text-[12px] text-muted-foreground/80">
-                      {isMembershipPlan ? "Next payment: " : "Hosting renews: "}
+                      {isMembershipPlan ? t("plan.nextPayment") : t("plan.hostingRenews")}
                       <span className="text-foreground">
-                        {formatDate(appMembership.currentPeriodEnd)}
+                        {formatDate(appMembership.currentPeriodEnd, locale)}
                       </span>
                     </p>
                   )}
@@ -1076,7 +1076,7 @@ export default async function WorkspacePage({ params }: Props) {
                     }
                   : {}),
                 expectationLine: isMembershipPlan
-                  ? "Messages reach your Noon team — replies within 24h"
+                  ? t("chat.repliesWithin")
                   : "Your Noon team helps with questions about your project — replies within 24h",
               }}
             />
@@ -1087,7 +1087,7 @@ export default async function WorkspacePage({ params }: Props) {
             <div data-panel="versions">
               <section className="rounded-[6px] border border-border bg-card">
                 <div className="border-b border-border px-5 py-3.5">
-                  <h2 className="text-sm font-medium">Versions</h2>
+                  <h2 className="text-sm font-medium">{t("tabs.versions")}</h2>
                 </div>
                 <div className="divide-y divide-border">
                   {orderedVersions.map((version) => {
@@ -1115,7 +1115,7 @@ export default async function WorkspacePage({ params }: Props) {
                           <div className="flex flex-wrap items-center gap-3">
                             <p className="text-sm font-medium">Version {version.sequence}</p>
                             <span className="text-[11px] text-muted-foreground/70">
-                              {formatDate(version.at)}
+                              {formatDate(version.at, locale)}
                             </span>
                             <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
                               <span
@@ -1156,7 +1156,7 @@ export default async function WorkspacePage({ params }: Props) {
             <div data-panel="domain">
               <section className="rounded-[6px] border border-border bg-card">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-2.5">
-                  <h2 className="text-sm font-medium">Domains</h2>
+                  <h2 className="text-sm font-medium">{t("tabs.domains")}</h2>
                   {/* Both dialogs hand off to the Chat with the request typed —
                       the channel that actually reaches the team (registrar
                       purchase + connect automation are #27/#28). */}
@@ -1172,8 +1172,8 @@ export default async function WorkspacePage({ params }: Props) {
                       />
                       <input
                         type="text"
-                        placeholder="Search any domain"
-                        aria-label="Search domains"
+                        placeholder={t("domains.searchPlaceholder")}
+                        aria-label={t("domains.searchLabel")}
                         className="w-full rounded-[6px] border border-border bg-transparent py-2 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground/50 focus-visible:border-foreground/30"
                       />
                     </div>
@@ -1196,7 +1196,7 @@ export default async function WorkspacePage({ params }: Props) {
                               </a>
                               <WorkspaceCopyButton
                                 value={d.domain}
-                                label="Copy domain"
+                                label={t("domains.copyDomain")}
                                 className="h-5 w-5"
                               />
                               <span className="inline-flex shrink-0 items-center gap-1.5 text-[12px] text-muted-foreground">
@@ -1204,15 +1204,13 @@ export default async function WorkspacePage({ params }: Props) {
                                   aria-hidden
                                   className={`h-2 w-2 shrink-0 rounded-full ${st.dot}`}
                                 />
-                                {st.label}
+                                {t(`domainStatus.`)}
                               </span>
                               {d.isDefault && (
-                                <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                  Default
-                                </span>
+                                <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t("domains.default")}</span>
                               )}
                             </div>
-                            <p className="mt-0.5 text-[12px] text-muted-foreground">{st.detail}</p>
+                            <p className="mt-0.5 text-[12px] text-muted-foreground">{t(`domainStatus.Detail`)}</p>
                           </div>
                         </li>
                       );

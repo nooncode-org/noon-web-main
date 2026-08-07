@@ -109,22 +109,70 @@
       "imageLabel": "URL de la imagen"
     },
     "suggestions": [
-      { "label": "Plataforma de reservas", "prompt": "Construir una plataforma de reservas para mi negocio — los clientes pueden agendar citas, gestionar disponibilidad y recibir emails de confirmación." },
-      { "label": "Panel de operaciones", "prompt": "Crear un panel de operaciones para mi equipo — centralizar tareas, KPIs y actividad del equipo en una sola herramienta interna." },
-      { "label": "Soporte IA", "prompt": "Necesito un asistente de IA para soporte al cliente — debe responder preguntas frecuentes, escalar problemas complejos e integrarse con nuestro chat existente." },
-      { "label": "Automatización personalizada", "prompt": "Construir software personalizado para automatizar mi flujo de trabajo — reducir pasos manuales y conectar mis herramientas existentes." },
-      { "label": "App móvil", "prompt": "Crear una app móvil para mi negocio — disponible en iOS y Android con un diseño limpio y moderno." },
-      { "label": "Tienda online", "prompt": "Necesito una tienda online para mis productos — con gestión de catálogo, carrito, checkout y seguimiento de pedidos." },
-      { "label": "Portal de clientes", "prompt": "Construir un portal donde mis clientes puedan iniciar sesión, ver sus proyectos, subir documentos y comunicarse con mi equipo." },
-      { "label": "Herramienta interna", "prompt": "Crear una herramienta interna para que mi equipo gestione operaciones — rastrear tareas, aprobaciones y métricas de rendimiento en un solo lugar." },
-      { "label": "Landing page", "prompt": "Diseñar y construir una landing page de alta conversión para mi producto — con sección hero, características, testimonios, precios y llamada a la acción clara." },
-      { "label": "Sistema CRM", "prompt": "Construir un CRM para mi equipo de ventas — gestionar leads, rastrear interacciones, programar recordatorios y visualizar el pipeline de ventas." },
-      { "label": "Panel de analíticas", "prompt": "Crear un panel de analíticas para mi negocio — visualizar métricas clave, tendencias de ventas, actividad de usuarios y generar reportes automáticos." },
-      { "label": "Gestión de inventario", "prompt": "Construir un sistema de gestión de inventario — controlar stock, gestionar proveedores, configurar alertas de reabastecimiento y generar órdenes de compra automáticamente." },
-      { "label": "Facturación por suscripción", "prompt": "Necesito un sistema de facturación recurrente — gestionar pagos periódicos, upgrades de plan, facturas y recuperación de pagos fallidos." },
-      { "label": "Onboarding de empleados", "prompt": "Crear una plataforma de onboarding para nuevos empleados — automatizar papeleo, listas de tareas, módulos de formación y agenda de la primera semana." },
-      { "label": "Gestión de eventos", "prompt": "Construir una herramienta de gestión de eventos — manejar registros, venta de entradas, comunicación con asistentes y check-in el día del evento." },
-      { "label": "Gestión documental", "prompt": "Crear un sistema de gestión de documentos — organizar archivos por proyecto, controlar permisos de acceso, rastrear versiones y habilitar colaboración en equipo." }
+      {
+        "label": "Plataforma de reservas",
+        "prompt": "Construir una plataforma de reservas para mi negocio — los clientes pueden agendar citas, gestionar disponibilidad y recibir emails de confirmación."
+      },
+      {
+        "label": "Panel de operaciones",
+        "prompt": "Crear un panel de operaciones para mi equipo — centralizar tareas, KPIs y actividad del equipo en una sola herramienta interna."
+      },
+      {
+        "label": "Soporte IA",
+        "prompt": "Necesito un asistente de IA para soporte al cliente — debe responder preguntas frecuentes, escalar problemas complejos e integrarse con nuestro chat existente."
+      },
+      {
+        "label": "Automatización personalizada",
+        "prompt": "Construir software personalizado para automatizar mi flujo de trabajo — reducir pasos manuales y conectar mis herramientas existentes."
+      },
+      {
+        "label": "App móvil",
+        "prompt": "Crear una app móvil para mi negocio — disponible en iOS y Android con un diseño limpio y moderno."
+      },
+      {
+        "label": "Tienda online",
+        "prompt": "Necesito una tienda online para mis productos — con gestión de catálogo, carrito, checkout y seguimiento de pedidos."
+      },
+      {
+        "label": "Portal de clientes",
+        "prompt": "Construir un portal donde mis clientes puedan iniciar sesión, ver sus proyectos, subir documentos y comunicarse con mi equipo."
+      },
+      {
+        "label": "Herramienta interna",
+        "prompt": "Crear una herramienta interna para que mi equipo gestione operaciones — rastrear tareas, aprobaciones y métricas de rendimiento en un solo lugar."
+      },
+      {
+        "label": "Landing page",
+        "prompt": "Diseñar y construir una landing page de alta conversión para mi producto — con sección hero, características, testimonios, precios y llamada a la acción clara."
+      },
+      {
+        "label": "Sistema CRM",
+        "prompt": "Construir un CRM para mi equipo de ventas — gestionar leads, rastrear interacciones, programar recordatorios y visualizar el pipeline de ventas."
+      },
+      {
+        "label": "Panel de analíticas",
+        "prompt": "Crear un panel de analíticas para mi negocio — visualizar métricas clave, tendencias de ventas, actividad de usuarios y generar reportes automáticos."
+      },
+      {
+        "label": "Gestión de inventario",
+        "prompt": "Construir un sistema de gestión de inventario — controlar stock, gestionar proveedores, configurar alertas de reabastecimiento y generar órdenes de compra automáticamente."
+      },
+      {
+        "label": "Facturación por suscripción",
+        "prompt": "Necesito un sistema de facturación recurrente — gestionar pagos periódicos, upgrades de plan, facturas y recuperación de pagos fallidos."
+      },
+      {
+        "label": "Onboarding de empleados",
+        "prompt": "Crear una plataforma de onboarding para nuevos empleados — automatizar papeleo, listas de tareas, módulos de formación y agenda de la primera semana."
+      },
+      {
+        "label": "Gestión de eventos",
+        "prompt": "Construir una herramienta de gestión de eventos — manejar registros, venta de entradas, comunicación con asistentes y check-in el día del evento."
+      },
+      {
+        "label": "Gestión documental",
+        "prompt": "Crear un sistema de gestión de documentos — organizar archivos por proyecto, controlar permisos de acceso, rastrear versiones y habilitar colaboración en equipo."
+      }
     ]
   },
   "footer": {
@@ -204,9 +252,21 @@
       ]
     },
     "metrics": [
-      { "label": "Entrega tecnológica", "value": "100%", "description": "Cada proyecto se entrega como código de producción" },
-      { "label": "Dirección de alcance", "value": "Clara", "description": "La primera dirección se define antes de comenzar el trabajo de construcción" },
-      { "label": "Flujos asistidos por IA", "value": "Activos", "description": "Las herramientas aceleran la ejecución sin reemplazar el criterio" }
+      {
+        "label": "Entrega tecnológica",
+        "value": "100%",
+        "description": "Cada proyecto se entrega como código de producción"
+      },
+      {
+        "label": "Dirección de alcance",
+        "value": "Clara",
+        "description": "La primera dirección se define antes de comenzar el trabajo de construcción"
+      },
+      {
+        "label": "Flujos asistidos por IA",
+        "value": "Activos",
+        "description": "Las herramientas aceleran la ejecución sin reemplazar el criterio"
+      }
     ],
     "criteria": {
       "eyebrow": "Criterios",
@@ -256,22 +316,38 @@
       {
         "title": "IA y Automatización",
         "description": "Asistentes inteligentes, automatización de flujos de trabajo y herramientas potenciadas por IA para equipos que necesitan velocidad sin perder control operativo.",
-        "examples": ["Asistentes IA", "Flujos automatizados", "Integraciones inteligentes"]
+        "examples": [
+          "Asistentes IA",
+          "Flujos automatizados",
+          "Integraciones inteligentes"
+        ]
       },
       {
         "title": "Soluciones Web",
         "description": "Desde experiencias de cara al cliente hasta plataformas internas, construidas como software real con arquitectura de nivel producción.",
-        "examples": ["Plataformas web", "Paneles", "Portales"]
+        "examples": [
+          "Plataformas web",
+          "Paneles",
+          "Portales"
+        ]
       },
       {
         "title": "Soluciones Móviles",
         "description": "Aplicaciones móviles nativas y multiplataforma centradas en flujos claros y confiabilidad operativa.",
-        "examples": ["Apps iOS", "Apps Android", "Multiplataforma"]
+        "examples": [
+          "Apps iOS",
+          "Apps Android",
+          "Multiplataforma"
+        ]
       },
       {
         "title": "Software Personalizado",
         "description": "Software diseñado en torno a tu lógica interna y flujos no estándar cuando los sistemas genéricos dejan de ser útiles.",
-        "examples": ["Herramientas internas", "Integraciones personalizadas", "Sistemas de negocio"]
+        "examples": [
+          "Herramientas internas",
+          "Integraciones personalizadas",
+          "Sistemas de negocio"
+        ]
       }
     ],
     "whatWeBuildEyebrow": "Lo que construimos",
@@ -283,22 +359,34 @@
         {
           "problem": "Trabajo manual que debería automatizarse",
           "summary": "Flujos asistidos por IA para equipos que pierden tiempo en trabajo repetitivo y cuellos de botella humanos.",
-          "signals": ["Copiando datos entre herramientas", "El progreso depende de un solo operador"]
+          "signals": [
+            "Copiando datos entre herramientas",
+            "El progreso depende de un solo operador"
+          ]
         },
         {
           "problem": "Operaciones que necesitan un sistema central",
           "summary": "Paneles y portales que consolidan datos, flujos de trabajo e informes en una sola superficie.",
-          "signals": ["Datos en herramientas desconectadas", "Sin fuente única de verdad"]
+          "signals": [
+            "Datos en herramientas desconectadas",
+            "Sin fuente única de verdad"
+          ]
         },
         {
           "problem": "Un producto que necesita lanzarse como software real",
           "summary": "Construcciones orientadas a producción para fundadores que entienden el problema y necesitan algo real.",
-          "signals": ["El problema del cliente está validado", "El cuello de botella es la ejecución"]
+          "signals": [
+            "El problema del cliente está validado",
+            "El cuello de botella es la ejecución"
+          ]
         },
         {
           "problem": "Flujos de trabajo que las herramientas genéricas no cubren",
           "summary": "Software personalizado construido alrededor de la lógica de negocio que se rompe dentro de herramientas genéricas.",
-          "signals": ["Dependiendo de soluciones alternativas", "Las herramientas estándar no encajan"]
+          "signals": [
+            "Dependiendo de soluciones alternativas",
+            "Las herramientas estándar no encajan"
+          ]
         }
       ]
     },
@@ -416,5 +504,91 @@
   "faq": {
     "eyebrow": "FAQ",
     "headline": "Preguntas frecuentes"
+  },
+  "workspace": {
+    "status": {
+      "inReview": "En revisión",
+      "inProgress": "En curso",
+      "unavailable": "Estado no disponible",
+      "inProduction": "En producción"
+    },
+    "milestones": {
+      "title": "Hitos",
+      "firstPreview": "Primera vista previa",
+      "delivery": "Entrega",
+      "done": "Listo",
+      "kickoff": "Arranque",
+      "live": "En línea"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "versions": "Versiones",
+      "domains": "Dominios",
+      "chat": "Chat",
+      "code": "Código"
+    },
+    "plan": {
+      "title": "Plan",
+      "membership": "Membresía",
+      "oneTime": "Pago único",
+      "manageMembership": "Gestionar membresía",
+      "manageHosting": "Gestionar hosting",
+      "nextPayment": "Próximo pago: ",
+      "hostingRenews": "El hosting se renueva: ",
+      "coordinated": "La membresía mensual se coordina con tu PM de Noon."
+    },
+    "payment": {
+      "failedTitle": "Tu último pago no se completó",
+      "failedDetail": "Actualiza tu método de pago para mantener tu proyecto activo.",
+      "failedInline": "Tu último pago no se completó."
+    },
+    "live": {
+      "title": "Tu sitio está en línea",
+      "liveSite": "Sitio en vivo",
+      "openLiveSite": "Abrir tu sitio en vivo",
+      "copySiteUrl": "Copiar la URL del sitio"
+    },
+    "fields": {
+      "version": "Versión",
+      "updated": "Actualizado",
+      "proposal": "Propuesta",
+      "prototype": "Prototipo",
+      "whatsNext": "Lo que sigue"
+    },
+    "prototype": {
+      "open": "Abrir tu prototipo aprobado",
+      "firstPreviewOnTheWay": "Tu primera vista previa está en camino"
+    },
+    "chat": {
+      "repliesWithin": "Tus mensajes llegan a tu equipo de Noon — respuesta en 24 h"
+    },
+    "domains": {
+      "searchPlaceholder": "Busca cualquier dominio",
+      "searchLabel": "Buscar dominios",
+      "copyDomain": "Copiar dominio",
+      "default": "Predeterminado"
+    },
+    "errors": {
+      "chooseFile": "Elige un archivo, por favor."
+    },
+    "notifications": {
+      "versionReady": "La versión {sequence} está lista para tu revisión",
+      "now": "ahora"
+    },
+    "domainStatus": {
+      "valid": "En producción",
+      "validDetail": "En línea y sirviendo tu proyecto.",
+      "pending": "Configurando",
+      "pendingDetail": "Tu equipo de Noon lo está configurando.",
+      "verifying": "Verificando DNS",
+      "verifyingDetail": "Esperando a que se propaguen los registros — suele tardar unos minutos.",
+      "actionNeeded": "Falta una acción",
+      "actionNeededDetail": "Añade un registro DNS para terminar de conectarlo — o deja que tu equipo lo haga."
+    },
+    "general": {
+      "yourProject": "Tu proyecto",
+      "preparingWorkspace": "Preparando el espacio",
+      "justNow": "justo ahora"
+    }
   }
 }

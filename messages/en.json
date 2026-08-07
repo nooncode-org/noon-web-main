@@ -109,22 +109,70 @@
       "imageLabel": "Image URL"
     },
     "suggestions": [
-      { "label": "Reservation platform", "prompt": "Build a reservation platform for my business — customers can book appointments, manage availability, and receive confirmation emails." },
-      { "label": "Operations dashboard", "prompt": "Create an operations dashboard for my team — centralize tasks, KPIs, and team activity in one internal tool." },
-      { "label": "AI customer support", "prompt": "I need an AI assistant for customer support — it should answer FAQs, escalate complex issues, and integrate with our existing chat." },
-      { "label": "Custom workflow tool", "prompt": "Build custom software to automate my business workflow — reduce manual steps and connect my existing tools." },
-      { "label": "Mobile app", "prompt": "Create a mobile app for my business — available on iOS and Android with a clean, modern design." },
-      { "label": "E-commerce store", "prompt": "I need an e-commerce store for my products — with catalog management, cart, checkout, and order tracking." },
-      { "label": "Client portal", "prompt": "Build a client portal where my customers can log in, view their projects, upload documents, and communicate with my team." },
-      { "label": "Internal tool", "prompt": "Create an internal tool for my team to manage operations — track tasks, approvals, and performance metrics in one place." },
-      { "label": "Landing page", "prompt": "Design and build a high-converting landing page for my product — with hero section, features, testimonials, pricing, and a clear call to action." },
-      { "label": "CRM system", "prompt": "Build a CRM for my sales team — manage leads, track interactions, set follow-up reminders, and visualize the sales pipeline." },
-      { "label": "Analytics dashboard", "prompt": "Create an analytics dashboard for my business — visualize key metrics, sales trends, user activity, and generate automated reports." },
-      { "label": "Inventory management", "prompt": "Build an inventory management system — track stock levels, manage suppliers, set reorder alerts, and generate purchase orders automatically." },
-      { "label": "Subscription billing", "prompt": "I need a subscription billing system — handle recurring payments, plan upgrades, invoices, and payment failure recovery." },
-      { "label": "Employee onboarding", "prompt": "Create an employee onboarding platform — automate paperwork, task checklists, training modules, and first-week schedules for new hires." },
-      { "label": "Event management", "prompt": "Build an event management tool — handle registrations, ticketing, attendee communication, and check-in on the day of the event." },
-      { "label": "Document management", "prompt": "Create a document management system — organize files by project, control access permissions, track versions, and enable team collaboration." }
+      {
+        "label": "Reservation platform",
+        "prompt": "Build a reservation platform for my business — customers can book appointments, manage availability, and receive confirmation emails."
+      },
+      {
+        "label": "Operations dashboard",
+        "prompt": "Create an operations dashboard for my team — centralize tasks, KPIs, and team activity in one internal tool."
+      },
+      {
+        "label": "AI customer support",
+        "prompt": "I need an AI assistant for customer support — it should answer FAQs, escalate complex issues, and integrate with our existing chat."
+      },
+      {
+        "label": "Custom workflow tool",
+        "prompt": "Build custom software to automate my business workflow — reduce manual steps and connect my existing tools."
+      },
+      {
+        "label": "Mobile app",
+        "prompt": "Create a mobile app for my business — available on iOS and Android with a clean, modern design."
+      },
+      {
+        "label": "E-commerce store",
+        "prompt": "I need an e-commerce store for my products — with catalog management, cart, checkout, and order tracking."
+      },
+      {
+        "label": "Client portal",
+        "prompt": "Build a client portal where my customers can log in, view their projects, upload documents, and communicate with my team."
+      },
+      {
+        "label": "Internal tool",
+        "prompt": "Create an internal tool for my team to manage operations — track tasks, approvals, and performance metrics in one place."
+      },
+      {
+        "label": "Landing page",
+        "prompt": "Design and build a high-converting landing page for my product — with hero section, features, testimonials, pricing, and a clear call to action."
+      },
+      {
+        "label": "CRM system",
+        "prompt": "Build a CRM for my sales team — manage leads, track interactions, set follow-up reminders, and visualize the sales pipeline."
+      },
+      {
+        "label": "Analytics dashboard",
+        "prompt": "Create an analytics dashboard for my business — visualize key metrics, sales trends, user activity, and generate automated reports."
+      },
+      {
+        "label": "Inventory management",
+        "prompt": "Build an inventory management system — track stock levels, manage suppliers, set reorder alerts, and generate purchase orders automatically."
+      },
+      {
+        "label": "Subscription billing",
+        "prompt": "I need a subscription billing system — handle recurring payments, plan upgrades, invoices, and payment failure recovery."
+      },
+      {
+        "label": "Employee onboarding",
+        "prompt": "Create an employee onboarding platform — automate paperwork, task checklists, training modules, and first-week schedules for new hires."
+      },
+      {
+        "label": "Event management",
+        "prompt": "Build an event management tool — handle registrations, ticketing, attendee communication, and check-in on the day of the event."
+      },
+      {
+        "label": "Document management",
+        "prompt": "Create a document management system — organize files by project, control access permissions, track versions, and enable team collaboration."
+      }
     ]
   },
   "footer": {
@@ -205,9 +253,21 @@
       ]
     },
     "metrics": [
-      { "label": "Technology delivery", "value": "100%", "description": "Every project ships as production code" },
-      { "label": "Scope direction", "value": "Clear", "description": "The first direction is defined before build work starts" },
-      { "label": "AI-assisted workflows", "value": "Active", "description": "Tooling accelerates execution without replacing judgment" }
+      {
+        "label": "Technology delivery",
+        "value": "100%",
+        "description": "Every project ships as production code"
+      },
+      {
+        "label": "Scope direction",
+        "value": "Clear",
+        "description": "The first direction is defined before build work starts"
+      },
+      {
+        "label": "AI-assisted workflows",
+        "value": "Active",
+        "description": "Tooling accelerates execution without replacing judgment"
+      }
     ],
     "criteria": {
       "eyebrow": "Criteria",
@@ -257,22 +317,38 @@
       {
         "title": "AI & Automation",
         "description": "Intelligent assistants, workflow automation, and AI-powered tooling for teams that need speed without losing operational control.",
-        "examples": ["AI assistants", "Automated workflows", "Smart integrations"]
+        "examples": [
+          "AI assistants",
+          "Automated workflows",
+          "Smart integrations"
+        ]
       },
       {
         "title": "Web Solutions",
         "description": "From customer-facing experiences to internal platforms, built as real software with production-grade architecture.",
-        "examples": ["Web platforms", "Dashboards", "Portals"]
+        "examples": [
+          "Web platforms",
+          "Dashboards",
+          "Portals"
+        ]
       },
       {
         "title": "Mobile Solutions",
         "description": "Native and cross-platform mobile applications focused on clear flows and operational reliability.",
-        "examples": ["iOS apps", "Android apps", "Cross-platform"]
+        "examples": [
+          "iOS apps",
+          "Android apps",
+          "Cross-platform"
+        ]
       },
       {
         "title": "Custom Software",
         "description": "Software shaped around your internal logic and non-standard workflows when generic systems stop being useful.",
-        "examples": ["Internal tools", "Custom integrations", "Business systems"]
+        "examples": [
+          "Internal tools",
+          "Custom integrations",
+          "Business systems"
+        ]
       }
     ],
     "whatWeBuildEyebrow": "Delivery areas",
@@ -284,22 +360,34 @@
         {
           "problem": "Manual work that should be automated",
           "summary": "AI-assisted workflows for teams losing time to repetitive work and human bottlenecks.",
-          "signals": ["Copying data between tools", "Progress depends on one operator"]
+          "signals": [
+            "Copying data between tools",
+            "Progress depends on one operator"
+          ]
         },
         {
           "problem": "Operations that need one central system",
           "summary": "Dashboards and portals that consolidate data, workflows, and reporting into one surface.",
-          "signals": ["Data across disconnected tools", "No clear source of truth"]
+          "signals": [
+            "Data across disconnected tools",
+            "No clear source of truth"
+          ]
         },
         {
           "problem": "A product that needs to launch as real software",
           "summary": "Production-minded builds for founders who understand the problem and need something real.",
-          "signals": ["Customer problem is validated", "Bottleneck is execution"]
+          "signals": [
+            "Customer problem is validated",
+            "Bottleneck is execution"
+          ]
         },
         {
           "problem": "Workflows that generic tools don't fit",
           "summary": "Custom software built around business logic that breaks inside generic tools.",
-          "signals": ["Relying on workarounds", "Off-the-shelf tools don't fit"]
+          "signals": [
+            "Relying on workarounds",
+            "Off-the-shelf tools don't fit"
+          ]
         }
       ]
     },
@@ -417,5 +505,91 @@
   "faq": {
     "eyebrow": "FAQ",
     "headline": "Frequently asked questions"
+  },
+  "workspace": {
+    "status": {
+      "inReview": "In review",
+      "inProgress": "In progress",
+      "unavailable": "Status unavailable",
+      "inProduction": "In production"
+    },
+    "milestones": {
+      "title": "Milestones",
+      "firstPreview": "First preview",
+      "delivery": "Delivery",
+      "done": "Done",
+      "kickoff": "Kickoff",
+      "live": "Live"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "versions": "Versions",
+      "domains": "Domains",
+      "chat": "Chat",
+      "code": "Code"
+    },
+    "plan": {
+      "title": "Plan",
+      "membership": "Membership",
+      "oneTime": "One-time",
+      "manageMembership": "Manage membership",
+      "manageHosting": "Manage hosting",
+      "nextPayment": "Next payment: ",
+      "hostingRenews": "Hosting renews: ",
+      "coordinated": "Monthly membership is coordinated with your Noon PM."
+    },
+    "payment": {
+      "failedTitle": "Your last payment didn't go through",
+      "failedDetail": "Update your payment method to keep your project active.",
+      "failedInline": "Your last payment didn't go through."
+    },
+    "live": {
+      "title": "Your site is live",
+      "liveSite": "Live site",
+      "openLiveSite": "Open your live site",
+      "copySiteUrl": "Copy site URL"
+    },
+    "fields": {
+      "version": "Version",
+      "updated": "Updated",
+      "proposal": "Proposal",
+      "prototype": "Prototype",
+      "whatsNext": "What's next"
+    },
+    "prototype": {
+      "open": "Open your approved prototype",
+      "firstPreviewOnTheWay": "Your first preview is on the way"
+    },
+    "chat": {
+      "repliesWithin": "Messages reach your Noon team — replies within 24h"
+    },
+    "domains": {
+      "searchPlaceholder": "Search any domain",
+      "searchLabel": "Search domains",
+      "copyDomain": "Copy domain",
+      "default": "Default"
+    },
+    "errors": {
+      "chooseFile": "Please choose a file."
+    },
+    "notifications": {
+      "versionReady": "Version {sequence} is ready for your review",
+      "now": "now"
+    },
+    "domainStatus": {
+      "valid": "In production",
+      "validDetail": "Live and serving your project.",
+      "pending": "Setting up",
+      "pendingDetail": "Your Noon team is configuring it.",
+      "verifying": "Verifying DNS",
+      "verifyingDetail": "Waiting for the records to propagate — usually a few minutes.",
+      "actionNeeded": "Action needed",
+      "actionNeededDetail": "Add a DNS record to finish connecting — or let your team do it."
+    },
+    "general": {
+      "yourProject": "Your project",
+      "preparingWorkspace": "Preparing workspace",
+      "justNow": "just now"
+    }
   }
 }

@@ -36,6 +36,28 @@ const h = vi.hoisted(() => ({
 
 // `geist` ships next/font bindings that only resolve inside Next's bundler.
 // The portal pulls them in transitively via the shared sidebar chrome.
+// #30 — the portal now reads its copy from messages/. There is no next-intl
+// server context in a unit test, so this hands back the REAL English strings:
+// every assertion in this file still checks the words a client would see,
+// and a key that stops existing surfaces as its own key, loudly.
+vi.mock("next-intl/server", async () => {
+  const en = (await import("@/messages/en.json")).default as Record<string, unknown>;
+  return {
+    getTranslations: async ({ namespace }: { namespace?: string } = {}) => {
+      const root = (namespace ? (en as Record<string, unknown>)[namespace] : en) ?? {};
+      return (key: string, values?: Record<string, unknown>) => {
+        const raw = key
+          .split(".")
+          .reduce<unknown>((acc, part) => (acc as Record<string, unknown>)?.[part], root);
+        if (typeof raw !== "string") return key;
+        return values
+          ? raw.replace(/\{(\w+)\}/g, (_, name: string) => String(values[name] ?? ""))
+          : raw;
+      };
+    },
+  };
+});
+
 vi.mock("geist/font/sans", () => ({ GeistSans: { variable: "", className: "" } }));
 vi.mock("geist/font/mono", () => ({ GeistMono: { variable: "", className: "" } }));
 
