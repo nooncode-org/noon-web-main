@@ -20,7 +20,7 @@
 
 import type { ReferenceDirectionData } from "@/components/maxwell/reference-direction-card";
 import { log } from "@/lib/server/logger";
-import { cardCaptureId, ensureCardCapture } from "./reference-study/card-capture";
+import { ensureCardCapture } from "./reference-study/card-capture";
 import { studyReference } from "./reference-study/study";
 import type { StylePack } from "./style-packs";
 
@@ -69,40 +69,62 @@ function toAbsoluteUrl(ref: string): string {
 }
 
 /**
+ * Tiles per card. TWO on purpose: the card's grid is two columns (a third
+ * tile orphans a row), the spec caps the direction at "1 primaria + 1-2
+ * secundarias", and holding a reference back is what gives "Prefiero otra"
+ * something to rotate to — each family ships exactly 3 references.
+ */
+const TILES_PER_CARD = 2;
+
+/**
  * Build the card for a session. `captureBase` is the public route prefix
  * that serves cached captures (e.g. "/api/maxwell/studio/reference-capture").
+ *
+ * `exclude` powers "Prefiero otra": references already shown drop out. When
+ * the family runs out the selection CYCLES back to the full set instead of
+ * dead-ending — the client always gets a card, never an apology.
  */
 export async function buildDirectionCard(params: {
   stylePack: StylePack;
   language: string;
   captureBase: string;
+  exclude?: string[];
 }): Promise<DirectionStudyResult | null> {
-  const { stylePack, language, captureBase } = params;
+  const { stylePack, language, captureBase, exclude } = params;
 
-  const candidates = stylePack.refs.slice(0, 3).map((ref) => ({
+  const all = stylePack.refs.map((ref) => ({
     url: toAbsoluteUrl(ref.url),
     why: ref.v0Hint ?? undefined,
   }));
+  const excluded = new Set((exclude ?? []).map((url) => url.trim().toLowerCase()));
+  const fresh = all.filter((candidate) => !excluded.has(candidate.url.toLowerCase()));
+  const candidates = fresh.length > 0 ? fresh : all;
 
-  // Captures in parallel — each failure just drops that reference.
-  const captured = await Promise.all(
-    candidates.map(async (candidate) => ({
-      ...candidate,
-      captureId: await ensureCardCapture(candidate.url),
-    })),
-  );
-  const usable = captured.filter(
-    (c): c is typeof c & { captureId: string } => c.captureId !== null,
-  );
+  // Capture in order, stopping as soon as the card is full: an ugly or
+  // uncapturable reference simply never appears — it rotates out (spec §4),
+  // and we never pay for captures the card won't show.
+  const shown: { url: string; why?: string; captureId: string }[] = [];
+  const queue = [...candidates];
+  while (shown.length < TILES_PER_CARD && queue.length > 0) {
+    const batch = queue.splice(0, TILES_PER_CARD - shown.length);
+    const captured = await Promise.all(
+      batch.map(async (candidate) => ({
+        ...candidate,
+        captureId: await ensureCardCapture(candidate.url),
+      })),
+    );
+    for (const candidate of captured) {
+      if (candidate.captureId) shown.push({ ...candidate, captureId: candidate.captureId });
+    }
+  }
 
-  if (usable.length === 0) {
+  if (shown.length === 0) {
     log.warn("maxwell.direction-study", "no capturable references — degrading to direct path", {
       style_pack_id: stylePack.id,
     });
     return null;
   }
 
-  const shown = usable.slice(0, 3);
   const primaryUrl = shown[0].url;
 
   // Warm the primary's ficha in the background of THIS request (await: the
@@ -116,7 +138,7 @@ export async function buildDirectionCard(params: {
       references: shown.map((ref, index) => ({
         name: displayName(ref.url),
         why: ref.why,
-        imageUrl: `${captureBase}/${ref.captureId ?? cardCaptureId(ref.url)}`,
+        imageUrl: `${captureBase}/${ref.captureId}`,
         primary: index === 0,
         refUrl: ref.url,
       })),

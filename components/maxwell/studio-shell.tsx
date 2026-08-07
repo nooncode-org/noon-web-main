@@ -1504,6 +1504,70 @@ export function StudioShell({
     }
   }
 
+  /**
+   * Fase A · E2.3 — "Prefiero otra": ask for references the client hasn't
+   * seen. Never generates and never leaves them empty-handed — if nothing
+   * new can be shown, the current card stays and Maxwell says so calmly.
+   */
+  async function handlePreferAnother() {
+    if (!sessionId) return;
+
+    const shownUrls = messages
+      .flatMap((m) => m.referenceDirection?.references ?? [])
+      .map((ref) => ref.refUrl)
+      .filter((url): url is string => Boolean(url));
+
+    try {
+      const res = await fetch("/api/maxwell/prototype", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "rotate_direction",
+          shown_urls: shownUrls,
+          session_id: sessionId,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        card?: ReferenceDirectionData;
+        exhausted?: boolean;
+        message?: string;
+      };
+
+      if (res.ok && data.card) {
+        const card = data.card;
+        setMessages((prev) => [
+          ...prev.filter((m) => !m.referenceDirection),
+          createMessage({
+            role: "assistant",
+            content: card.title,
+            type: "system_event",
+            referenceDirection: card,
+          }),
+        ]);
+        return;
+      }
+
+      // Exhausted or unavailable — the card on screen stays valid.
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          content:
+            "Those are the directions that fit your project best. Pick the one you prefer — or share a reference of your own and I'll follow it.",
+        }),
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          content:
+            "I couldn't load another direction just now. The ones above are still valid — pick one, or share your own reference.",
+        }),
+      ]);
+    }
+  }
+
   async function handleApprove() {
     if (!sessionId) return;
     const phaseBeforeApprove = phase;
@@ -1985,6 +2049,7 @@ export function StudioShell({
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}
               onConfirmDirection={handleConfirmDirection}
+              onPreferAnotherDirection={handlePreferAnother}
               agentHref={agentHref}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}

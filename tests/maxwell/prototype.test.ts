@@ -577,6 +577,84 @@ describe("Fase A brain path (flag on)", () => {
     expect(repos.setStudioDirection).not.toHaveBeenCalled();
   });
 
+  it("rotate_direction ('Prefiero otra') re-serves excluding what was shown — never generates", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),
+    );
+
+    const res = await POST(
+      postReq({
+        action: "rotate_direction",
+        shown_urls: ["https://example.com/a", "https://example.com/b"],
+        session_id: "session-1",
+      }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ awaiting_direction: true, action: "rotate" });
+    expect(vi.mocked(directionStudy.buildDirectionCard)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        exclude: ["https://example.com/a", "https://example.com/b"],
+      }),
+    );
+    // A swap is not a generation, and the session stays parked on the card.
+    expect(apiIa.createV0Prototype).not.toHaveBeenCalled();
+    expect(repos.updateStudioSessionStatus).not.toHaveBeenCalled();
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+  });
+
+  it("rotate_direction with nothing capturable answers 'exhausted', not an error", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),
+    );
+    vi.mocked(directionStudy.buildDirectionCard).mockResolvedValue(null);
+
+    const res = await POST(
+      postReq({ action: "rotate_direction", shown_urls: [], session_id: "session-1" }),
+    );
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ awaiting_direction: true, exhausted: true });
+    expect(apiIa.createV0Prototype).not.toHaveBeenCalled();
+  });
+
+  it("rotate_direction outside awaiting_direction → 409", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession({ status: "clarifying" }));
+
+    const res = await POST(
+      postReq({ action: "rotate_direction", shown_urls: [], session_id: "session-1" }),
+    );
+
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe("NOT_AWAITING_DIRECTION");
+  });
+
+  it("corrections never re-ask for a direction (la dirección es pegajosa)", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({
+        status: "prototype_ready",
+        stylePackId: "clean-professional",
+        direction: {
+          primaryUrl: "https://example.com/a",
+          source: "pool",
+          confirmedAt: new Date().toISOString(),
+        },
+      }),
+    );
+    vi.mocked(apiIa.updateV0Prototype).mockResolvedValue({
+      chatId: "v0-chat-abc",
+      demoUrl: "https://v0.dev/preview/updated",
+    });
+
+    const res = await POST(postReq(validUpdateBody));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).action).toBe("update");
+    expect(directionStudy.buildDirectionCard).not.toHaveBeenCalled();
+  });
+
   it("confirm_direction happy path: persists the tap, then generates", async () => {
     vi.mocked(repos.getStudioSession).mockResolvedValue(
       fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),

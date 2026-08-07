@@ -84,10 +84,23 @@ const studioConfirmDirectionSchema = z.object({
   session_id: z.string(),
 });
 
+/**
+ * Fase A · E2.3 — "Prefiero otra": swap the card's references for ones the
+ * client hasn't seen. Pure re-serve — the session stays in
+ * `awaiting_direction`, nothing generates, nothing is charged beyond a
+ * capture that is cached from then on.
+ */
+const studioRotateDirectionSchema = z.object({
+  action: z.literal("rotate_direction"),
+  shown_urls: z.array(z.string().trim().url().max(500)).max(12),
+  session_id: z.string(),
+});
+
 const requestSchema = z.discriminatedUnion("action", [
   studioCreateSchema,
   studioUpdateSchema,
   studioConfirmDirectionSchema,
+  studioRotateDirectionSchema,
 ]);
 
 /**
@@ -351,6 +364,54 @@ export async function POST(request: Request) {
         chatId: result.chatId,
         session_id: session.id,
         action: "create",
+      });
+    }
+
+    // ── Fase A · E2.3 — "Prefiero otra": re-serve the card, never generate ──
+    if (payload.action === "rotate_direction") {
+      if (session.status !== "awaiting_direction") {
+        return NextResponse.json(
+          {
+            message: "This conversation is not waiting for a direction.",
+            code: "NOT_AWAITING_DIRECTION",
+          },
+          { status: 409 },
+        );
+      }
+      const rotatePack = session.stylePackId ? getStylePackById(session.stylePackId) : undefined;
+      if (!isBrainEnabled() || !rotatePack) {
+        return NextResponse.json(
+          {
+            message: "Direction flow unavailable — please ask for the prototype again.",
+            code: "DIRECTION_FLOW_UNAVAILABLE",
+          },
+          { status: 409 },
+        );
+      }
+
+      const rotated = await buildDirectionCard({
+        stylePack: rotatePack,
+        language: session.language,
+        captureBase: "/api/maxwell/studio/reference-capture",
+        exclude: payload.shown_urls,
+      });
+
+      // Nothing new could be captured: keep the card on screen and let the
+      // client say so calmly. Never an error, never a dead end (Regla 0).
+      if (!rotated) {
+        return NextResponse.json({
+          awaiting_direction: true,
+          exhausted: true,
+          session_id: session.id,
+          action: "rotate",
+        });
+      }
+
+      return NextResponse.json({
+        awaiting_direction: true,
+        card: rotated.card,
+        session_id: session.id,
+        action: "rotate",
       });
     }
 

@@ -370,6 +370,8 @@ type StudioChatPaneProps = {
    * dev bench (mock data, no handlers) renders unchanged.
    */
   onConfirmDirection?: (selected: ReferenceOption) => void;
+  /** Fase A · E2.3 — "Prefiero otra": swap in unseen references. */
+  onPreferAnotherDirection?: () => void;
   agentHref: string;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
@@ -1027,6 +1029,7 @@ export function StudioChatPane({
   onRequestCorrection,
   onRequestProposal,
   onConfirmDirection,
+  onPreferAnotherDirection,
   agentHref,
   isWorkspaceVisible,
   shareEnabled,
@@ -1309,6 +1312,7 @@ export function StudioChatPane({
                     key={messageId}
                     data={msg.referenceDirection}
                     onContinue={onConfirmDirection}
+                    onPreferAnother={onPreferAnotherDirection}
                   />
                 );
               }
