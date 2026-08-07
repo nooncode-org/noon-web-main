@@ -132,6 +132,12 @@ const chatRequestSchema = z
     session_id: z.string().optional(),
     prompt: z.string().trim().min(1).max(4000).optional(),
     image_url: z.string().url().optional(),
+    /**
+     * Fase A · E2.4 — up to 3 images of ONE reference (owner's rule). The
+     * singular `image_url` stays untouched for every existing caller; when
+     * both arrive they are merged, the singular first.
+     */
+    image_urls: z.array(z.string().url()).max(3).optional(),
     reply_to_message_id: z.string().min(1).optional(),
     regenerate_assistant_message_id: z.string().min(1).optional(),
   })
@@ -351,14 +357,19 @@ export async function POST(request: Request) {
     // understood and asks for confirmation instead of guessing. The read
     // direction is stored provisionally (confirmedAt null): from here on
     // it is THEIR direction, and the pool card no longer interrupts them.
+    const attachedImages = [
+      ...(parsed.image_url ? [parsed.image_url] : []),
+      ...(parsed.image_urls ?? []),
+    ].slice(0, 3);
+
     let referenceNote = "";
     if (
       isBrainEnabled() &&
-      parsed.image_url &&
+      attachedImages.length > 0 &&
       (session.status === "clarifying" || session.status === "awaiting_direction")
     ) {
       const reading = await readClientReference({
-        imageUrls: [parsed.image_url],
+        imageUrls: attachedImages,
         language: session.language,
         sessionId: session.id,
       });
@@ -391,7 +402,8 @@ export async function POST(request: Request) {
       prompt: promptForOpenAI + referenceNote,
       history: historyForOpenAI,
       systemPrompt,
-      ...(parsed.image_url ? { imageUrl: parsed.image_url } : {}),
+      // Maxwell sees every attached image, not just the first.
+      ...(attachedImages.length > 0 ? { imageUrls: attachedImages } : {}),
       signal: request.signal,
       // G-D2: tag for monthly LLM-budget attribution. The chat surface
       // is the largest spend category — most turns per session live here.

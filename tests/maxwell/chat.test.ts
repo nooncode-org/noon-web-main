@@ -660,3 +660,48 @@ describe("chat — one-tap reference answers (E2.4)", () => {
     expect((await res.json()).reference_options).toBeNull();
   });
 });
+
+describe("chat — up to 3 images of ONE reference (E2.4)", () => {
+  it("merges singular + array, caps at 3, and hands them ALL to the reader", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(clientReference.readClientReference).mockResolvedValue({
+      understood: "Tonos cálidos.",
+      palette: [],
+      styleNotes: [],
+      notCovered: [],
+      usable: true,
+    });
+
+    await POST(
+      postReq({
+        message: "mi referencia",
+        session_id: "session-1",
+        image_url: "https://cdn.example/a.jpg",
+        image_urls: ["https://cdn.example/b.jpg", "https://cdn.example/c.jpg"],
+      }),
+    );
+
+    expect(clientReference.readClientReference).toHaveBeenCalledWith(
+      expect.objectContaining({
+        imageUrls: [
+          "https://cdn.example/a.jpg",
+          "https://cdn.example/b.jpg",
+          "https://cdn.example/c.jpg",
+        ],
+      }),
+    );
+    // Maxwell sees every image too, not just the first.
+    expect(vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0].imageUrls).toHaveLength(3);
+  });
+
+  it("refuses more than 3 images", async () => {
+    const res = await POST(
+      postReq({
+        message: "x",
+        session_id: "session-1",
+        image_urls: ["https://a.example/1.jpg", "https://a.example/2.jpg", "https://a.example/3.jpg", "https://a.example/4.jpg"],
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+});
