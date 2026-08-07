@@ -916,6 +916,60 @@ export async function savePrototypeRecipe(input: {
   }
 }
 
+/**
+ * Fase A · E3.3 — the counters (spec §10: "ahorros de caché, rechazos del
+ * verificador, coste real por prototipo — decisiones futuras con números,
+ * no sensaciones").
+ *
+ * Derived from the recipes we already write: no second store to keep in
+ * sync, and every number traces back to a real generation.
+ */
+export type PrototypeCounters = {
+  prototypes: number;
+  /** Fichas served from cache — each one a study we did not pay for again. */
+  fichaFromCache: number;
+  fichaFresh: number;
+  /** Photos the customs gate approved / fell back on / left empty. */
+  slotsVerified: number;
+  slotsFallback: number;
+  slotsEmpty: number;
+};
+
+export async function getPrototypeCounters(sinceIso?: string): Promise<PrototypeCounters> {
+  const empty: PrototypeCounters = {
+    prototypes: 0,
+    fichaFromCache: 0,
+    fichaFresh: 0,
+    slotsVerified: 0,
+    slotsFallback: 0,
+    slotsEmpty: 0,
+  };
+  try {
+    const sql = getDb();
+    const since = sinceIso ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const rows = await sql<{ recipe_json: PrototypeRecipe }[]>`
+      SELECT recipe_json FROM prototype_recipe WHERE created_at >= ${since}
+    `;
+    return rows.reduce((acc, row) => {
+      const recipe = row.recipe_json;
+      acc.prototypes += 1;
+      if (recipe.fichaSource === "cache") acc.fichaFromCache += 1;
+      if (recipe.fichaSource === "fresh") acc.fichaFresh += 1;
+      for (const slot of recipe.slots ?? []) {
+        if (slot.verdict === "verified") acc.slotsVerified += 1;
+        else if (slot.verdict === "fallback") acc.slotsFallback += 1;
+        else acc.slotsEmpty += 1;
+      }
+      return acc;
+    }, empty);
+  } catch (error) {
+    log.warn("maxwell.repositories", "counters unreadable", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return empty;
+  }
+}
+
 export async function setStylePackId(
   sessionId: string,
   stylePackId: string,

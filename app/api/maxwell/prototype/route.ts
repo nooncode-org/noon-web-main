@@ -34,7 +34,10 @@ import {
 } from "@/lib/maxwell/prototype-brief";
 import { readCachedDossier } from "@/lib/maxwell/reference-study/dossier-cache";
 import { getStylePackById } from "@/lib/maxwell/style-packs";
-import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
+import {
+  assertPrototypeBudgetAvailable,
+  LLMBudgetExceededError,
+} from "@/lib/server/llm-budget";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -123,6 +126,10 @@ async function buildBrainBrief(params: {
   primaryUrl?: string;
 }): Promise<{ brief: string; recipe: PrototypeRecipe }> {
   const { session, stylePack, messages, lastUserMsg, lastAssistantMsg, primaryUrl } = params;
+
+  // Fase A · E3.3 — this prototype's own ceiling, checked before the
+  // expensive half. Anomaly detection: on a healthy run it never fires.
+  await assertPrototypeBudgetAvailable(session.id);
 
   // Their own images have no page to measure — the reading IS the ficha.
   const study = primaryUrl

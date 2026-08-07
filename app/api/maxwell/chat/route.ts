@@ -31,6 +31,7 @@ import {
 } from "@/lib/maxwell/prompts";
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
 import { readClientReference } from "@/lib/maxwell/client-reference";
+import { intakeClientImage } from "@/lib/maxwell/image-intake";
 import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
@@ -362,14 +363,45 @@ export async function POST(request: Request) {
       ...(parsed.image_urls ?? []),
     ].slice(0, 3);
 
+    // Fase A · E3.3 — every client image walks through the door: bytes must
+    // back the declared type, size must fit, and metadata (EXIF, with its
+    // GPS) is stripped. Hosted URLs pass through untouched — there is no
+    // upload to sanitize there. A refused image is simply dropped: the
+    // client hears about it from Maxwell, never as an error.
+    const safeImages: string[] = [];
+    let refusedImages = 0;
+    for (const image of attachedImages) {
+      if (!image.startsWith("data:")) {
+        safeImages.push(image);
+        continue;
+      }
+      const intake = intakeClientImage(image);
+      if (intake.ok) {
+        safeImages.push(intake.dataUrl);
+      } else {
+        refusedImages += 1;
+        log.warn("maxwell.chat", "client image refused at intake", {
+          session_id: session.id,
+          reason: intake.reason,
+        });
+      }
+    }
+
     let referenceNote = "";
-    if (
+    // Every image was turned away at the door — say so warmly and ask for
+    // another. The client never learns it was a security check.
+    if (isBrainEnabled() && refusedImages > 0 && safeImages.length === 0) {
+      referenceNote =
+        `\n\n[INTERNAL — the client attached ${refusedImages === 1 ? "an image" : "images"} that could not be opened.` +
+        ` Tell them warmly, without blaming them, and ask for another one — a photo, a screenshot or a link all work.` +
+        ` Do not mention formats, sizes or any technical reason.]`;
+    } else if (
       isBrainEnabled() &&
-      attachedImages.length > 0 &&
+      safeImages.length > 0 &&
       (session.status === "clarifying" || session.status === "awaiting_direction")
     ) {
       const reading = await readClientReference({
-        imageUrls: attachedImages,
+        imageUrls: safeImages,
         language: session.language,
         sessionId: session.id,
       });
@@ -403,7 +435,7 @@ export async function POST(request: Request) {
       history: historyForOpenAI,
       systemPrompt,
       // Maxwell sees every attached image, not just the first.
-      ...(attachedImages.length > 0 ? { imageUrls: attachedImages } : {}),
+      ...(safeImages.length > 0 ? { imageUrls: safeImages } : {}),
       signal: request.signal,
       // G-D2: tag for monthly LLM-budget attribution. The chat surface
       // is the largest spend category — most turns per session live here.

@@ -57,6 +57,11 @@ import {
   sendClientRequestAttachmentToNoonApp,
 } from "@/lib/noon-app-integration";
 import { sweepRateLimitCounters } from "@/lib/server/rate-limit-distributed";
+import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
+import {
+  refreshStaleDossiers,
+  type RefreshReport,
+} from "@/lib/maxwell/reference-study/refresh";
 import { sweepExpiredVerificationTokens } from "@/lib/auth/verification-adapter";
 import { log } from "@/lib/server/logger";
 
@@ -83,6 +88,12 @@ export type ReaperReport = {
       };
   rateLimitWindowsDeleted: number;
   verificationTokensDeleted: number;
+  /**
+   * Fase A · E3.3 — expired reference fichas re-studied this run. `skipped`
+   * while the generation brain is off: refreshing analyses nothing reads
+   * would be spending for nothing.
+   */
+  dossiers: { skipped: "brain_disabled" } | RefreshReport;
   errors: string[];
 };
 
@@ -274,6 +285,21 @@ export async function runReaper(): Promise<ReaperReport> {
     log.error("maxwell.reaper", error, { phase: "verification_token_sweep" });
   }
 
+  // Fase A · E3.3 — the periodic re-visit: fichas expire because reference
+  // pages get redesigned, and an old ficha describes a page that no longer
+  // exists. Housekeeping, capped per run, never blocking.
+  let dossiers: ReaperReport["dossiers"] = { skipped: "brain_disabled" };
+  if (isBrainEnabled()) {
+    try {
+      dossiers = await refreshStaleDossiers();
+      if (dossiers.refreshed > 0 || dossiers.failed > 0) {
+        log.info("maxwell.reaper", "Refreshed expired reference fichas", { ...dossiers });
+      }
+    } catch (error) {
+      errors.push(`dossiers: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   return {
     studioSessionsReverted,
     upgradeSessionsFailed,
@@ -281,6 +307,7 @@ export async function runReaper(): Promise<ReaperReport> {
     outbox,
     rateLimitWindowsDeleted,
     verificationTokensDeleted,
+    dossiers,
     errors,
   };
 }

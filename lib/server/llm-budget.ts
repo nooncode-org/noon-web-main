@@ -180,6 +180,63 @@ function currentPeriodMonth(now: Date = new Date()): string {
  *   The ONLY error we DO re-throw is the budget-exceeded one — that's
  *   a meaningful signal worth surfacing as a 503 to the client.
  */
+/**
+ * Fase A · E3.3 — spend ceiling for ONE prototype (spec §10: "tope por
+ * prototipo en el ledger para que ni el peor caso se descontrole").
+ * Default $0.60: five times the typical prototype and triple the worst
+ * case measured (three never-analysed client references ≈ $0.20), so it
+ * only ever fires on a genuine runaway.
+ */
+const DEFAULT_PROTOTYPE_CAP_USD = 0.6;
+
+export function resolvePrototypeCapUsd(): number {
+  const raw = process.env.LLM_BUDGET_USD_PER_PROTOTYPE?.trim();
+  const parsed = raw ? Number(raw) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PROTOTYPE_CAP_USD;
+}
+
+/**
+ * How much this session has spent in the last hour — the window a single
+ * generation lives in. Returns 0 when the ledger can't be read: a counter
+ * problem must never block a client's prototype.
+ */
+export async function sessionSpendLastHourUsd(sessionId: string): Promise<number> {
+  try {
+    const sql = getDb();
+    const rows = await sql<{ total: number | null }[]>`
+      SELECT COALESCE(SUM(cost_usd), 0) AS total
+      FROM llm_budget_usage
+      WHERE request_id = ${sessionId}
+        AND created_at > now() - interval '1 hour'
+    `;
+    return Number(rows[0]?.total ?? 0);
+  } catch (error) {
+    log.warn("llm-budget", "per-prototype spend unreadable — not blocking", {
+      session_id: sessionId,
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return 0;
+  }
+}
+
+/**
+ * Throws {@link LLMBudgetExceededError} when THIS prototype has already
+ * burned through its own ceiling. Anomaly detection, like the monthly cap:
+ * on a healthy run it never fires.
+ */
+export async function assertPrototypeBudgetAvailable(sessionId: string): Promise<void> {
+  const cap = resolvePrototypeCapUsd();
+  const spent = await sessionSpendLastHourUsd(sessionId);
+  if (spent >= cap) {
+    log.error("llm-budget", new Error("Per-prototype LLM budget exceeded"), {
+      session_id: sessionId,
+      spent_usd: spent,
+      cap_usd: cap,
+    });
+    throw new LLMBudgetExceededError(spent, cap);
+  }
+}
+
 export async function assertBudgetAvailable(): Promise<void> {
   const cap = resolveMonthlyBudgetUsd();
   const period = currentPeriodMonth();
