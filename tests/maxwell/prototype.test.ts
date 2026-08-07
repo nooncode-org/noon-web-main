@@ -123,6 +123,7 @@ import * as classifier from "@/lib/maxwell/style-classifier";
 import * as briefBuilder from "@/lib/maxwell/prototype-brief";
 import * as stylePacks from "@/lib/maxwell/style-packs";
 import * as directionStudy from "@/lib/maxwell/direction-study";
+import { studyReference } from "@/lib/maxwell/reference-study/study";
 import { POST } from "@/app/api/maxwell/prototype/route";
 
 // ---------------------------------------------------------------------------
@@ -390,6 +391,9 @@ describe("POST /api/maxwell/prototype — action: update", () => {
     expect(briefBuilder.buildCorrectionBrief).toHaveBeenCalledWith(
       "Make the hero bigger",
       expect.objectContaining({ id: "clean-professional" }),
+      // E3.1 — with the brain off a correction carries no blueprints, so the
+      // family values still travel alone, exactly as before.
+      null,
     );
   });
 
@@ -405,6 +409,7 @@ describe("POST /api/maxwell/prototype — action: update", () => {
     expect(briefBuilder.buildCorrectionBrief).toHaveBeenCalledWith(
       "Make the hero bigger",
       undefined,
+      null,
     );
   });
 
@@ -629,6 +634,44 @@ describe("Fase A brain path (flag on)", () => {
 
     expect(res.status).toBe(409);
     expect((await res.json()).code).toBe("NOT_AWAITING_DIRECTION");
+  });
+
+  it("a correction carries the blueprints from CACHE — never a fresh study", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({
+        status: "prototype_ready",
+        stylePackId: "clean-professional",
+        direction: {
+          primaryUrl: "https://example.com/a",
+          source: "client_images",
+          confirmedAt: new Date().toISOString(),
+          reading: {
+            understood: "Tonos cálidos.",
+            palette: ["#8a6f4d"],
+            styleNotes: [],
+            notCovered: [],
+            usable: true,
+          },
+        },
+      }),
+    );
+    vi.mocked(apiIa.updateV0Prototype).mockResolvedValue({
+      chatId: "v0-chat-abc",
+      demoUrl: "https://v0.dev/preview/updated",
+    });
+
+    await POST(postReq(validUpdateBody));
+
+    // The client's direction rides along with the change order…
+    expect(briefBuilder.buildCorrectionBrief).toHaveBeenCalledWith(
+      "Make the hero bigger",
+      expect.objectContaining({ id: "clean-professional" }),
+      expect.objectContaining({
+        clientReading: expect.objectContaining({ understood: "Tonos cálidos." }),
+      }),
+    );
+    // …and the correction never pays for a browser or an analysis call.
+    expect(studyReference).not.toHaveBeenCalled();
   });
 
   it("corrections never re-ask for a direction (la dirección es pegajosa)", async () => {

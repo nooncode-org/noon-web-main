@@ -512,3 +512,40 @@ describe("buildPrototypeBrief — the client's own reference (E2.4)", () => {
     expect(out).not.toContain("CLIENT'S OWN REFERENCE");
   });
 });
+
+describe("buildCorrectionBrief — the blueprints travel (E3.1)", () => {
+  const reading = {
+    understood: "Buscas tonos cálidos y un aire artesanal.",
+    palette: ["#8a6f4d"],
+    styleNotes: ["madera clara"],
+    notCovered: [],
+    usable: true,
+  };
+
+  it("carries the client's direction and forbids a new style for new content", () => {
+    const out = buildCorrectionBrief("Añade testimonios", fakePack(), {
+      clientReading: reading,
+    });
+
+    expect(out.indexOf("Añade testimonios")).toBe(0);
+    expect(out).toContain("CLIENT'S OWN REFERENCE");
+    expect(out).toContain("Buscas tonos cálidos");
+    expect(out).toContain("Never introduce a new style for new content");
+    expect(out).toContain("never fill new sections with placeholder people");
+  });
+
+  it("works with only the family (no brain data) exactly as before", () => {
+    const out = buildCorrectionBrief("Hazlo más oscuro", fakePack());
+
+    expect(out).toContain("Style family: Finance & Fintech");
+    expect(out).not.toContain("CLIENT'S OWN REFERENCE");
+    expect(out).not.toContain("Never introduce a new style");
+  });
+
+  it("still passes the raw prompt through when there is nothing to maintain", () => {
+    expect(buildCorrectionBrief("Solo cambia el título")).toBe("Solo cambia el título");
+    expect(buildCorrectionBrief("Solo cambia el título", undefined, {})).toBe(
+      "Solo cambia el título",
+    );
+  });
+});

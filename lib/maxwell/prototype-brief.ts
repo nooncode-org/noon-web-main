@@ -516,20 +516,41 @@ function assembleBrief(
 export function buildCorrectionBrief(
   correctionPrompt: string,
   stylePack?: StylePack,
+  extras?: BriefExtras | null,
 ): string {
-  if (!stylePack) return correctionPrompt;
+  const ficha = extras?.referenceDossier ?? null;
+  const clientReading = extras?.clientReading ?? null;
+  if (!stylePack && !ficha && !clientReading) return correctionPrompt;
 
-  const refUrls = stylePack.refs.map((r) => r.url).join(", ");
-  const { palette, fonts } = stylePack.token;
+  const parts = [correctionPrompt, "", "[Visual direction — maintain this]:"];
 
-  return [
-    correctionPrompt,
-    "",
-    "[Visual direction — maintain this]:",
-    `Style family: ${stylePack.name}`,
-    `Feel: ${stylePack.feel}`,
-    `Palette: background ${palette.bg} · ink ${palette.ink} · accent ${palette.accent}`,
-    `Typography: "${fonts.display}" headlines / "${fonts.body}" body`,
-    `References: ${refUrls}`,
-  ].join("\n");
+  if (stylePack) {
+    const { palette, fonts } = stylePack.token;
+    parts.push(
+      `Style family: ${stylePack.name}`,
+      `Feel: ${stylePack.feel}`,
+      `Palette: background ${palette.bg} · ink ${palette.ink} · accent ${palette.accent}`,
+      `Typography: "${fonts.display}" headlines / "${fonts.body}" body`,
+      `References: ${stylePack.refs.map((r) => r.url).join(", ")}`,
+    );
+  }
+
+  // Fase A · E3.1 — the blueprints travel with EVERY change order. Without
+  // them v0 answered "add testimonials" with a section from another planet
+  // (grey boxes, invented names) and each correction eroded what the first
+  // version had achieved. Correction №3 must look like version №1.
+  if (ficha) {
+    parts.push("", buildFichaBlock(ficha, "essential"));
+  }
+  if (clientReading) {
+    parts.push("", buildClientReadingBlock(clientReading));
+  }
+  if (ficha || clientReading) {
+    parts.push(
+      "",
+      "Anything you add must be built from the values above — same type scale, same palette, same spacing rhythm, same section anatomy. Never introduce a new style for new content, and never fill new sections with placeholder people, grey boxes or invented data.",
+    );
+  }
+
+  return parts.join("\n");
 }

@@ -28,7 +28,9 @@ import { buildDesignDossier } from "@/lib/maxwell/design-dossier";
 import {
   buildCorrectionBrief,
   buildPrototypeBrief,
+  type BriefExtras,
 } from "@/lib/maxwell/prototype-brief";
+import { readCachedDossier } from "@/lib/maxwell/reference-study/dossier-cache";
 import { getStylePackById } from "@/lib/maxwell/style-packs";
 import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
@@ -546,7 +548,23 @@ export async function POST(request: Request) {
     const stylePack = session.stylePackId
       ? getStylePackById(session.stylePackId)
       : undefined;
-    const correctionPrompt = buildCorrectionBrief(payload.prompt, stylePack);
+
+    // Fase A · E3.1 — a correction carries the design's blueprints so it
+    // extends the prototype instead of eroding it. The ficha comes from the
+    // CACHE only: a change order must never pay for a fresh study (no
+    // browser, no analysis call, no added wait). Cache miss → the family
+    // values still travel, exactly as before.
+    let correctionExtras: BriefExtras | null = null;
+    if (isBrainEnabled() && session.direction) {
+      const cached = session.direction.primaryUrl
+        ? await readCachedDossier(session.direction.primaryUrl)
+        : null;
+      correctionExtras = {
+        referenceDossier: cached?.dossier ?? null,
+        clientReading: session.direction.reading ?? null,
+      };
+    }
+    const correctionPrompt = buildCorrectionBrief(payload.prompt, stylePack, correctionExtras);
 
     let result: Awaited<ReturnType<typeof updateV0Prototype>>;
     try {
