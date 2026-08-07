@@ -6,6 +6,7 @@
  */
 
 import { getDb } from "@/lib/server/db";
+import { log } from "@/lib/server/logger";
 import type { ClientReferenceReading } from "./client-reference";
 import { assertValidTransition } from "./state-machine";
 import { buildProposalReviewTimeline, deriveProposalExpiry } from "./proposal-lifecycle";
@@ -863,6 +864,56 @@ export async function setStudioDirection(
         updated_at     = ${now}
     WHERE id = ${sessionId}
   `;
+}
+
+/**
+ * Fase A · E3.2 — what went into ONE prototype: which references, what the
+ * analysis said, which photos were approved and from which level, what the
+ * client chose, and the exact order sent to v0.
+ */
+export type PrototypeRecipe = {
+  /** "pool" | "client_images" | "client_url" | "none". */
+  directionSource: string;
+  primaryUrl: string | null;
+  /** "cache" | "fresh" | "none" — how the ficha was obtained. */
+  fichaSource: string;
+  clientReadingUnderstood: string | null;
+  stylePackId: string;
+  orderAvailable: boolean;
+  headline: string | null;
+  /** Per slot: what was asked for and what the customs gate decided. */
+  slots: { slotId: string; role: string; verdict: string; imageUrl: string | null }[];
+  /** The exact prompt v0 received — the single most useful thing to reread. */
+  finalPrompt: string;
+};
+
+/**
+ * Persist a recipe. Fire-and-forget by contract: a recipe is diagnostic
+ * material, never a reason to fail a generation the client is waiting for.
+ */
+export async function savePrototypeRecipe(input: {
+  studioSessionId: string;
+  v0ChatId: string | null;
+  recipe: PrototypeRecipe;
+}): Promise<void> {
+  try {
+    const sql = getDb();
+    await sql`
+      INSERT INTO prototype_recipe (id, studio_session_id, v0_chat_id, recipe_json, created_at)
+      VALUES (
+        ${crypto.randomUUID()},
+        ${input.studioSessionId},
+        ${input.v0ChatId},
+        ${sql.json(input.recipe)},
+        ${new Date().toISOString()}
+      )
+    `;
+  } catch (error) {
+    log.warn("maxwell.repositories", "recipe not saved — generation unaffected", {
+      studio_session_id: input.studioSessionId,
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 export async function setStylePackId(

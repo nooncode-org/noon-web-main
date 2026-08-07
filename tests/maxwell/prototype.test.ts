@@ -58,6 +58,7 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioBrief: vi.fn(),
   setStylePackId: vi.fn(async () => undefined),
   setStudioDirection: vi.fn(async () => undefined),
+  savePrototypeRecipe: vi.fn(async () => undefined),
   createStudioVersion: vi.fn(),
   incrementCorrectionsUsed: vi.fn(),
   updateStudioSessionStatus: vi.fn(async () => undefined),
@@ -726,6 +727,18 @@ describe("Fase A brain path (flag on)", () => {
     expect(repos.setStudioDirection).toHaveBeenCalledWith(
       "session-1",
       expect.objectContaining({ primaryUrl: "https://example.com/a", source: "pool" }),
+    );
+    // E3.2 — the recipe of this generation is filed with its v0 chat id.
+    expect(repos.savePrototypeRecipe).toHaveBeenCalledWith(
+      expect.objectContaining({
+        studioSessionId: "session-1",
+        v0ChatId: "v0-new-chat",
+        recipe: expect.objectContaining({
+          directionSource: expect.any(String),
+          stylePackId: "clean-professional",
+          finalPrompt: "BUILT BRIEF",
+        }),
+      }),
     );
     expect(vi.mocked(repos.updateStudioSessionStatus).mock.calls).toContainEqual([
       "session-1",

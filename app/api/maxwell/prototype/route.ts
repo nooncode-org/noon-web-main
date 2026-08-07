@@ -10,8 +10,10 @@ import {
   getStudioBrief,
   setStylePackId,
   setStudioDirection,
+  savePrototypeRecipe,
   incrementCorrectionsUsed,
   updateStudioSessionStatus,
+  type PrototypeRecipe,
   type StudioSession,
 } from "@/lib/maxwell/repositories";
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
@@ -119,7 +121,7 @@ async function buildBrainBrief(params: {
   lastAssistantMsg: string;
   /** Absent when the client's reference is images rather than a page. */
   primaryUrl?: string;
-}): Promise<string> {
+}): Promise<{ brief: string; recipe: PrototypeRecipe }> {
   const { session, stylePack, messages, lastUserMsg, lastAssistantMsg, primaryUrl } = params;
 
   // Their own images have no page to measure — the reading IS the ficha.
@@ -161,7 +163,7 @@ async function buildBrainBrief(params: {
     slots_verified: verified.filter((v) => v.verdict === "verified").length,
   });
 
-  return buildPrototypeBrief(
+  const assembled = buildPrototypeBrief(
     session,
     brief,
     messages,
@@ -171,6 +173,28 @@ async function buildBrainBrief(params: {
     null,
     { referenceDossier: study.dossier, clientReading, order, verifiedSlots: verified },
   );
+
+  // Fase A · E3.2 — the recipe: every ingredient of THIS prototype, so a bad
+  // result can be diagnosed instead of guessed at (spec §10).
+  return {
+    brief: assembled,
+    recipe: {
+      directionSource: session.direction?.source ?? "none",
+      primaryUrl: primaryUrl ?? null,
+      fichaSource: study.source,
+      clientReadingUnderstood: clientReading?.understood ?? null,
+      stylePackId: stylePack.id,
+      orderAvailable: order !== null,
+      headline: order?.copy.headline ?? null,
+      slots: verified.map((v) => ({
+        slotId: v.slot.slotId,
+        role: v.slot.role,
+        verdict: v.verdict,
+        imageUrl: v.image?.url ?? null,
+      })),
+      finalPrompt: assembled,
+    },
+  };
 }
 
 export async function POST(request: Request) {
@@ -274,7 +298,7 @@ export async function POST(request: Request) {
           let brainResult: Awaited<ReturnType<typeof createV0Prototype>>;
           try {
             brainResult = await createV0Prototype({
-              prompt: brainBrief,
+              prompt: brainBrief.brief,
               systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
             });
           } catch (v0Error) {
@@ -297,6 +321,13 @@ export async function POST(request: Request) {
               { status: 500 },
             );
           }
+          // E3.2 — the recipe of what we just ordered (never blocks).
+          await savePrototypeRecipe({
+            studioSessionId: session.id,
+            v0ChatId: brainResult.chatId,
+            recipe: brainBrief.recipe,
+          });
+
           return NextResponse.json({
             pending: true,
             chatId: brainResult.chatId,
@@ -494,7 +525,7 @@ export async function POST(request: Request) {
       let result: Awaited<ReturnType<typeof createV0Prototype>>;
       try {
         result = await createV0Prototype({
-          prompt: brainBrief,
+          prompt: brainBrief.brief,
           systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
         });
       } catch (v0Error) {
@@ -517,6 +548,13 @@ export async function POST(request: Request) {
           { status: 500 },
         );
       }
+
+      // E3.2 — the recipe of what we just ordered (never blocks).
+      await savePrototypeRecipe({
+        studioSessionId: session.id,
+        v0ChatId: result.chatId,
+        recipe: brainBrief.recipe,
+      });
 
       // Same response shape as `create` — the client's existing pending/poll
       // machinery takes over without knowing the brain exists.
