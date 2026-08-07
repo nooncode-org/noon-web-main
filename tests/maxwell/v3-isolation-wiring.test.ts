@@ -103,6 +103,7 @@ function fullSession(): StudioSession {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     stylePackId: "tech-digital", // ← internal — must NOT leak
+    direction: null,
     prototypeWorkspaceId: null,
     shareToken: null,
     shareTokenUrl: null,

@@ -39,6 +39,19 @@ export type StudioStatus =
   | "proposal_sent"
   | "converted";
 
+/**
+ * Fase A · E2 — the confirmed visual direction (persisted on the tap).
+ * Stored as JSONB (migration 034), validated leniently on read.
+ */
+export type StudioDirection = {
+  /** Normalized URL of the confirmed primary reference. */
+  primaryUrl: string;
+  /** Where the primary came from. */
+  source: "pool" | "client_url" | "client_images";
+  /** ISO timestamp of the client's tap. */
+  confirmedAt: string;
+};
+
 export type MessageRole = "user" | "assistant" | "system";
 export type MessageFeedback = "up" | "down";
 
@@ -101,6 +114,12 @@ export type StudioSession = {
    * consistent.
    */
   stylePackId: string | null;
+  /**
+   * Fase A · E2 — the client's confirmed visual direction (the card's tap).
+   * Null = not chosen (today's flows, and brain-flag off). Sticky by rule:
+   * confirmed once per session, corrections never re-ask.
+   */
+  direction: StudioDirection | null;
   /**
    * ADR-028 D6 — D-upstream wire share state. Populated when the seller
    * shares the current prototipo with the client and App emits a token.
@@ -314,6 +333,8 @@ type SessionRow = {
   deleted_at?: string | Date | null;
   /** Bloque 11 — see StudioSession.stylePackId comment. */
   style_pack_id?: string | null;
+  /** Fase A · E2 — see StudioSession.direction comment. Optional: absent on DBs without migration 034 (reads degrade to null). */
+  direction_json?: unknown;
   /** ADR-028 D6 — D-upstream wire share state. */
   prototype_workspace_id?: string | null;
   share_token?: string | null;
@@ -472,6 +493,7 @@ function mapSession(r: SessionRow): StudioSession {
     createdAt: toIsoTimestamp(r.created_at)!,
     updatedAt: toIsoTimestamp(r.updated_at)!,
     stylePackId: r.style_pack_id ?? null,
+    direction: parseStudioDirection(r.direction_json),
     prototypeWorkspaceId: r.prototype_workspace_id ?? null,
     shareToken: r.share_token ?? null,
     shareTokenUrl: r.share_token_url ?? null,
@@ -783,6 +805,45 @@ export async function incrementCorrectionsUsed(id: string): Promise<StudioSessio
  * (`lib/maxwell/style-packs.ts`), not the DB, so the constraint is enforced
  * at the call site (typed `StylePack["id"]`).
  */
+/** Lenient JSONB reader — anything malformed degrades to null (no direction). */
+function parseStudioDirection(raw: unknown): StudioDirection | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  const sources = ["pool", "client_url", "client_images"];
+  if (
+    typeof obj.primaryUrl !== "string" ||
+    !obj.primaryUrl ||
+    typeof obj.source !== "string" ||
+    !sources.includes(obj.source) ||
+    typeof obj.confirmedAt !== "string"
+  ) {
+    return null;
+  }
+  return {
+    primaryUrl: obj.primaryUrl,
+    source: obj.source as StudioDirection["source"],
+    confirmedAt: obj.confirmedAt,
+  };
+}
+
+/**
+ * Fase A · E2 — persist the client's confirmed direction (the card's tap).
+ * Only the brain-flag path calls this; requires migration 034.
+ */
+export async function setStudioDirection(
+  sessionId: string,
+  direction: StudioDirection,
+): Promise<void> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE studio_session
+    SET direction_json = ${sql.json(direction)},
+        updated_at     = ${now}
+    WHERE id = ${sessionId}
+  `;
+}
+
 export async function setStylePackId(
   sessionId: string,
   stylePackId: string,

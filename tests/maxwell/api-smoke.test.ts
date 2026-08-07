@@ -35,6 +35,7 @@ function sess(status: StudioSession["status"], correctionsUsed = 0): StudioSessi
     proposalRequestedAt: null,
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     stylePackId: null,
+    direction: null,
     prototypeWorkspaceId: null,
     shareToken: null,
     shareTokenUrl: null,

@@ -97,6 +97,7 @@ function fakeSession(overrides: Partial<StudioSession> = {}): StudioSession {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     stylePackId: null,
+    direction: null,
     prototypeWorkspaceId: null,
     shareToken: null,
     shareTokenUrl: null,
