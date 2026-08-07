@@ -83,6 +83,16 @@ vi.mock("@/lib/maxwell/design-dossier", () => ({
 vi.mock("@/lib/maxwell/image-verify", () => ({
   verifyShotCandidates: vi.fn(async () => []),
 }));
+// These two WRITE to the data dir. Mocked so the suite never leaves files
+// in the working tree (a test run once filled the real curation queue with
+// fixture text — the script that reads it made that visible).
+vi.mock("@/lib/maxwell/curation-queue", () => ({
+  noteCoverageGap: vi.fn(async () => undefined),
+}));
+vi.mock("@/lib/maxwell/asset-library", () => ({
+  archiveLibraryAssets: vi.fn(async () => undefined),
+  lookupLibraryAssets: vi.fn(async () => []),
+}));
 
 vi.mock("@/lib/maxwell/studio-guards", async () => {
   class MaxwellGuardError extends Error {

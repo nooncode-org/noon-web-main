@@ -18,6 +18,7 @@ import {
 } from "@/lib/maxwell/repositories";
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
 import { buildDirectionCard } from "@/lib/maxwell/direction-study";
+import { noteCoverageGap } from "@/lib/maxwell/curation-queue";
 import { studyReference } from "@/lib/maxwell/reference-study/study";
 import { buildCreativeOrder } from "@/lib/maxwell/creative-order";
 import { gatherShotCandidates } from "@/lib/maxwell/design-dossier";
@@ -291,9 +292,26 @@ export async function POST(request: Request) {
         // Re-serves (reload mid-card) reuse the already-classified family —
         // no repeat spend, no pack drift. First serve classifies and persists.
         const existingPack = session.stylePackId ? getStylePackById(session.stylePackId) : null;
-        const pack =
-          existingPack ?? (await classifyStylePack(session, payload.last_user_msg)).pack;
-        if (!existingPack) await setStylePackId(session.id, pack.id);
+        let classification: Awaited<ReturnType<typeof classifyStylePack>> | null = null;
+        if (!existingPack) {
+          classification = await classifyStylePack(session, payload.last_user_msg);
+        }
+        const pack = existingPack ?? classification!.pack;
+        if (!existingPack) {
+          await setStylePackId(session.id, pack.id);
+
+          // Fase A · E3.5 — the pool's self-diagnosis. Every fallback tier
+          // returns no image queries, so an empty list on the neutral
+          // family means "nothing here matched this business". Recording it
+          // turns an invisible weakness into a shopping list.
+          if (classification!.imageQueries.length === 0 && pack.id === "clean-professional") {
+            await noteCoverageGap({
+              familyId: pack.id,
+              projectHint: (session.goalSummary ?? session.initialPrompt).slice(0, 160),
+              reason: "classifier_fallback",
+            });
+          }
+        }
         const direction = await buildDirectionCard({
           stylePack: pack,
           language: session.language,

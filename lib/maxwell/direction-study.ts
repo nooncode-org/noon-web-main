@@ -21,6 +21,7 @@
 import type { ReferenceDirectionData } from "@/components/maxwell/reference-direction-card";
 import { log } from "@/lib/server/logger";
 import { ensureCardCapture } from "./reference-study/card-capture";
+import { readPoolExtras } from "./pool-extras";
 import { studyReference } from "./reference-study/study";
 import type { StylePack } from "./style-packs";
 
@@ -92,7 +93,11 @@ export async function buildDirectionCard(params: {
 }): Promise<DirectionStudyResult | null> {
   const { stylePack, language, captureBase, exclude } = params;
 
-  const all = stylePack.refs.map((ref) => ({
+  // The curated three, plus whatever was added by hand for this family
+  // (E3.5). Extras widen what "Prefiero otra" can offer without touching
+  // the reviewed core.
+  const extras = await readPoolExtras(stylePack.id);
+  const all = [...stylePack.refs, ...extras].map((ref) => ({
     url: toAbsoluteUrl(ref.url),
     why: ref.v0Hint ?? undefined,
   }));
