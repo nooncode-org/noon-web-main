@@ -272,6 +272,7 @@ describe("buildPrototypeBrief — Fase A extras (the brain path)", () => {
       url: "https://www.poilane.com",
       analyzedAt: "2026-08-05T00:00:00Z",
       measured: {
+        logo: null,
         fonts: [{ family: "aktiv-grotesk", weights: [400, 500] }],
         textStyles: [
           {
@@ -547,5 +548,88 @@ describe("buildCorrectionBrief — the blueprints travel (E3.1)", () => {
     expect(buildCorrectionBrief("Solo cambia el título", undefined, {})).toBe(
       "Solo cambia el título",
     );
+  });
+});
+
+describe("buildPrototypeBrief — the client's own brand logo", () => {
+  const history: HistoryMessage[] = [{ role: "user", content: "mi panadería" }];
+
+  it("ships their mark with rules that keep it intact", () => {
+    const out = buildPrototypeBrief(
+      fakeSession(),
+      null,
+      history,
+      "Genera",
+      "Voy.",
+      fakePack(),
+      null,
+      { clientBrandLogoUrl: "https://mipanaderia.example/logo.svg" },
+    );
+
+    expect(out).toContain("BRAND LOGO — the client's own");
+    expect(out).toContain("https://mipanaderia.example/logo.svg");
+    expect(out).toContain("never stretched, never recoloured");
+    expect(out).toContain("never replaced by a text placeholder or an invented mark");
+  });
+
+  it("is absent when we have no logo of theirs — a prototype wears no borrowed brand", () => {
+    const out = buildPrototypeBrief(
+      fakeSession(),
+      null,
+      history,
+      "Genera",
+      "Voy.",
+      fakePack(),
+      null,
+      { clientBrandLogoUrl: null },
+    );
+    expect(out).not.toContain("BRAND LOGO");
+  });
+
+  it("a pool reference's ficha never leaks its logo into the brief", () => {
+    // The ficha carries the measured mark of the reference site — which
+    // belongs to ANOTHER company. It must not reach v0 as a logo.
+    const ficha = {
+      version: 1 as const,
+      url: "https://poilane.example",
+      analyzedAt: "2026-08-05T00:00:00Z",
+      measured: {
+        logo: { url: "https://poilane.example/their-logo.svg", kind: "img" as const },
+        fonts: [],
+        textStyles: [],
+        palette: [],
+        containerWidthPx: 1200,
+        sectionGapsPx: [],
+        borderRadiiPx: [],
+        buttons: [],
+      },
+      judged: {
+        sections: [{ label: "hero", purpose: "p", pattern: "x" }],
+        hierarchy: "",
+        composition: "",
+        uxPatterns: [],
+        ctas: [],
+        imagery: [],
+        motion: [],
+        responsive: "",
+        whyItWorks: ["x"],
+        heroRecipe: "",
+      },
+    };
+
+    const out = buildPrototypeBrief(
+      fakeSession(),
+      null,
+      history,
+      "Genera",
+      "Voy.",
+      fakePack(),
+      null,
+      { referenceDossier: ficha },
+    );
+
+    expect(out).toContain("PRIMARY REFERENCE");
+    expect(out).not.toContain("their-logo.svg");
+    expect(out).not.toContain("BRAND LOGO");
   });
 });

@@ -42,6 +42,12 @@ export type ReferenceDossier = {
    * live in judged.responsive.
    */
   measured: {
+    /**
+     * The page's own mark, when one was found in its header home link.
+     * Only meaningful when the page belongs to the CLIENT — another
+     * brand's logo must never reach a prototype (see prototype-brief).
+     */
+    logo: ReferenceMeasurements["desktop"]["logo"];
     fonts: { family: string; weights: number[] }[];
     textStyles: ReferenceMeasurements["desktop"]["textStyles"];
     palette: ReferenceMeasurements["desktop"]["palette"];
@@ -165,6 +171,7 @@ export function parseDossierReply(
     url,
     analyzedAt: new Date().toISOString(),
     measured: {
+      logo: measurements.desktop.logo,
       fonts: measurements.desktop.fonts,
       textStyles: measurements.desktop.textStyles,
       palette: measurements.desktop.palette,

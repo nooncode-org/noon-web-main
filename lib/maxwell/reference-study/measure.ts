@@ -68,8 +68,21 @@ export type MeasuredSection = {
   backgroundHex: string | null;
 };
 
+/**
+ * The site's own mark, found ONLY where a logo lives by convention: inside
+ * the header's link back to home. A logo picked from anywhere else could
+ * be a partner's, a payment badge or a press mention — and a prototype
+ * wearing someone else's brand is far worse than one wearing none.
+ */
+export type MeasuredLogo = {
+  /** Absolute image URL, or a data: URI when the mark is inline SVG. */
+  url: string;
+  kind: "img" | "svg";
+};
+
 export type PageMeasurement = {
   viewport: { width: number; height: number };
+  logo: MeasuredLogo | null;
   fonts: { family: string; weights: number[] }[];
   textStyles: MeasuredTextStyle[];
   palette: MeasuredColor[];
@@ -302,6 +315,67 @@ function collectPageMeasurement(): PageMeasurement {
     }
   }
 
+  // The mark, conservatively: header/nav → link to home → its image. No
+  // match means no logo, never a guess.
+  let logo: MeasuredLogo | null = null;
+  try {
+    const containers = Array.from(
+      document.querySelectorAll('header, nav, [class*="header" i], [class*="navbar" i]'),
+    ).slice(0, 4);
+    for (const container of containers) {
+      // The mark is the FIRST image inside the header, and it links back
+      // into the site. Real headers rarely point the logo at exactly "/"
+      // (vercel.com uses "/home"), but they do always put it first — and
+      // an image that links OFF-SITE is a partner or a badge, never the
+      // brand. Position + same-origin together keep this honest.
+      const homeLinks = Array.from(container.querySelectorAll("a"))
+        .filter((a) => {
+          if (!a.querySelector("img") && !a.querySelector("svg")) return false;
+          const href = a.getAttribute("href") ?? "";
+          if (href.startsWith("#") || href.startsWith("mailto:")) return false;
+          return a.href.startsWith(location.origin);
+        })
+        .slice(0, 2);
+
+      for (const link of homeLinks) {
+        // A logo is BIGGER than a UI icon. Measuring the rendered box is
+        // what separates the brand from the store-locator pin sitting
+        // next to it — guessing by markup alone picked the pin.
+        const img = link.querySelector("img");
+        const src = img?.currentSrc || img?.src;
+        if (img && src && img.getBoundingClientRect().width >= 24) {
+          logo = { url: src, kind: "img" };
+          break;
+        }
+        const svg = link.querySelector("svg");
+        if (svg) {
+          // Size is NOT the discriminator: Vercel's mark is 21px wide, the
+          // same as an icon. What separates them is what they are CALLED —
+          // interface icons are labelled as such, brands are not.
+          const box = svg.getBoundingClientRect();
+          const naming = `${svg.getAttribute("class") ?? ""} ${svg.getAttribute("aria-label") ?? ""} ${link.getAttribute("aria-label") ?? ""}`;
+          const looksLikeIcon =
+            box.width < 12 ||
+            /\b(icon|chevron|arrow|caret|menu|hamburger|search|cart|bag|close|pin|marker|account|user|globe)\b/i.test(
+              naming,
+            );
+          const markup = svg.outerHTML;
+          // Big inline SVGs are usually illustrations, not marks.
+          if (!looksLikeIcon && markup.length > 0 && markup.length < 20000) {
+            logo = {
+              url: `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(markup)))}`,
+              kind: "svg",
+            };
+            break;
+          }
+        }
+      }
+      if (logo) break;
+    }
+  } catch {
+    // No mark found — the prototype simply goes without one.
+  }
+
   const palette: MeasuredColor[] = Array.from(colorCounts.entries())
     .map(([key, count]) => {
       const [role, hex] = key.split(":");
@@ -315,6 +389,7 @@ function collectPageMeasurement(): PageMeasurement {
 
   return {
     viewport: { width: window.innerWidth, height: window.innerHeight },
+    logo,
     fonts: Array.from(fonts.entries())
       .map(([family, weights]) => ({
         family,

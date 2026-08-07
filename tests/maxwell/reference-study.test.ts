@@ -44,6 +44,7 @@ import { studyReference } from "@/lib/maxwell/reference-study/study";
 function fakeMeasurements(url = "https://example.com"): ReferenceMeasurements {
   const page = {
     viewport: { width: 1440, height: 900 },
+    logo: null,
     fonts: [{ family: "Inter", weights: [400, 700] }],
     textStyles: [
       {

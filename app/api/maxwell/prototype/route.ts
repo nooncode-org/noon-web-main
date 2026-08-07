@@ -204,7 +204,18 @@ async function buildBrainBrief(params: {
     lastAssistantMsg,
     stylePack,
     null,
-    { referenceDossier: study.dossier, clientReading, order, verifiedSlots: verified },
+    {
+      referenceDossier: study.dossier,
+      clientReading,
+      // Their mark travels ONLY when the studied page is theirs. A pool
+      // reference's logo belongs to another company.
+      clientBrandLogoUrl:
+        session.direction?.source === "client_url"
+          ? (study.dossier?.measured.logo?.url ?? null)
+          : null,
+      order,
+      verifiedSlots: verified,
+    },
   );
 
   // Fase A · E3.2 — the recipe: every ingredient of THIS prototype, so a bad

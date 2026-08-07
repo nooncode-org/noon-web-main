@@ -52,6 +52,12 @@ export type BriefExtras = {
    * never invented.
    */
   clientReading?: ClientReferenceReading | null;
+  /**
+   * Fase A — the CLIENT'S OWN logo, measured from THEIR site. Set only
+   * when the studied page belongs to them: a pool reference's mark is
+   * another company's brand and must never reach a prototype.
+   */
+  clientBrandLogoUrl?: string | null;
   /** The creative order — fixed copy, data and the shot list's intent. */
   order?: CreativeOrder | null;
   /** Customs-approved imagery per slot (replaces the fixed-bucket dossier). */
@@ -382,6 +388,7 @@ function assembleBrief(
   const ficha = extras?.referenceDossier ?? null;
   const order = extras?.order ?? null;
   const clientReading = extras?.clientReading ?? null;
+  const clientBrandLogo = extras?.clientBrandLogoUrl ?? null;
   const verifiedSlots =
     extras?.verifiedSlots && extras.verifiedSlots.length > 0 ? extras.verifiedSlots : null;
   const brainActive = Boolean(ficha || order || verifiedSlots || clientReading);
@@ -448,6 +455,17 @@ function assembleBrief(
   // visual direction: it outranks both the family and any pool ficha.
   if (clientReading) {
     parts.push(buildClientReadingBlock(clientReading), "");
+  }
+
+  // Fase A — their real mark, taken from their own site. The strongest
+  // personalisation there is, and free: the first version already wears
+  // their brand without them typing a thing.
+  if (clientBrandLogo) {
+    parts.push(
+      `BRAND LOGO — the client's own, from their site. Use THIS as the logo in the header (and footer if there is one): ${clientBrandLogo}`,
+      "Render it at its natural proportions, never stretched, never recoloured, and never replaced by a text placeholder or an invented mark.",
+      "",
+    );
   }
 
   // IMAGERY — customs-approved slots when the brain ran; otherwise the
