@@ -271,6 +271,12 @@ export function StudioShell({
 
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  /**
+   * Fase A · E2.4 — extra images of the SAME reference (up to 3 in total
+   * with `attachedFile`). Kept beside the single attachment instead of
+   * replacing it, so every existing attach flow stays exactly as it was.
+   */
+  const [extraImages, setExtraImages] = useState<AttachedFile[]>([]);
   const [prototypeVersions, setPrototypeVersions] = useState<PrototypeVersion[]>([]);
   const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
   const [correctionsUsed, setCorrectionsUsed] = useState(0);
@@ -665,6 +671,8 @@ export function StudioShell({
       regenerateAssistantMessageId?: string;
       localUserMessageId?: string;
       attachedFile?: AttachedFile | null;
+      /** Fase A · E2.4 — further views of the SAME reference. */
+      extraImages?: AttachedFile[];
     },
   ) {
     const requestStartedAt = performance.now();
@@ -675,6 +683,11 @@ export function StudioShell({
 
     let imageUrl: string | undefined;
     let effectiveMessage = userMessage;
+    // Fase A · E2.4 — images 2 and 3 of the same reference, if any.
+    const extraImageUrls = (options?.extraImages ?? [])
+      .map((image) => image.dataUrl)
+      .filter((dataUrl): dataUrl is string => Boolean(dataUrl))
+      .slice(0, 2);
 
     // Attachment: from the chat composer (any message) or, for the very first
     // message started from the home hero, from sessionStorage.
@@ -709,6 +722,9 @@ export function StudioShell({
           message: effectiveMessage,
           ...(sessionId ? { session_id: sessionId } : {}),
           ...(imageUrl ? { image_url: imageUrl } : {}),
+          // Fase A · E2.4 — the rest of the reference's images. The server
+          // merges them with image_url (singular first) and caps at 3.
+          ...(extraImageUrls.length > 0 ? { image_urls: extraImageUrls } : {}),
           ...(options?.replyTarget
             ? { reply_to_message_id: options.replyTarget.messageId }
             : {}),
@@ -861,17 +877,29 @@ export function StudioShell({
 
     const currentReplyTarget = replyTarget;
     const currentAttachedFile = attachedFile;
-    const displayContent = msg || (currentAttachedFile ? `Attached: ${currentAttachedFile.name}` : "");
+    const currentExtraImages = extraImages;
+    const attachmentCount = (currentAttachedFile ? 1 : 0) + currentExtraImages.length;
+    const displayContent =
+      msg ||
+      (currentAttachedFile
+        ? attachmentCount > 1
+          ? `Attached: ${currentAttachedFile.name} +${attachmentCount - 1}`
+          : `Attached: ${currentAttachedFile.name}`
+        : attachmentCount > 0
+          ? `Attached: ${attachmentCount} images`
+          : "");
     const localUserMessage = createMessage({ role: "user", content: displayContent });
     setInput("");
     setReplyTarget(null);
     setStopNotice(null);
     setAttachedFile(null);
+    setExtraImages([]);
     setMessages((prev) => [...prev, localUserMessage]);
     void sendToMaxwell(msg, !sessionId && messages.length === 0, {
       replyTarget: currentReplyTarget,
       localUserMessageId: localUserMessage.id,
       attachedFile: currentAttachedFile,
+      extraImages: currentExtraImages,
     });
   }
 
@@ -1467,6 +1495,10 @@ export function StudioShell({
     setPhase("generating_prototype");
     setPrototypeFailed(false);
     setPollingStartedAt(Date.now());
+    // Fase A · E2.5 — the study runs INSIDE this request, so the client
+    // shows it: work in view, never a mute spinner. Polling replaces this
+    // trace with the server's real stages as soon as v0 is running.
+    setPrototypeTrace({ stage: "studying", fileCount: 0, fileNames: [], missingFiles: [] });
 
     const conversationSnapshot = messages
       .filter(
@@ -2069,6 +2101,8 @@ export function StudioShell({
               onSend={handleSend}
               attachedFile={attachedFile}
               onAttachChange={setAttachedFile}
+              extraImages={extraImages}
+              onExtraImagesChange={setExtraImages}
               onStop={handleStopThinking}
               inputRef={inputRef}
               canSend={canSendMessage}

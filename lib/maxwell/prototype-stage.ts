@@ -35,8 +35,20 @@
  * showing the truth is the point of this module.
  */
 
-/** Wire value emitted by the poll endpoint on every response. */
-export type PrototypeStage = "generating" | "assembling" | "publishing" | "ready";
+/**
+ * Wire value emitted by the poll endpoint on every response — plus the two
+ * Fase A stages that happen BEFORE v0 is even called (docs/maxwell/
+ * fase-a-spec.md §2: "cocina a la vista; jamás un spinner mudo"). Those two
+ * are set by the client while the generation request is in flight, since
+ * the study runs inside that request and the poll never observes it.
+ */
+export type PrototypeStage =
+  | "studying"
+  | "gathering"
+  | "generating"
+  | "assembling"
+  | "publishing"
+  | "ready";
 
 /**
  * Canonical order the trace renders in. Also the order the server reaches them
@@ -44,6 +56,8 @@ export type PrototypeStage = "generating" | "assembling" | "publishing" | "ready
  * returns before any other), and `ready` only after a version is committed.
  */
 export const PROTOTYPE_STAGE_ORDER: readonly PrototypeStage[] = [
+  "studying",
+  "gathering",
   "generating",
   "assembling",
   "publishing",
@@ -65,6 +79,10 @@ export function isPrototypeStage(value: unknown): value is PrototypeStage {
  */
 export function prototypeStageLabel(stage: PrototypeStage): string {
   switch (stage) {
+    case "studying":
+      return "Studying design references";
+    case "gathering":
+      return "Preparing visual resources";
     case "generating":
       return "Generating your prototype";
     case "assembling":
@@ -82,6 +100,10 @@ export function prototypeStageLabel(stage: PrototypeStage): string {
  */
 export function prototypeStageDetail(stage: PrototypeStage): string {
   switch (stage) {
+    case "studying":
+      return "Measuring the references that fit your project, down to the detail.";
+    case "gathering":
+      return "Finding real photography and content that match your business.";
     case "generating":
       return "Writing the code for your first interactive version.";
     case "assembling":

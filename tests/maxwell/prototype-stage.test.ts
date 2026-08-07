@@ -29,10 +29,13 @@ describe("prototypeStepStatus", () => {
     // The bug this replaces: the old block hardcoded `complete = index < 1`, so
     // the first step showed a checkmark the moment the block mounted. At the
     // first stage NOTHING is finished yet.
+    // Anchored to the FIRST stage rather than a named one: Fase A added two
+    // earlier stages (studying / gathering) and the invariant is positional.
+    const first = PROTOTYPE_STAGE_ORDER[0];
     for (const step of PROTOTYPE_STAGE_ORDER) {
-      expect(prototypeStepStatus(step, "generating")).not.toBe("done");
+      expect(prototypeStepStatus(step, first)).not.toBe("done");
     }
-    expect(prototypeStepStatus("generating", "generating")).toBe("active");
+    expect(prototypeStepStatus(first, first)).toBe("active");
   });
 
   it("treats `ready` as terminal — it settles instead of spinning on itself", () => {
@@ -89,7 +92,10 @@ describe("stage vocabulary", () => {
 
   it("starts at generating and ends at ready", () => {
     // Order is load-bearing: prototypeStepStatus is positional against it.
-    expect(PROTOTYPE_STAGE_ORDER[0]).toBe<PrototypeStage>("generating");
+    // Fase A puts the study first: the client sees the work that happens
+    // before v0 is even called.
+    expect(PROTOTYPE_STAGE_ORDER[0]).toBe<PrototypeStage>("studying");
+    expect(PROTOTYPE_STAGE_ORDER).toContain<PrototypeStage>("generating");
     expect(PROTOTYPE_STAGE_ORDER[PROTOTYPE_STAGE_ORDER.length - 1]).toBe<PrototypeStage>("ready");
   });
 });

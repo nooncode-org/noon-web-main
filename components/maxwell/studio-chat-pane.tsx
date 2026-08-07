@@ -56,6 +56,9 @@ import { formatElapsed } from "@/lib/maxwell/polling-progress";
 import type { PrototipoShareUxState } from "@/lib/maxwell/prototipo-share-types";
 import { useHasMounted } from "@/hooks/use-has-mounted";
 
+/** Fase A · E2.4 — up to 3 images of ONE reference (owner's rule). */
+const MAX_REFERENCE_IMAGES = 3;
+
 // ============================================================================
 // Message sub-components
 // ============================================================================
@@ -341,6 +344,13 @@ type StudioChatPaneProps = {
   onSend: () => void;
   attachedFile: AttachedFile | null;
   onAttachChange: (file: AttachedFile | null) => void;
+  /**
+   * Fase A · E2.4 — extra images of the SAME reference (owner's rule: up to
+   * 3 in total). The first image keeps the ordinary single-attachment path;
+   * these ride alongside it, so every non-image flow is untouched.
+   */
+  extraImages?: AttachedFile[];
+  onExtraImagesChange?: (files: AttachedFile[]) => void;
   onStop: () => void;
   replyTarget: ReplyTarget | null;
   onReplyToMessage: (target: ReplyTarget) => void;
@@ -1013,6 +1023,8 @@ export function StudioChatPane({
   onSend,
   attachedFile,
   onAttachChange,
+  extraImages = [],
+  onExtraImagesChange,
   onStop,
   replyTarget,
   onReplyToMessage,
@@ -1113,9 +1125,32 @@ export function StudioChatPane({
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const picked = Array.from(e.target.files ?? []);
+    const file = picked[0];
     if (!file) return;
     e.target.value = "";
+
+    // Fase A · E2.4 — picking several images at once means "these are views
+    // of ONE reference" (owner: hasta 3 imágenes de UNA referencia). The
+    // first goes down the ordinary single-attachment path below; the extras
+    // ride alongside. A single pick behaves exactly as it always has.
+    const extras = picked
+      .slice(1)
+      .filter((f) => f.type.startsWith("image/"))
+      .slice(0, MAX_REFERENCE_IMAGES - 1);
+    if (extras.length > 0 && onExtraImagesChange) {
+      void Promise.all(
+        extras.map(
+          (f) =>
+            new Promise<AttachedFile>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () =>
+                resolve({ name: f.name, mimeType: f.type, dataUrl: reader.result as string });
+              reader.readAsDataURL(f);
+            }),
+        ),
+      ).then((loaded) => onExtraImagesChange(loaded));
+    }
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = () => onAttachChange({ name: file.name, mimeType: file.type, dataUrl: reader.result as string });
@@ -1144,7 +1179,7 @@ export function StudioChatPane({
     (phase === "prototype_ready" || phase === "revision_requested");
   const contentFrameClass = isWorkspaceVisible ? "w-full" : "mx-auto w-full max-w-[720px]";
   const hasDraft = input.trim().length > 0;
-  const canSubmit = (hasDraft || !!attachedFile) && !isThinking;
+  const canSubmit = (hasDraft || !!attachedFile || extraImages.length > 0) && !isThinking;
   const messageStackClass = isWorkspaceVisible
     ? `${contentFrameClass} space-y-5 pb-5 pt-5`
     : `${contentFrameClass} flex min-h-full flex-col justify-end gap-5 pb-10 pt-20 sm:pb-12 sm:pt-24`;
@@ -1470,7 +1505,31 @@ export function StudioChatPane({
                   className={composerTextAreaClass}
                 />
               </div>
-              {/* Attached file badge (ported from the home hero composer). */}
+              {/* Attached file badges (ported from the home hero composer).
+                  E2.4 adds one badge per extra reference image, each
+                  removable on its own. */}
+              {extraImages.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 px-1.5 pb-1">
+                  {extraImages.map((image, index) => (
+                    <span
+                      key={`${image.name}-${index}`}
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-foreground"
+                    >
+                      <span className="truncate">{image.name}</span>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${image.name}`}
+                        onClick={() =>
+                          onExtraImagesChange?.(extraImages.filter((_, i) => i !== index))
+                        }
+                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
               {attachedFile && (
                 <div className="px-1.5 pb-1">
                   <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1 text-[11px] font-medium text-foreground">
@@ -1490,7 +1549,10 @@ export function StudioChatPane({
               {/* Bottom row — attach menu (left) + send (right), home-style. */}
               <div className="mt-1 flex items-center justify-between gap-2 px-1.5 pb-1 pt-1">
                 <div className="relative" ref={attachMenuRef}>
-                  <input ref={fileInputRef} type="file" accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
+                  {/* `multiple` serves the reference rule: several images of
+                      ONE reference in a single pick. Picking one file is
+                      unchanged, and non-image extras are ignored. */}
+                  <input ref={fileInputRef} type="file" multiple accept="image/*,.txt,.md,.csv,.json,.doc,.docx" className="hidden" onChange={handleFileChange} />
                   <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
                   <button
                     type="button"
