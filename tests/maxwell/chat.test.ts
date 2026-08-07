@@ -42,6 +42,9 @@ vi.mock("@/lib/auth/ownership", () => ({
 vi.mock("@/lib/maxwell/prompts", () => ({
   MAXWELL_CHAT_SYSTEM_PROMPT: "SYSTEM",
   MAXWELL_CHAT_POST_PROPOSAL_APPENDIX: "\nAPPENDIX",
+  // Fase A · E2.3 — the staged script (real text lives in prompts.ts; here
+  // it is a marker so the tests assert WHICH appendix the route chose).
+  MAXWELL_CHAT_STAGE_SCRIPT_APPENDIX: "\nSTAGE_SCRIPT",
 }));
 
 vi.mock("@/lib/maxwell/repositories", () => ({
@@ -501,5 +504,57 @@ describe("chat — resiliencia", () => {
 
     const res = await POST(postReq({ message: "hola", session_id: "session-1" }));
     expect(res.status).toBe(500);
+  });
+});
+
+// ============================================================================
+// Fase A · E2.3 — the staged script rides on the brain flag
+// ============================================================================
+
+describe("chat — staged script (Fase A flag)", () => {
+  it("with the brain OFF the system prompt is untouched (today's Maxwell)", async () => {
+    await POST(postReq({ message: "hola", session_id: "session-1" }));
+
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.systemPrompt).toBe("SYSTEM");
+  });
+
+  it("with the brain ON Maxwell gets the staged script", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+
+    await POST(postReq({ message: "hola", session_id: "session-1" }));
+
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.systemPrompt).toBe("SYSTEM\nSTAGE_SCRIPT");
+  });
+
+  it("post-proposal sessions keep their own appendix, not the script", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "proposal_sent" }),
+    );
+
+    await POST(postReq({ message: "hola", session_id: "session-1" }));
+
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.systemPrompt).toBe("SYSTEM\nAPPENDIX");
+  });
+});
+
+// The real script's load-bearing promises, pinned against the actual text:
+// references optional, and the hurried client is never sent back through
+// the stages (owner rules, docs/maxwell/fase-a-spec.md §1).
+describe("staged script content", () => {
+  it("keeps references optional and never rewinds the hurried client", async () => {
+    const prompts = await vi.importActual<typeof import("@/lib/maxwell/prompts")>(
+      "@/lib/maxwell/prompts",
+    );
+    const script = prompts.MAXWELL_CHAT_STAGE_SCRIPT_APPENDIX;
+
+    expect(script).toContain("Session mode: staged discovery");
+    expect(script).toContain("The script sets the ORDER; the client sets the PACE");
+    expect(script).toContain("they can skip this");
+    expect(script).toContain("It does NOT have to be a website");
+    expect(script).toContain("do NOT send them back through the stages");
   });
 });

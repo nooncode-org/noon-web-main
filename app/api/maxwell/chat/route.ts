@@ -25,8 +25,10 @@ import {
 import { canReceiveMessage } from "@/lib/maxwell/state-machine";
 import {
   MAXWELL_CHAT_POST_PROPOSAL_APPENDIX,
+  MAXWELL_CHAT_STAGE_SCRIPT_APPENDIX,
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
+import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
 import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
@@ -302,9 +304,14 @@ export async function POST(request: Request) {
 
     const postProposalChat =
       session.status === "proposal_pending_review" || session.status === "proposal_sent";
+    // Fase A · E2.3 — the staged script rides along only with the brain on.
+    // Post-proposal chats keep their own appendix instead: that session is
+    // past discovery, so staging it would be noise.
     const systemPrompt = postProposalChat
       ? MAXWELL_CHAT_SYSTEM_PROMPT + MAXWELL_CHAT_POST_PROPOSAL_APPENDIX
-      : MAXWELL_CHAT_SYSTEM_PROMPT;
+      : isBrainEnabled()
+        ? MAXWELL_CHAT_SYSTEM_PROMPT + MAXWELL_CHAT_STAGE_SCRIPT_APPENDIX
+        : MAXWELL_CHAT_SYSTEM_PROMPT;
 
     const { reply: rawReply } = await chatWithOpenAI({
       prompt: promptForOpenAI,
