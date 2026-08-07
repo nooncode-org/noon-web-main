@@ -102,14 +102,29 @@ export async function analyzeWebsite(params: {
   questionsAnswers: QuestionAnswer[];
   contextNote: string | null;
   mode: string;
+  /**
+   * Tarea #41 — screenshots of the client's real pages. Half of what
+   * makes a site feel dated is invisible in crawled text (cramped
+   * spacing, a dated hero, clip-art photography, type that never changes
+   * size), and that is precisely what the client feels but cannot name.
+   * Optional: with none, the audit runs on text exactly as before.
+   */
+  screenshots?: string[];
 }): Promise<AuditResult> {
-  const { pages, questionsAnswers, contextNote, mode } = params;
+  const { pages, questionsAnswers, contextNote, mode, screenshots = [] } = params;
 
   if (pages.length === 0) {
     return { ok: false, error: "No pages to analyze." };
   }
 
-  const prompt = buildAuditPrompt(pages, questionsAnswers, contextNote, mode);
+  const prompt =
+    buildAuditPrompt(pages, questionsAnswers, contextNote, mode) +
+    (screenshots.length > 0
+      ? `\n\nATTACHED: ${screenshots.length} screenshot(s) of the live site, in the order listed above.` +
+        " Judge what you SEE, not only what the text says: visual hierarchy, spacing and rhythm, typography scale," +
+        " colour discipline, imagery quality, and whether the design reads as current or dated." +
+        " Ground every visual finding in something actually visible in the screenshots — never invent one."
+      : "");
 
   let raw: string;
   try {
@@ -117,6 +132,7 @@ export async function analyzeWebsite(params: {
       prompt,
       systemPrompt: AUDIT_SYSTEM_PROMPT,
       model: "gpt-4.1",
+      ...(screenshots.length > 0 ? { imageUrls: screenshots } : {}),
       // G-D2: tag for monthly LLM-budget attribution.
       category: "upgrade_analyzer",
     });

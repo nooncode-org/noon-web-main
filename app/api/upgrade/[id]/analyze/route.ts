@@ -16,6 +16,7 @@ import {
   insertUpgradeEvent,
 } from "@/lib/upgrade/repositories";
 import { analyzeWebsite } from "@/lib/upgrade/analyzer";
+import { captureUpgradeScreenshots } from "@/lib/upgrade/screenshots";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,11 +65,16 @@ async function runAnalysis(
 ) {
   const pages = await getPagesBySessionId(sessionId);
 
+  // #41 — let the audit SEE the site, not just read it. Guarded and
+  // cached inside; no captures just means a text-only audit, as before.
+  const screenshots = await captureUpgradeScreenshots(pages.map((page) => page.url));
+
   const auditResult = await analyzeWebsite({
     pages,
     questionsAnswers: session.questionsAnswers,
     contextNote: session.contextNote,
     mode: session.mode,
+    screenshots,
   });
 
   if (!auditResult.ok) {

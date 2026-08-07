@@ -16,6 +16,7 @@ import {
 } from "@/lib/upgrade/repositories";
 import { crawlWebsite } from "@/lib/upgrade/crawler";
 import { analyzeWebsite } from "@/lib/upgrade/analyzer";
+import { captureUpgradeScreenshots } from "@/lib/upgrade/screenshots";
 import { normalizeUrl } from "@/lib/upgrade/url-normalize";
 
 export const runtime = "nodejs";
@@ -123,11 +124,17 @@ async function runAuditPipeline(
   await updateSessionStatus(sessionId, "analyzing");
   await insertUpgradeEvent({ sessionId, eventType: "audit_started" });
 
+  // #41 — the audit sees the real pages, not just their text.
+  const screenshots = await captureUpgradeScreenshots(
+    crawlResult.pages.map((page) => page.url),
+  );
+
   const auditResult = await analyzeWebsite({
     pages: crawlResult.pages,
     questionsAnswers: session.questionsAnswers,
     contextNote: session.contextNote,
     mode: session.mode,
+    screenshots,
   });
 
   if (!auditResult.ok) {
