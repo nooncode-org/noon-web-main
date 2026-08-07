@@ -38,6 +38,33 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const READY_TOKEN = "[READY_FOR_PROTOTYPE]";
+/**
+ * Fase A · E2.4 — Maxwell marks the reference question so the client can
+ * answer with one tap ("la acción vive en el mensaje, no en el menú").
+ * Only the staged script teaches this token, so with the brain off it
+ * never appears.
+ */
+const REFERENCE_OPTIONS_TOKEN = "[REFERENCE_OPTIONS]";
+
+/** The three one-tap answers, written as the CLIENT would write them. */
+function referenceOptionLabels(language: string): {
+  hasMine: string;
+  chooseForMe: string;
+  skip: string;
+} {
+  if (language === "es") {
+    return {
+      hasMine: "Tengo mi referencia",
+      chooseForMe: "Busquen ustedes",
+      skip: "Omitir",
+    };
+  }
+  return {
+    hasMine: "I have my own reference",
+    chooseForMe: "Choose for me",
+    skip: "Skip this",
+  };
+}
 const PROJECT_NAME_REGEX = /\[PROJECT_NAME:\s*([^\]]+)\]/;
 const PROJECT_TYPE_REGEX =
   /\[PROJECT_TYPE:\s*(landing|ecommerce|webapp|mobile|saas_ai)\s*\]/i;
@@ -58,8 +85,10 @@ function extractSignals(raw: string): {
   projectType: ValidProjectType | null;
   complexityHint: ValidComplexity | null;
   thinkingHint: string | null;
+  referenceOptions: boolean;
 } {
   const readyForPrototype = raw.includes(READY_TOKEN);
+  const referenceOptions = raw.includes(REFERENCE_OPTIONS_TOKEN);
   const projectNameMatch = PROJECT_NAME_REGEX.exec(raw);
   const projectTypeMatch = PROJECT_TYPE_REGEX.exec(raw);
   const complexityMatch = COMPLEXITY_REGEX.exec(raw);
@@ -75,6 +104,7 @@ function extractSignals(raw: string): {
 
   clean = clean
     .replace(READY_TOKEN, "")
+    .replace(REFERENCE_OPTIONS_TOKEN, "")
     .replace(PROJECT_NAME_REGEX, "")
     .replace(PROJECT_TYPE_REGEX, "")
     .replace(COMPLEXITY_REGEX, "")
@@ -84,6 +114,7 @@ function extractSignals(raw: string): {
   return {
     clean,
     readyForPrototype,
+    referenceOptions,
     projectName: projectNameMatch ? projectNameMatch[1].trim() : null,
     projectType: projectTypeMatch
       ? (projectTypeMatch[1].toLowerCase() as ValidProjectType)
@@ -375,6 +406,7 @@ export async function POST(request: Request) {
       projectType,
       complexityHint,
       thinkingHint,
+      referenceOptions,
     } = extractSignals(rawReply);
 
     const assistantMessages: StudioMessage[] = [];
@@ -447,6 +479,11 @@ export async function POST(request: Request) {
       user_message: userMessage ? toUiMessage(userMessage) : undefined,
       assistant_messages: assistantMessages.map(toUiMessage),
       readyForPrototype: shouldStartPrototypeBuild,
+      // Fase A · E2.4 — turn the reference question into one-tap answers,
+      // labelled in the SESSION's language (tapping sends that very text as
+      // the client's reply, so it must read like they wrote it). Live-only:
+      // on reload the question is still there in plain words.
+      reference_options: referenceOptions ? referenceOptionLabels(session.language) : null,
       session_id: session.id,
       session_status: session.status,
       project_name: session.goalSummary,

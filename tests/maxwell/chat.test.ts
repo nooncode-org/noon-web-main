@@ -632,3 +632,31 @@ describe("chat — client's own reference (Fase A flag)", () => {
     expect(call.prompt).toContain("never blaming them");
   });
 });
+
+describe("chat — one-tap reference answers (E2.4)", () => {
+  it("strips the token and returns the three labels in the session's language", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession({ language: "es" }));
+    vi.mocked(apiIa.chatWithOpenAI).mockResolvedValue({
+      reply: "¿Tienes alguna referencia que te guste? [REFERENCE_OPTIONS]",
+    });
+
+    const res = await POST(postReq({ message: "hola", session_id: "session-1" }));
+    const json = await res.json();
+
+    // The token never reaches the client.
+    expect(json.reply).not.toContain("REFERENCE_OPTIONS");
+    expect(json.reply).toContain("¿Tienes alguna referencia");
+    expect(json.reference_options).toEqual({
+      hasMine: "Tengo mi referencia",
+      chooseForMe: "Busquen ustedes",
+      skip: "Omitir",
+    });
+  });
+
+  it("is null on any other message", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    const res = await POST(postReq({ message: "hola", session_id: "session-1" }));
+    expect((await res.json()).reference_options).toBeNull();
+  });
+});

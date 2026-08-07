@@ -372,6 +372,8 @@ type StudioChatPaneProps = {
   onConfirmDirection?: (selected: ReferenceOption) => void;
   /** Fase A · E2.3 — "Prefiero otra": swap in unseen references. */
   onPreferAnotherDirection?: () => void;
+  /** Fase A · E2.4 — one-tap answer to the reference question. */
+  onQuickAnswer?: (text: string, focusComposer: boolean) => void;
   agentHref: string;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
@@ -1030,6 +1032,7 @@ export function StudioChatPane({
   onRequestProposal,
   onConfirmDirection,
   onPreferAnotherDirection,
+  onQuickAnswer,
   agentHref,
   isWorkspaceVisible,
   shareEnabled,
@@ -1336,9 +1339,13 @@ export function StudioChatPane({
               Object.prototype.hasOwnProperty.call(feedbackByMessageId, persistedMessageId)
                 ? feedbackByMessageId[persistedMessageId] ?? undefined
                 : msg.feedback ?? undefined;
+            // Fase A · E2.4 — Maxwell's reference question carries its three
+            // answers as buttons: the action lives in the message, not in a
+            // menu. Tapping one sends that label as the client's reply.
+            const quick = msg.quickActions;
             return (
+              <div key={messageId}>
               <AssistantMessage
-                key={messageId}
                 content={msg.content}
                 durationMs={msg.durationMs}
                 createdAt={msg.createdAt}
@@ -1362,6 +1369,26 @@ export function StudioChatPane({
                 }
                 onRegenerate={onRegenerateLatest}
               />
+              {quick && onQuickAnswer && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[
+                    { label: quick.hasMine, focus: true },
+                    { label: quick.chooseForMe, focus: false },
+                    { label: quick.skip, focus: false },
+                  ].map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      disabled={isThinking}
+                      onClick={() => onQuickAnswer(action.label, action.focus)}
+                      className="rounded-[6px] border border-border px-3 py-1.5 text-[13px] font-medium text-foreground/85 transition-colors hover:bg-secondary/60 disabled:opacity-50"
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              </div>
             );
           })}
           {isThinking && <ThinkingDots />}

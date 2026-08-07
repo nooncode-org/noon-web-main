@@ -67,6 +67,12 @@ export type ChatMessage = {
    * bench; live wiring lands with the Fase A build.
    */
   referenceDirection?: ReferenceDirectionData;
+  /**
+   * Fase A · E2.4 — one-tap answers attached to Maxwell's reference
+   * question ("la acción vive en el mensaje, no en el menú"). Live-only:
+   * a reload leaves the question in plain words, which still works.
+   */
+  quickActions?: { hasMine: string; chooseForMe: string; skip: string };
 };
 
 /**
@@ -722,6 +728,8 @@ export function StudioShell({
         user_message?: ChatMessage;
         assistant_messages?: ChatMessage[];
         readyForPrototype?: boolean;
+        /** Fase A · E2.4 — Maxwell's reference question gets one-tap answers. */
+        reference_options?: { hasMine: string; chooseForMe: string; skip: string } | null;
         session_id?: string;
         session_status?: StudioPhase;
         project_name?: string | null;
@@ -760,9 +768,14 @@ export function StudioShell({
         data.reply ?? data.message ?? "Maxwell couldn't respond right now. Please try again.";
       const durationMs = elapsedMs(requestStartedAt);
       const assistantMessages = data.assistant_messages?.length
-        ? data.assistant_messages.map((message) => ({
+        ? data.assistant_messages.map((message, index, all) => ({
             ...normalizeMessage(message),
             durationMs: message.durationMs ?? durationMs,
+            // The one-tap answers belong to the LAST message of the turn —
+            // the one carrying Maxwell's actual question.
+            ...(data.reference_options && index === all.length - 1
+              ? { quickActions: data.reference_options }
+              : {}),
           }))
         : [
             ...(data.thinking
@@ -860,6 +873,26 @@ export function StudioShell({
       localUserMessageId: localUserMessage.id,
       attachedFile: currentAttachedFile,
     });
+  }
+
+  /**
+   * Fase A · E2.4 — a one-tap answer to Maxwell's reference question. The
+   * label IS the reply (written in the client's language by the server),
+   * so the transcript reads exactly as if they had typed it. Tapping also
+   * retires the buttons: the question was answered once.
+   */
+  function handleQuickAnswer(text: string, focusComposer: boolean) {
+    if (isThinking) return;
+
+    const localUserMessage = createMessage({ role: "user", content: text });
+    setMessages((prev) => [
+      ...prev.map((m) => (m.quickActions ? { ...m, quickActions: undefined } : m)),
+      localUserMessage,
+    ]);
+    void sendToMaxwell(text, false, { localUserMessageId: localUserMessage.id });
+
+    // "I have my own reference" — put the cursor where they'll attach it.
+    if (focusComposer) setTimeout(() => inputRef.current?.focus(), 0);
   }
 
   function handleReplyToMessage(target: ReplyTarget) {
@@ -2050,6 +2083,7 @@ export function StudioShell({
               onRequestProposal={handleRequestProposal}
               onConfirmDirection={handleConfirmDirection}
               onPreferAnotherDirection={handlePreferAnother}
+              onQuickAnswer={handleQuickAnswer}
               agentHref={agentHref}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}
