@@ -28,6 +28,11 @@ export type ReferenceOption = {
   /** Quality capture (retina, hero-framed, clean) — never a raw thumbnail. */
   imageUrl: string;
   primary?: boolean;
+  /**
+   * E2.2 — the reference's actual URL, so the confirm action knows which
+   * direction the tap chose. Absent in bench/demo data.
+   */
+  refUrl?: string;
 };
 
 export type ReferenceDirectionData = {

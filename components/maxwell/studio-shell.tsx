@@ -20,7 +20,10 @@ import {
   type ProposalStage,
   type StudioMilestone,
 } from "@/lib/maxwell/proposal-milestone";
-import type { ReferenceDirectionData } from "@/components/maxwell/reference-direction-card";
+import type {
+  ReferenceDirectionData,
+  ReferenceOption,
+} from "@/components/maxwell/reference-direction-card";
 import { sharePrototypeAction } from "@/app/[locale]/maxwell/_actions/share-prototype";
 import { approvePrototypeAction } from "@/app/[locale]/maxwell/_actions/approve-prototype";
 import { useResizableChatPane } from "@/hooks/use-resizable-chat-pane";
@@ -533,6 +536,22 @@ export function StudioShell({
       if (data.session.shareTokenUrl) {
         setShareUrl(data.session.shareTokenUrl);
       }
+      // Fase A · E2.2 — a reload mid-card: the card message is not persisted
+      // (it rebuilds from state, like milestone cards), so re-request it.
+      // The create action re-serves the card from cache without changing
+      // status, and the response handler replaces any stale card message.
+      if (rehydratedView.phase === "awaiting_direction") {
+        const lastUser =
+          [...data.messages].reverse().find((m) => m.role === "user")?.content ??
+          "Generate the prototype.";
+        const lastAssistant =
+          [...data.messages].reverse().find((m) => m.role === "assistant")?.content ??
+          "Preparing the visual direction.";
+        setTimeout(() => {
+          void buildPrototype(lastUser, lastAssistant, data.session.id);
+        }, 0);
+      }
+
       const restoredMessages = data.messages.map(normalizeMessage);
       // W5 — surface the client's decision on the shared link (pulled from
       // App during rehydrate). Ephemeral notice, not persisted — mirrors the
@@ -963,6 +982,31 @@ export function StudioShell({
         return;
       }
 
+      // ── Fase A · E2.2 — the brain paused at the confirmation card ────────
+      // The server studied the references and answers with the card instead
+      // of a chatId: show it and WAIT (sin confirmación no se genera). Any
+      // previous card is replaced, never stacked.
+      const brainData = data as typeof data & {
+        awaiting_direction?: boolean;
+        card?: ReferenceDirectionData;
+      };
+      if (brainData.awaiting_direction && brainData.card) {
+        setPollingStartedAt(null);
+        setPhase("awaiting_direction");
+        const card = brainData.card;
+        setMessages((prev) => [
+          ...prev.filter((m) => !m.referenceDirection),
+          createMessage({
+            role: "assistant",
+            content: card.title,
+            type: "system_event",
+            referenceDirection: card,
+          }),
+        ]);
+        return;
+      }
+      // ── end brain branch ─────────────────────────────────────────────────
+
       setMessages((prev) => [
         ...prev,
         createMessage({
@@ -1374,6 +1418,89 @@ export function StudioShell({
       if (process.env.NODE_ENV !== "production") {
         console.error("sharePrototypeAction unexpected throw:", error);
       }
+    }
+  }
+
+  /**
+   * Fase A · E2.2 — the confirmation card's tap: the ONLY thing that turns
+   * a chosen direction into a generation (sin confirmación no se genera).
+   * Sends the same conversation snapshot as buildPrototype so the server
+   * can assemble the milimetric brief, then hands off to the existing
+   * pending/poll machinery untouched.
+   */
+  async function handleConfirmDirection(selected: ReferenceOption) {
+    if (!sessionId || !selected.refUrl) return;
+
+    setPhase("generating_prototype");
+    setPrototypeFailed(false);
+    setPollingStartedAt(Date.now());
+
+    const conversationSnapshot = messages
+      .filter(
+        (m) =>
+          m.type !== "thinking" &&
+          m.type !== "system_event" &&
+          m.type !== "error" &&
+          m.type !== "agent_cta",
+      )
+      .slice(-50)
+      .map((m) => ({ role: m.role, content: m.content, type: m.type }));
+    const lastUser =
+      [...conversationSnapshot].reverse().find((m) => m.role === "user")?.content ??
+      "Generate the prototype.";
+    const lastAssistant =
+      [...conversationSnapshot].reverse().find((m) => m.role === "assistant")?.content ??
+      "Building the prototype with the confirmed direction.";
+
+    try {
+      const res = await fetch("/api/maxwell/prototype", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "confirm_direction",
+          primary_url: selected.refUrl,
+          messages: conversationSnapshot,
+          last_user_msg: lastUser,
+          last_assistant_msg: lastAssistant,
+          session_id: sessionId,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        chatId?: string;
+        pending?: boolean;
+        session_id?: string;
+        message?: string;
+      };
+
+      if (res.ok && data.pending && data.chatId && data.session_id) {
+        pollV0Status(data.chatId, data.session_id, "create");
+        return;
+      }
+
+      setPhase("clarifying");
+      setPrototypeFailed(true);
+      setPollingStartedAt(null);
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          content:
+            data.message ??
+            "I couldn't start the build from that direction. You can try again or keep refining the idea.",
+        }),
+      ]);
+    } catch {
+      setPhase("clarifying");
+      setPrototypeFailed(true);
+      setPollingStartedAt(null);
+      setMessages((prev) => [
+        ...prev,
+        createMessage({
+          role: "assistant",
+          content:
+            "The build couldn't start right now. Your session is intact — you can try again.",
+        }),
+      ]);
     }
   }
 
@@ -1857,6 +1984,7 @@ export function StudioShell({
               onApprove={handleApprove}
               onRequestCorrection={handleRequestCorrection}
               onRequestProposal={handleRequestProposal}
+              onConfirmDirection={handleConfirmDirection}
               agentHref={agentHref}
               isWorkspaceVisible={shouldShowWorkspace}
               replyTarget={replyTarget}

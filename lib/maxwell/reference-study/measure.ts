@@ -107,7 +107,7 @@ const MAX_SECTION_CAPTURES = 6;
 const NAV_TIMEOUT_MS = 45_000;
 const CAPTURE_JPEG_QUALITY = 70;
 
-type PlaywrightModule = {
+export type PlaywrightModule = {
   chromium: {
     launch(opts?: { headless?: boolean }): Promise<{
       newContext(opts?: object): Promise<{
@@ -133,8 +133,9 @@ type PlaywrightPage = {
 /**
  * Playwright ships as a transitive dep of @playwright/test; try the direct
  * package first, fall back to the test wrapper (both re-export chromium).
+ * Exported for siblings (card-capture) so the loading strategy lives once.
  */
-async function loadPlaywright(): Promise<PlaywrightModule> {
+export async function loadPlaywright(): Promise<PlaywrightModule> {
   try {
     return (await import("playwright")) as unknown as PlaywrightModule;
   } catch {

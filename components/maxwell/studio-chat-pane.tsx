@@ -29,7 +29,10 @@ import {
   X,
 } from "lucide-react";
 import type { StudioMilestone } from "@/lib/maxwell/proposal-milestone";
-import { ReferenceDirectionCard } from "@/components/maxwell/reference-direction-card";
+import {
+  ReferenceDirectionCard,
+  type ReferenceOption,
+} from "@/components/maxwell/reference-direction-card";
 import { StudioThinkingBlock } from "./studio-thinking-block";
 import { StudioCorrectionBar } from "./studio-correction-bar";
 import { StudioProposalCta } from "./studio-proposal-cta";
@@ -362,6 +365,11 @@ type StudioChatPaneProps = {
   onApprove: () => void;
   onRequestCorrection: (prompt: string) => void;
   onRequestProposal: () => void;
+  /**
+   * Fase A · E2.2 — the confirmation card's "Continue" tap. Optional so the
+   * dev bench (mock data, no handlers) renders unchanged.
+   */
+  onConfirmDirection?: (selected: ReferenceOption) => void;
   agentHref: string;
   isWorkspaceVisible: boolean;
   // ADR-028 D10 — D-upstream wire share props (optional; absent when flag off).
@@ -1018,6 +1026,7 @@ export function StudioChatPane({
   onApprove,
   onRequestCorrection,
   onRequestProposal,
+  onConfirmDirection,
   agentHref,
   isWorkspaceVisible,
   shareEnabled,
@@ -1291,12 +1300,16 @@ export function StudioChatPane({
                   />
                 );
               }
-              // Fase A — the visual-direction confirmation card. Handlers are
-              // not wired yet on purpose (dev-bench render only); the live
-              // pipeline build connects them to continue / swap / use-mine.
+              // Fase A · E2.2 — the visual-direction confirmation card. The
+              // "Continue" tap confirms and generates; swap / use-mine land
+              // with E2.3 / E2.4.
               if (msg.referenceDirection) {
                 return (
-                  <ReferenceDirectionCard key={messageId} data={msg.referenceDirection} />
+                  <ReferenceDirectionCard
+                    key={messageId}
+                    data={msg.referenceDirection}
+                    onContinue={onConfirmDirection}
+                  />
                 );
               }
               if (msg.content.startsWith("The Noon team")) {

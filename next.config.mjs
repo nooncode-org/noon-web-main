@@ -11,6 +11,11 @@ const nextConfig = {
   turbopack: {
     root: rootDir,
   },
+  // Fase A · E2.2 — the reference study loads Playwright DYNAMICALLY
+  // (lib/maxwell/reference-study/measure.ts). Keep it external so the
+  // server bundle never tries to inline a browser; where it's absent at
+  // runtime the dynamic import throws and the flow degrades (Regla 0).
+  serverExternalPackages: ["playwright", "@playwright/test", "playwright-core"],
   async redirects() {
     return [
       // Consolidated pages redirects

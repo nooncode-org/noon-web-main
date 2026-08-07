@@ -9,9 +9,17 @@ import {
   getStudioSession,
   getStudioBrief,
   setStylePackId,
+  setStudioDirection,
   incrementCorrectionsUsed,
   updateStudioSessionStatus,
+  type StudioSession,
 } from "@/lib/maxwell/repositories";
+import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
+import { buildDirectionCard } from "@/lib/maxwell/direction-study";
+import { studyReference } from "@/lib/maxwell/reference-study/study";
+import { buildCreativeOrder } from "@/lib/maxwell/creative-order";
+import { gatherShotCandidates } from "@/lib/maxwell/design-dossier";
+import { verifyShotCandidates } from "@/lib/maxwell/image-verify";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
 import { isGenerationLikelyInFlight } from "@/lib/maxwell/prototype-poll-policy";
 import { evaluateInitialPrototypeCreate } from "@/lib/maxwell/prototype-quota";
@@ -60,10 +68,79 @@ const studioUpdateSchema = z.object({
   session_id: z.string(),
 });
 
+/**
+ * Fase A · E2.2 — the confirmation card's tap. Carries the same
+ * conversation snapshot as `create` because the milimetric brief needs it,
+ * plus which reference the client chose. Only legal from
+ * `awaiting_direction` (sin confirmación no se genera — this action IS the
+ * confirmación).
+ */
+const studioConfirmDirectionSchema = z.object({
+  action: z.literal("confirm_direction"),
+  primary_url: z.string().trim().url().max(500),
+  messages: z.array(chatMessageSchema).max(50),
+  last_user_msg: z.string().trim().min(1).max(4000),
+  last_assistant_msg: z.string().trim().min(1).max(4000),
+  session_id: z.string(),
+});
+
 const requestSchema = z.discriminatedUnion("action", [
   studioCreateSchema,
   studioUpdateSchema,
+  studioConfirmDirectionSchema,
 ]);
+
+/**
+ * Fase A · E2.2 — the brain's brief for one generation: study (cached
+ * after the card) → creative order → per-slot candidates → batch customs →
+ * milimetric prompt. Every step degrades to null and the assembler
+ * tolerates it (Regla 0) — worst case equals today's brief.
+ */
+async function buildBrainBrief(params: {
+  session: StudioSession;
+  stylePack: NonNullable<ReturnType<typeof getStylePackById>>;
+  messages: z.infer<typeof chatMessageSchema>[];
+  lastUserMsg: string;
+  lastAssistantMsg: string;
+  primaryUrl: string;
+}): Promise<string> {
+  const { session, stylePack, messages, lastUserMsg, lastAssistantMsg, primaryUrl } = params;
+
+  const study = await studyReference(primaryUrl);
+  const brief = await getStudioBrief(session.id);
+  const conversationDigest = messages
+    .slice(-8)
+    .map((m) => `${m.role === "user" ? "Client" : "Maxwell"}: ${m.content.slice(0, 300)}`)
+    .join("\n");
+
+  const order = await buildCreativeOrder({
+    session,
+    brief,
+    stylePack,
+    dossier: study.dossier,
+    conversationDigest,
+  });
+  const slots = order ? await gatherShotCandidates(order.shotList) : [];
+  const verified = order ? await verifyShotCandidates(slots) : [];
+
+  log.info("maxwell.prototype", "brain brief assembled", {
+    session_id: session.id,
+    ficha_source: study.source,
+    order_available: order !== null,
+    slots_verified: verified.filter((v) => v.verdict === "verified").length,
+  });
+
+  return buildPrototypeBrief(
+    session,
+    brief,
+    messages,
+    lastUserMsg,
+    lastAssistantMsg,
+    stylePack,
+    null,
+    { referenceDossier: study.dossier, order, verifiedSlots: verified },
+  );
+}
 
 export async function POST(request: Request) {
   try {
@@ -116,6 +193,88 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
+
+      // ── Fase A · E2.2 — the brain path (flag-gated) ─────────────────────
+      // With the brain ON and no confirmed direction yet, "generate" first
+      // means: classify → build the confirmation card → WAIT for the tap
+      // (sin confirmación no se genera). A card that can't be built falls
+      // through to the legacy path below (Regla 0) — the re-classify there
+      // costs a fraction of a cent and only happens on that rare failure.
+      if (isBrainEnabled() && !session.direction) {
+        // Re-serves (reload mid-card) reuse the already-classified family —
+        // no repeat spend, no pack drift. First serve classifies and persists.
+        const existingPack = session.stylePackId ? getStylePackById(session.stylePackId) : null;
+        const pack =
+          existingPack ?? (await classifyStylePack(session, payload.last_user_msg)).pack;
+        if (!existingPack) await setStylePackId(session.id, pack.id);
+        const direction = await buildDirectionCard({
+          stylePack: pack,
+          language: session.language,
+          captureBase: "/api/maxwell/studio/reference-capture",
+        });
+        if (direction) {
+          if (session.status !== "awaiting_direction") {
+            await updateStudioSessionStatus(session.id, "awaiting_direction");
+          }
+          return NextResponse.json({
+            awaiting_direction: true,
+            card: direction.card,
+            session_id: session.id,
+            action: "create",
+          });
+        }
+      }
+
+      // With the brain ON and a direction ALREADY confirmed (sticky rule —
+      // e.g. a retry after a v0 failure), generate with the brain brief but
+      // never re-ask.
+      if (isBrainEnabled() && session.direction && session.stylePackId) {
+        const confirmedPack = getStylePackById(session.stylePackId);
+        if (confirmedPack) {
+          await updateStudioSessionStatus(session.id, "generating_prototype");
+          const brainBrief = await buildBrainBrief({
+            session,
+            stylePack: confirmedPack,
+            messages: payload.messages,
+            lastUserMsg: payload.last_user_msg,
+            lastAssistantMsg: payload.last_assistant_msg,
+            primaryUrl: session.direction.primaryUrl,
+          });
+          let brainResult: Awaited<ReturnType<typeof createV0Prototype>>;
+          try {
+            brainResult = await createV0Prototype({
+              prompt: brainBrief,
+              systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
+            });
+          } catch (v0Error) {
+            log.error("maxwell.prototype", v0Error, { phase: "v0_create_brain" });
+            const stuckSession = await getStudioSession(payload.session_id);
+            if (stuckSession?.status === "generating_prototype") {
+              await updateStudioSessionStatus(stuckSession.id, "clarifying");
+            }
+            if (v0Error instanceof LLMBudgetExceededError) {
+              return NextResponse.json(
+                {
+                  message: "Prototype generation temporarily unavailable. Monthly LLM budget reached.",
+                  code: "LLM_BUDGET_EXCEEDED",
+                },
+                { status: 503 },
+              );
+            }
+            return NextResponse.json(
+              { message: "Could not generate the prototype right now. Please try again." },
+              { status: 500 },
+            );
+          }
+          return NextResponse.json({
+            pending: true,
+            chatId: brainResult.chatId,
+            session_id: session.id,
+            action: "create",
+          });
+        }
+      }
+      // ── end brain path — everything below is the pre-brain flow, intact ──
 
       await updateStudioSessionStatus(session.id, "generating_prototype");
 
@@ -187,6 +346,81 @@ export async function POST(request: Request) {
       // No esperamos a generar el mensaje ni la inserción si es asíncrono
       // La API responderá de inmediato con el chatId en pending=true
 
+      return NextResponse.json({
+        pending: true,
+        chatId: result.chatId,
+        session_id: session.id,
+        action: "create",
+      });
+    }
+
+    // ── Fase A · E2.2 — the tap: confirm the direction, then generate ──────
+    if (payload.action === "confirm_direction") {
+      if (session.status !== "awaiting_direction") {
+        return NextResponse.json(
+          {
+            message: "This conversation is not waiting for a direction.",
+            code: "NOT_AWAITING_DIRECTION",
+          },
+          { status: 409 },
+        );
+      }
+      const pack = session.stylePackId ? getStylePackById(session.stylePackId) : undefined;
+      if (!isBrainEnabled() || !pack) {
+        // Flag flipped off (or pack lost) between card and tap — degrade to
+        // the ordinary flow instead of erroring at the client (Regla 0).
+        await updateStudioSessionStatus(session.id, "clarifying");
+        return NextResponse.json(
+          { message: "Direction flow unavailable — please ask for the prototype again.", code: "DIRECTION_FLOW_UNAVAILABLE" },
+          { status: 409 },
+        );
+      }
+
+      await setStudioDirection(session.id, {
+        primaryUrl: payload.primary_url,
+        source: "pool",
+        confirmedAt: new Date().toISOString(),
+      });
+      await updateStudioSessionStatus(session.id, "generating_prototype");
+
+      const brainBrief = await buildBrainBrief({
+        session,
+        stylePack: pack,
+        messages: payload.messages,
+        lastUserMsg: payload.last_user_msg,
+        lastAssistantMsg: payload.last_assistant_msg,
+        primaryUrl: payload.primary_url,
+      });
+
+      let result: Awaited<ReturnType<typeof createV0Prototype>>;
+      try {
+        result = await createV0Prototype({
+          prompt: brainBrief,
+          systemPrompt: V0_PROTOTYPE_SYSTEM_PROMPT,
+        });
+      } catch (v0Error) {
+        log.error("maxwell.prototype", v0Error, { phase: "v0_create_confirm" });
+        const stuckSession = await getStudioSession(payload.session_id);
+        if (stuckSession?.status === "generating_prototype") {
+          await updateStudioSessionStatus(stuckSession.id, "clarifying");
+        }
+        if (v0Error instanceof LLMBudgetExceededError) {
+          return NextResponse.json(
+            {
+              message: "Prototype generation temporarily unavailable. Monthly LLM budget reached.",
+              code: "LLM_BUDGET_EXCEEDED",
+            },
+            { status: 503 },
+          );
+        }
+        return NextResponse.json(
+          { message: "Could not generate the prototype right now. Please try again." },
+          { status: 500 },
+        );
+      }
+
+      // Same response shape as `create` — the client's existing pending/poll
+      // machinery takes over without knowing the brain exists.
       return NextResponse.json({
         pending: true,
         chatId: result.chatId,

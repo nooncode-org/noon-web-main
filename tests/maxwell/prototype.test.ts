@@ -57,10 +57,30 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioSession: vi.fn(),
   getStudioBrief: vi.fn(),
   setStylePackId: vi.fn(async () => undefined),
+  setStudioDirection: vi.fn(async () => undefined),
   createStudioVersion: vi.fn(),
   incrementCorrectionsUsed: vi.fn(),
   updateStudioSessionStatus: vi.fn(async () => undefined),
   appendStudioMessage: vi.fn(async () => undefined),
+}));
+
+// Fase A · E2.2 — the brain path's collaborators. Deterministic stubs: the
+// route's flag-gating, transitions and response shapes run real.
+vi.mock("@/lib/maxwell/direction-study", () => ({
+  buildDirectionCard: vi.fn(),
+}));
+vi.mock("@/lib/maxwell/reference-study/study", () => ({
+  studyReference: vi.fn(async () => ({ dossier: null, source: "none", stale: false })),
+}));
+vi.mock("@/lib/maxwell/creative-order", () => ({
+  buildCreativeOrder: vi.fn(async () => null),
+}));
+vi.mock("@/lib/maxwell/design-dossier", () => ({
+  buildDesignDossier: vi.fn(async () => null),
+  gatherShotCandidates: vi.fn(async () => []),
+}));
+vi.mock("@/lib/maxwell/image-verify", () => ({
+  verifyShotCandidates: vi.fn(async () => []),
 }));
 
 vi.mock("@/lib/maxwell/studio-guards", async () => {
@@ -102,6 +122,7 @@ import * as quota from "@/lib/maxwell/prototype-quota";
 import * as classifier from "@/lib/maxwell/style-classifier";
 import * as briefBuilder from "@/lib/maxwell/prototype-brief";
 import * as stylePacks from "@/lib/maxwell/style-packs";
+import * as directionStudy from "@/lib/maxwell/direction-study";
 import { POST } from "@/app/api/maxwell/prototype/route";
 
 // ---------------------------------------------------------------------------
@@ -423,5 +444,159 @@ describe("POST /api/maxwell/prototype — action: update", () => {
     const calls = vi.mocked(repos.updateStudioSessionStatus).mock.calls;
     expect(calls).toContainEqual(["session-1", "prototype_ready"]);
     expect(repos.incrementCorrectionsUsed).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fase A · E2.2 — the brain path (MAXWELL_BRAIN_ENABLED). Every other block
+// in this file runs with the flag unset, which PINS that the legacy flow is
+// untouched when the brain is off.
+// ---------------------------------------------------------------------------
+
+describe("Fase A brain path (flag on)", () => {
+  const fakeDirectionResult = {
+    card: {
+      title: "Visual direction for your prototype",
+      references: [
+        {
+          name: "example.com",
+          why: "minimal",
+          imageUrl: "/api/maxwell/studio/reference-capture/abc123",
+          primary: true,
+          refUrl: "https://example.com/a",
+        },
+      ],
+      labels: {
+        continue: "Continue with this direction",
+        preferAnother: "Show me another",
+        useMine: "Use my reference",
+        primaryChip: "Primary",
+      },
+    },
+    primaryUrl: "https://example.com/a",
+  };
+
+  const validConfirmBody = {
+    action: "confirm_direction",
+    primary_url: "https://example.com/a",
+    messages: [{ role: "user" as const, content: "I want a website" }],
+    last_user_msg: "Generate the prototype.",
+    last_assistant_msg: "Building now.",
+    session_id: "session-1",
+  };
+
+  beforeEach(() => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(directionStudy.buildDirectionCard).mockResolvedValue(fakeDirectionResult);
+  });
+
+  afterEach(() => {
+    // "" reads as off — keeps the flag from leaking into other blocks.
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "");
+  });
+
+  it("create with no direction serves the card and WAITS (sin confirmación no se genera)", async () => {
+    const res = await POST(postReq(validCreateBody));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({
+      awaiting_direction: true,
+      action: "create",
+      session_id: "session-1",
+    });
+    expect(json.card.references[0].refUrl).toBe("https://example.com/a");
+    expect(vi.mocked(repos.updateStudioSessionStatus).mock.calls).toContainEqual([
+      "session-1",
+      "awaiting_direction",
+    ]);
+    expect(apiIa.createV0Prototype).not.toHaveBeenCalled();
+    // First serve classifies + persists the family.
+    expect(classifier.classifyStylePack).toHaveBeenCalled();
+    expect(repos.setStylePackId).toHaveBeenCalledWith("session-1", "clean-professional");
+  });
+
+  it("re-serving the card reuses the persisted family (no repeat classify)", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),
+    );
+
+    const res = await POST(postReq(validCreateBody));
+
+    expect(res.status).toBe(200);
+    expect(classifier.classifyStylePack).not.toHaveBeenCalled();
+    expect(repos.setStylePackId).not.toHaveBeenCalled();
+  });
+
+  it("degrades to the legacy path when the card can't be built (Regla 0)", async () => {
+    vi.mocked(directionStudy.buildDirectionCard).mockResolvedValue(null);
+
+    const res = await POST(postReq(validCreateBody));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ pending: true, chatId: "v0-new-chat", action: "create" });
+    expect(vi.mocked(repos.updateStudioSessionStatus).mock.calls).toContainEqual([
+      "session-1",
+      "generating_prototype",
+    ]);
+  });
+
+  it("create with a sticky direction generates directly — never re-asks", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({
+        stylePackId: "clean-professional",
+        direction: {
+          primaryUrl: "https://example.com/a",
+          source: "pool",
+          confirmedAt: new Date().toISOString(),
+        },
+      }),
+    );
+
+    const res = await POST(postReq(validCreateBody));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ pending: true, action: "create" });
+    expect(directionStudy.buildDirectionCard).not.toHaveBeenCalled();
+    expect(apiIa.createV0Prototype).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: "BUILT BRIEF" }),
+    );
+  });
+
+  it("confirm_direction outside awaiting_direction → 409", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(fakeSession({ status: "clarifying" }));
+
+    const res = await POST(postReq(validConfirmBody));
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.code).toBe("NOT_AWAITING_DIRECTION");
+    expect(apiIa.createV0Prototype).not.toHaveBeenCalled();
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+  });
+
+  it("confirm_direction happy path: persists the tap, then generates", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),
+    );
+
+    const res = await POST(postReq(validConfirmBody));
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toMatchObject({ pending: true, chatId: "v0-new-chat", action: "create" });
+    expect(repos.setStudioDirection).toHaveBeenCalledWith(
+      "session-1",
+      expect.objectContaining({ primaryUrl: "https://example.com/a", source: "pool" }),
+    );
+    expect(vi.mocked(repos.updateStudioSessionStatus).mock.calls).toContainEqual([
+      "session-1",
+      "generating_prototype",
+    ]);
+    expect(apiIa.createV0Prototype).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: "BUILT BRIEF" }),
+    );
   });
 });
