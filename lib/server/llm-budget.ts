@@ -113,6 +113,8 @@ export type LLMCategory =
   | "reference_analysis"
   | "creative_order"
   | "image_verify"
+  /** Nivel 3 of the resource cascade — generating a slot's image. */
+  | "image_generate"
   | "unlabeled";
 
 export type RecordLLMCallInput = {

@@ -29,8 +29,12 @@ export type VerifiedSlot = {
   slot: SlotCandidates["slot"];
   /** The winning candidate, or null when nothing passed ("fuera aunque sea bonita"). */
   image: StockImage | null;
-  /** How the winner was chosen — counters feed on this (spec §10). */
-  verdict: "verified" | "fallback" | "empty";
+  /**
+   * How the winner was chosen — counters feed on this (spec §10).
+   * `deterministic` and `generated` come from levels 2 and 3 of the
+   * cascade, applied after this gate to slots that were still empty.
+   */
+  verdict: "verified" | "fallback" | "empty" | "deterministic" | "generated";
 };
 
 /** Hard cap on images per verification call — keeps the batch legible. */

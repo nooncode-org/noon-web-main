@@ -21,6 +21,8 @@ import { buildDirectionCard } from "@/lib/maxwell/direction-study";
 import { studyReference } from "@/lib/maxwell/reference-study/study";
 import { buildCreativeOrder } from "@/lib/maxwell/creative-order";
 import { gatherShotCandidates } from "@/lib/maxwell/design-dossier";
+import { archiveLibraryAssets } from "@/lib/maxwell/asset-library";
+import { applyResourceCascade } from "@/lib/maxwell/resource-cascade";
 import { verifyShotCandidates } from "@/lib/maxwell/image-verify";
 import { assertCanRequestCorrection, MaxwellGuardError } from "@/lib/maxwell/studio-guards";
 import { isGenerationLikelyInFlight } from "@/lib/maxwell/prototype-poll-policy";
@@ -159,8 +161,27 @@ async function buildBrainBrief(params: {
     dossier: study.dossier,
     conversationDigest,
   });
-  const slots = order ? await gatherShotCandidates(order.shotList) : [];
-  const verified = order ? await verifyShotCandidates(slots) : [];
+  const slots = order ? await gatherShotCandidates(order.shotList, 4, stylePack.id) : [];
+  const gated = order ? await verifyShotCandidates(slots) : [];
+  // Levels 2 and 3 pick up whatever the library, the search and the customs
+  // gate left empty — and a slot that stays empty stays empty on purpose.
+  const verified = order
+    ? await applyResourceCascade({ slots: gated, stylePack, sessionId: session.id })
+    : [];
+
+  // Fase A · E3.4 — file the winners in our own library (Nivel 0). Only
+  // what the customs gate approved: the next client of this family gets
+  // them free, and the system composes itself over time.
+  await archiveLibraryAssets(
+    verified
+      .filter((slot) => slot.verdict === "verified" && slot.image)
+      .map((slot) => ({
+        image: slot.image!,
+        role: slot.slot.role,
+        familyId: stylePack.id,
+        query: slot.slot.searchQuery,
+      })),
+  );
 
   log.info("maxwell.prototype", "brain brief assembled", {
     session_id: session.id,

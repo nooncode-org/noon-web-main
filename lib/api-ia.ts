@@ -26,6 +26,7 @@ import { v0 } from "v0-sdk";
 
 import {
   assertBudgetAvailable,
+  LLMBudgetExceededError,
   recordLLMCall,
   type LLMCategory,
 } from "@/lib/server/llm-budget";
@@ -232,6 +233,61 @@ export async function chatWithOpenAI(params: OpenAIParams): Promise<OpenAIResult
   });
 
   return { reply };
+}
+
+// ---------------------------------------------------------------------------
+// Imagen generada — NIVEL 3 de la cascada (Fase A · E3.4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate one image from a shot brief. LAST RESORT by contract: levels 0-2
+ * (our library, the stock search, the deterministic providers) run first,
+ * and this is only reached when a slot would otherwise stay empty.
+ *
+ * Returns a data URL, or null on any failure — an empty slot is a designed
+ * outcome (the brief tells v0 to use typography there), never an error the
+ * client sees. Budget-checked like every other paid call.
+ */
+export async function generateSlotImage(params: {
+  prompt: string;
+  /** "16:9" | "4:3" | "1:1" — mapped to the sizes the model accepts. */
+  ratio: string;
+  requestId?: string | null;
+}): Promise<string | null> {
+  const { prompt, ratio, requestId } = params;
+  if (!process.env.OPENAI_API_KEY) return null;
+
+  const size =
+    ratio === "1:1" ? "1024x1024" : ratio === "9:16" ? "1024x1536" : "1536x1024";
+
+  try {
+    await assertBudgetAvailable();
+
+    const result = await getOpenAIClient().images.generate({
+      model: "gpt-image-2",
+      prompt,
+      size: size as "1024x1024" | "1536x1024" | "1024x1536",
+      n: 1,
+    });
+
+    const b64 = result.data?.[0]?.b64_json;
+    if (!b64) return null;
+
+    await recordLLMCall({
+      category: "image_generate",
+      provider: "openai",
+      model: "gpt-image-2",
+      requestId,
+      metadata: { size },
+    });
+
+    return `data:image/png;base64,${b64}`;
+  } catch (error) {
+    // Budget stops must surface (the route turns them into a 503); every
+    // other failure degrades to "no image for this slot".
+    if (error instanceof LLMBudgetExceededError) throw error;
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------

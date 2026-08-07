@@ -24,6 +24,7 @@
  */
 
 import { searchStockImages, type StockImage } from "@/lib/server/stock-images";
+import { lookupLibraryAssets } from "./asset-library";
 import type { ShotSpec } from "./creative-order";
 import type { StylePack } from "./style-packs";
 
@@ -128,15 +129,39 @@ function orientationForShot(slot: ShotSpec): "landscape" | "portrait" | "square"
 export async function gatherShotCandidates(
   shotList: ShotSpec[],
   candidatesPerSlot = 4,
+  /**
+   * Fase A · E3.4 — the family this prototype belongs to. With it, the
+   * cascade consults NIVEL 0 (our own library of already-verified photos)
+   * before paying for a search; without it, behaviour is the pre-cascade
+   * one (Pexels only).
+   */
+  familyId?: string,
 ): Promise<SlotCandidates[]> {
   const results = await Promise.all(
     shotList.map(async (slot) => {
-      const images = await searchStockImages({
-        query: slot.searchQuery,
-        count: candidatesPerSlot,
-        orientation: orientationForShot(slot),
-      });
-      return { slot, candidates: images ?? [] };
+      // Nivel 0 — what we already own and already verified for this exact
+      // family and role. Free, instant, and pre-approved.
+      const owned = familyId
+        ? await lookupLibraryAssets({
+            familyId,
+            role: slot.role,
+            query: slot.searchQuery,
+            limit: candidatesPerSlot,
+          })
+        : [];
+
+      // Nivel 1 — the search fills whatever the library did not cover.
+      const missing = candidatesPerSlot - owned.length;
+      const searched =
+        missing > 0
+          ? await searchStockImages({
+              query: slot.searchQuery,
+              count: missing,
+              orientation: orientationForShot(slot),
+            })
+          : null;
+
+      return { slot, candidates: [...owned, ...(searched ?? [])] };
     }),
   );
 

@@ -72,6 +72,13 @@ export const LLM_PRICING: Readonly<Record<string, LLMPricing>> = {
     inputUsdPerMillion: 0.2,
     outputUsdPerMillion: 1.2,
   },
+  "openai:gpt-image-2": {
+    // Charged per image, not per token (Fase A cascade, Nivel 3). The flat
+    // figure is the mid point of the published $0.03–0.06 range.
+    inputUsdPerMillion: 0,
+    outputUsdPerMillion: 0,
+    flatPerCall: 0.045,
+  },
   "openai:gpt-5.5": {
     inputUsdPerMillion: 5.0,
     outputUsdPerMillion: 30.0,
