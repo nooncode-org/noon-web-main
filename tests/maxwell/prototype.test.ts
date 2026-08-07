@@ -655,6 +655,21 @@ describe("Fase A brain path (flag on)", () => {
     expect(directionStudy.buildDirectionCard).not.toHaveBeenCalled();
   });
 
+  it("confirm_direction refuses a URL we never offered (allowlist, not filter)", async () => {
+    vi.mocked(repos.getStudioSession).mockResolvedValue(
+      fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),
+    );
+
+    const res = await POST(
+      postReq({ ...validConfirmBody, primary_url: "http://169.254.169.254/latest/meta-data" }),
+    );
+
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe("DIRECTION_NOT_OFFERED");
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+    expect(apiIa.createV0Prototype).not.toHaveBeenCalled();
+  });
+
   it("confirm_direction happy path: persists the tap, then generates", async () => {
     vi.mocked(repos.getStudioSession).mockResolvedValue(
       fakeSession({ status: "awaiting_direction", stylePackId: "clean-professional" }),

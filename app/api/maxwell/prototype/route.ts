@@ -453,6 +453,26 @@ export async function POST(request: Request) {
         );
       }
 
+      // The tap may only confirm a reference WE offered. Without this the
+      // endpoint would take any URL a client posts and hand it to the
+      // analysis browser — an allowlist beats a filter, and the pool is
+      // already one (client-supplied references travel the guarded path
+      // in the chat, lib/maxwell/client-reference-guard.ts).
+      const offered = new Set(
+        pack.refs.map((ref) =>
+          (/^https?:\/\//.test(ref.url) ? ref.url : `https://${ref.url}`).toLowerCase(),
+        ),
+      );
+      if (!offered.has(payload.primary_url.toLowerCase())) {
+        return NextResponse.json(
+          {
+            message: "That direction is no longer on offer. Pick one of the shown references.",
+            code: "DIRECTION_NOT_OFFERED",
+          },
+          { status: 409 },
+        );
+      }
+
       await setStudioDirection(session.id, {
         primaryUrl: payload.primary_url,
         source: "pool",
