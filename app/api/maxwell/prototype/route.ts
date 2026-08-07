@@ -115,15 +115,30 @@ async function buildBrainBrief(params: {
   messages: z.infer<typeof chatMessageSchema>[];
   lastUserMsg: string;
   lastAssistantMsg: string;
-  primaryUrl: string;
+  /** Absent when the client's reference is images rather than a page. */
+  primaryUrl?: string;
 }): Promise<string> {
   const { session, stylePack, messages, lastUserMsg, lastAssistantMsg, primaryUrl } = params;
 
-  const study = await studyReference(primaryUrl);
+  // Their own images have no page to measure — the reading IS the ficha.
+  const study = primaryUrl
+    ? await studyReference(primaryUrl)
+    : { dossier: null, source: "none" as const, stale: false };
+  const clientReading = session.direction?.reading ?? null;
   const brief = await getStudioBrief(session.id);
-  const conversationDigest = messages
-    .slice(-8)
-    .map((m) => `${m.role === "user" ? "Client" : "Maxwell"}: ${m.content.slice(0, 300)}`)
+  // The client's own reference leads the digest: the shot list must match
+  // THEIR world (the sofa rule), not just the family's.
+  const conversationDigest = [
+    clientReading
+      ? `CLIENT'S OWN REFERENCE (their direction): ${clientReading.understood}` +
+        (clientReading.palette.length ? ` Palette: ${clientReading.palette.join(", ")}.` : "") +
+        (clientReading.styleNotes.length ? ` Notes: ${clientReading.styleNotes.join("; ")}.` : "")
+      : null,
+    ...messages
+      .slice(-8)
+      .map((m) => `${m.role === "user" ? "Client" : "Maxwell"}: ${m.content.slice(0, 300)}`),
+  ]
+    .filter(Boolean)
     .join("\n");
 
   const order = await buildCreativeOrder({
@@ -139,6 +154,7 @@ async function buildBrainBrief(params: {
   log.info("maxwell.prototype", "brain brief assembled", {
     session_id: session.id,
     ficha_source: study.source,
+    client_reading: clientReading !== null,
     order_available: order !== null,
     slots_verified: verified.filter((v) => v.verdict === "verified").length,
   });
@@ -151,7 +167,7 @@ async function buildBrainBrief(params: {
     lastAssistantMsg,
     stylePack,
     null,
-    { referenceDossier: study.dossier, order, verifiedSlots: verified },
+    { referenceDossier: study.dossier, clientReading, order, verifiedSlots: verified },
   );
 }
 

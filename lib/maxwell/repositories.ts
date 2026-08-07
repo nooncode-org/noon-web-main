@@ -6,6 +6,7 @@
  */
 
 import { getDb } from "@/lib/server/db";
+import type { ClientReferenceReading } from "./client-reference";
 import { assertValidTransition } from "./state-machine";
 import { buildProposalReviewTimeline, deriveProposalExpiry } from "./proposal-lifecycle";
 import { PUBLIC_PROPOSAL_STATUSES } from "./proposal-visibility";
@@ -44,13 +45,27 @@ export type StudioStatus =
  * Stored as JSONB (migration 034), validated leniently on read.
  */
 export type StudioDirection = {
-  /** Normalized URL of the confirmed primary reference. */
-  primaryUrl: string;
+  /**
+   * Normalized URL of the primary reference. Absent when the client's
+   * reference is images rather than a page (E2.4).
+   */
+  primaryUrl?: string;
   /** Where the primary came from. */
   source: "pool" | "client_url" | "client_images";
-  /** ISO timestamp of the client's tap. */
-  confirmedAt: string;
+  /**
+   * ISO timestamp of the client's confirmation. Null while provisional —
+   * their reference was read and Maxwell is asking "is this right?".
+   */
+  confirmedAt: string | null;
+  /**
+   * What our analysis read from the client's OWN reference (E2.4). Their
+   * reference commands over the family token; what it does not cover the
+   * study fills in, and only a genuinely important gap becomes a question.
+   */
+  reading?: ClientReferenceReading;
 };
+
+export type { ClientReferenceReading };
 
 export type MessageRole = "user" | "assistant" | "system";
 export type MessageFeedback = "up" | "down";
@@ -810,19 +825,25 @@ function parseStudioDirection(raw: unknown): StudioDirection | null {
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, unknown>;
   const sources = ["pool", "client_url", "client_images"];
-  if (
-    typeof obj.primaryUrl !== "string" ||
-    !obj.primaryUrl ||
-    typeof obj.source !== "string" ||
-    !sources.includes(obj.source) ||
-    typeof obj.confirmedAt !== "string"
-  ) {
-    return null;
-  }
+  if (typeof obj.source !== "string" || !sources.includes(obj.source)) return null;
+
+  const primaryUrl = typeof obj.primaryUrl === "string" && obj.primaryUrl ? obj.primaryUrl : undefined;
+  const readingRaw = obj.reading;
+  const reading =
+    readingRaw &&
+    typeof readingRaw === "object" &&
+    typeof (readingRaw as Record<string, unknown>).understood === "string"
+      ? (readingRaw as ClientReferenceReading)
+      : undefined;
+
+  // A direction needs SOMETHING to point at: a page or a read reference.
+  if (!primaryUrl && !reading) return null;
+
   return {
-    primaryUrl: obj.primaryUrl,
+    ...(primaryUrl ? { primaryUrl } : {}),
     source: obj.source as StudioDirection["source"],
-    confirmedAt: obj.confirmedAt,
+    confirmedAt: typeof obj.confirmedAt === "string" ? obj.confirmedAt : null,
+    ...(reading ? { reading } : {}),
   };
 }
 

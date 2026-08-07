@@ -14,6 +14,7 @@ import {
   createStudioSession,
   getStudioSession,
   updateStudioSessionStatus,
+  setStudioDirection,
   appendStudioMessage,
   getStudioMessagesForOpenAI,
   getStudioMessage,
@@ -29,6 +30,7 @@ import {
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
+import { readClientReference } from "@/lib/maxwell/client-reference";
 import { extractAndSaveBrief } from "@/lib/maxwell/brief-extractor";
 import { LLMBudgetExceededError } from "@/lib/server/llm-budget";
 
@@ -313,8 +315,49 @@ export async function POST(request: Request) {
         ? MAXWELL_CHAT_SYSTEM_PROMPT + MAXWELL_CHAT_STAGE_SCRIPT_APPENDIX
         : MAXWELL_CHAT_SYSTEM_PROMPT;
 
+    // ── Fase A · E2.4 — the client attached their OWN reference ───────────
+    // Read it before Maxwell answers, so his reply states what we
+    // understood and asks for confirmation instead of guessing. The read
+    // direction is stored provisionally (confirmedAt null): from here on
+    // it is THEIR direction, and the pool card no longer interrupts them.
+    let referenceNote = "";
+    if (
+      isBrainEnabled() &&
+      parsed.image_url &&
+      (session.status === "clarifying" || session.status === "awaiting_direction")
+    ) {
+      const reading = await readClientReference({
+        imageUrls: [parsed.image_url],
+        language: session.language,
+        sessionId: session.id,
+      });
+
+      if (reading?.usable) {
+        await setStudioDirection(session.id, {
+          source: "client_images",
+          confirmedAt: null,
+          reading,
+        });
+        referenceNote =
+          `\n\n[INTERNAL — the client attached their own visual reference and our analysis read it.` +
+          ` Understood: "${reading.understood}".` +
+          (reading.palette.length ? ` Palette: ${reading.palette.join(", ")}.` : "") +
+          (reading.styleNotes.length ? ` Notes: ${reading.styleNotes.join("; ")}.` : "") +
+          (reading.notCovered.length ? ` Not covered by it: ${reading.notCovered.join("; ")}.` : "") +
+          ` Tell them what you understood (their language, one sentence) and ask if that is right.` +
+          ` This image works — never ask for a better one.` +
+          ` If something NOT covered is genuinely essential, ask ONE short question about it; otherwise say nothing about it.]`;
+      } else {
+        referenceNote =
+          `\n\n[INTERNAL — the client attached a visual reference but it could not be read at all.` +
+          ` Tell them warmly, never blaming them, and offer in this order:` +
+          ` a higher-quality version, the link to the original site, a different reference,` +
+          ` or describing it in their own words. Offer Noon's own selection only as the last resort.]`;
+      }
+    }
+
     const { reply: rawReply } = await chatWithOpenAI({
-      prompt: promptForOpenAI,
+      prompt: promptForOpenAI + referenceNote,
       history: historyForOpenAI,
       systemPrompt,
       ...(parsed.image_url ? { imageUrl: parsed.image_url } : {}),

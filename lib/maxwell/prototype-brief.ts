@@ -28,6 +28,7 @@
  * calls); this module is straight string assembly so tests are trivial.
  */
 
+import type { ClientReferenceReading } from "./client-reference";
 import type { CreativeOrder } from "./creative-order";
 import { dossierHasImagery, type DesignDossier } from "./design-dossier";
 import type { VerifiedSlot } from "./image-verify";
@@ -44,6 +45,13 @@ import type { StylePack } from "./style-packs";
 export type BriefExtras = {
   /** The primary reference's ficha — its values COMMAND over the family token. */
   referenceDossier?: ReferenceDossier | null;
+  /**
+   * Fase A · E2.4 — what we read from the CLIENT'S own reference (image or
+   * page). It outranks everything: they set the direction, we set the
+   * execution quality. What it doesn't cover is filled from the family,
+   * never invented.
+   */
+  clientReading?: ClientReferenceReading | null;
   /** The creative order — fixed copy, data and the shot list's intent. */
   order?: CreativeOrder | null;
   /** Customs-approved imagery per slot (replaces the fixed-bucket dossier). */
@@ -205,6 +213,31 @@ function buildFichaBlock(ficha: ReferenceDossier, detail: "full" | "essential"):
 }
 
 /**
+ * Fase A · E2.4 — the CLIENT'S own reference, read and confirmed by them.
+ * Printed above the family so its values win: "el cliente manda la
+ * dirección; Noon manda la calidad de ejecución".
+ */
+function buildClientReadingBlock(reading: ClientReferenceReading): string {
+  const lines = [
+    "CLIENT'S OWN REFERENCE — they chose this direction. It OUTRANKS every value above (family and reference alike):",
+    `Direction: ${reading.understood}`,
+  ];
+  if (reading.palette.length > 0) {
+    lines.push(`Palette from their reference (use these): ${reading.palette.join(" · ")}`);
+  }
+  if (reading.styleNotes.length > 0) {
+    lines.push(`Observed: ${reading.styleNotes.join(" · ")}`);
+  }
+  if (reading.notCovered.length > 0) {
+    lines.push(
+      `Their reference does not cover: ${reading.notCovered.join(" · ")}.`,
+      "For those, follow the family values below — never invent something the client did not ask for.",
+    );
+  }
+  return lines.join("\n");
+}
+
+/**
  * Fase A — customs-approved imagery, slot by slot, geometry attached.
  * Empty slots are stated explicitly: v0 must reach for typography there,
  * never for a placeholder (an empty slot beats a wrong photo).
@@ -348,9 +381,10 @@ function assembleBrief(
 
   const ficha = extras?.referenceDossier ?? null;
   const order = extras?.order ?? null;
+  const clientReading = extras?.clientReading ?? null;
   const verifiedSlots =
     extras?.verifiedSlots && extras.verifiedSlots.length > 0 ? extras.verifiedSlots : null;
-  const brainActive = Boolean(ficha || order || verifiedSlots);
+  const brainActive = Boolean(ficha || order || verifiedSlots || clientReading);
 
   const parts: string[] = [];
 
@@ -408,6 +442,12 @@ function assembleBrief(
   // over the family token printed above (spec §5, conflict rule).
   if (ficha) {
     parts.push(buildFichaBlock(ficha, trimLevel === 2 ? "essential" : "full"), "");
+  }
+
+  // Fase A · E2.4 — the client's own reference gets the LAST word of the
+  // visual direction: it outranks both the family and any pool ficha.
+  if (clientReading) {
+    parts.push(buildClientReadingBlock(clientReading), "");
   }
 
   // IMAGERY — customs-approved slots when the brain ran; otherwise the

@@ -56,12 +56,19 @@ vi.mock("@/lib/maxwell/repositories", () => ({
   getStudioMessage: vi.fn(),
   getStudioMessages: vi.fn(async () => []),
   appendStudioEvent: vi.fn(async () => undefined),
+  setStudioDirection: vi.fn(async () => undefined),
+}));
+
+// Fase A · E2.4 — reading the client's own attached reference.
+vi.mock("@/lib/maxwell/client-reference", () => ({
+  readClientReference: vi.fn(),
 }));
 
 import * as apiIa from "@/lib/api-ia";
 import * as authSession from "@/lib/auth/session";
 import * as ownership from "@/lib/auth/ownership";
 import * as repos from "@/lib/maxwell/repositories";
+import * as clientReference from "@/lib/maxwell/client-reference";
 import { POST } from "@/app/api/maxwell/chat/route";
 
 const ROUTE = "http://localhost/api/maxwell/chat";
@@ -556,5 +563,72 @@ describe("staged script content", () => {
     expect(script).toContain("they can skip this");
     expect(script).toContain("It does NOT have to be a website");
     expect(script).toContain("do NOT send them back through the stages");
+  });
+});
+
+// ============================================================================
+// Fase A · E2.4 — the client's OWN reference, attached in the chat
+// ============================================================================
+
+describe("chat — client's own reference (Fase A flag)", () => {
+  const reading = {
+    understood: "Veo que buscas tonos cálidos y un aire artesanal.",
+    palette: ["#8a6f4d"],
+    styleNotes: ["madera clara"],
+    notCovered: ["estructura de secciones"],
+    usable: true,
+  };
+
+  function attachReq() {
+    return postReq({
+      message: "esta es mi referencia",
+      session_id: "session-1",
+      image_url: "https://cdn.example/ref.jpg",
+    });
+  }
+
+  it("with the brain OFF an attachment is never analyzed (today's behaviour)", async () => {
+    await POST(attachReq());
+
+    expect(clientReference.readClientReference).not.toHaveBeenCalled();
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.prompt).not.toContain("INTERNAL");
+  });
+
+  it("reads it, stores it as THEIR direction, and asks them to confirm", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(clientReference.readClientReference).mockResolvedValue(reading);
+
+    await POST(attachReq());
+
+    // Provisional: confirmedAt null until they say yes.
+    expect(repos.setStudioDirection).toHaveBeenCalledWith(
+      "session-1",
+      expect.objectContaining({ source: "client_images", confirmedAt: null, reading }),
+    );
+
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.prompt).toContain(reading.understood);
+    expect(call.prompt).toContain("ask if that is right");
+    // Owner's rule: a readable image is never sent back for a better one.
+    expect(call.prompt).toContain("never ask for a better one");
+  });
+
+  it("when it cannot be read at all, Maxwell climbs the gentle ladder", async () => {
+    vi.stubEnv("MAXWELL_BRAIN_ENABLED", "1");
+    vi.mocked(clientReference.readClientReference).mockResolvedValue({
+      ...reading,
+      usable: false,
+    });
+
+    await POST(attachReq());
+
+    // Nothing is stored from an unreadable reference.
+    expect(repos.setStudioDirection).not.toHaveBeenCalled();
+    const call = vi.mocked(apiIa.chatWithOpenAI).mock.calls[0][0];
+    expect(call.prompt).toContain("higher-quality version");
+    expect(call.prompt).toContain("last resort");
+    expect(call.prompt).toContain("never blaming them");
   });
 });

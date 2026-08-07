@@ -462,3 +462,53 @@ describe("buildCorrectionBrief", () => {
     expect(out.indexOf("USER_PROMPT_HERE")).toBeLessThan(out.indexOf("[Visual direction"));
   });
 });
+
+describe("buildPrototypeBrief — the client's own reference (E2.4)", () => {
+  const reading = {
+    understood: "Buscas tonos cálidos y un aire artesanal.",
+    palette: ["#8a6f4d", "#f3ece2"],
+    styleNotes: ["madera clara", "luz lateral"],
+    notCovered: ["estructura de secciones"],
+    usable: true,
+  };
+
+  it("outranks the family and says what it does NOT cover", () => {
+    const out = buildPrototypeBrief(
+      fakeSession({ language: "es" }),
+      null,
+      [{ role: "user", content: "mi panadería" }],
+      "Genera",
+      "Voy.",
+      fakePack(),
+      null,
+      { clientReading: reading },
+    );
+
+    expect(out).toContain("CLIENT'S OWN REFERENCE");
+    expect(out).toContain("OUTRANKS every value above");
+    expect(out).toContain("Buscas tonos cálidos");
+    expect(out).toContain("#8a6f4d · #f3ece2");
+    expect(out).toContain("does not cover: estructura de secciones");
+    expect(out).toContain("never invent something the client did not ask for");
+
+    // Their direction gets the LAST word of the visual direction — after
+    // the family's values and after any pool ficha.
+    expect(out.indexOf("CLIENT'S OWN REFERENCE")).toBeGreaterThan(
+      out.indexOf("References (adapt the aesthetic"),
+    );
+    // And it turns the anti-slop rules on, like any brain path.
+    expect(out).toContain("NEGATIVE RULES — ANTI-SLOP");
+  });
+
+  it("is absent when the client brought no reference", () => {
+    const out = buildPrototypeBrief(
+      fakeSession(),
+      null,
+      [{ role: "user", content: "x" }],
+      "Lead",
+      "Reply",
+      fakePack(),
+    );
+    expect(out).not.toContain("CLIENT'S OWN REFERENCE");
+  });
+});
