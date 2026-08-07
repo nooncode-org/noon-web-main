@@ -136,6 +136,11 @@ export function ServicesContent() {
           4-col grid / same wrap, so the lines land exactly on the dividers. */}
       <section className="svc-section" id="services-offer">
         <div className="svc-wrap">
+          {/* The design deliberately carries no visible title here — the cards
+              are the title. A screen reader still needs one, or every card name
+              below reads as an orphan h3 hanging off the hero's h1. Hidden
+              visually, present in the outline. */}
+          <h2 className="sr-only">Services</h2>
           <div className="svc-cards">
             {/* 2 pin cells: real grid items whose border-right at 50% is the same
                 column border as the service cards — no separate overlay needed */}
@@ -201,6 +206,10 @@ export function ServicesContent() {
       {/* how we work */}
       <section className="svc-section" style={{ paddingTop: 0 }}>
         <div className="svc-wrap">
+          {/* Same reasoning as the section above. The statement below reads as
+              the title visually, but it's a claim, not a label — "How we work"
+              is what someone navigating by headings actually needs to hear. */}
+          <h2 className="sr-only">How we work</h2>
           <p className="svc-statement">
             <span className="dim">We don&apos;t build to a spec sheet —</span>{" "}
             we build around how your business actually runs.

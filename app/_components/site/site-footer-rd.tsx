@@ -32,7 +32,11 @@ export function SiteFooterRd() {
             </p>
           </div>
           <div className="rdf-col">
-            <h4>Site</h4>
+            {/* h2, not h4: these label the footer's groups, and the page above
+                ends anywhere from h1 to h3. Jumping to h4 skipped levels on
+                every page that mounts this footer. Going UP a level never
+                skips, so h2 is the one choice that is correct everywhere. */}
+            <h2>Site</h2>
             <ul>
               {footerLinkGroups.Site.map((l) => (
                 <li key={l.name}>
@@ -42,7 +46,7 @@ export function SiteFooterRd() {
             </ul>
           </div>
           <div className="rdf-col">
-            <h4>Legal</h4>
+            <h2>Legal</h2>
             <ul>
               {footerLinkGroups.Legal.map((l) => (
                 <li key={l.name}>
@@ -52,7 +56,7 @@ export function SiteFooterRd() {
             </ul>
           </div>
           <div className="rdf-col">
-            <h4>Connect</h4>
+            <h2>Connect</h2>
             <ul>
               {footerSocialLinks.map((l) => (
                 <li key={l.name}>
