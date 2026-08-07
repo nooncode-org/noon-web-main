@@ -39,8 +39,10 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // §7.1 / spec §32 — locales declared but not launched (es/fr/de) redirect to
-  // their /en equivalent so a visitor never lands on a half-built localized page.
+  // §7.1 / spec §32 — a locale that can't answer this path redirects to its /en
+  // equivalent, so a visitor never lands on a page that promises their language
+  // and replies in English. fr/de can't answer anything; es answers only where
+  // every word is translated (see i18n/launch-locales.ts).
   const localeRedirect = resolveDisabledLocaleRedirect(pathname);
   if (localeRedirect) {
     const url = request.nextUrl.clone();

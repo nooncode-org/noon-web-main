@@ -1,43 +1,45 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import { SiteNav } from "@/app/_components/site/site-nav";
-import { getContactHref } from "@/lib/site-config";
-import "@/app/_components/site/legal-rd.css";
-import "./not-found.css";
+import { getTranslations } from "next-intl/server";
+import { NotFoundView } from "@/app/_components/site/not-found-view";
 
-export const metadata: Metadata = {
-  title: "Page not found — Noon",
-  robots: { index: false, follow: false },
-};
+/**
+ * The 404 for paths with no locale segment. With `localePrefix: "always"` the
+ * middleware prefixes essentially everything, so `app/[locale]/not-found.tsx`
+ * handles the real traffic and this is the fallback beneath it.
+ *
+ * The locale is pinned to English rather than detected: there is no locale to
+ * detect here, and English is what the site defaults to. The copy still comes
+ * from `messages/en.json` so the two 404s can never word themselves
+ * differently.
+ */
 
-export default function NotFound() {
-  const contactHref = `/en${getContactHref({ inquiry: "general", source: "not-found" })}`;
+const FALLBACK_LOCALE = "en";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({
+    locale: FALLBACK_LOCALE,
+    namespace: "notFound",
+  });
+  return {
+    title: t("title"),
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function NotFound() {
+  const t = await getTranslations({
+    locale: FALLBACK_LOCALE,
+    namespace: "notFound",
+  });
 
   return (
-    <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <SiteNav locale="en" />
-
-      <div className="lgl-frame" aria-hidden />
-
-      <main className="nf-main">
-        <div className="nf-center">
-          <p className="nf-kicker">404 — Not found</p>
-          <h1 className="nf-display">We couldn&apos;t find<br />that page.</h1>
-          <p className="nf-lead">
-            The link may be old, or the page may have moved. Go back to the home page or reach out if you were looking for something specific.
-          </p>
-          <div className="nf-actions">
-            <Link href="/" className="lgl-btn lgl-btn-primary">
-              Back to home
-            </Link>
-            <Link href={contactHref} className="lgl-btn lgl-btn-secondary">
-              Contact Noon
-            </Link>
-          </div>
-        </div>
-      </main>
-    </div>
+    <NotFoundView
+      locale={FALLBACK_LOCALE}
+      kicker={t("kicker")}
+      headline={t("headline")}
+      lead={t("lead")}
+      backHome={t("backHome")}
+      contact={t("contact")}
+    />
   );
 }

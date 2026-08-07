@@ -30,6 +30,10 @@
   line-height: 1.1;
   color: var(--text-primary);
   margin: 0 0 20px;
+  /* Replaces a hardcoded <br>: the headline is translated now, and where a
+     sentence should break differs per language. The browser balances the
+     lines; where it isn't supported the text simply wraps as before. */
+  text-wrap: balance;
 }
 
 .nf-lead {

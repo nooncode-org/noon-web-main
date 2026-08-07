@@ -591,5 +591,13 @@
       "preparingWorkspace": "Preparing workspace",
       "justNow": "just now"
     }
+  },
+  "notFound": {
+    "title": "Page not found — Noon",
+    "kicker": "404 — Not found",
+    "headline": "We couldn't find that page.",
+    "lead": "The link may be old, or the page may have moved. Go back to the home page or reach out if you were looking for something specific.",
+    "backHome": "Back to home",
+    "contact": "Contact Noon"
   }
 }

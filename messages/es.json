@@ -205,7 +205,8 @@
       "headline": "Una empresa de desarrollo tecnológico",
       "description": "Tienes un problema de negocio que necesita software. Definimos exactamente qué construir, lo construimos y lo entregamos en código que tú posees.",
       "startWithMaxwell": "Empezar con Maxwell",
-      "contactNoon": "Contactar Noon"
+      "contactNoon": "Contactar Noon",
+      "viewServices": "Ver servicios"
     },
     "thesis": {
       "eyebrow": "Tesis",
@@ -590,5 +591,13 @@
       "preparingWorkspace": "Preparando el espacio",
       "justNow": "justo ahora"
     }
+  },
+  "notFound": {
+    "title": "Página no encontrada — Noon",
+    "kicker": "404 — No encontrada",
+    "headline": "No encontramos esa página.",
+    "lead": "Puede que el enlace sea antiguo o que la página haya cambiado de sitio. Vuelve al inicio, o escríbenos si buscabas algo concreto.",
+    "backHome": "Volver al inicio",
+    "contact": "Contactar Noon"
   }
 }
