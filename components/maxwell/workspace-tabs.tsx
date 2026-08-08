@@ -107,6 +107,13 @@ export function WorkspaceTabs({ tabs, children }: { tabs: Tab[]; children: React
       <nav
         ref={navRef}
         aria-label="Workspace sections"
+        // Two other components reach in here to drive a tab (the chat's
+        // "talk to your team" bridge, and the notifications' jump-to-tab). They
+        // used to find this nav by its aria-label — which breaks the moment
+        // that label is translated, silently and only for the clients who
+        // aren't English. This attribute is the stable handle: it is not copy,
+        // so it never moves.
+        data-workspace-tabs=""
         // Sticks just below the h-14 header (top-14) so the two form one cohesive
         // top bar; solid bg (no translucency) so scrolling content never bleeds
         // through. Pairs with a `sticky top-0` header in the host page.

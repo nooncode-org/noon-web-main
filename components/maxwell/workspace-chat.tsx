@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { ChangeEvent } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Paperclip, ArrowUp, Search, Sparkles, ImageIcon, Plus, ListChecks, X, Camera } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,7 +45,9 @@ export function prefillWorkspaceChat(text: string) {
 export function goToWorkspaceChat(message: string) {
   document
     .querySelector<HTMLButtonElement>(
-      'nav[aria-label="Workspace sections"] [role="tab"][data-tabid="chat"]',
+      // Anchored to a data attribute, never to the nav's label: the label is
+      // copy and gets translated; this doesn't.
+      'nav[data-workspace-tabs] [role="tab"][data-tabid="chat"]',
     )
     ?.click();
   prefillWorkspaceChat(message);
@@ -117,10 +120,33 @@ export type RealThread = {
   expectationLine: string;
 };
 
-const REQUEST_STATUS: Record<RequestStatus, { label: string; chip: string }> = {
-  received: { label: "Received", chip: "border-border text-muted-foreground" },
-  in_progress: { label: "In progress", chip: "border-[#0056fd]/25 bg-[#0056fd]/10 text-[#0056fd]" },
-  done: { label: "Done", chip: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600" },
+/**
+ * Only the COLOUR lives here. The words are message keys resolved at render:
+ * a module constant is evaluated once, before any locale is known, so a label
+ * stored here would be permanently English.
+ */
+const REQUEST_STATUS: Record<RequestStatus, { key: string; chip: string }> = {
+  received: { key: "statusReceived", chip: "border-border text-muted-foreground" },
+  in_progress: { key: "statusInProgress", chip: "border-[#0056fd]/25 bg-[#0056fd]/10 text-[#0056fd]" },
+  done: { key: "statusDone", chip: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600" },
+};
+
+/**
+ * The request type and priority are DATA, not copy: `reqType` is compared
+ * against "Bug" before hitting the server, and the priority is lowercased into
+ * the wire value. So the English string stays canonical and only its display
+ * is translated — and anything we don't recognise (a label the server invented)
+ * falls through unchanged rather than disappearing.
+ */
+const REQUEST_LABEL_KEYS: Record<string, string> = {
+  Change: "typeChange",
+  Bug: "typeBug",
+};
+
+const PRIORITY_KEYS: Record<string, string> = {
+  Low: "priorityLow",
+  Normal: "priorityNormal",
+  High: "priorityHigh",
 };
 
 const SEED: ChatMsg[] = [
@@ -314,14 +340,21 @@ function Attachment({
 // A formalized request, shown as a status chip. Priority is surfaced only when it
 // deviates from Normal (Low/High) — the actionable signal — to keep the chip calm.
 function RequestChip({ request }: { request: NonNullable<ChatMsg["request"]> }) {
+  const t = useTranslations("workspace.chat");
   const rs = REQUEST_STATUS[request.status];
-  const pri = request.priority && request.priority !== "Normal" ? ` · ${request.priority}` : "";
+  const labelKey = REQUEST_LABEL_KEYS[request.label];
+  const label = labelKey ? t(labelKey) : request.label;
+  const priorityKey = request.priority ? PRIORITY_KEYS[request.priority] : undefined;
+  const pri =
+    request.priority && request.priority !== "Normal"
+      ? ` · ${priorityKey ? t(priorityKey) : request.priority}`
+      : "";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium ${rs.chip}`}
     >
-      {request.label}
-      {pri} · {rs.label}
+      {label}
+      {pri} · {t(rs.key)}
     </span>
   );
 }
@@ -334,6 +367,7 @@ function MessageRow({
   /** Real mode: start a clarification reply linked to this message's request. */
   onReply?: (requestId: string, label: string) => void;
 }) {
+  const t = useTranslations("workspace.chat");
   if (msg.from === "client") {
     return (
       <div className="flex justify-end">
@@ -357,10 +391,12 @@ function MessageRow({
             {msg.requestId && onReply && (
               <button
                 type="button"
-                onClick={() => onReply(msg.requestId!, msg.request?.label ?? "this request")}
+                onClick={() =>
+                  onReply(msg.requestId!, msg.request?.label ?? t("replyFallbackLabel"))
+                }
                 className="text-[10px] font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
               >
-                Reply
+                {t("reply")}
               </button>
             )}
             <p className="text-[10px] text-muted-foreground">{msg.at}</p>
@@ -375,7 +411,7 @@ function MessageRow({
       <Avatar msg={msg} />
       <div className="max-w-[80%]">
         <p className="mb-1 text-[11px] font-medium text-muted-foreground">
-          {msg.from === "maxwell" ? "Maxwell" : msg.devName ? `${msg.devName} · Noon` : "Your Noon team"}
+          {msg.from === "maxwell" ? "Maxwell" : msg.devName ? `${msg.devName} · Noon` : t("teamName")}
         </p>
         <div className="rounded-[12px] rounded-tl-sm bg-secondary/50 px-3.5 py-2 text-sm leading-relaxed">
           {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
@@ -424,6 +460,8 @@ export function WorkspaceChat({
    */
   readOnly?: { note: string };
 } = {}) {
+  const t = useTranslations("workspace.chat");
+  const locale = useLocale();
   // Seeded ONCE: the action's revalidatePath re-renders the page mid-session,
   // but re-seeding would duplicate our optimistic sends (the server list now
   // contains them under new ids). Fresh data lands on the next visit.
@@ -491,13 +529,13 @@ export function WorkspaceChat({
         if (limits) {
           if (f.size > limits.maxBytes) {
             setSendError(
-              `That file is too large (max ${Math.round(limits.maxBytes / 1024 / 1024)} MB).`,
+              t("fileTooLarge", { mb: Math.round(limits.maxBytes / 1024 / 1024) }),
             );
             e.target.value = "";
             return;
           }
           if (!limits.mimes.includes(f.type)) {
-            setSendError("That file type isn't allowed.");
+            setSendError(t("fileTypeNotAllowed"));
             e.target.value = "";
             return;
           }
@@ -512,9 +550,11 @@ export function WorkspaceChat({
 
   const canSend = Boolean(draft.trim() || attach);
 
-  // A short "h:mm" stamp for optimistic sends, matching the seeded format.
+  // A short "h:mm" stamp for optimistic sends. Follows the client's locale, not
+  // "en-US": a Spanish client reading "3:05 PM" on their own message is the
+  // small tell that the room wasn't built for them (24h in es, 12h in en).
   const nowStamp = () =>
-    new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(new Date());
+    new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date());
 
   // Every attachment shared in the thread, newest last — feeds the Files
   // dropdown in the toolbar so "where's that zip?" never means scrolling.
@@ -523,7 +563,7 @@ export function WorkspaceChat({
     .map((m) => ({
       msgId: m.id,
       name: m.attachment!.name,
-      who: m.from === "client" ? "You" : m.from === "maxwell" ? "Maxwell" : (m.devName ?? "Noon"),
+      who: m.from === "client" ? t("you") : m.from === "maxwell" ? "Maxwell" : (m.devName ?? "Noon"),
       at: m.at,
     }));
 
@@ -647,9 +687,13 @@ export function WorkspaceChat({
             if (real) {
               // The wire message carries the marked-area context in text (the
               // thumb itself is client-side until real capture lands, #27).
-              const wire = `${mark.note}\n\n[Marked ${
-                mark.rects.length > 1 ? `${mark.rects.length} areas` : "an area"
-              } on ${mark.host}]`;
+              // Translated because the client reads it back: the optimistic
+              // bubble shows only their note, but on reload the server returns
+              // this whole string as the message body.
+              const wire = `${mark.note}\n\n${t("markedAreas", {
+                count: mark.rects.length,
+                host: mark.host,
+              })}`;
               const optimistic: ChatMsg = {
                 id: `local-${Date.now()}`,
                 from: "client",
@@ -692,18 +736,21 @@ export function WorkspaceChat({
               onKeyDown={(e) => {
                 if (e.key === "Escape") closeSearch();
               }}
-              placeholder="Search this conversation"
-              aria-label="Search this conversation"
+              placeholder={t("searchPlaceholder")}
+              aria-label={t("searchPlaceholder")}
               className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/50"
             />
             {q && (
               <span className="shrink-0 text-[11px] text-muted-foreground/70">
-                {visibleMessages.length} {visibleMessages.length === 1 ? "match" : "matches"}
+                {/* Pluralised by the message file, not by a ternary: "1 match /
+                    2 matches" is an English rule, and other languages don't
+                    share it. */}
+                {t("matchCount", { count: visibleMessages.length })}
               </span>
             )}
             <button
               type="button"
-              aria-label="Close search"
+              aria-label={t("closeSearch")}
               onClick={closeSearch}
               className="shrink-0 rounded-[6px] p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
@@ -713,15 +760,13 @@ export function WorkspaceChat({
         ) : (
           <p className="text-[11px] text-muted-foreground/70">
             {real?.expectationLine ??
-              (oneTime
-                ? "Maxwell answers instantly · your Noon team helps with questions about your project"
-                : "Maxwell answers instantly · your Noon team replies within 24h")}
+              (oneTime ? t("expectationOneTime") : t("expectationMembership"))}
           </p>
         )}
         {!searchOpen && (
           <button
             type="button"
-            aria-label="Search this conversation"
+            aria-label={t("searchPlaceholder")}
             onClick={() => setSearchOpen(true)}
             className="ml-auto inline-flex shrink-0 items-center rounded-[6px] border border-border p-1.5 text-muted-foreground transition-colors hover:bg-secondary/40 hover:text-foreground"
           >
@@ -736,7 +781,7 @@ export function WorkspaceChat({
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-[6px] border border-border px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-secondary/40 hover:text-foreground data-[state=open]:bg-secondary/40"
               >
                 <Paperclip className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Files
+                {t("files")}
                 <span className="text-muted-foreground/60">{threadFiles.length}</span>
               </button>
             </DropdownMenuTrigger>
@@ -765,21 +810,21 @@ export function WorkspaceChat({
 
       <div
         role="log"
-        aria-label="Conversation with Noon"
+        aria-label={t("logLabel")}
         className="flex-1 space-y-4 overflow-y-auto pb-4"
       >
         {q && visibleMessages.length === 0 && (
           <p className="py-8 text-center text-[13px] text-muted-foreground">
-            No messages match &ldquo;{searchQuery.trim()}&rdquo;
+            {/* The quotation marks live in the message, because Spanish uses
+                « » where English uses “ ”. */}
+            {t("noMatches", { query: searchQuery.trim() })}
           </p>
         )}
         {/* A real thread opens honestly empty — no seeded Maxwell greeting. */}
         {!q && real && messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-1 py-10 text-center">
-            <p className="text-sm font-medium">Say hello 👋</p>
-            <p className="text-[13px] text-muted-foreground">
-              Messages here reach your Noon team directly.
-            </p>
+            <p className="text-sm font-medium">{t("emptyTitle")}</p>
+            <p className="text-[13px] text-muted-foreground">{t("emptyBody")}</p>
           </div>
         )}
         {visibleMessages.map((m) => (
@@ -800,12 +845,15 @@ export function WorkspaceChat({
       {replyTo && (
         <div className="mb-2 flex items-center gap-2 rounded-[10px] border border-border bg-secondary/30 px-2.5 py-2 text-[12px]">
           <span className="min-w-0 flex-1 truncate text-muted-foreground">
-            Replying to <span className="font-medium text-foreground">{replyTo.label}</span>
+            {t("replyingTo")}{" "}
+            <span className="font-medium text-foreground">
+              {REQUEST_LABEL_KEYS[replyTo.label] ? t(REQUEST_LABEL_KEYS[replyTo.label]) : replyTo.label}
+            </span>
           </span>
           <button
             type="button"
             onClick={() => setReplyTo(null)}
-            aria-label="Cancel reply"
+            aria-label={t("cancelReply")}
             className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -826,42 +874,46 @@ export function WorkspaceChat({
         <div className="mb-2 flex flex-wrap items-center gap-2 rounded-[10px] border border-[#0056fd]/20 bg-[#0056fd]/[0.04] px-2.5 py-2 text-[12px]">
           <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
             <ListChecks className="h-3.5 w-3.5 text-[#0056fd]" strokeWidth={1.75} />
-            Track as request
+            {t("trackAsRequest")}
           </span>
           <div className="flex overflow-hidden rounded-[6px] border border-border">
-            {(["Change", "Bug"] as const).map((t) => (
+            {/* The VALUE stays English — it is compared against "Bug" and sent
+                on the wire. Only the face of it is translated. */}
+            {(["Change", "Bug"] as const).map((type) => (
               <button
-                key={t}
+                key={type}
                 type="button"
-                onClick={() => setReqType(t)}
+                onClick={() => setReqType(type)}
                 className={`px-2.5 py-0.5 transition-colors ${
-                  reqType === t ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+                  reqType === type ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {t}
+                {t(REQUEST_LABEL_KEYS[type])}
               </button>
             ))}
           </div>
           <label className="inline-flex items-center gap-1.5 text-muted-foreground">
-            Priority
+            {t("priority")}
             <Select value={reqPriority} onValueChange={(v) => setReqPriority(v as RequestPriority)}>
               <SelectTrigger
-                aria-label="Request priority"
+                aria-label={t("priorityLabel")}
                 className="h-auto gap-1 rounded-[6px] border-border bg-transparent px-2 py-0.5 text-[12px] font-medium text-foreground shadow-none data-[size=default]:h-auto"
               >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="min-w-[7rem]">
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Normal">Normal</SelectItem>
-                <SelectItem value="High">High</SelectItem>
+                {/* Same rule as the type above: the value is the wire format
+                    (lowercased on send), the label is what a person reads. */}
+                <SelectItem value="Low">{t("priorityLow")}</SelectItem>
+                <SelectItem value="Normal">{t("priorityNormal")}</SelectItem>
+                <SelectItem value="High">{t("priorityHigh")}</SelectItem>
               </SelectContent>
             </Select>
           </label>
           <button
             type="button"
             onClick={() => setReqType(null)}
-            aria-label="Cancel tracking as request"
+            aria-label={t("cancelTracking")}
             className="ml-auto rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -884,7 +936,7 @@ export function WorkspaceChat({
               setAttach(null);
               setPickedFile(null);
             }}
-            aria-label="Remove attachment"
+            aria-label={t("removeAttachment")}
             className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -909,8 +961,8 @@ export function WorkspaceChat({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              aria-label="Add"
-              title={oneTime ? "Attach a file or photo" : "Attach a file, photo, or track a request"}
+              aria-label={t("addLabel")}
+              title={oneTime ? t("addTitleOneTime") : t("addTitleMembership")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-foreground transition-opacity hover:opacity-70 data-[state=open]:opacity-70"
             >
               <Plus className="h-4 w-4" />
@@ -931,7 +983,7 @@ export function WorkspaceChat({
                 }}
               >
                 <Camera className="h-4 w-4" strokeWidth={1.75} />
-                Review site
+                {t("reviewSite")}
               </DropdownMenuItem>
             )}
             {/* Sharing a file rides the request-scoped attachment pipeline (it
@@ -946,7 +998,7 @@ export function WorkspaceChat({
                   }}
                 >
                   <ImageIcon className="h-4 w-4" strokeWidth={1.75} />
-                  Photo
+                  {t("photo")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(e) => {
@@ -955,7 +1007,7 @@ export function WorkspaceChat({
                   }}
                 >
                   <Paperclip className="h-4 w-4" strokeWidth={1.75} />
-                  File
+                  {t("file")}
                 </DropdownMenuItem>
               </>
             )}
@@ -969,7 +1021,7 @@ export function WorkspaceChat({
                 }}
               >
                 <ListChecks className="h-4 w-4" strokeWidth={1.75} />
-                Track as request
+                {t("trackAsRequest")}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -986,16 +1038,16 @@ export function WorkspaceChat({
             }
           }}
           rows={1}
-          placeholder="Message Noon…"
-          aria-label="Message Noon"
+          placeholder={t("composerPlaceholder")}
+          aria-label={t("composerLabel")}
           className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent py-1 text-sm leading-relaxed text-foreground outline-none [field-sizing:content] placeholder:text-muted-foreground/55"
         />
         <button
           type="button"
           onClick={send}
           disabled={!canSend || isPending}
-          aria-label="Send message"
-          title="Send message"
+          aria-label={t("send")}
+          title={t("send")}
           className="group flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[#0056fd] text-white transition-colors hover:bg-[#0047e0] disabled:pointer-events-none disabled:opacity-40"
         >
           <ArrowUp className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />

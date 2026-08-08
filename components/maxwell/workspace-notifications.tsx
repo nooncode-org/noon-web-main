@@ -61,7 +61,10 @@ export function WorkspaceNotifications({ items }: { items: WorkspaceNotification
     // Drive the real tab button (always mounted) — see the header↔tabs note above.
     document
       .querySelector<HTMLButtonElement>(
-        `nav[aria-label="Workspace sections"] [role="tab"][data-tabid="${n.tab}"]`,
+        // Data attribute, not the nav's aria-label: that label is copy and will
+        // be translated, and a selector that depends on it fails silently for
+        // exactly the clients who don't read English.
+        `nav[data-workspace-tabs] [role="tab"][data-tabid="${n.tab}"]`,
       )
       ?.click();
     setOpen(false);

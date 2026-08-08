@@ -56,8 +56,21 @@ const VISIBLE_TEXT_PATTERNS: readonly RegExp[] = [
   /(?:placeholder|aria-label|title|alt)="[A-Z][^"]{3,}"/g,
 ];
 
-/** A file already reading from the message files is, by definition, done. */
-const USES_TRANSLATIONS = /useTranslations|getTranslations/;
+/**
+ * Every file is counted, including ones that already read from the message
+ * files.
+ *
+ * The first version skipped those, on the reasoning that a file using
+ * `useTranslations` was finished. It isn't: the realistic failure is a
+ * HALF-translated component — someone wires up ten strings, misses three, and
+ * the file looks done from the outside. Skipping it would have made the guard
+ * blind to exactly the mistake it exists to catch.
+ *
+ * The cost is that deliberately-English content inside a translated file (the
+ * chat's demo conversation, which no client ever sees — the real portal passes
+ * its own thread) sits in the baseline as accepted debt. That is the right
+ * trade: an entry that never changes is silent, while a blind spot is not.
+ */
 
 export interface UntranslatedFile {
   /** Repo-relative, forward slashes, so the baseline is the same on any OS. */
@@ -102,7 +115,6 @@ export function scanUntranslated(): UntranslatedFile[] {
   const found: UntranslatedFile[] = [];
   for (const file of files) {
     const source = readFileSync(file, "utf8");
-    if (USES_TRANSLATIONS.test(source)) continue;
     const count = countVisibleStrings(source);
     if (count > 0) {
       found.push({ file: toPosix(relative(REPO_ROOT, file)), count });
