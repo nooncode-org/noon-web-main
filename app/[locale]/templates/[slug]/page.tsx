@@ -147,7 +147,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
             <div className="td-grid">
               {/* Included */}
               <div className="td-cell">
-                <p className="td-cell-title">Included in baseline</p>
+                <p className="td-cell-title">{t("includedBaseline")}</p>
                 <ul className="td-item-list">
                   {template.includes.map((item) => (
                     <li key={item} className="td-item">
@@ -160,7 +160,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
               {/* Extensions */}
               <div className="td-cell">
-                <p className="td-cell-title">Typical extensions</p>
+                <p className="td-cell-title">{t("typicalExtensions")}</p>
                 <ul className="td-item-list">
                   {template.extensions.map((item) => (
                     <li key={item} className="td-item">
@@ -173,7 +173,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
               {/* Best fit */}
               <div className="td-cell">
-                <p className="td-cell-title">Best fit</p>
+                <p className="td-cell-title">{t("bestFit")}</p>
                 <div className="td-use">
                   <p className="td-use-label"><Check size={12} /> Use when</p>
                   <p className="td-use-text">{template.useWhen}</p>
@@ -188,7 +188,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
           {/* ── promise ── */}
           <div className="td-promise">
-            <p className="td-promise-label">What this baseline delivers</p>
+            <p className="td-promise-label">{t("whatBaselineDelivers")}</p>
             <p className="td-promise-text">{template.baselinePromise}</p>
           </div>
 

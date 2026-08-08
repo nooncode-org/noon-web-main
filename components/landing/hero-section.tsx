@@ -36,6 +36,8 @@ export function HeroSection() {
   const params = useParams();
   const locale = (typeof params?.locale === "string" ? params.locale : null) ?? "en";
   const t = useTranslations("hero");
+  // The prompt-list toggles belong to the templates panel below, not the hero.
+  const tT = useTranslations("templatesPage");
   const suggestions = t.raw("suggestions") as Suggestion[];
 
   const [inputValue, setInputValue] = useState("");
@@ -377,7 +379,7 @@ export function HeroSection() {
                     <button
                       type="button"
                       onClick={() => setShowAllPrompts(false)}
-                      aria-label="Collapse prompts"
+                      aria-label={tT("collapsePrompts")}
                       className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#0056FD] transition-opacity hover:opacity-70"
                     >
                       <Minus className="h-3.5 w-3.5" />
@@ -406,7 +408,7 @@ export function HeroSection() {
                     <button
                       type="button"
                       onClick={() => setShowAllPrompts(true)}
-                      aria-label="Show all prompts"
+                      aria-label={tT("showAllPrompts")}
                       className="liquid-glass-pill shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[#0056FD] transition-opacity hover:opacity-70"
                     >
                       <Plus className="h-3.5 w-3.5" />

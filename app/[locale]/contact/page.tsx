@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { auth } from "@/auth";
@@ -40,6 +41,7 @@ type Props = {
 };
 
 export default async function ContactRedesignPage({ params, searchParams }: Props) {
+  const t = await getTranslations("contactPage");
   const [{ locale }, { inquiry, source, draft }, session] = await Promise.all([
     params,
     searchParams,
@@ -133,7 +135,7 @@ export default async function ContactRedesignPage({ params, searchParams }: Prop
             <div className="ct-formsection-inner">
               <div className="ct-formsection-aside">
                 <div>
-                  <h2 className="ct-h2">Start a conversation.</h2>
+                  <h2 className="ct-h2">{t("startConversation")}</h2>
                   <p className="ct-body" style={{ marginTop: 14 }}>
                     Share what you&apos;re working on, what you need, or what you&apos;re exploring. The more context you give, the faster we can get back with something useful.
                   </p>
@@ -161,7 +163,7 @@ export default async function ContactRedesignPage({ params, searchParams }: Prop
       <section className="ct-section" style={{ paddingTop: 0 }}>
         <div className="ct-wrap">
           <div className="ct-sechead">
-            <h2 className="ct-h2">Transparent communication, at every step.</h2>
+            <h2 className="ct-h2">{t("transparent")}</h2>
           </div>
           <div className="ct-timeline">
             <div className="ct-timeline-grid">
@@ -182,7 +184,7 @@ export default async function ContactRedesignPage({ params, searchParams }: Prop
       <section className="ct-section" style={{ paddingTop: 0 }}>
         <div className="ct-wrap">
           <div className="ct-sechead">
-            <h2 className="ct-h2">Common questions.</h2>
+            <h2 className="ct-h2">{t("commonQuestions")}</h2>
           </div>
           <div className="ct-faq">
             {FAQS.map((f) => (
