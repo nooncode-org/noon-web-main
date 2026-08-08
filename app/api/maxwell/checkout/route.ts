@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
+  enforceRateLimit,
+  rateLimitResponseInit,
+  RateLimitExceededError,
+  resolveClientIdentity,
+} from "@/lib/server/rate-limit";
+import {
   appendPaymentEvent,
   getProposalRequestByPublicToken,
   getStudioSession,
@@ -43,6 +49,31 @@ function checkoutStateResponse(status: number, message: string, code: string) {
 
 export async function POST(request: Request) {
   try {
+    /**
+     * Found by the security pass (2026-08-08): this was the one route that
+     * spends money-adjacent quota with no ceiling on it. Reaching it needs a
+     * valid proposal token — a UUID nobody guesses — so this is not a hole,
+     * it is the missing floor under a hole that does not exist yet: one leaked
+     * link should not be able to open Stripe sessions all afternoon.
+     *
+     * Generous on purpose. A real client retries a failed card a handful of
+     * times in a row, and none of them should ever meet this.
+     */
+    try {
+      enforceRateLimit({
+        namespace: "maxwell.checkout",
+        capacity: 10,
+        refillPerSec: 10 / 60,
+        identityKey: resolveClientIdentity(request),
+      });
+    } catch (rateError) {
+      if (rateError instanceof RateLimitExceededError) {
+        const init = rateLimitResponseInit(rateError);
+        return NextResponse.json(init.body, { status: init.status, headers: init.headers });
+      }
+      throw rateError;
+    }
+
     const payload = checkoutSchema.parse(await request.json());
     const proposal = await getProposalRequestByPublicToken(payload.public_token);
 

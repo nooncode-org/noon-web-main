@@ -30,6 +30,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { execFile } from "node:child_process";
 import { createConnection } from "node:net";
 import { promisify } from "node:util";
+import { startNoonAppStub } from "./noon-app-stub.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -38,8 +39,18 @@ export const TEST_DB_PORT = 5433;
 export const TEST_DB_URL = `postgresql://dev:dev@127.0.0.1:${TEST_DB_PORT}/dev`;
 /** Matches the email the repo's seed assigns to the demo client. */
 export const TEST_VIEWER_EMAIL = "dev@noon.dev";
+/**
+ * The stand-in Noon App. Three of the portal's surfaces — domains, versions and
+ * the membership notices — are gated on data this repo never owns, so without
+ * something answering here they simply do not render and cannot be tested.
+ */
+export const NOON_APP_STUB_PORT = 4517;
+export const NOON_APP_STUB_URL = `http://127.0.0.1:${NOON_APP_STUB_PORT}`;
+/** Any non-empty value: the stub does not verify our signature (see its header). */
+export const TEST_WEBHOOK_SECRET = "test-noon-app-secret";
 
 let dbProcess: ChildProcess | null = null;
+let appStub: { close: (cb?: () => void) => void } | null = null;
 
 function waitForPort(port: number, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -64,6 +75,8 @@ function waitForPort(port: number, timeoutMs: number): Promise<void> {
 }
 
 export default async function globalSetup() {
+  appStub = await startNoonAppStub(NOON_APP_STUB_PORT);
+
   dbProcess = spawn(
     process.execPath,
     ["scripts/dev-db-server.mjs", "--memory", "--port", String(TEST_DB_PORT)],
@@ -97,4 +110,6 @@ export default async function globalSetup() {
 export async function globalTeardown() {
   dbProcess?.kill();
   dbProcess = null;
+  appStub?.close();
+  appStub = null;
 }

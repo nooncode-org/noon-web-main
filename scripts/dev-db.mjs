@@ -50,6 +50,16 @@ const DEMO_PROPOSAL = `${DEMO_PREFIX}-proposal`;
 const DEMO_UNPAID_SESSION = `${DEMO_PREFIX}-unpaid-session`;
 const DEMO_UNPAID_PROPOSAL = `${DEMO_PREFIX}-unpaid-proposal`;
 
+/**
+ * A third demo: paid, live, and then the membership ended.
+ *
+ * Its App project id is what the test stub keys the "ended" scenario off
+ * (tests/visual/noon-app-stub.mjs), which is the only way to render the notice
+ * that tells a client their site is offline — the App decides that, not us.
+ */
+const DEMO_ENDED_SESSION = `${DEMO_PREFIX}-ended-session`;
+const DEMO_ENDED_WORKSPACE = `${DEMO_PREFIX}-ended-workspace`;
+
 /** Load .env.local / .env into process.env WITHOUT echoing any value. */
 function loadEnv() {
   for (const file of [".env.local", ".env"]) {
@@ -269,6 +279,30 @@ async function seed(sql) {
       'sent', false, 4500, 'USD', ${at}, ${at}, ${at}, ${at}
     )
     ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at
+  `;
+
+  await sql`
+    INSERT INTO studio_session (
+      id, initial_prompt, status, owner_email, owner_name, goal_summary,
+      language, created_at, updated_at
+    ) VALUES (
+      ${DEMO_ENDED_SESSION}, 'Build a storefront for a bakery', 'converted',
+      ${email}, 'Demo Client', 'Storefront for a bakery', 'en', ${at}, ${at}
+    )
+    ON CONFLICT (id) DO UPDATE SET owner_email = EXCLUDED.owner_email, updated_at = EXCLUDED.updated_at
+  `;
+  await sql`
+    INSERT INTO client_workspace (
+      id, studio_session_id, payment_status, workspace_status,
+      latest_update_summary, noon_app_project_id, created_at, updated_at
+    ) VALUES (
+      ${DEMO_ENDED_WORKSPACE}, ${DEMO_ENDED_SESSION}, 'confirmed', 'delivered',
+      'Delivered. Membership has since ended.',
+      ${DEMO_PREFIX + "-project-ended"}, ${at}, ${at}
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      noon_app_project_id = EXCLUDED.noon_app_project_id,
+      updated_at = EXCLUDED.updated_at
   `;
 
   console.log(`· seeded demo project for ${email}`);

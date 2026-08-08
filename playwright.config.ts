@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
-import { TEST_DB_URL, TEST_VIEWER_EMAIL } from "./tests/visual/global-setup";
+import { TEST_DB_URL, TEST_VIEWER_EMAIL,
+  NOON_APP_STUB_URL,
+  TEST_WEBHOOK_SECRET,
+} from "./tests/visual/global-setup";
 
 export default defineConfig({
   testDir: "./tests/visual",
@@ -31,19 +34,20 @@ export default defineConfig({
     stderr: "pipe",
     env: {
       // D-slice ADR-023 route gate — enabled for Playwright so the
-      // `prototipo-decision.spec.ts` a11y scan can reach the route. Other
-      // specs are unaffected (they hit different paths). The cross-repo
-      // App fetch is intercepted by `page.route()` inside the spec, so the
-      // dev server does not need real App credentials.
+      // `prototipo-decision.spec.ts` a11y scan can reach the route.
       MAXWELL_PROTOTIPO_DECISION_ROUTE: "1",
-      NOON_APP_BASE_URL: "http://noon-app.test-mock",
-      NOON_WEBSITE_WEBHOOK_SECRET: "test-secret-playwright",
       // The signed-in fixture. DEV_VIEWER_EMAIL is the bypass the app already
       // ships for local work — inert in production (NODE_ENV) and only when no
       // real provider is configured. The database is the throwaway one global
       // setup starts, never the persisted dev database on 5432.
       DATABASE_URL: TEST_DB_URL,
       DEV_VIEWER_EMAIL: TEST_VIEWER_EMAIL,
+      // Points at the stand-in App (tests/visual/noon-app-stub.mjs). It used to
+      // be an unreachable hostname, which meant every App-gated surface — the
+      // domains tab, the versions tab, the membership notices — simply never
+      // rendered and could not be tested. Now they can.
+      NOON_APP_BASE_URL: NOON_APP_STUB_URL,
+      NOON_WEBSITE_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
     },
   },
 });

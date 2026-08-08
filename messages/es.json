@@ -176,28 +176,21 @@
     ]
   },
   "footer": {
-    "tagline": "Software personalizado construido en código real. De la idea a aplicaciones listas para producción, potenciadas por IA.",
-    "rights": "© 2026 Noon. Todos los derechos reservados.",
-    "builtWith": "Construido con",
-    "groups": {
-      "Company": "Empresa",
-      "Solutions": "Soluciones",
-      "Legal": "Legal"
-    },
-    "links": {
-      "aboutNoon": "Acerca de Noon",
-      "nextProduct": "Próximo producto",
-      "workWithNoon": "Trabaja con Noon",
-      "contact": "Contacto",
-      "whatWeBuild": "Lo que construimos",
-      "howItWorks": "Cómo funciona",
-      "technologyWeUse": "Tecnología que usamos",
-      "templates": "Plantillas",
-      "privacyPolicy": "Política de privacidad",
-      "termsAndConditions": "Términos y condiciones",
-      "cookiesPolicy": "Política de cookies",
-      "legalNotice": "Aviso legal"
-    }
+    "tagline": "De la idea a producción. Cada proyecto se entrega como software real y funcional que es tuyo.",
+    "rights": "2026 Noon. Todos los derechos reservados.",
+    "groupMain": "Principal",
+    "groupMore": "Más",
+    "groupLegal": "Legal",
+    "services": "Servicios",
+    "upgrade": "Mejorar mi web",
+    "templates": "Plantillas",
+    "opportunities": "Oportunidades",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "privacyPolicy": "Política de privacidad",
+    "termsAndConditions": "Términos y condiciones",
+    "cookiesPolicy": "Política de cookies",
+    "legalNotice": "Aviso legal"
   },
   "about": {
     "hero": {

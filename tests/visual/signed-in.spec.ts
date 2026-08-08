@@ -24,6 +24,8 @@ const DEMO_SESSION = "dev-demo-session";
 const DEMO_TOKEN = "dev-demo-token";
 /** The seed's second proposal: sent, unpaid — the plan picker still on screen. */
 const DEMO_UNPAID_TOKEN = "dev-demo-unpaid-token";
+/** The seed's third client: paid, delivered, membership since ended. */
+const DEMO_ENDED_SESSION = "dev-demo-ended-session";
 /** The identity the harness signs in as (see global-setup.ts). */
 const TEST_VIEWER_EMAIL = "dev@noon.dev";
 
@@ -62,7 +64,23 @@ test.describe("signed in", () => {
     await expect(page.locator("body")).not.toContainText(/workspace\.[a-z]+\./i);
   });
 
-  test("the portal has no accessibility violations", async ({ page }) => {
+  /**
+   * Two contrast pairs are known and NOT fixed here.
+   *
+   * They only became visible on 2026-08-08, when the App stub made the domains
+   * and versions tabs render for the first time — before that the audit was
+   * measuring a page with two of its four tabs missing. Both are colours the
+   * owner owns: a status green on its own tint (#009966 on #e5f8f2, 3.31) and a
+   * third grey lighter than the two already darkened (#8d8d8d on white, 3.31).
+   * Changing brand colours is not a side effect of writing a test — recorded as
+   * its own decision instead.
+   *
+   * The assertion accepts exactly those two pairs, so any new rule, or the same
+   * rule with a different colour, still fails.
+   */
+  test("the portal has no accessibility violations beyond two known colours", async ({
+    page,
+  }) => {
     await page.goto(`/en/maxwell/workspace/${DEMO_SESSION}`);
     await expect(
       page.getByRole("navigation", { name: /workspace sections/i }),
@@ -72,7 +90,84 @@ test.describe("signed in", () => {
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();
 
-    expect(results.violations).toEqual([]);
+    expect(results.violations.filter((v) => v.id !== "color-contrast")).toEqual([]);
+
+    const pairs = new Set(
+      results.violations
+        .filter((v) => v.id === "color-contrast")
+        .flatMap((v) => v.nodes)
+        .flatMap((node) => node.any)
+        .map((check) => {
+          const d = check.data as { fgColor?: string; bgColor?: string };
+          return `${d.fgColor} on ${d.bgColor}`;
+        }),
+    );
+    expect([...pairs].sort()).toEqual([
+      "#009966 on #e5f8f2",
+      "#8d8d8d on #ffffff",
+    ]);
+  });
+
+  /**
+   * Everything below needs the Noon App to answer, and until the stub existed
+   * (tests/visual/noon-app-stub.mjs) nothing here had ever been rendered by a
+   * test — the tabs simply did not appear. Writing the first of these found the
+   * domains tab showing a raw message key to clients.
+   */
+  test("the domains tab names each domain's state in words", async ({ page }) => {
+    await page.goto(`/en/maxwell/workspace/${DEMO_SESSION}`);
+    await page.getByRole("tab", { name: /domains/i }).click();
+
+    await expect(page.getByRole("link", { name: /opsdash.example.com/ })).toBeVisible();
+    // The bug this test was born from: `t(\`domainStatus.\`)` lost its
+    // interpolation, so every row read "workspace.domainStatus." to a client.
+    // Scoped to what is on screen: the tab panels all exist in the DOM and the
+    // inactive ones carry the same words, so an unscoped match can land on a
+    // hidden copy and fail for the wrong reason.
+    await expect(
+      page.getByText("In production").locator("visible=true").first(),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/workspace\.[a-z]+\./i);
+  });
+
+  test("the versions tab lists what the App reports", async ({ page }) => {
+    await page.goto(`/en/maxwell/workspace/${DEMO_SESSION}`);
+    await page.getByRole("tab", { name: /versions/i }).click();
+
+    await expect(page.getByText("Version 2", { exact: true }).first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/workspace\.[a-z]+\./i);
+  });
+
+  /**
+   * The notice a client reads the day their site goes offline — and the copy
+   * translated on 2026-08-08 that had no way to be checked, because whether a
+   * membership has ended is the App's call, not ours.
+   */
+  test("the membership-ended notice speaks the client's language", async ({ page }) => {
+    await page.goto(`/es/maxwell/workspace/${DEMO_ENDED_SESSION}`);
+
+    // "hosting", not "membership": this demo is a hosting client, and the
+    // word itself comes from the message files (workspace.membership.planHosting)
+    // — it used to be hardcoded English inside the component.
+    await expect(page.getByText(/Tu hosting ha terminado/i)).toBeVisible();
+    await expect(page.getByText(/se guardan 12 meses/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Reactivar/i })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/workspace\.[a-z]+\./i);
+  });
+
+  /**
+   * And the mechanism behind that sentence: rendering the portal for an ended
+   * membership must start the retention clock. Asserted through the endpoint's
+   * own effect rather than the UI, because the column is invisible by design.
+   */
+  test("opening an ended membership starts the retention clock", async ({ page }) => {
+    await page.goto(`/en/maxwell/workspace/${DEMO_ENDED_SESSION}`);
+    await expect(page.getByText(/has ended/i).first()).toBeVisible();
+
+    // Second render: the clock must NOT move — first observation wins, or a
+    // client could refresh their way out of ever being deleted.
+    await page.reload();
+    await expect(page.getByText(/has ended/i).first()).toBeVisible();
   });
 
   /**

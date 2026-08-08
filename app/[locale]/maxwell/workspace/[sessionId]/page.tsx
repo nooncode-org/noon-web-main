@@ -1252,13 +1252,13 @@ export default async function WorkspacePage({ params }: Props) {
                                   aria-hidden
                                   className={`h-2 w-2 shrink-0 rounded-full ${st.dot}`}
                                 />
-                                {t(`domainStatus.`)}
+                                {t(`domainStatus.${st.key}`)}
                               </span>
                               {d.isDefault && (
                                 <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{t("domains.default")}</span>
                               )}
                             </div>
-                            <p className="mt-0.5 text-[12px] text-muted-foreground">{t(`domainStatus.Detail`)}</p>
+                            <p className="mt-0.5 text-[12px] text-muted-foreground">{t(`domainStatus.${st.key}Detail`)}</p>
                           </div>
                         </li>
                       );

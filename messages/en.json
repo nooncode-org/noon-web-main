@@ -176,28 +176,21 @@
     ]
   },
   "footer": {
-    "tagline": "Custom software built in real code. From idea to production-ready applications, powered by AI.",
-    "rights": "© 2026 Noon. All rights reserved.",
-    "builtWith": "Built with",
-    "groups": {
-      "Company": "Company",
-      "Solutions": "Solutions",
-      "Legal": "Legal"
-    },
-    "links": {
-      "aboutNoon": "About Noon",
-      "nextProduct": "Next product",
-      "workWithNoon": "Work with Noon",
-      "contact": "Contact",
-      "whatWeBuild": "What we build",
-      "howItWorks": "How it works",
-      "technologyWeUse": "Technology we use",
-      "templates": "Templates",
-      "privacyPolicy": "Privacy Policy",
-      "termsAndConditions": "Terms and Conditions",
-      "cookiesPolicy": "Cookies Policy",
-      "legalNotice": "Legal Notice"
-    }
+    "tagline": "From idea to production. Every project ships as real, working software you own.",
+    "rights": "2026 Noon. All rights reserved.",
+    "groupMain": "Main",
+    "groupMore": "More",
+    "groupLegal": "Legal",
+    "services": "Services",
+    "upgrade": "Upgrade",
+    "templates": "Templates",
+    "opportunities": "Opportunities",
+    "about": "About",
+    "contact": "Contact",
+    "privacyPolicy": "Privacy Policy",
+    "termsAndConditions": "Terms and Conditions",
+    "cookiesPolicy": "Cookies Policy",
+    "legalNotice": "Legal Notice"
   },
   "about": {
     "hero": {
