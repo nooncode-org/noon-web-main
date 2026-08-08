@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState, useTransition, type ReactNode } from "react";
+import { useLocale } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
 import { submitRequestAction } from "@/app/[locale]/maxwell/workspace/[sessionId]/_actions/submit-request";
+import { setPortalLanguageAction } from "@/app/[locale]/maxwell/_actions/set-portal-language";
 import {
   portalSupportChatFallback,
   portalSupportRequest,
@@ -144,10 +147,36 @@ export function WorkspaceSettingsDialog({
   /** Why the last submission failed, shown in the confirm dialog it came from. */
   const [requestError, setRequestError] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
-  // Portal language (owner ask 2026-07-19). TODO(logic later): wire to the
-  // next-intl locale switch once the ES translation pass lands — until then
-  // this is a front-only preference so the UI shape is settled.
-  const [language, setLanguage] = useState<"en" | "es">("en");
+  // Portal language (owner ask 2026-07-19, wired 2026-08-07).
+  //
+  // The initial value is the locale being SERVED, not a stored preference:
+  // those are the same thing once a choice has been made (the cookie decides
+  // what gets served), and before that the served locale is the browser's own
+  // — which is the honest default to show.
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [language, setLanguage] = useState<"en" | "es">(locale === "es" ? "es" : "en");
+  const [isSwitchingLanguage, startLanguageTransition] = useTransition();
+
+  function changeLanguage(next: "en" | "es") {
+    if (next === language) return;
+    const previous = language;
+    setLanguage(next); // optimistic: the select must not lag behind the click
+    startLanguageTransition(async () => {
+      const result = await setPortalLanguageAction({ language: next, sessionId });
+      if (!result.ok) {
+        setLanguage(previous);
+        return;
+      }
+      // Swap the locale segment of the CURRENT path and reload it: the cookie
+      // alone only decides where a locale-less visit lands, so without this the
+      // client would sit on the old URL watching nothing happen.
+      const rest = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "");
+      router.replace(`/${next}${rest || ""}`);
+      router.refresh();
+    });
+  }
 
   // Billing only exists for a client who has something to bill — otherwise the
   // sub-page would be an empty shell.
@@ -439,7 +468,8 @@ export function WorkspaceSettingsDialog({
                         the system-blue highlight, which can't be themed. */}
                     <Select
                       value={language}
-                      onValueChange={(v) => setLanguage(v as "en" | "es")}
+                      disabled={isSwitchingLanguage}
+                      onValueChange={(v) => changeLanguage(v as "en" | "es")}
                     >
                       <SelectTrigger aria-label="Language" className={SELECT_TRIGGER}>
                         <SelectValue />

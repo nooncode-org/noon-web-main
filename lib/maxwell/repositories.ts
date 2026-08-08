@@ -799,6 +799,34 @@ export async function updateStudioSessionStatus(
   return (await getStudioSession(id))!;
 }
 
+/**
+ * The client's chosen language for this project.
+ *
+ * Set once from their browser when the session is created
+ * (`negotiateSessionLanguage`), and overridable afterwards from the portal's
+ * settings panel — someone whose work laptop is in English but who would rather
+ * read Spanish. It is not a display preference: it also decides the language
+ * Maxwell replies in and the locale of the portal link we email them, so a
+ * change here follows them out of the browser.
+ *
+ * Deliberately not routed through `updateStudioSessionStatus`: this touches no
+ * status and must never trip the state machine.
+ */
+export async function updateStudioSessionLanguage(
+  id: string,
+  language: string,
+): Promise<StudioSession> {
+  const sql = getDb();
+  const now = new Date().toISOString();
+  await sql`
+    UPDATE studio_session
+    SET language = ${language}, updated_at = ${now}
+    WHERE id = ${id}
+      AND deleted_at IS NULL
+  `;
+  return (await getStudioSession(id))!;
+}
+
 export async function incrementCorrectionsUsed(id: string): Promise<StudioSession> {
   const sql = getDb();
   const now = new Date().toISOString();
