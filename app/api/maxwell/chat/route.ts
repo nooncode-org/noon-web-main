@@ -30,6 +30,7 @@ import {
   MAXWELL_CHAT_SYSTEM_PROMPT,
 } from "@/lib/maxwell/prompts";
 import { isBrainEnabled } from "@/lib/maxwell/brain-flag";
+import { negotiateSessionLanguage } from "@/lib/maxwell/session-language";
 import { readClientReference } from "@/lib/maxwell/client-reference";
 import { intakeClientImage } from "@/lib/maxwell/image-intake";
 import { guardClientReferenceUrl } from "@/lib/maxwell/client-reference-guard";
@@ -257,6 +258,13 @@ export async function POST(request: Request) {
         ownerEmail: viewer.email,
         ownerName: viewer.name,
         ownerImage: viewer.image,
+        // Decided once, here, from the client's own browser — this is the only
+        // moment we get to ask. It goes on to pick the language Maxwell replies
+        // in AND the locale of the portal link they'll click after paying.
+        // Read from the header, not the URL: the studio is served at /en even
+        // to a Spanish visitor (i18n/launch-locales.ts), so the URL would say
+        // "en" for everyone.
+        language: negotiateSessionLanguage(request.headers.get("accept-language")),
       });
     }
 
