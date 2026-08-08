@@ -615,7 +615,9 @@
       "disconnectBody": "will stop serving your product at that address. Your Noon team handles the disconnection — nothing to do on your end.",
       "cancel": "Cancel",
       "copyDomain": "Copy domain",
-      "default": "Default"
+      "default": "Default",
+      "addExisting": "Add Existing",
+      "buy": "Buy"
     },
     "errors": {
       "chooseFile": "Please choose a file."
@@ -778,6 +780,9 @@
       "exportDialogBody": "Your Noon team will prepare a full export — code, content, and assets — and send you a secure download link by email. Usually within one business day.",
       "close": "Cancel",
       "sending": "Sending…"
+    },
+    "a11y": {
+      "closeDialog": "Close"
     }
   },
   "studio": {
@@ -825,7 +830,17 @@
     "account": "Your account",
     "shareLinkLabel": "Shareable prototype link",
     "copied": "Copied",
-    "copy": "Copy"
+    "copy": "Copy",
+    "navHome": "Home",
+    "navTemplates": "Templates",
+    "navUpgrade": "Upgrade",
+    "navTalkToAgent": "Talk to agent",
+    "newChat": "New chat",
+    "myProject": "My project",
+    "recentChats": "Recent chats",
+    "previewsThisMonth": "Prototype previews this month",
+    "signOut": "Sign out",
+    "delete": "Delete"
   },
   "upgradeTool": {
     "current": "Current",

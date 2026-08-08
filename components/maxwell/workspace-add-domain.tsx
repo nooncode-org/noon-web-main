@@ -60,6 +60,7 @@ export function AddDomainButtons({
   viaChat?: boolean;
 } = {}) {
   const t = useTranslations("workspace.domains");
+  const tA11y = useTranslations("workspace.a11y");
   const [addOpen, setAddOpen] = useState(false);
   const [domain, setDomain] = useState("");
   const canAdd = domain.trim().length > 0;
@@ -109,7 +110,7 @@ export function AddDomainButtons({
         onClick={() => setAddOpen(true)}
         className="inline-flex items-center rounded-[6px] border border-border bg-secondary/40 px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
       >
-        Add Existing
+        {t("addExisting")}
       </button>
       <button
         type="button"
@@ -118,12 +119,12 @@ export function AddDomainButtons({
         // border — without matching box metrics Buy renders 2px shorter.
         className="inline-flex items-center rounded-[6px] border border-transparent bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
       >
-        Buy
+        {t("buy")}
       </button>
 
       {/* Add Existing — connect a domain the client already owns. */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="rounded-[8px]">
+        <DialogContent closeLabel={tA11y("closeDialog")} className="rounded-[8px]">
           <DialogHeader>
             <DialogTitle>{t("addYours")}</DialogTitle>
             <DialogDescription>
@@ -167,7 +168,7 @@ export function AddDomainButtons({
 
       {/* Buy — find + buy a new domain (front only; registrar API + checkout later). */}
       <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
-        <DialogContent className="rounded-[8px]">
+        <DialogContent closeLabel={tA11y("closeDialog")} className="rounded-[8px]">
           <DialogHeader>
             <DialogTitle>{t("buyOne")}</DialogTitle>
             <DialogDescription>

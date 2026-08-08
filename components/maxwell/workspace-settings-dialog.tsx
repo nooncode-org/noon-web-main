@@ -154,6 +154,7 @@ export function WorkspaceSettingsDialog({
   // what gets served), and before that the served locale is the browser's own
   // — which is the honest default to show.
   const t = useTranslations("workspace.settings");
+  const tA11y = useTranslations("workspace.a11y");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -283,7 +284,7 @@ export function WorkspaceSettingsDialog({
 
         {/* Explicit width + cap: the base `w-full` would let the panel touch
             both viewport edges once max-w passes the window width. */}
-        <DialogContent
+        <DialogContent closeLabel={tA11y("closeDialog")}
           onCloseAutoFocus={(e) => {
             if (handingOff.current) {
               handingOff.current = false;

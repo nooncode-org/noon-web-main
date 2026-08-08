@@ -44,6 +44,7 @@ export function WorkspaceProfileDialog({
   onSave: (next: ClientProfile) => void;
 }) {
   const t = useTranslations("workspace.profile");
+  const tA11y = useTranslations("workspace.a11y");
   // The description is the same sentence the Settings panel uses for its
   // Profile card — one wording for one idea, in both places.
   const tSettings = useTranslations("workspace.settings");
@@ -73,7 +74,7 @@ export function WorkspaceProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="rounded-[8px] sm:max-w-sm">
+      <DialogContent closeLabel={tA11y("closeDialog")} className="rounded-[8px] sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{tSettings("profileDescription")}</DialogDescription>

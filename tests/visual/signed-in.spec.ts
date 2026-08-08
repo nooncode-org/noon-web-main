@@ -24,6 +24,8 @@ const DEMO_SESSION = "dev-demo-session";
 const DEMO_TOKEN = "dev-demo-token";
 /** The seed's second proposal: sent, unpaid — the plan picker still on screen. */
 const DEMO_UNPAID_TOKEN = "dev-demo-unpaid-token";
+/** The identity the harness signs in as (see global-setup.ts). */
+const TEST_VIEWER_EMAIL = "dev@noon.dev";
 
 test.describe("signed in", () => {
   test("the home is the client's dashboard, not the marketing hero", async ({ page }) => {
@@ -176,6 +178,58 @@ test.describe("signed in", () => {
     // Theirs — untouched, still exactly what was written.
     await expect(log.getByText(/can the header logo be a bit bigger/i)).toBeVisible();
     await expect(log.getByText(/Dashboards and role-based access shipped/i)).toBeVisible();
+  });
+
+  /**
+   * The ✕ that closes a dialog has no visible text — its whole name exists for
+   * screen readers, which is why it stayed English through the translation
+   * pass: nobody sees it, so nobody notices. It also can't come from the
+   * message files directly, because the dialog is a shared base component and
+   * tying it to a locale provider is what broke app/error.tsx; the portal
+   * passes the translated string in instead. This is the proof that the wiring
+   * reaches the button.
+   */
+  test("a dialog's close button is named in the client's language", async ({ page }) => {
+    // The account dialog, reached from the proposal page's rail. The portal's
+    // own dialogs (domains) turned out to be unreachable in this fixture — the
+    // demo client has only Overview and Chat — which is itself worth knowing:
+    // the Domains tab has never been opened by any automated check.
+    await page.goto(`/es/maxwell/proposal/${DEMO_UNPAID_TOKEN}`);
+    // The rail renders collapsed; its contents are in the tree but not
+    // clickable until it opens. Worth stating because it is also why a
+    // sidebar-based UI assertion elsewhere would silently pass on nothing.
+    await page.getByRole("button", { name: "Abrir el menú" }).click();
+    await page.getByRole("button", { name: new RegExp(TEST_VIEWER_EMAIL, "i") }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Cerrar" })).toBeVisible();
+  });
+
+  /**
+   * The rail that sits beside every signed-in surface. Opening it for the test
+   * above showed it half-translated in a way nothing could have caught: the
+   * labels read ALOUD were in Spanish ("Borrar la conversación", "Plegar el
+   * panel lateral") while the words a client actually READS were English —
+   * Home, Templates, Upgrade, Talk to agent, New chat, Recent chats, Sign out.
+   *
+   * The reverse of the usual gap, and invisible to the inline-copy scanner:
+   * those sit alone on their own lines inside multi-line JSX, and the scanner
+   * only matches text with its tags on the same line.
+   */
+  test("the rail is in the client's language, not half of it", async ({ page }) => {
+    await page.goto(`/es/maxwell/proposal/${DEMO_UNPAID_TOKEN}`);
+    await page.getByRole("button", { name: "Abrir el menú" }).click();
+
+    for (const label of ["Inicio", "Plantillas", "Mejorar mi web", "Hablar con un agente"]) {
+      await expect(page.getByRole("link", { name: label })).toBeVisible();
+    }
+    await expect(page.getByRole("button", { name: "Nueva conversación" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+
+    // And nothing English left behind in it.
+    await expect(page.getByText("New chat", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Sign out", { exact: true })).toHaveCount(0);
   });
 
   /**

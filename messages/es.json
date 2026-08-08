@@ -615,7 +615,9 @@
       "disconnectBody": "dejará de servir tu producto en esa dirección. Tu equipo de Noon se encarga de la desconexión: tú no tienes que hacer nada.",
       "cancel": "Cancelar",
       "copyDomain": "Copiar dominio",
-      "default": "Predeterminado"
+      "default": "Predeterminado",
+      "addExisting": "Añadir el mío",
+      "buy": "Comprar"
     },
     "errors": {
       "chooseFile": "Elige un archivo, por favor."
@@ -778,6 +780,9 @@
       "exportDialogBody": "Tu equipo de Noon preparará una copia completa —código, contenido y recursos— y te enviará un enlace de descarga seguro por correo. Suele estar lista en un día laborable.",
       "close": "Cancelar",
       "sending": "Enviando…"
+    },
+    "a11y": {
+      "closeDialog": "Cerrar"
     }
   },
   "studio": {
@@ -825,7 +830,17 @@
     "account": "Tu cuenta",
     "shareLinkLabel": "Enlace del prototipo para compartir",
     "copied": "Copiado",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "navHome": "Inicio",
+    "navTemplates": "Plantillas",
+    "navUpgrade": "Mejorar mi web",
+    "navTalkToAgent": "Hablar con un agente",
+    "newChat": "Nueva conversación",
+    "myProject": "Mi proyecto",
+    "recentChats": "Conversaciones recientes",
+    "previewsThisMonth": "Vistas de prototipo este mes",
+    "signOut": "Cerrar sesión",
+    "delete": "Borrar"
   },
   "upgradeTool": {
     "current": "Actual",

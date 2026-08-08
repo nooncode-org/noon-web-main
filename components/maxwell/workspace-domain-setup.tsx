@@ -69,6 +69,7 @@ export function DomainSetupButton({
   contactHref: string;
 }) {
   const t = useTranslations("workspace.dns");
+  const tA11y = useTranslations("workspace.a11y");
   const [open, setOpen] = useState(false);
 
   return (
@@ -82,7 +83,7 @@ export function DomainSetupButton({
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-[6px]">
+        <DialogContent closeLabel={tA11y("closeDialog")} className="rounded-[6px]">
           <DialogHeader>
             <DialogTitle className="break-all font-mono text-base">{domain}</DialogTitle>
             <DialogDescription>

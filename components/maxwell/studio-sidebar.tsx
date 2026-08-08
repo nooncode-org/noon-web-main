@@ -218,7 +218,7 @@ export function StudioSidebar({
               className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
             >
               <Home className="h-4 w-4 text-muted-foreground" />
-              Home
+              {t("navHome")}
             </Link>
           )}
           <Link
@@ -227,7 +227,7 @@ export function StudioSidebar({
             className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
           >
             <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
-            Templates
+            {t("navTemplates")}
           </Link>
           <Link
             href={`/${locale}${siteRoutes.upgrade}`}
@@ -235,7 +235,7 @@ export function StudioSidebar({
             className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
           >
             <Rocket className="h-4 w-4 text-muted-foreground" />
-            Upgrade
+            {t("navUpgrade")}
           </Link>
           <Link
             href={agentHref}
@@ -243,7 +243,7 @@ export function StudioSidebar({
             className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
           >
             <User className="h-4 w-4 text-muted-foreground" />
-            Talk to agent
+            {t("navTalkToAgent")}
           </Link>
           {onNewDraftChat && (
             <button
@@ -255,7 +255,7 @@ export function StudioSidebar({
               className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
             >
               <Plus className="h-4 w-4 text-muted-foreground" />
-              New chat
+              {t("newChat")}
             </button>
           )}
           {/* A lone client project rides in the nav list itself, styled exactly
@@ -268,7 +268,7 @@ export function StudioSidebar({
               className="flex w-full items-center gap-2.5 px-4 py-3 rounded-[8px] text-sm text-foreground/85 transition-colors hover:bg-secondary/40"
             >
               <Monitor className="h-4 w-4 text-muted-foreground" />
-              My project
+              {t("myProject")}
             </Link>
           )}
         </div>
@@ -314,7 +314,7 @@ export function StudioSidebar({
               </div>
             </div>
             <p className="px-4 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground/80">
-              Recent chats
+              {t("recentChats")}
             </p>
             <div className="min-h-0 flex-1 overflow-y-auto pb-2">
               {filteredSessions.length === 0 ? (
@@ -395,7 +395,7 @@ export function StudioSidebar({
           {quotaSnapshot && (
             <div className="rounded-[8px] border border-border/60 bg-secondary/30 px-3 py-2">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
-                Prototype previews this month
+                {t("previewsThisMonth")}
               </p>
               <p className="mt-0.5 text-xs text-foreground">
                 {quotaSnapshot.userDistinctSessionsWithV1ThisUtcMonth}/{quotaSnapshot.userMonthlyInitialLimit}
@@ -412,7 +412,7 @@ export function StudioSidebar({
                 className="flex h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-border bg-background text-sm font-medium text-foreground/85 transition-colors hover:bg-secondary/60"
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {t("signOut")}
               </button>
             </form>
             {footerExtra}
@@ -451,7 +451,7 @@ export function StudioSidebar({
                 setPendingDelete(null);
               }}
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
