@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PanelLeft } from "lucide-react";
@@ -74,6 +75,7 @@ export function ProposalSidebar({
     sessionId?: string;
   };
 }) {
+  const t = useTranslations("workspace.chrome");
   const router = useRouter();
   const [open, setOpen] = useState(false); // overlay drawer (mobile in rail mode; all widths otherwise)
   const [railOpen, setRailOpen] = useState(false); // desktop push rail (rail mode only)
@@ -176,7 +178,7 @@ export function ProposalSidebar({
           setOpen(true);
           void refresh();
         }}
-        aria-label="Open menu"
+        aria-label={t("openMenu")}
         className={`fixed left-3 top-3 z-40 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground${overlayLgHidden}`}
       >
         <PanelLeft className="h-4 w-4" />
@@ -192,7 +194,7 @@ export function ProposalSidebar({
             setRailOpen(true);
             void refresh();
           }}
-          aria-label="Expand sidebar"
+          aria-label={t("expandSidebar")}
           className="fixed left-3 top-3 z-40 hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
         >
           <PanelLeft className="h-4 w-4" />

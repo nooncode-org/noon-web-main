@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { X, Crop, Plus, ArrowUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * ReviewOverlay — the client's "point at your own site" tool, opened from the
@@ -88,6 +89,7 @@ export function ReviewOverlay({
   onClose: () => void;
   onAttach: (mark: ReviewMark) => void;
 }) {
+  const t = useTranslations("workspace.review");
   const frameRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
   // Drag performance — the reason this used to feel laggy next to a native snip:
@@ -308,20 +310,20 @@ export function ReviewOverlay({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Review your site"
+      aria-label={t("title")}
       className="fixed inset-0 z-50 flex flex-col bg-background"
     >
       {/* Full-screen top toolbar (like the studio Preview) — the site fills the
           whole viewport below it, edge to edge, so it reads at real size. */}
       <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
-        <p className="text-sm font-medium">Review your site</p>
+        <p className="text-sm font-medium">{t("title")}</p>
         <span className="hidden items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground sm:inline-flex">
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           {host}
         </span>
         <button
           type="button"
-          aria-label="Close"
+          aria-label={t("close")}
           onClick={onClose}
           className="ml-auto rounded-[6px] p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
@@ -339,7 +341,7 @@ export function ReviewOverlay({
             {embed ? (
               <iframe
                 src={siteUrl}
-                title="Your site"
+                title={t("yourSite")}
                 className="min-h-[calc(100vh-3rem)] w-full flex-1 border-0"
               />
             ) : (
@@ -404,14 +406,14 @@ export function ReviewOverlay({
             {mode === "selecting" && (
               <div className="pointer-events-none absolute inset-x-0 top-3 z-30 flex items-center justify-center gap-2">
                 <span className="rounded-full bg-foreground/90 px-3 py-1.5 text-[12px] font-medium text-background shadow-lg">
-                  {marks.length > 0 ? "Drag another box — or use the bar below" : "Drag a box over the part you want to talk about"}
+                  {marks.length > 0 ? t("dragMore") : t("dragFirst")}
                 </span>
                 <button
                   type="button"
                   onClick={() => (marks.length > 0 ? setMode("adjusting") : setMode("idle"))}
                   className="pointer-events-auto rounded-full bg-foreground/90 px-3 py-1.5 text-[12px] font-medium text-background/70 shadow-lg transition-colors hover:text-background"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
               </div>
             )}
@@ -424,14 +426,14 @@ export function ReviewOverlay({
         {mode === "idle" && (
           <div className="absolute bottom-5 left-1/2 z-30 -translate-x-1/2">
             <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/75 py-1.5 pl-3.5 pr-1.5 text-white shadow-2xl backdrop-blur-md">
-              <span className="text-[12px] text-white/75">Point out something on your site</span>
+              <span className="text-[12px] text-white/75">{t("invite")}</span>
               <button
                 type="button"
                 onClick={() => setMode("selecting")}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#0056fd] px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#0047e0]"
               >
                 <Crop className="h-3.5 w-3.5" strokeWidth={2} />
-                Select area
+                {t("selectArea")}
               </button>
             </div>
           </div>
@@ -470,7 +472,7 @@ export function ReviewOverlay({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") send();
                 }}
-                placeholder={totalAreas > 1 ? "What would you like changed in these areas?" : "What would you like changed here?"}
+                placeholder={totalAreas > 1 ? t("notePlaceholderMany") : t("notePlaceholderOne")}
                 className="min-w-[180px] flex-1 bg-transparent px-2 py-1.5 text-[13px] outline-none placeholder:text-white/45"
               />
               <button
@@ -478,7 +480,7 @@ export function ReviewOverlay({
                 onClick={resetAll}
                 className="rounded-full px-2.5 py-1.5 text-[12px] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -487,7 +489,7 @@ export function ReviewOverlay({
                 className="inline-flex items-center gap-1 rounded-full border border-white/20 px-2.5 py-1.5 text-[12px] font-medium transition-colors hover:bg-white/10 disabled:opacity-40"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-                Add another area
+                {t("addAnother")}
               </button>
               <button
                 type="button"

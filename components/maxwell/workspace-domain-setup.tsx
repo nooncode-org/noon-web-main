@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import {
@@ -67,6 +68,7 @@ export function DomainSetupButton({
   domain: string;
   contactHref: string;
 }) {
+  const t = useTranslations("workspace.dns");
   const [open, setOpen] = useState(false);
 
   return (
@@ -91,10 +93,10 @@ export function DomainSetupButton({
 
           <div className="overflow-hidden rounded-[6px] border border-border">
             <div className="grid grid-cols-[3rem_4rem_1fr_auto] items-center gap-3 border-b border-border bg-secondary/20 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              <span>Type</span>
-              <span>Name</span>
-              <span>Value</span>
-              <span className="sr-only">Copy</span>
+              <span>{t("type")}</span>
+              <span>{t("name")}</span>
+              <span>{t("value")}</span>
+              <span className="sr-only">{t("copy")}</span>
             </div>
             {DNS_RECORDS.map((r) => (
               <div

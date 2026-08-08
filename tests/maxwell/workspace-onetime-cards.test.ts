@@ -15,6 +15,27 @@ import type { ReactElement } from "react";
 // The cards' actions hand off to the chat; the bridge touches browser APIs.
 vi.mock("@/components/maxwell/workspace-chat", () => ({ goToWorkspaceChat: vi.fn() }));
 
+// Calling a client component as a plain function skips React's provider tree,
+// so `useTranslations` finds no context. Rather than stub it with the key name
+// — which would let a missing message pass unnoticed — this resolves against
+// the REAL English catalogue: the assertions below keep checking the words a
+// client actually reads, and a deleted key fails loudly instead of silently.
+vi.mock("next-intl", async () => {
+  const messages = (await import("@/messages/en.json")).default as Record<string, unknown>;
+  return {
+    useTranslations: (namespace: string) => (key: string) => {
+      const value = namespace
+        .split(".")
+        .concat(key)
+        .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], messages);
+      if (typeof value !== "string") {
+        throw new Error(`Missing message: ${namespace}.${key}`);
+      }
+      return value;
+    },
+  };
+});
+
 import {
   MembershipUpsellCard,
   WorkspaceCodePanel,

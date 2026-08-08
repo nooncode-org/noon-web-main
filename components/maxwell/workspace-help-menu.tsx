@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CircleHelp, Phone } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -71,14 +72,15 @@ const FAQ_ONETIME: { q: string; a: string }[] = [
 ];
 
 export function WorkspaceHelpMenu({ isMembership = true }: { isMembership?: boolean }) {
+  const t = useTranslations("workspace.chrome");
   const FAQ = isMembership ? FAQ_MEMBERSHIP : FAQ_ONETIME;
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="Help"
-          title="Help"
+          aria-label={t("help")}
+          title={t("help")}
           className="shrink-0 rounded-[6px] p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground"
         >
           <CircleHelp className="h-[18px] w-[18px]" strokeWidth={1.75} />

@@ -12,6 +12,7 @@
  */
 
 import { useState, useTransition, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import type { ClientRequestWithUpdates } from "@/lib/maxwell/repositories";
 import type { ProjectStatusVersion } from "@/lib/maxwell/project-status-types";
 import {
@@ -74,6 +75,7 @@ function RequestCard({
   sessionId: string;
   request: ClientRequestWithUpdates;
 }) {
+  const t = useTranslations("workspace.requests");
   const stateMeta = clientVisibleStateMeta(request.clientVisibleState);
   const [replying, setReplying] = useState(false);
   const [reply, setReply] = useState("");
@@ -117,11 +119,11 @@ function RequestCard({
     if (!file || isPending) return;
     // Client-side mirror of the server validation — fail fast before upload.
     if (!isAllowedAttachmentMime(file.type)) {
-      setError("That file type isn't allowed.");
+      setError(t("fileTypeNotAllowed"));
       return;
     }
     if (!isValidAttachmentSize(file.size)) {
-      setError("That file is too large (max 10 MB).");
+      setError(t("fileTooLarge"));
       return;
     }
     setError(null);
@@ -184,8 +186,8 @@ function RequestCard({
             onChange={(event) => setReply(event.target.value)}
             maxLength={CLIENT_REQUEST_BODY_MAX}
             rows={2}
-            placeholder="Add a reply or clarification…"
-            aria-label="Reply to request"
+            placeholder={t("replyPlaceholder")}
+            aria-label={t("replyLabel")}
             className="w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
             disabled={isPending}
           />
@@ -196,7 +198,7 @@ function RequestCard({
               disabled={!canSend}
               className="site-primary-action inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Sending…" : "Send reply"}
+              {isPending ? t("sending") : t("sendReply")}
             </button>
             <button
               type="button"
@@ -217,7 +219,7 @@ function RequestCard({
               setError(null);
               setFile(event.target.files?.[0] ?? null);
             }}
-            aria-label="Choose a file to attach"
+            aria-label={t("chooseFile")}
             disabled={isPending}
             className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-secondary/70"
           />
@@ -226,8 +228,8 @@ function RequestCard({
             onChange={(event) => setAttachNote(event.target.value)}
             maxLength={CLIENT_REQUEST_BODY_MAX}
             rows={2}
-            placeholder="Add an optional note…"
-            aria-label="Attachment note (optional)"
+            placeholder={t("notePlaceholder")}
+            aria-label={t("noteLabel")}
             className="mt-2 w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
             disabled={isPending}
           />
@@ -238,7 +240,7 @@ function RequestCard({
               disabled={!canAttach}
               className="site-primary-action inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Attaching…" : "Attach file"}
+              {isPending ? t("attaching") : t("attach")}
             </button>
             <button
               type="button"
@@ -297,6 +299,7 @@ export function RequestBox({
   /** Project versions from the App pull, for the optional "Regarding version" link (B.4). */
   versions: ProjectStatusVersion[];
 }) {
+  const t = useTranslations("workspace.requests");
   const [type, setType] = useState<ClientRequestType>("comment");
   const [priority, setPriority] = useState<ClientRequestPriority>(
     DEFAULT_CLIENT_REQUEST_PRIORITY,
@@ -338,7 +341,7 @@ export function RequestBox({
   return (
     <section id="requests" className="scroll-mt-16 rounded-[6px] border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-        <h2 className="text-sm font-medium">Requests</h2>
+        <h2 className="text-sm font-medium">{t("heading")}</h2>
         {requests.length > 0 && (
           <span className="text-[13px] text-muted-foreground">{requests.length}</span>
         )}
@@ -364,7 +367,7 @@ export function RequestBox({
               onValueChange={(value) => setType(value as ClientRequestType)}
               disabled={isPending}
             >
-              <SelectTrigger aria-label="Request type" className={SELECT_TRIGGER}>
+              <SelectTrigger aria-label={t("typeLabel")} className={SELECT_TRIGGER}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className={SELECT_CONTENT}>
@@ -385,7 +388,7 @@ export function RequestBox({
               onValueChange={(value) => setPriority(value as ClientRequestPriority)}
               disabled={isPending}
             >
-              <SelectTrigger aria-label="Request priority" className={SELECT_TRIGGER}>
+              <SelectTrigger aria-label={t("priorityLabel")} className={SELECT_TRIGGER}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className={SELECT_CONTENT}>
@@ -410,11 +413,11 @@ export function RequestBox({
               }
               disabled={isPending}
             >
-              <SelectTrigger aria-label="Regarding version" className={SELECT_TRIGGER}>
+              <SelectTrigger aria-label={t("versionLabel")} className={SELECT_TRIGGER}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className={SELECT_CONTENT}>
-                <SelectItem value={NO_VERSION}>No specific version</SelectItem>
+                <SelectItem value={NO_VERSION}>{t("noVersion")}</SelectItem>
                 {versionOptions.map((version) => (
                   <SelectItem key={version.sequence} value={String(version.sequence)}>
                     Version {version.sequence}
@@ -429,8 +432,8 @@ export function RequestBox({
           onChange={(event) => setBody(event.target.value)}
           maxLength={CLIENT_REQUEST_BODY_MAX}
           rows={3}
-          placeholder="Describe your request to your Noon team…"
-          aria-label="Request details"
+          placeholder={t("detailsPlaceholder")}
+          aria-label={t("detailsLabel")}
           className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
           disabled={isPending}
         />
@@ -443,7 +446,7 @@ export function RequestBox({
             disabled={!canSend}
             className="site-primary-action inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isPending ? "Sending…" : "Send request"}
+            {isPending ? t("sending") : t("send")}
           </button>
         </div>
         {error && (

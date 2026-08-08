@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
 import { formatProposalAmount } from "@/lib/maxwell/project-status-labels";
 
@@ -36,17 +37,18 @@ function GithubMark({ className }: { className?: string }) {
  * without moving anything.
  */
 export function WorkspaceCodePanel() {
+  const t = useTranslations("workspace.chrome");
   return (
     <section className="rounded-[6px] border border-border bg-card">
       {/* Actions ride the title bar, hard right — same as the Domains header
           (owner 2026-07-23: "sube los botones aquí"). */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-2.5">
-        <h2 className="text-sm font-medium">Your code</h2>
+        <h2 className="text-sm font-medium">{t("yourCode")}</h2>
         <div className="flex shrink-0 flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={() =>
-              goToWorkspaceChat("Hi — could you share access to my project's repository?")
+              goToWorkspaceChat(t("askRepoAccess"))
             }
             className="inline-flex items-center gap-2 rounded-[6px] border border-border bg-background px-3.5 py-2 text-[13px] font-medium transition-colors hover:bg-secondary/50"
           >
@@ -56,7 +58,7 @@ export function WorkspaceCodePanel() {
           <button
             type="button"
             onClick={() =>
-              goToWorkspaceChat("Hi — I'd like a download of my project's full source code.")
+              goToWorkspaceChat(t("askSourceDownload"))
             }
             className="inline-flex items-center gap-2 rounded-[6px] bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
           >
@@ -89,6 +91,7 @@ export function MembershipUpsellCard({
   monthlyAmountUsd: number | null;
   currency: string;
 }) {
+  const t = useTranslations("workspace.chrome");
   return (
     <section className="overflow-hidden rounded-[6px] border border-border bg-gradient-to-br from-[#0056fd]/[0.07] to-transparent p-5">
       {/* One line + the button (owner 2026-07-25): copy compressed to a single
@@ -115,7 +118,7 @@ export function MembershipUpsellCard({
         <button
           type="button"
           onClick={() =>
-            goToWorkspaceChat("Hi — I'd like to add a membership to my project. How does it work?")
+            goToWorkspaceChat(t("askMembership"))
           }
           className="shrink-0 self-start rounded-[6px] bg-[#0056fd] px-3.5 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0] sm:self-auto"
         >

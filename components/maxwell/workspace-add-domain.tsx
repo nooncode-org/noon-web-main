@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { goToWorkspaceChat } from "@/components/maxwell/workspace-chat";
@@ -58,6 +59,7 @@ export function AddDomainButtons({
    */
   viaChat?: boolean;
 } = {}) {
+  const t = useTranslations("workspace.domains");
   const [addOpen, setAddOpen] = useState(false);
   const [domain, setDomain] = useState("");
   const canAdd = domain.trim().length > 0;
@@ -123,7 +125,7 @@ export function AddDomainButtons({
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="rounded-[8px]">
           <DialogHeader>
-            <DialogTitle>Add your domain</DialogTitle>
+            <DialogTitle>{t("addYours")}</DialogTitle>
             <DialogDescription>
               Enter a domain you already own. Your Noon team connects it to your project and
               handles all the DNS — you never touch a thing.
@@ -167,7 +169,7 @@ export function AddDomainButtons({
       <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
         <DialogContent className="rounded-[8px]">
           <DialogHeader>
-            <DialogTitle>Buy a domain</DialogTitle>
+            <DialogTitle>{t("buyOne")}</DialogTitle>
             <DialogDescription>
               Find a new domain for your project. Once it&apos;s yours, your Noon team connects
               it and handles the DNS — no setup on your end.
@@ -184,8 +186,8 @@ export function AddDomainButtons({
                 type="text"
                 value={buyQuery}
                 onChange={(event) => setBuyQuery(event.target.value)}
-                placeholder="Search for a domain"
-                aria-label="Search for a domain to buy"
+                placeholder={t("buyPlaceholder")}
+                aria-label={t("buyLabel")}
                 autoComplete="off"
                 spellCheck={false}
                 className="w-full rounded-[6px] border border-border bg-transparent py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground/50 focus-visible:border-foreground/30"

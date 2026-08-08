@@ -8,6 +8,7 @@
  * page with the new message appended.
  */
 
+import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import type { ClientComment } from "@/lib/maxwell/repositories";
 import { submitCommentAction } from "../_actions/submit-comment";
@@ -30,6 +31,7 @@ export function CommentBox({
   sessionId: string;
   comments: ClientComment[];
 }) {
+  const t = useTranslations("workspace.chrome");
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -54,7 +56,7 @@ export function CommentBox({
   return (
     <section id="messages" className="scroll-mt-16 rounded-[6px] border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-        <h2 className="text-sm font-medium">Messages</h2>
+        <h2 className="text-sm font-medium">{t("messages")}</h2>
         {comments.length > 0 && (
           <span className="text-[13px] text-muted-foreground">{comments.length}</span>
         )}
@@ -83,8 +85,8 @@ export function CommentBox({
           onChange={(event) => setBody(event.target.value)}
           maxLength={MAX_COMMENT_LENGTH}
           rows={3}
-          placeholder="Send a message to your Noon team…"
-          aria-label="Message to your Noon team"
+          placeholder={t("messagePlaceholder")}
+          aria-label={t("messageLabel")}
           className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
           disabled={isPending}
         />

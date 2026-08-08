@@ -84,7 +84,7 @@ export function WorkspaceProfileDialog({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            aria-label="Change photo"
+            aria-label={t("changePhoto")}
             className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border bg-secondary"
           >
             {photoUrl ? (

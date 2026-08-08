@@ -16,6 +16,7 @@
  * the App hasn't deployed `type = rollback` (hard deploy order, cosign §4).
  */
 
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import {
   CLIENT_REQUEST_BODY_MAX,
@@ -30,6 +31,7 @@ export function VersionRollbackButton({
   sessionId: string;
   versionSequenceNumber: number;
 }) {
+  const t = useTranslations("workspace.chrome");
   // State-agnostic copy: the row may never have been live ("rollback" would read
   // oddly there). The wire type stays `rollback` (B.4); this is client-facing only.
   const defaultBody = `Please make version ${versionSequenceNumber} the live version.`;
@@ -97,7 +99,7 @@ export function VersionRollbackButton({
         onChange={(event) => setBody(event.target.value)}
         maxLength={CLIENT_REQUEST_BODY_MAX}
         rows={3}
-        aria-label="Rollback request details"
+        aria-label={t("rollbackDetails")}
         className="w-full resize-none rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/50"
         disabled={isPending}
       />
