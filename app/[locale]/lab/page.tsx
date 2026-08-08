@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Schibsted_Grotesk } from "next/font/google";
@@ -20,6 +21,11 @@ export const metadata = {
 };
 
 export default function LabPage() {
+  // Same hard gate as the other internal benches (wspreview, tracepreview):
+  // anywhere but `next dev` this page does not exist. The robots hint below
+  // only asks crawlers to stay away — it does not stop anyone from opening it.
+  if (process.env.NODE_ENV !== "development") notFound();
+
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} ${schibsted.variable}`}>
       <Gallery />

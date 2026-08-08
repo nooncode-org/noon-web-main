@@ -76,6 +76,7 @@ export async function setPortalLanguageAction(input: {
     path: "/",
     maxAge: COOKIE_MAX_AGE_SECONDS,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     // Readable by next-intl on the server; nothing secret about a language.
     httpOnly: false,
   });
