@@ -37,6 +37,19 @@ const DEMO_SESSION = `${DEMO_PREFIX}-session`;
 const DEMO_WORKSPACE = `${DEMO_PREFIX}-workspace`;
 const DEMO_PROPOSAL = `${DEMO_PREFIX}-proposal`;
 
+/**
+ * A second demo, stopped one step earlier: proposal sent, nothing paid.
+ *
+ * The demo above is already paid, so its proposal page shows the receipt — which
+ * meant the screen where a client picks a plan and types card details could not
+ * be opened locally at all, by a test or by a person. The last screen before the
+ * money changes hands was the least looked-at one in the repo.
+ *
+ * Same prefix on purpose: `unseed` clears both in one DELETE.
+ */
+const DEMO_UNPAID_SESSION = `${DEMO_PREFIX}-unpaid-session`;
+const DEMO_UNPAID_PROPOSAL = `${DEMO_PREFIX}-unpaid-proposal`;
+
 /** Load .env.local / .env into process.env WITHOUT echoing any value. */
 function loadEnv() {
   for (const file of [".env.local", ".env"]) {
@@ -229,8 +242,38 @@ async function seed(sql) {
     ON CONFLICT (id) DO NOTHING
   `;
 
+  // The same client, one step earlier: a proposal sent and waiting to be paid.
+  // No client_workspace row — that is exactly the point. The workspace is what
+  // payment creates, so its absence is what makes this the pre-payment view.
+  await sql`
+    INSERT INTO studio_session (
+      id, initial_prompt, status, owner_email, owner_name, goal_summary,
+      language, created_at, updated_at
+    ) VALUES (
+      ${DEMO_UNPAID_SESSION}, 'Build a booking site for a dance studio', 'proposal_sent',
+      ${email}, 'Demo Client', 'Booking site for a dance studio', 'en', ${at}, ${at}
+    )
+    ON CONFLICT (id) DO UPDATE SET owner_email = EXCLUDED.owner_email, updated_at = EXCLUDED.updated_at
+  `;
+
+  // status 'sent' + an approved amount is what makes the plan picker payable
+  // (see PublicProposalPayment). payment_modality stays NULL: the client has
+  // not chosen one yet, and that is the whole state being reproduced.
+  await sql`
+    INSERT INTO proposal_request (
+      id, studio_session_id, public_token, status, review_required,
+      approved_amount_usd, approved_currency,
+      review_notified_at, sent_at, created_at, updated_at
+    ) VALUES (
+      ${DEMO_UNPAID_PROPOSAL}, ${DEMO_UNPAID_SESSION}, ${DEMO_PREFIX + "-unpaid-token"},
+      'sent', false, 4500, 'USD', ${at}, ${at}, ${at}, ${at}
+    )
+    ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at
+  `;
+
   console.log(`· seeded demo project for ${email}`);
-  console.log(`\n  Open:  http://localhost:3211/en/maxwell/workspace/${DEMO_SESSION}\n`);
+  console.log(`\n  Paid workspace:  http://localhost:3211/en/maxwell/workspace/${DEMO_SESSION}`);
+  console.log(`  Unpaid proposal: http://localhost:3211/en/maxwell/proposal/${DEMO_PREFIX}-unpaid-token\n`);
 }
 
 async function unseed(sql) {

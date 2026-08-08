@@ -999,7 +999,8 @@
     "complete": "Complete your payment",
     "vat": "VAT (0%)",
     "totalDue": "Total due today",
-    "chooseOption": "Choose an option"
+    "chooseOption": "Choose an option",
+    "proposalFor": "Proposal for <name></name>"
   },
   "voice": {
     "label": "Voice input",

@@ -52,6 +52,11 @@ export const PARTIAL_LAUNCH_LOCALES: ReadonlySet<string> = new Set(["es"]);
  *                        no marketing nav, no footer, nothing English around it.
  *   /maxwell/prototipo/  the prototype the client reviews. 68 keys, and likewise
  *                        no marketing chrome.
+ *   /maxwell/proposal/   the proposal and its payment step. Joined 2026-08-08,
+ *                        once its last inline sentence moved to the message
+ *                        files. This is where a client enters card details, so
+ *                        it is the last page that should be asking them to
+ *                        read a second language.
  *
  * `/templates/[slug]` is translated too and still does NOT qualify: it mounts
  * `<SiteNav>` and `<SiteFooterRd>`, both hardcoded English. Spanish copy inside
@@ -64,6 +69,7 @@ export const PARTIAL_LAUNCH_LOCALES: ReadonlySet<string> = new Set(["es"]);
 export const TRANSLATED_PATH_PREFIXES: readonly string[] = [
   "/maxwell/workspace/",
   "/maxwell/prototipo/",
+  "/maxwell/proposal/",
 ];
 
 /**

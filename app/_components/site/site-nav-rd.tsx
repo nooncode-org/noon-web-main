@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -8,15 +7,36 @@ import { NoonWordmark } from "@/components/brand/noon-logo";
 import { siteRoutes, getStartWithMaxwellHref } from "@/lib/site-config";
 import "./site-nav-rd.css";
 
+/**
+ * The nav's copy, handed in rather than read from the message files.
+ *
+ * app/error.tsx mounts this component, and an error boundary renders OUTSIDE
+ * the app's locale provider — React catches above it. A `useTranslations()`
+ * call here therefore threw "context not found" and took the error page down
+ * with it: the one screen whose entire job is to survive.
+ *
+ * Passing the strings in fixes that without giving up translation. The server
+ * wrapper (site-nav.tsx) resolves them from the message files for every real
+ * page; the error boundary supplies English, which is what it has.
+ *
+ * Required, not defaulted — a default would let a caller inside the provider
+ * silently render English, which is precisely the failure this whole pass
+ * exists to remove.
+ */
+export type SiteNavRdLabels = {
+  /** Accessible name of the wordmark link — read aloud, never seen. */
+  home: string;
+};
+
 type SiteNavRdProps = {
   locale: string;
   active?: "services" | "about" | "contact";
   /** Signed-in viewers get a studio nav: marketing links hidden, CTA → Studio. */
   signedIn?: boolean;
+  labels: SiteNavRdLabels;
 };
 
-export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
-  const t = useTranslations("signin");
+export function SiteNavRd({ locale, active, signedIn, labels }: SiteNavRdProps) {
   const [open, setOpen] = useState(false);
   const lp = (href: string) => `/${locale}${href}`;
   const maxwellHref = lp(getStartWithMaxwellHref());
@@ -33,7 +53,7 @@ export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
     return (
       <header className="rdnav">
         <div className="rdnav-inner">
-          <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={t("home")}>
+          <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={labels.home}>
             <span style={{ height: 20, display: "inline-flex" }}>
               <NoonWordmark />
             </span>
@@ -49,7 +69,7 @@ export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
   return (
     <header className="rdnav">
       <div className="rdnav-inner">
-        <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={t("home")}>
+        <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={labels.home}>
           <span style={{ height: 20, display: "inline-flex" }}>
             <NoonWordmark />
           </span>

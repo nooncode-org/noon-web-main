@@ -93,6 +93,14 @@ describe("resolveDisabledLocaleRedirect", () => {
         resolveDisabledLocaleRedirect("/es/maxwell/prototipo/tok3n"),
       ).toBeNull();
     });
+
+    it("serves the proposal and its payment step in Spanish", () => {
+      // The page where a client types card details — the last one that should
+      // be asking them to read a second language.
+      expect(
+        resolveDisabledLocaleRedirect("/es/maxwell/proposal/tok3n"),
+      ).toBeNull();
+    });
   });
 
   describe("prefix boundaries", () => {

@@ -999,7 +999,8 @@
     "complete": "Completa tu pago",
     "vat": "IVA (0 %)",
     "totalDue": "Total a pagar hoy",
-    "chooseOption": "Elige una opción"
+    "chooseOption": "Elige una opción",
+    "proposalFor": "Propuesta para <name></name>"
   },
   "voice": {
     "label": "Dictar",

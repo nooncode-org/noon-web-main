@@ -23,7 +23,13 @@ export default function GlobalErrorBoundary({
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd`}>
-      <SiteNavRd locale="en" />
+      {/* English, and written here rather than pulled from the message files.
+          This file sits outside [locale] — it has no locale to read, which is
+          why locale="en" is hardcoded too. Importing the message file to
+          translate one accessible name would ship 43 KB of unrelated copy into
+          the bundle of every page, since a JSON import can't be tree-shaken.
+          tests/i18n/error-boundary-provider-free.test.ts holds the line. */}
+      <SiteNavRd locale="en" labels={{ home: "Noon — home" }} />
 
       <div className="lgl-frame" aria-hidden />
 

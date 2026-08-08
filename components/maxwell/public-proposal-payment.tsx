@@ -830,7 +830,13 @@ export function PublicProposalPayment({
             of them. */}
         {projectName && (
           <p className="text-[13px] text-muted-foreground">
-            Proposal for <span className="text-foreground">{projectName}</span>
+            {/* The project name sits INSIDE the sentence, so the sentence
+                travels whole — "Proposal for X" and "Propuesta para X" put the
+                name in the same place, but the words around it are not the
+                same and must not be glued together in the markup. */}
+            {tPay.rich("proposalFor", {
+              name: () => <span className="text-foreground">{projectName}</span>,
+            })}
           </p>
         )}
         <h2 className="text-2xl font-medium text-foreground sm:text-3xl">{tPay("chooseOption")}</h2>

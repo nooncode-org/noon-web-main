@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getAuthenticatedViewer } from "@/lib/auth/session";
 import { SiteNavRd } from "./site-nav-rd";
 
@@ -14,6 +15,16 @@ type SiteNavProps = {
  * can't await this, so it keeps rendering SiteNavRd directly — marketing nav.)
  */
 export async function SiteNav({ locale, active }: SiteNavProps) {
-  const viewer = await getAuthenticatedViewer();
-  return <SiteNavRd locale={locale} active={active} signedIn={Boolean(viewer)} />;
+  const [viewer, t] = await Promise.all([
+    getAuthenticatedViewer(),
+    getTranslations("signin"),
+  ]);
+  return (
+    <SiteNavRd
+      locale={locale}
+      active={active}
+      signedIn={Boolean(viewer)}
+      labels={{ home: t("home") }}
+    />
+  );
 }
