@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useState } from "react";
 import type { UpgradeAudit, AuditSection } from "@/lib/upgrade/types";
@@ -67,6 +68,7 @@ function SectionCard({ section }: { section: AuditSection }) {
 }
 
 export function UpgradeAuditPanel({ audit, onCreateVersion, isGenerating }: Props) {
+  const t = useTranslations("upgradeTool");
   const { auditJson } = audit;
 
   return (
@@ -74,13 +76,13 @@ export function UpgradeAuditPanel({ audit, onCreateVersion, isGenerating }: Prop
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Website Audit</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t("auditTitle")}</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             {audit.pagesAnalyzed} page{audit.pagesAnalyzed !== 1 ? "s" : ""} analyzed
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">Overall score</span>
+          <span className="text-sm text-muted-foreground">{t("overallScore")}</span>
           <span className="text-3xl font-bold text-foreground tabular-nums">
             {auditJson.overallScore}
             <span className="text-base font-normal text-muted-foreground">/10</span>
@@ -126,7 +128,7 @@ export function UpgradeAuditPanel({ audit, onCreateVersion, isGenerating }: Prop
 
       {/* Sections */}
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Detailed analysis</h3>
+        <h3 className="text-sm font-medium text-foreground">{t("detailedAnalysis")}</h3>
         {auditJson.sections.map((section, i) => (
           <SectionCard key={i} section={section} />
         ))}

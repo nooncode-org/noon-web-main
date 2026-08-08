@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ChevronDown, Globe, Loader2 } from "lucide-react";
@@ -53,6 +54,7 @@ export function UpgradeInput({
   initialMode = "best_judgment",
   initialNote = "",
 }: UpgradeInputProps) {
+  const t = useTranslations("upgradeTool");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -173,7 +175,7 @@ export function UpgradeInput({
 
       {/* Mode selector */}
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-foreground">How should we approach it?</legend>
+        <legend className="text-sm font-medium text-foreground">{t("howApproach")}</legend>
         <div className="grid gap-2">
           {MODES.map((m) => (
             <label
@@ -224,10 +226,10 @@ export function UpgradeInput({
           // The <summary> is the disclosure's own name, not this field's — with the
           // visible <label> gone, this is what keeps the textarea from being
           // announced as an unlabeled edit box.
-          aria-label="Additional details (optional)"
+          aria-label={t("detailsLabel")}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Anything you’d like us to consider."
+          placeholder={t("detailsPlaceholder")}
           rows={3}
           maxLength={2000}
           className="mt-2.5 w-full resize-y rounded-[9px] border border-foreground/12 bg-[var(--bg-secondary)] px-4 py-3 text-sm text-foreground transition-shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/35"

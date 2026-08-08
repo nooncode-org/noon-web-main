@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,7 @@ function StatusIndicator({ status }: { status: string }) {
 }
 
 export function UpgradeShell({ initialSession }: Props) {
+  const t = useTranslations("upgradeTool");
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -164,7 +166,7 @@ export function UpgradeShell({ initialSession }: Props) {
               <StatusIndicator status={session.status} />
             </div>
             {isPolling && (
-              <span className="text-xs text-muted-foreground animate-pulse">Updating…</span>
+              <span className="text-xs text-muted-foreground animate-pulse">{t("updating")}</span>
             )}
           </div>
 
@@ -251,7 +253,7 @@ export function UpgradeShell({ initialSession }: Props) {
           {session.status === "generating" && !session.audit && (
             <div className="rounded-lg border border-border p-8 flex flex-col items-center gap-4 text-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">Creating upgraded version…</p>
+              <p className="text-sm font-medium text-foreground">{t("creating")}</p>
             </div>
           )}
 
@@ -289,7 +291,7 @@ export function UpgradeShell({ initialSession }: Props) {
           {/* ── error: retry ─────────────────────────────────────────────── */}
           {session.status === "error" && (
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 space-y-4">
-              <p className="text-sm text-foreground font-medium">The process ran into a problem.</p>
+              <p className="text-sm text-foreground font-medium">{t("problem")}</p>
               <p className="text-sm text-muted-foreground">
                 This can happen if the website blocks automated scans or if the AI service is
                 temporarily unavailable. You can retry without spending a new session slot.
@@ -325,7 +327,7 @@ export function UpgradeShell({ initialSession }: Props) {
 
           {session.status === "proposal_sent" && (
             <div className="rounded-lg border border-border p-6 space-y-3">
-              <p className="text-sm font-medium text-foreground">Proposal submitted.</p>
+              <p className="text-sm font-medium text-foreground">{t("proposalSubmitted")}</p>
               <p className="text-sm text-muted-foreground">
                 Noon&apos;s team will review it and get back to you with a formal proposal.
               </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Loader2, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ type Props = {
 const MAX_QUESTIONS = 5;
 
 export function UpgradeQuestions({ sessionId, alreadyAnswered, onComplete }: Props) {
+  const t = useTranslations("upgradeTool");
   const [questions, setQuestions] = useState<string[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [answered, setAnswered] = useState<{ question: string; answer: string }[]>(
@@ -171,7 +173,7 @@ export function UpgradeQuestions({ sessionId, alreadyAnswered, onComplete }: Pro
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Your answer… (Enter to submit)"
+              placeholder={t("answerPlaceholder")}
               rows={2}
               maxLength={1000}
               disabled={isSubmitting}
@@ -182,7 +184,7 @@ export function UpgradeQuestions({ sessionId, alreadyAnswered, onComplete }: Pro
               onClick={() => submitAnswer(currentAnswer)}
               disabled={!currentAnswer.trim() || isSubmitting}
               className="absolute right-3 bottom-3 rounded-md p-1.5 text-foreground disabled:opacity-30 hover:bg-muted transition-colors"
-              aria-label="Submit answer"
+              aria-label={t("submitAnswer")}
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

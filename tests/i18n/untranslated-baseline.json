@@ -38,11 +38,6 @@
   "components/ui/sheet.tsx": 1,
   "components/ui/sidebar.tsx": 5,
   "components/ui/spinner.tsx": 1,
-  "components/upgrade/upgrade-audit.tsx": 3,
-  "components/upgrade/upgrade-hero.tsx": 1,
-  "components/upgrade/upgrade-input.tsx": 4,
-  "components/upgrade/upgrade-questions.tsx": 2,
-  "components/upgrade/upgrade-session-list.tsx": 1,
-  "components/upgrade/upgrade-shell.tsx": 5,
-  "components/upgrade/upgrade-version.tsx": 10
+  "components/upgrade/upgrade-input.tsx": 1,
+  "components/upgrade/upgrade-shell.tsx": 1
 }

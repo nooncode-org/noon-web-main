@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { UpgradeSession, UpgradeSessionStatus } from "@/lib/upgrade/types";
 
@@ -42,12 +43,13 @@ function formatDate(iso: string) {
 }
 
 export function UpgradeSessionList({ sessions }: Props) {
+  const t = useTranslations("upgradeTool");
   const visible = sessions.filter((s) => s.status !== "archived");
   if (visible.length === 0) return null;
 
   return (
     <div className="mt-10">
-      <h2 className="text-sm font-medium text-muted-foreground mb-3">Previous audits</h2>
+      <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("previousAudits")}</h2>
       <ul className="space-y-2">
         {visible.map((s) => (
           <li key={s.id}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ArrowRight, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import type { UpgradeVersion } from "@/lib/upgrade/types";
@@ -26,6 +27,7 @@ function SectionComparison({
   upgraded: string;
   rationale: string;
 }) {
+  const t = useTranslations("upgradeTool");
   const [open, setOpen] = useState(false);
 
   return (
@@ -46,15 +48,15 @@ function SectionComparison({
       {open && (
         <div className="border-t border-border divide-y divide-border">
           <div className="px-4 py-3 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Current</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("current")}</p>
             <p className="text-sm text-muted-foreground">{current}</p>
           </div>
           <div className="px-4 py-3 space-y-1">
-            <p className="text-xs font-medium text-foreground/80 uppercase tracking-wide">Upgraded</p>
+            <p className="text-xs font-medium text-foreground/80 uppercase tracking-wide">{t("upgraded")}</p>
             <p className="text-sm text-foreground">{upgraded}</p>
           </div>
           <div className="px-4 py-3 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Why</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("why")}</p>
             <p className="text-sm text-muted-foreground italic">{rationale}</p>
           </div>
         </div>
@@ -72,6 +74,7 @@ export function UpgradeVersionPanel({
   isRequestingProposal,
   isCorrectingDisabled,
 }: Props) {
+  const t = useTranslations("upgradeTool");
   const { versionJson } = version;
   const [showCorrectionBox, setShowCorrectionBox] = useState(false);
   const [correctionNote, setCorrectionNote] = useState("");
@@ -86,7 +89,7 @@ export function UpgradeVersionPanel({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-foreground">Upgraded Version</h2>
+        <h2 className="text-xl font-semibold text-foreground">{t("upgradedVersion")}</h2>
         {version.isCorrection && (
           <p className="text-xs text-muted-foreground mt-0.5">
             Revised version · v{version.versionNumber}
@@ -101,15 +104,15 @@ export function UpgradeVersionPanel({
         </h3>
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Headline</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("headline")}</p>
             <p className="text-lg font-semibold text-foreground">{versionJson.headline}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Subheadline</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("subheadline")}</p>
             <p className="text-sm text-foreground">{versionJson.subheadline}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Value proposition</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("valueProposition")}</p>
             <p className="text-sm text-muted-foreground">{versionJson.valueProposition}</p>
           </div>
           <div className="pt-1">
@@ -123,7 +126,7 @@ export function UpgradeVersionPanel({
       {/* Page sections */}
       {versionJson.pageSections.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">Section changes</h3>
+          <h3 className="text-sm font-medium text-foreground">{t("sectionChanges")}</h3>
           {versionJson.pageSections.map((section, i) => (
             <SectionComparison
               key={i}
@@ -139,7 +142,7 @@ export function UpgradeVersionPanel({
       {/* Key changes */}
       {versionJson.keyChanges.length > 0 && (
         <div className="rounded-lg border border-border p-4 space-y-2">
-          <h3 className="text-sm font-medium text-foreground">What changed and why</h3>
+          <h3 className="text-sm font-medium text-foreground">{t("whatChanged")}</h3>
           <ul className="space-y-1">
             {versionJson.keyChanges.map((change, i) => (
               <li key={i} className="text-sm text-muted-foreground flex gap-2">
@@ -154,7 +157,7 @@ export function UpgradeVersionPanel({
       {/* Tone guidance */}
       {versionJson.toneGuidance && (
         <div className="rounded-lg border border-border p-4 space-y-1">
-          <h3 className="text-sm font-medium text-foreground">Tone & voice</h3>
+          <h3 className="text-sm font-medium text-foreground">{t("toneVoice")}</h3>
           <p className="text-sm text-muted-foreground">{versionJson.toneGuidance}</p>
         </div>
       )}
@@ -162,7 +165,7 @@ export function UpgradeVersionPanel({
       {/* Correction box */}
       {showCorrectionBox && (
         <div className="rounded-lg border border-border p-4 space-y-3">
-          <p className="text-sm font-medium text-foreground">What would you like to change?</p>
+          <p className="text-sm font-medium text-foreground">{t("whatToChange")}</p>
           <textarea
             value={correctionNote}
             onChange={(e) => setCorrectionNote(e.target.value)}

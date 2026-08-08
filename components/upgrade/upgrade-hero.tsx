@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Globe, Sparkles } from "lucide-react";
 
 const LOOP = "10s";
@@ -5,6 +6,7 @@ const BRAND = "#4155ef";
 const BRAND_DEEP = "#1200c5";
 
 export function UpgradeHero() {
+  const t = useTranslations("upgradeTool");
   return (
     <div
       aria-hidden="true"
@@ -139,7 +141,7 @@ export function UpgradeHero() {
               >
                 <Sparkles className="h-3 w-3" style={{ color: BRAND }} />
               </div>
-              <span className="text-sm font-medium text-foreground">Upgrade with Maxwell</span>
+              <span className="text-sm font-medium text-foreground">{t("upgradeWithMaxwell")}</span>
             </div>
 
             {/* URL input — text reveals via clip-path; caret blinks while typing */}
