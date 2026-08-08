@@ -360,7 +360,7 @@ export function HeroSection() {
               {/* Prompt Suggestions */}
               <div className="mt-4 lg:mt-5">
                 <p
-                  className="mb-2.5 text-[10px] uppercase tracking-[0.12em] text-[#767676] dark:text-[#6b6b6b] text-center"
+                  className="mb-2.5 text-[10px] uppercase tracking-[0.12em] text-[#767676] dark:text-[#7a7a7a] text-center"
                   style={{ fontFamily: "var(--font-geist-mono)" }}
                 >
                   {t("notSure")}
