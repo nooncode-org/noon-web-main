@@ -57,6 +57,23 @@ const VISIBLE_TEXT_PATTERNS: readonly RegExp[] = [
 ];
 
 /**
+ * Type syntax the first pattern mistakes for a sentence.
+ *
+ * `Promise<void>` split across lines leaves a literal `> Promise<`, which looks
+ * exactly like JSX text between two tags. Nine of those were sitting in the
+ * baseline on 2026-08-08, and because they clustered in the client-facing files
+ * they made that area look ten times worse than it was: a count of eleven
+ * "untranslated strings a client can read" turned out to be one real sentence
+ * and ten generics. A guard whose number can't be trusted stops being read.
+ *
+ * Matching the KNOWN generic names, not "any single capitalised word" — the
+ * loose version also swallowed real one-word labels like "Status" and
+ * "Capabilities", which is the opposite failure and a worse one.
+ */
+const TYPE_SYNTAX =
+  /^>\s*(?:Promise|Array|Record|Set|Map|Partial|Required|Readonly|Pick|Omit|Exclude|Extract|Awaited|ReturnType|Parameters|React|JSX|ComponentProps|ComponentPropsWithoutRef|Dispatch|SetStateAction|RefObject|MutableRefObject)</;
+
+/**
  * Every file is counted, including ones that already read from the message
  * files.
  *
@@ -97,7 +114,10 @@ function collectTsxFiles(dir: string, out: string[]): void {
 export function countVisibleStrings(source: string): number {
   let total = 0;
   for (const pattern of VISIBLE_TEXT_PATTERNS) {
-    total += (source.match(pattern) || []).length;
+    for (const match of source.match(pattern) || []) {
+      if (TYPE_SYNTAX.test(match.trim())) continue;
+      total += 1;
+    }
   }
   return total;
 }

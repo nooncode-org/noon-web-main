@@ -404,7 +404,9 @@ export function RequestBox({
         {versionOptions.length > 0 && (
           <div className="mb-3">
             <span className="mb-1 block text-[11px] text-muted-foreground">
-              Regarding version <span className="opacity-60">(optional)</span>
+              {t.rich("regardingVersion", {
+                optional: (chunks) => <span className="opacity-60">{chunks}</span>,
+              })}
             </span>
             <Select
               value={versionRef == null ? NO_VERSION : String(versionRef)}

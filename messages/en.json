@@ -711,7 +711,8 @@
       "attach": "Attach file",
       "attaching": "Attaching…",
       "fileTypeNotAllowed": "That file type isn’t allowed.",
-      "fileTooLarge": "That file is too large (max 10 MB)."
+      "fileTooLarge": "That file is too large (max 10 MB).",
+      "regardingVersion": "Regarding version <optional>(optional)</optional>"
     },
     "review": {
       "title": "Review your site",

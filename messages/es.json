@@ -711,7 +711,8 @@
       "attach": "Adjuntar el archivo",
       "attaching": "Adjuntando…",
       "fileTypeNotAllowed": "Ese tipo de archivo no está permitido.",
-      "fileTooLarge": "Ese archivo es demasiado grande (máximo 10 MB)."
+      "fileTooLarge": "Ese archivo es demasiado grande (máximo 10 MB).",
+      "regardingVersion": "Sobre la versión <optional>(opcional)</optional>"
     },
     "review": {
       "title": "Revisar tu sitio",
