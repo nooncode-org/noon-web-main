@@ -297,6 +297,7 @@ function PlanColumn({
  * comfortable margin inside the proposal page's 30 req/60s per-IP rate budget.
  */
 function ConfirmingPaymentBox() {
+  const tPay = useTranslations("payment");
   const escalated = useEscalated(75_000);
   return (
     <section className="rounded-[8px] border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
@@ -305,22 +306,19 @@ function ConfirmingPaymentBox() {
         <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
         <div>
           <p className="font-medium">
-            {escalated ? "Still confirming your payment" : "We're confirming your payment"}
+            {escalated ? tPay("confirmingTitleSlow") : tPay("confirmingTitle")}
           </p>
           {escalated ? (
             <p className="mt-1 text-sky-950/80">
-              This is taking longer than usual — but your payment went through and nothing is
-              lost. This page keeps checking on its own, and we&apos;ll also email you the
-              moment your project is confirmed. Need a hand?{" "}
+              {tPay("confirmingSlowBody")}{" "}
               <a href={getContactHref()} className="underline underline-offset-2">
-                Contact us
+                {tPay("contactUs")}
               </a>
               .
             </p>
           ) : (
             <p className="mt-1 text-sky-950/80">
-              Thanks — your payment went through. This page updates on its own; confirmation
-              usually lands in a few seconds.
+              {tPay("confirmingBody")}
             </p>
           )}
         </div>
@@ -403,14 +401,13 @@ export function PublicProposalPayment({
               </div>
               <h2 className="mt-5 text-2xl font-semibold text-foreground">{tPay("successful")}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Your project is confirmed — Noon is activating it now. We&apos;ll continue from the
-                approved proposal.
+                {tPay("confirmedBody")}
               </p>
               <Link
                 href={projectHref}
                 className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0056fd] px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-[#0047e0]"
               >
-                Go to your project
+                {tPay("goToProject")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
@@ -475,7 +472,7 @@ export function PublicProposalPayment({
   if (status === "expired") {
     return (
       <section className="rounded-[8px] border border-amber-500/25 bg-amber-500/10 p-5 text-sm text-amber-900">
-        This proposal expired. Ask Noon for a refreshed quote before paying.
+        {tPay("expiredBody")}
       </section>
     );
   }
@@ -483,7 +480,7 @@ export function PublicProposalPayment({
   if (status === "payment_under_verification") {
     return (
       <section className="rounded-[8px] border border-sky-500/25 bg-sky-500/10 p-5 text-sm text-sky-950">
-        Payment is under verification. The project will activate once the payment is confirmed.
+        {tPay("underVerificationBody")}
       </section>
     );
   }
@@ -499,7 +496,7 @@ export function PublicProposalPayment({
   if (!payable) {
     return (
       <section className="rounded-[8px] border border-border bg-card p-5 text-sm text-muted-foreground">
-        Payment is not available for this proposal yet. Noon must approve and publish a final USD amount first.
+        {tPay("notPayableBody")}
       </section>
     );
   }
@@ -679,7 +676,7 @@ export function PublicProposalPayment({
           <div className="mt-5">
             <h2 className="text-2xl font-medium text-foreground sm:text-3xl">{tPay("complete")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Your project starts once payment is confirmed.
+              {tPay("startsOnPayment")}
             </p>
           </div>
 
@@ -703,10 +700,10 @@ export function PublicProposalPayment({
                 <div className="flex min-h-[440px] flex-col items-center justify-center gap-2 p-8 text-center">
                   <Lock className="h-5 w-5 text-muted-foreground" />
                   <p className="text-sm font-medium text-foreground">
-                    Online payment isn&apos;t available yet
+                    {tPay("manualTitle")}
                   </p>
                   <p className="text-[13px] text-muted-foreground">
-                    Please contact Noon and we&apos;ll help you complete your payment.
+                    {tPay("manualBody")}
                   </p>
                 </div>
               )}
@@ -788,7 +785,7 @@ export function PublicProposalPayment({
 
               <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Lock className="h-3 w-3" />
-                Secure checkout · powered by Stripe
+                {tPay("secureCheckout")}
               </p>
 
               <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/60">
@@ -811,7 +808,7 @@ export function PublicProposalPayment({
 
               {checkoutResult === "cancelled" && (
                 <p className="mt-4 rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-                  Payment was cancelled. You can try again whenever you&apos;re ready.
+                  {tPay("cancelledBody")}
                 </p>
               )}
             </div>
@@ -913,7 +910,7 @@ export function PublicProposalPayment({
           className="inline-flex items-center gap-2 text-center text-[13px] text-[#0056fd] transition-colors hover:text-[#0047e0]"
         >
           <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          Learn how your project is delivered
+          {tPay("howItWorksLink")}
         </Link>
       </div>
     </section>

@@ -536,7 +536,8 @@
       "manageHosting": "Gestionar hosting",
       "nextPayment": "Próximo pago: ",
       "hostingRenews": "El hosting se renueva: ",
-      "coordinated": "La membresía mensual se coordina con tu PM de Noon."
+      "coordinated": "La membresía mensual se coordina con tu PM de Noon.",
+      "stripeNote": "Facturas, método de pago y cancelación: todo gestionado de forma segura con Stripe."
     },
     "payment": {
       "failedTitle": "Tu último pago no se completó",
@@ -554,7 +555,8 @@
       "updated": "Actualizado",
       "proposal": "Propuesta",
       "prototype": "Prototipo",
-      "whatsNext": "Lo que sigue"
+      "whatsNext": "Lo que sigue",
+      "approvedByYou": "Aprobado por ti"
     },
     "prototype": {
       "open": "Abrir tu prototipo aprobado",
@@ -617,7 +619,8 @@
       "copyDomain": "Copiar dominio",
       "default": "Predeterminado",
       "addExisting": "Añadir el mío",
-      "buy": "Comprar"
+      "buy": "Comprar",
+      "helpNote": "¿Quieres el dominio de tu marca (tipo tumarca.com)? Tu equipo de Noon lo deja montado de principio a fin: tú no tocas nada técnico."
     },
     "errors": {
       "chooseFile": "Elige un archivo, por favor."
@@ -784,6 +787,17 @@
     },
     "a11y": {
       "closeDialog": "Cerrar"
+    },
+    "membership": {
+      "planMembership": "membresía",
+      "planHosting": "hosting",
+      "endsOn": "Tu {plan} termina el {date}.",
+      "willEnd": "Tu {plan} va a terminar.",
+      "endingBody": "Tu sitio sigue online hasta entonces; después se queda offline hasta que renueves.",
+      "renew": "Renovar",
+      "hasEnded": "Tu {plan} ha terminado.",
+      "endedBody": "Tu sitio está offline, pero no se ha borrado nada: tu proyecto, la conversación y los archivos se guardan 12 meses. Reactívalo y vuelve exactamente como estaba.",
+      "reactivate": "Reactivar"
     }
   },
   "studio": {
@@ -1016,7 +1030,23 @@
     "vat": "IVA (0 %)",
     "totalDue": "Total a pagar hoy",
     "chooseOption": "Elige una opción",
-    "proposalFor": "Propuesta para <name></name>"
+    "proposalFor": "Propuesta para <name></name>",
+    "confirmingBody": "Gracias — tu pago se ha realizado. Esta página se actualiza sola; la confirmación suele llegar en unos segundos.",
+    "confirmedBody": "Tu proyecto está confirmado — Noon lo está activando ahora. Seguimos desde la propuesta aprobada.",
+    "goToProject": "Ir a mi proyecto",
+    "expiredBody": "Esta propuesta ha caducado. Pide a Noon un presupuesto actualizado antes de pagar.",
+    "underVerificationBody": "El pago está en verificación. El proyecto se activará en cuanto se confirme.",
+    "notPayableBody": "Esta propuesta todavía no se puede pagar. Noon tiene que aprobar y publicar antes un importe final en USD.",
+    "startsOnPayment": "Tu proyecto empieza en cuanto se confirme el pago.",
+    "manualTitle": "El pago online todavía no está disponible",
+    "manualBody": "Escríbenos y te ayudamos a completar el pago.",
+    "secureCheckout": "Pago seguro · con tecnología de Stripe",
+    "cancelledBody": "El pago se ha cancelado. Puedes volver a intentarlo cuando quieras.",
+    "howItWorksLink": "Cómo se entrega tu proyecto",
+    "confirmingTitle": "Estamos confirmando tu pago",
+    "confirmingTitleSlow": "Seguimos confirmando tu pago",
+    "confirmingSlowBody": "Está tardando más de lo normal — pero tu pago se ha realizado y no se ha perdido nada. Esta página sigue comprobándolo sola, y además te escribiremos en cuanto tu proyecto esté confirmado. ¿Necesitas ayuda?",
+    "contactUs": "Escríbenos"
   },
   "voice": {
     "label": "Dictar",

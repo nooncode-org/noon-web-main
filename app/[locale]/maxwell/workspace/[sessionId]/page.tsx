@@ -363,7 +363,9 @@ export default async function WorkspacePage({ params }: Props) {
   const membershipEnding = appMembership?.status === "cancelled";
   const membershipEndsOn = appMembership?.currentPeriodEnd ?? null;
   /** What to call the lapsing thing in front of the client. */
-  const planNoun = isMembershipPlan ? "membership" : "hosting";
+  const planNoun = isMembershipPlan
+    ? t("membership.planMembership")
+    : t("membership.planHosting");
   const billingSlot =
     MEMBERSHIP_BILLING_ENABLED && planProposal?.stripeCustomerId ? (
       <ManageMembershipButton
@@ -621,17 +623,20 @@ export default async function WorkspacePage({ params }: Props) {
             <p className="text-sm text-amber-800 dark:text-amber-200">
               <span className="font-medium">
                 {membershipEndsOn
-                  ? `Your ${planNoun} ends on ${formatDate(membershipEndsOn, locale)}.`
-                  : `Your ${planNoun} is set to end.`}
+                  ? t("membership.endsOn", {
+                      plan: planNoun,
+                      date: formatDate(membershipEndsOn, locale),
+                    })
+                  : t("membership.willEnd", { plan: planNoun })}
               </span>{" "}
-              Your site stays online until then — after that it goes offline until you renew.
+              {t("membership.endingBody")}
             </p>
             {billingSlot ?? (
               <a
                 href={getContactHref({ inquiry: "project-update", source: "workspace" })}
                 className="shrink-0 rounded-[6px] border border-transparent bg-[#0056fd] px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
               >
-                Renew {"->"}
+                {t("membership.renew")} {"->"}
               </a>
             )}
           </div>
@@ -643,16 +648,15 @@ export default async function WorkspacePage({ params }: Props) {
         {membershipEnded && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary/40 px-6 py-3 lg:px-14">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{`Your ${planNoun} has ended.`}</span>{" "}
-              Your site is offline, but nothing was deleted — your project, conversation and
-              files stay saved for 12 months. Reactivate and it comes back exactly as it was.
+              <span className="font-medium text-foreground">{t("membership.hasEnded", { plan: planNoun })}</span>{" "}
+              {t("membership.endedBody")}
             </p>
             {billingSlot ?? (
               <a
                 href={getContactHref({ inquiry: "project-update", source: "workspace" })}
                 className="shrink-0 rounded-[6px] border border-transparent bg-[#0056fd] px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0047e0]"
               >
-                Reactivate {"->"}
+                {t("membership.reactivate")} {"->"}
               </a>
             )}
           </div>
@@ -855,7 +859,7 @@ export default async function WorkspacePage({ params }: Props) {
                       <p className="text-[13px] text-muted-foreground">{t("fields.prototype")}</p>
                       <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
                         <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                        Approved by you
+                        {t("fields.approvedByYou")}
                       </div>
                       <a
                         href={approvedPrototypeUrl}
@@ -1037,7 +1041,7 @@ export default async function WorkspacePage({ params }: Props) {
                     <div className="mt-4">
                       {billingSlot}
                       <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground/70">
-                        Invoices, payment method, and cancellation — handled securely via Stripe.
+                        {t("plan.stripeNote")}
                       </p>
                     </div>
                   )}
@@ -1229,8 +1233,7 @@ export default async function WorkspacePage({ params }: Props) {
                   </ul>
 
                   <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/70">
-                    Want your brand&apos;s domain (like yourbrand.com)? Your Noon team sets it up
-                    end to end — you never touch any DNS.
+                    {t("domains.helpNote")}
                   </p>
                 </div>
               </section>

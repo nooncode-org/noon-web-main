@@ -57,6 +57,53 @@ const VISIBLE_TEXT_PATTERNS: readonly RegExp[] = [
 ];
 
 /**
+ * The blind spot that made this guard say "clean" three times in one day while
+ * a client read English.
+ *
+ * Both patterns above require the text to share a line with its tags. Real
+ * prose does not: a sentence long enough to matter gets wrapped by the
+ * formatter, and from then on it is invisible here. On 2026-08-08 that hid
+ * FIFTY-FOUR sentences in the client's own screens — the membership-ended
+ * notice, "this proposal has expired", "thanks, your payment went through" —
+ * while the count for that area read zero.
+ *
+ * So: the same idea, allowed to span lines. Everything about it is a trade
+ * between missing real copy and crying wolf, and the filters below are where
+ * that trade lives. Measured on the client area when written: 117 raw matches,
+ * 54 after filtering — the 63 dropped were all code, none were sentences.
+ */
+const MULTILINE_TEXT = />([^<>{}]{12,400}?)</g;
+
+/**
+ * A multi-line match is prose only if it looks like prose.
+ *
+ * Three words minimum with a lowercase letter among them: that clears type
+ * parameters, enum-ish constants and one-word labels (already covered by the
+ * single-line pattern). The code markers catch the rest — a function body split
+ * across lines sits between a `>` and a `<` exactly like a paragraph does, and
+ * `useState<string>(...)` spanning two lines is the commonest offender.
+ */
+function looksLikeProse(raw: string): boolean {
+  if (!raw.includes("\n")) return false; // single-line: the patterns above own it
+  const text = raw.replace(/\s+/g, " ").trim();
+  if (text.length < 12) return false;
+  if (!/[a-z]/.test(text)) return false;
+  if (/^[.,;:)\]}]/.test(text)) return false;
+  if (text.split(" ").filter((w) => /[A-Za-z]{2,}/.test(w)).length < 3) return false;
+  if (/\b(const|let|return|useState|function|import|interface|typeof)\b/.test(text)) return false;
+  if (/=>|===|!==|\.map\(|\.test\(|\);/.test(text)) return false;
+  return !/[;{}]$/.test(text);
+}
+
+/** JSX comments are prose too, and they are not shipped. Strip before scanning. */
+function stripComments(source: string): string {
+  return source
+    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+/**
  * Type syntax the first pattern mistakes for a sentence.
  *
  * `Promise<void>` split across lines leaves a literal `> Promise<`, which looks
@@ -112,12 +159,16 @@ function collectTsxFiles(dir: string, out: string[]): void {
 }
 
 export function countVisibleStrings(source: string): number {
+  const code = stripComments(source);
   let total = 0;
   for (const pattern of VISIBLE_TEXT_PATTERNS) {
-    for (const match of source.match(pattern) || []) {
+    for (const match of code.match(pattern) || []) {
       if (TYPE_SYNTAX.test(match.trim())) continue;
       total += 1;
     }
+  }
+  for (const match of code.matchAll(MULTILINE_TEXT)) {
+    if (looksLikeProse(match[1])) total += 1;
   }
   return total;
 }
