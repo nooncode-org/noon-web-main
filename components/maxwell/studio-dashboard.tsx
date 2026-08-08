@@ -427,11 +427,11 @@ export function StudioDashboard({
                           <div className="my-1 h-px bg-border" />
                           <button type="button" onClick={() => setUrlInputMode("github")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <Github className="h-4 w-4 text-muted-foreground" />
-                            Import from GitHub
+                            {t("importFromGitHub")}
                           </button>
                           <button type="button" onClick={() => setUrlInputMode("vercel")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <TriangleIcon className="h-4 w-4 text-muted-foreground" />
-                            Import from Vercel
+                            {t("importFromVercel")}
                           </button>
                           <button type="button" onClick={() => setUrlInputMode("image")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <Globe className="h-4 w-4 text-muted-foreground" />

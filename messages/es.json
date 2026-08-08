@@ -620,7 +620,10 @@
       "default": "Predeterminado",
       "addExisting": "Añadir el mío",
       "buy": "Comprar",
-      "helpNote": "¿Quieres el dominio de tu marca (tipo tumarca.com)? Tu equipo de Noon lo deja montado de principio a fin: tú no tocas nada técnico."
+      "helpNote": "¿Quieres el dominio de tu marca (tipo tumarca.com)? Tu equipo de Noon lo deja montado de principio a fin: tú no tocas nada técnico.",
+      "addExistingHelp": "Escribe un dominio que ya tengas. Tu equipo de Noon lo conecta a tu proyecto y se encarga de toda la parte técnica: tú no tocas nada.",
+      "buyHelp": "Busca un dominio nuevo para tu proyecto. En cuanto sea tuyo, tu equipo de Noon lo conecta y se encarga de la parte técnica: tú no configuras nada.",
+      "typeToSearch": "Escribe un nombre para ver los dominios disponibles."
     },
     "errors": {
       "chooseFile": "Elige un archivo, por favor."
@@ -649,7 +652,8 @@
       "projectIsGo": "Tu proyecto está en marcha.",
       "settingUp": "Preparando tu espacio",
       "settingUpHint": "Suele tardar solo unos segundos.",
-      "settingUpSlow": "Está tardando un poco más de lo normal, pero sigue en camino."
+      "settingUpSlow": "Está tardando un poco más de lo normal, pero sigue en camino.",
+      "opensAutomatically": "Tu espacio se abrirá solo"
     },
     "reentry": {
       "ready": "Tu espacio de proyecto está listo.",
@@ -686,13 +690,16 @@
       "askSourceDownload": "Hola: me gustaría descargar todo el código de mi proyecto.",
       "askMembership": "Hola: me gustaría añadir una membresía a mi proyecto. ¿Cómo funciona?",
       "renameHint": "Haz clic para cambiar el nombre",
-      "yourCode": "Tu código"
+      "yourCode": "Tu código",
+      "sourceIsYours": "Pagaste tu proyecto, así que el código es tuyo: clónalo o descárgalo cuando quieras; tu sitio sigue funcionando con nosotros igualmente."
     },
     "dns": {
       "type": "Tipo",
       "name": "Nombre",
       "value": "Valor",
-      "copy": "Copiar"
+      "copy": "Copiar",
+      "addRecordsHelp": "Para terminar de conectarlo, añade estos registros donde compraste el dominio (GoDaddy, Namecheap…) y luego verifica. ¿Prefieres no hacerlo? Deja que se encargue tu equipo de Noon.",
+      "letTeamDoIt": "Que lo haga el equipo"
     },
     "requests": {
       "heading": "Peticiones",
@@ -798,6 +805,13 @@
       "hasEnded": "Tu {plan} ha terminado.",
       "endedBody": "Tu sitio está offline, pero no se ha borrado nada: tu proyecto, la conversación y los archivos se guardan 12 meses. Reactívalo y vuelve exactamente como estaba.",
       "reactivate": "Reactivar"
+    },
+    "versions": {
+      "publishThis": "Publicar esta versión",
+      "askTeamToPublish": "Pedir al equipo que publique esta versión",
+      "becomesLive": "Pasa a ser la versión en vivo, la que ve todo el mundo en tu dominio.",
+      "publishConfirm": "¿Publicar esta versión? Pasa a ser la versión en vivo, la que ve todo el mundo.",
+      "teamTakesOver": "Tu equipo de Noon se encarga a partir de aquí: te escribiremos cuando esté publicada."
     }
   },
   "studio": {
@@ -855,7 +869,25 @@
     "recentChats": "Conversaciones recientes",
     "previewsThisMonth": "Vistas de prototipo este mes",
     "signOut": "Cerrar sesión",
-    "delete": "Borrar"
+    "delete": "Borrar",
+    "buildingBody": "Maxwell está convirtiendo la conversación en una primera versión utilizable.",
+    "previewWillOpen": "La vista previa se abrirá aquí sola en cuanto la primera versión esté lista.",
+    "openInNewTab": "Abrir en una pestaña nueva",
+    "mobileOpensInBrowser": "El prototipo se abre en tu navegador, que en el móvil se ve mejor.",
+    "opensInNewTab": "se abre en una pestaña nueva",
+    "requestProposalBody": "Pide la propuesta formal — el equipo de Noon la revisa antes de enviártela.",
+    "requestProposal": "Pedir la propuesta formal",
+    "maxwellIntroWho": "Soy Maxwell, arquitecto de soluciones en Noon.",
+    "maxwellIntroAsk": "Cuéntame qué quieres construir y te ayudo a convertirlo en una dirección clara y realizable.",
+    "importFromGitHub": "Importar desde GitHub",
+    "importFromVercel": "Importar desde Vercel",
+    "shareableLink": "Enlace para compartir — pásaselo a quien tenga que revisar el prototipo.",
+    "skipToProposal": "Ir directo a la propuesta",
+    "tryAgain": "Reintentar",
+    "previewQuotaTitle": "Prototipo del mes usado",
+    "previewFailedTitle": "La vista previa no está disponible",
+    "previewQuotaBody": "Cada cuenta tiene un prototipo interactivo al mes y ya lo has usado. Si quieres explorar otra dirección de producto, habla con un agente de Noon.",
+    "previewFailedBody": "Ahora mismo no se ha podido generar la vista previa interactiva. Suele ser algo pasajero. Puedes reintentarlo o seguir charlando para afinar la idea."
   },
   "upgradeTool": {
     "current": "Actual",
@@ -1046,7 +1078,9 @@
     "confirmingTitle": "Estamos confirmando tu pago",
     "confirmingTitleSlow": "Seguimos confirmando tu pago",
     "confirmingSlowBody": "Está tardando más de lo normal — pero tu pago se ha realizado y no se ha perdido nada. Esta página sigue comprobándolo sola, y además te escribiremos en cuanto tu proyecto esté confirmado. ¿Necesitas ayuda?",
-    "contactUs": "Escríbenos"
+    "contactUs": "Escríbenos",
+    "proposalExpiredNotice": "Esta propuesta ha caducado. Escríbenos si necesitas una versión actualizada.",
+    "whatWeWillBuild": "Lo que vamos a construir"
   },
   "voice": {
     "label": "Dictar",

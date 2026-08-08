@@ -88,7 +88,7 @@ export function WorkspacePreparingBody({ contactHref }: { contactHref: string })
             </span>
             <div className="pb-4">
               <p className="text-sm font-medium text-muted-foreground">
-                Your workspace opens automatically
+                {t("opensAutomatically")}
               </p>
             </div>
           </li>

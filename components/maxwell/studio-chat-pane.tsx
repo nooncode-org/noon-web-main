@@ -306,6 +306,7 @@ function ErrorNotice({ content }: { content: string }) {
  * <StudioProposalCta>.
  */
 function AgentCtaNotice({ content, href }: { content: string; href: string }) {
+  const t = useTranslations("studio");
   return (
     <div className="max-w-[70ch] space-y-2.5">
       <p className="whitespace-pre-wrap text-[13px] leading-6 text-foreground/90">{content}</p>
@@ -314,7 +315,7 @@ function AgentCtaNotice({ content, href }: { content: string; href: string }) {
         className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <User className="h-3.5 w-3.5" />
-        Talk to agent
+        {t("navTalkToAgent")}
       </Link>
     </div>
   );
@@ -1292,10 +1293,10 @@ export function StudioChatPane({
           </div>
           <div className="text-center">
             <p className="text-[17px] font-medium tracking-tight text-foreground/90">
-              I&apos;m Maxwell, solutions architect at Noon.
+              {t("maxwellIntroWho")}
             </p>
             <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-muted-foreground">
-              Tell me what you want to build and I&apos;ll help turn it into a clear, buildable direction.
+              {t("maxwellIntroAsk")}
             </p>
           </div>
           <div className="pointer-events-auto flex max-w-md flex-wrap items-center justify-center gap-2">
@@ -1594,11 +1595,11 @@ export function StudioChatPane({
                           <div className="my-1 h-px bg-border" />
                           <button type="button" onClick={() => setUrlInputMode("github")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <Github className="h-4 w-4 text-muted-foreground" />
-                            Import from GitHub
+                            {t("importFromGitHub")}
                           </button>
                           <button type="button" onClick={() => setUrlInputMode("vercel")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <TriangleIcon className="h-4 w-4 text-muted-foreground" />
-                            Import from Vercel
+                            {t("importFromVercel")}
                           </button>
                           <button type="button" onClick={() => setUrlInputMode("image")} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <Globe className="h-4 w-4 text-muted-foreground" />

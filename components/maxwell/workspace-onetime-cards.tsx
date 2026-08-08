@@ -73,8 +73,7 @@ export function WorkspaceCodePanel() {
           single subtitle. The per-button blurbs were dropped — they restated the
           Repository / Download buttons sitting right above them. */}
       <p className="max-w-3xl px-5 py-3 text-[13px] leading-relaxed text-muted-foreground">
-        You paid for your project, so the source is yours — clone or download it anytime, your
-        site keeps running with us either way.
+        {t("sourceIsYours")}
       </p>
     </section>
   );

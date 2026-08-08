@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 import { useWorkspaceTabs } from "@/components/maxwell/workspace-tabs";
@@ -36,6 +38,7 @@ export function VersionReviewBanner({
    */
   publishAction?: () => Promise<{ ok: boolean; error?: string }>;
 }) {
+  const t = useTranslations("workspace.versions");
   const tabs = useWorkspaceTabs();
   const [published, setPublished] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -72,7 +75,7 @@ export function VersionReviewBanner({
         <div>
           <p className="text-sm font-medium">Version {sequence} is going live</p>
           <p className="text-[12px] text-muted-foreground">
-            Your Noon team takes it from here — you&apos;ll get an email when it&apos;s up.
+            {t("teamTakesOver")}
           </p>
         </div>
       </section>

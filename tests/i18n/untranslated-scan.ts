@@ -92,6 +92,10 @@ function looksLikeProse(raw: string): boolean {
   if (text.split(" ").filter((w) => /[A-Za-z]{2,}/.test(w)).length < 3) return false;
   if (/\b(const|let|return|useState|function|import|interface|typeof)\b/.test(text)) return false;
   if (/=>|===|!==|\.map\(|\.test\(|\);/.test(text)) return false;
+  // A type annotation split across lines: `stopNotice: string | null; inputRef:
+  // React.RefObject<…>`. No keyword to key off, so match the shape instead.
+  if (/\w+:\s*(string|number|boolean|void|null|unknown|any)\b/.test(text)) return false;
+  if (/\|\s*null\b|\bReact\.\w/.test(text)) return false;
   return !/[;{}]$/.test(text);
 }
 

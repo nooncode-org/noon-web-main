@@ -620,7 +620,10 @@
       "default": "Default",
       "addExisting": "Add Existing",
       "buy": "Buy",
-      "helpNote": "Want your brand’s domain (like yourbrand.com)? Your Noon team sets it up end to end — you never touch any DNS."
+      "helpNote": "Want your brand’s domain (like yourbrand.com)? Your Noon team sets it up end to end — you never touch any DNS.",
+      "addExistingHelp": "Enter a domain you already own. Your Noon team connects it to your project and handles all the DNS — you never touch a thing.",
+      "buyHelp": "Find a new domain for your project. Once it’s yours, your Noon team connects it and handles the DNS — no setup on your end.",
+      "typeToSearch": "Type a name to see available domains."
     },
     "errors": {
       "chooseFile": "Please choose a file."
@@ -649,7 +652,8 @@
       "projectIsGo": "Your project is a go.",
       "settingUp": "Setting up your workspace",
       "settingUpHint": "This usually takes just a few seconds.",
-      "settingUpSlow": "Taking a little longer than usual — it’s still on the way."
+      "settingUpSlow": "Taking a little longer than usual — it’s still on the way.",
+      "opensAutomatically": "Your workspace opens automatically"
     },
     "reentry": {
       "ready": "Your project workspace is ready.",
@@ -686,13 +690,16 @@
       "askSourceDownload": "Hi — I’d like a download of my project’s full source code.",
       "askMembership": "Hi — I’d like to add a membership to my project. How does it work?",
       "renameHint": "Click to rename",
-      "yourCode": "Your code"
+      "yourCode": "Your code",
+      "sourceIsYours": "You paid for your project, so the source is yours — clone or download it anytime, your site keeps running with us either way."
     },
     "dns": {
       "type": "Type",
       "name": "Name",
       "value": "Value",
-      "copy": "Copy"
+      "copy": "Copy",
+      "addRecordsHelp": "To finish connecting it, add these records at your domain provider (GoDaddy, Namecheap…), then verify. Prefer not to? Let your Noon team do it for you.",
+      "letTeamDoIt": "Let the team do it"
     },
     "requests": {
       "heading": "Requests",
@@ -798,6 +805,13 @@
       "hasEnded": "Your {plan} has ended.",
       "endedBody": "Your site is offline, but nothing was deleted — your project, conversation and files stay saved for 12 months. Reactivate and it comes back exactly as it was.",
       "reactivate": "Reactivate"
+    },
+    "versions": {
+      "publishThis": "Publish this version",
+      "askTeamToPublish": "Ask the team to make this version live",
+      "becomesLive": "It becomes the live version visible to the public at your domain.",
+      "publishConfirm": "Publish this version? It becomes the live version visible to the public.",
+      "teamTakesOver": "Your Noon team takes it from here — you’ll get an email when it’s up."
     }
   },
   "studio": {
@@ -855,7 +869,25 @@
     "recentChats": "Recent chats",
     "previewsThisMonth": "Prototype previews this month",
     "signOut": "Sign out",
-    "delete": "Delete"
+    "delete": "Delete",
+    "buildingBody": "Maxwell is turning the conversation into a usable first version.",
+    "previewWillOpen": "The preview will open here automatically when the first version is ready.",
+    "openInNewTab": "Open in new tab",
+    "mobileOpensInBrowser": "The prototype opens in your browser for the best experience on mobile.",
+    "opensInNewTab": "opens in a new tab",
+    "requestProposalBody": "Request the formal proposal — the Noon team reviews it before sending.",
+    "requestProposal": "Request formal proposal",
+    "maxwellIntroWho": "I’m Maxwell, solutions architect at Noon.",
+    "maxwellIntroAsk": "Tell me what you want to build and I’ll help turn it into a clear, buildable direction.",
+    "importFromGitHub": "Import from GitHub",
+    "importFromVercel": "Import from Vercel",
+    "shareableLink": "Shareable link — forward it to anyone who needs to review the prototype.",
+    "skipToProposal": "Skip to proposal",
+    "tryAgain": "Try again",
+    "previewQuotaTitle": "Monthly prototype used",
+    "previewFailedTitle": "Preview not available",
+    "previewQuotaBody": "Each account gets one interactive prototype per month, and you've used it. To explore another product direction, talk with a Noon agent.",
+    "previewFailedBody": "The interactive preview could not be generated right now. This is usually temporary. You can try again or continue chatting to refine the idea."
   },
   "upgradeTool": {
     "current": "Current",
@@ -1046,7 +1078,9 @@
     "confirmingTitle": "We're confirming your payment",
     "confirmingTitleSlow": "Still confirming your payment",
     "confirmingSlowBody": "This is taking longer than usual — but your payment went through and nothing is lost. This page keeps checking on its own, and we’ll also email you the moment your project is confirmed. Need a hand?",
-    "contactUs": "Contact us"
+    "contactUs": "Contact us",
+    "proposalExpiredNotice": "This proposal has expired. Contact Noon if you need an updated version.",
+    "whatWeWillBuild": "What we’ll build"
   },
   "voice": {
     "label": "Voice input",

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { PublicProposalPayment } from "@/components/maxwell/public-proposal-payment";
@@ -75,6 +76,7 @@ async function resolveRscClientIdentity(): Promise<string> {
 
 export default async function PublicProposalPage({ params, searchParams }: Props) {
   const { locale, token } = await params;
+  const tPay = await getTranslations({ locale, namespace: "payment" });
   const { checkout, session_id: checkoutSessionId } = await searchParams;
   const checkoutResult =
     checkout === "success" ? "success" : checkout === "cancelled" ? "cancelled" : null;
@@ -208,7 +210,7 @@ export default async function PublicProposalPage({ params, searchParams }: Props
         {effectivelyExpired && (
           <div className="mx-auto max-w-3xl">
             <div className="rounded-[8px] border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
-              This proposal has expired. Contact Noon if you need an updated version.
+              {tPay("proposalExpiredNotice")}
             </div>
           </div>
         )}

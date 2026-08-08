@@ -128,8 +128,7 @@ export function AddDomainButtons({
           <DialogHeader>
             <DialogTitle>{t("addYours")}</DialogTitle>
             <DialogDescription>
-              Enter a domain you already own. Your Noon team connects it to your project and
-              handles all the DNS — you never touch a thing.
+              {t("addExistingHelp")}
             </DialogDescription>
           </DialogHeader>
 
@@ -172,8 +171,7 @@ export function AddDomainButtons({
           <DialogHeader>
             <DialogTitle>{t("buyOne")}</DialogTitle>
             <DialogDescription>
-              Find a new domain for your project. Once it&apos;s yours, your Noon team connects
-              it and handles the DNS — no setup on your end.
+              {t("buyHelp")}
             </DialogDescription>
           </DialogHeader>
 
@@ -197,7 +195,7 @@ export function AddDomainButtons({
 
             {buyResults.length === 0 ? (
               <p className="py-8 text-center text-[13px] text-muted-foreground">
-                Type a name to see available domains.
+                {t("typeToSearch")}
               </p>
             ) : (
               <ul className="mt-3 divide-y divide-border overflow-hidden rounded-[6px] border border-border">

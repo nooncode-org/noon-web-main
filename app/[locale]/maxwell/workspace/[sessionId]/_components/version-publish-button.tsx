@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 /**
  * VersionPublishButton — the client's Publish action on a publishable version row
  * (v3 Fase 2 versioning, Slice 2b). Publishing makes a version the live public
@@ -22,6 +24,7 @@ export function VersionPublishButton({
   sessionId: string;
   versionSequenceNumber: number;
 }) {
+  const t = useTranslations("workspace.versions");
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -67,7 +70,7 @@ export function VersionPublishButton({
   return (
     <div className="mt-3 rounded-[6px] border border-emerald-500/25 bg-emerald-500/5 p-3">
       <p className="mb-2 text-xs text-muted-foreground">
-        Publish this version? It becomes the live version visible to the public.
+        {t("publishConfirm")}
       </p>
       <div className="flex items-center gap-2">
         <button

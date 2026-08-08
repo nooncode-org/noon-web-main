@@ -77,7 +77,7 @@ export function VersionRollbackButton({
           disabled={isPending}
           className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Ask the team to make this version live
+          {t("askTeamToPublish")}
         </button>
         {error && (
           <p className="mt-2 text-xs text-red-600" role="alert">

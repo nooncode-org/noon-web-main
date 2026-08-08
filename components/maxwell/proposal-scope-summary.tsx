@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import {
   parseProposalBlocks,
   stripInternalReviewFlags,
@@ -75,13 +76,14 @@ export const DELIVERY_STEPS: ScopeItem[] = [
   { title: "We finish and ship it", detail: "The Noon team completes it — follow progress live in your portal." },
 ];
 
-export function ProposalScopeSummary({ scope }: ProposalScope) {
+export async function ProposalScopeSummary({ scope }: ProposalScope) {
   if (scope.length === 0) return null;
+  const tPay = await getTranslations("payment");
 
   return (
     <div className="mx-auto max-w-3xl">
       <h2 className="text-center text-2xl font-medium text-foreground sm:text-3xl">
-        What we&apos;ll build
+        {tPay("whatWeWillBuild")}
       </h2>
 
       {/* Same row anatomy as the plan cards (check / bold title / muted

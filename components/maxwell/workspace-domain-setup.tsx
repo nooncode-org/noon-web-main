@@ -87,8 +87,7 @@ export function DomainSetupButton({
           <DialogHeader>
             <DialogTitle className="break-all font-mono text-base">{domain}</DialogTitle>
             <DialogDescription>
-              To finish connecting it, add these records at your domain provider (GoDaddy,
-              Namecheap…), then verify. Prefer not to? Let your Noon team do it for you.
+              {t("addRecordsHelp")}
             </DialogDescription>
           </DialogHeader>
 
@@ -114,7 +113,7 @@ export function DomainSetupButton({
 
           <DialogFooter className="sm:justify-between">
             <a href={contactHref} className={BTN_SECONDARY}>
-              Let the team do it
+              {t("letTeamDoIt")}
             </a>
             <button
               type="button"

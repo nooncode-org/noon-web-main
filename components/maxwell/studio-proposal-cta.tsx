@@ -227,7 +227,7 @@ export function StudioProposalCta({
             Prototype approved
           </p>
           <p className="text-xs text-muted-foreground">
-            Request the formal proposal — the Noon team reviews it before sending.
+            {t("requestProposalBody")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -237,14 +237,14 @@ export function StudioProposalCta({
             className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             <FileText className="w-3.5 h-3.5" />
-            Request formal proposal
+            {t("requestProposal")}
           </button>
           <Link
             href={agentHref}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
           >
             <User className="w-3.5 h-3.5" />
-            Talk to agent
+            {t("navTalkToAgent")}
           </Link>
         </div>
       </div>
@@ -332,7 +332,7 @@ export function StudioProposalCta({
       {shareUrl ? (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Shareable link — forward it to anyone who needs to review the prototype.
+            {t("shareableLink")}
           </p>
           <div className="flex items-center gap-2">
             <input
@@ -383,14 +383,14 @@ export function StudioProposalCta({
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <FileText className="w-3 h-3" />
-          Skip to proposal
+          {t("skipToProposal")}
         </button>
         <Link
           href={agentHref}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <User className="w-3 h-3" />
-          Talk to agent
+          {t("navTalkToAgent")}
         </Link>
       </div>
     </div>

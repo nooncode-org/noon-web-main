@@ -142,7 +142,7 @@ function PreviewPlaceholder({
                 <div>
                   <p className="text-sm font-medium text-foreground">{t("buildingPrototype")}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Maxwell is turning the conversation into a usable first version.
+                    {t("buildingBody")}
                   </p>
                 </div>
               </div>
@@ -174,7 +174,7 @@ function PreviewPlaceholder({
                 <ElapsedPollingBadge startedAt={pollingStartedAt} />
               ) : (
                 <p className="mt-3 text-[11px] leading-5 text-muted-foreground/80">
-                  The preview will open here automatically when the first version is ready.
+                  {t("previewWillOpen")}
                 </p>
               )}
             </div>
@@ -248,6 +248,7 @@ function PreviewFailed({
   // generation failure → the transient copy + a retry.
   reason?: "error" | "quota";
 }) {
+  const t = useTranslations("studio");
   const isQuota = reason === "quota";
   return (
     <div className="flex h-full flex-col items-center justify-center bg-background px-8 text-center">
@@ -257,12 +258,10 @@ function PreviewFailed({
         <AlertCircle className="w-7 h-7" />
       </div>
       <p className="text-base font-display mb-2">
-        {isQuota ? "Monthly prototype used" : "Preview not available"}
+        {isQuota ? t("previewQuotaTitle") : t("previewFailedTitle")}
       </p>
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-        {isQuota
-          ? "Each account gets one interactive prototype per month, and you've used it. To explore another product direction, talk with a Noon agent."
-          : "The interactive preview could not be generated right now. This is usually temporary. You can try again or continue chatting to refine the idea."}
+        {isQuota ? t("previewQuotaBody") : t("previewFailedBody")}
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
         {!isQuota && (
@@ -272,7 +271,7 @@ function PreviewFailed({
             className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Try again
+            {t("tryAgain")}
           </button>
         )}
         <Link
@@ -280,7 +279,7 @@ function PreviewFailed({
           className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
         >
           <User className="w-3.5 h-3.5" />
-          Talk to agent
+          {t("navTalkToAgent")}
         </Link>
       </div>
       <p className="text-xs text-muted-foreground mt-6 opacity-50">
@@ -553,7 +552,7 @@ export function StudioPreviewPane({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Open in new tab
+                    {t("openInNewTab")}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -589,7 +588,7 @@ export function StudioPreviewPane({
             Version {selectedVersion.versionNumber} ready
           </p>
           <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-            The prototype opens in your browser for the best experience on mobile.
+            {t("mobileOpensInBrowser")}
           </p>
           <a
             href={selectedVersion.demoUrl}
@@ -601,7 +600,7 @@ export function StudioPreviewPane({
             Open prototype
           </a>
           <p className="text-xs text-muted-foreground mt-4 opacity-50">
-            opens in a new tab
+            {t("opensInNewTab")}
           </p>
         </div>
       </div>
@@ -649,7 +648,7 @@ export function StudioPreviewPane({
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
               >
                 <User className="w-3 h-3" />
-                Talk to agent
+                {t("navTalkToAgent")}
               </Link>
             </div>
           )}
@@ -675,7 +674,7 @@ export function StudioPreviewPane({
                 Prototype approved
               </p>
               <p className="text-xs text-muted-foreground mb-3">
-                Request the formal proposal — the Noon team reviews it before sending.
+                {t("requestProposalBody")}
               </p>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -684,14 +683,14 @@ export function StudioPreviewPane({
                   className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  Request formal proposal
+                  {t("requestProposal")}
                 </button>
                 <Link
                   href={agentHref}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
                 >
                   <User className="w-3.5 h-3.5" />
-                  Talk to agent
+                  {t("navTalkToAgent")}
                 </Link>
               </div>
             </div>

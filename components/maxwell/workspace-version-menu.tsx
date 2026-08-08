@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { MoreHorizontal, ExternalLink, Rocket, Send } from "lucide-react";
 import {
@@ -48,6 +50,7 @@ export function VersionRowMenu({
   /** Real make-it-live request (rollback path, staff authority) — same contract. */
   requestLiveAction?: () => Promise<{ ok: boolean; error?: string }>;
 }) {
+  const t = useTranslations("workspace.versions");
   const [publishOpen, setPublishOpen] = useState(false);
   const [liveOpen, setLiveOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -97,13 +100,13 @@ export function VersionRowMenu({
           {canPublish && (
             <DropdownMenuItem onSelect={() => setPublishOpen(true)}>
               <Rocket strokeWidth={1.75} />
-              Publish this version
+              {t("publishThis")}
             </DropdownMenuItem>
           )}
           {canRequestLive && (
             <DropdownMenuItem onSelect={() => setLiveOpen(true)}>
               <Send strokeWidth={1.75} />
-              Ask the team to make this version live
+              {t("askTeamToPublish")}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -115,7 +118,7 @@ export function VersionRowMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>Publish version {versionSequence}?</AlertDialogTitle>
             <AlertDialogDescription>
-              It becomes the live version visible to the public at your domain.
+              {t("becomesLive")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {error && publishOpen && (
