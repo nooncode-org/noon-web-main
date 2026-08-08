@@ -38,10 +38,10 @@
    portals to <body> outside .mxw-rd. Remap base tokens + Tailwind-v4 --color-*. */
 .mxw-rd,
 :root:has(.mxw-rd) {
-  --muted-foreground: #727272;
+  --muted-foreground: #707070;
   --primary: #0056fd;
   --ring: #0056fd;
-  --color-muted-foreground: #727272;
+  --color-muted-foreground: #707070;
   --color-primary: #0056fd;
   --color-ring: #0056fd;
 }

@@ -56,7 +56,7 @@ export default function GlobalError({
           .ge-body {
             font-size: 14px;
             line-height: 1.65;
-            color: #727272;
+            color: #707070;
             margin-bottom: 32px;
             max-width: 40ch;
           }

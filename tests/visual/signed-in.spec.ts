@@ -278,20 +278,13 @@ test.describe("signed in", () => {
    * someone with low vision has to be able to tell the plans apart and reach the
    * button that takes their money.
    *
-   * One violation is KNOWN and deliberately not fixed here. The muted grey
-   * (#727272) on the card surface (#f6f6f6) measures 4.45:1 where AA asks for
-   * 4.5 — short by 0.05, on 16 elements. The fix is one shade darker (#707070
-   * measures 4.58 and is still a neutral grey, R=G=B), but that value is
-   * declared in thirteen places and darkening it changes muted text on every
-   * page of the site. That is the owner's call, not a side effect of writing a
-   * test, so it is recorded as its own decision rather than slipped in here.
-   *
-   * The assertion is written to accept exactly that pair and nothing else: any
-   * new rule, or the same rule with different colours, still fails.
+   * This started as "no violations BEYOND the known grey": the muted text on
+   * the card surface measured 4.45:1 where AA asks for 4.5, on 16 elements, and
+   * the fix was a palette decision rather than a test's business. The owner took
+   * that decision on 2026-08-08 — #727272 → #707070 (4.58) — so the exemption is
+   * gone and the bar here is simply zero.
    */
-  test("the plan picker has no accessibility violations beyond the known grey", async ({
-    page,
-  }) => {
+  test("the plan picker has no accessibility violations", async ({ page }) => {
     await page.goto(`/en/maxwell/proposal/${DEMO_UNPAID_TOKEN}`);
     await expect(page.getByRole("heading", { name: /choose an option/i })).toBeVisible();
 
@@ -299,20 +292,7 @@ test.describe("signed in", () => {
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();
 
-    expect(results.violations.filter((v) => v.id !== "color-contrast")).toEqual([]);
-
-    // Every failing pair, deduped — the accepted one is the only entry allowed.
-    const pairs = new Set(
-      results.violations
-        .filter((v) => v.id === "color-contrast")
-        .flatMap((v) => v.nodes)
-        .flatMap((node) => node.any)
-        .map((check) => {
-          const data = check.data as { fgColor?: string; bgColor?: string };
-          return `${data.fgColor} on ${data.bgColor}`;
-        }),
-    );
-    expect([...pairs].sort()).toEqual(["#727272 on #f6f6f6"]);
+    expect(results.violations).toEqual([]);
   });
 
   test("the plan picker speaks Spanish when the URL says so", async ({ page }) => {
