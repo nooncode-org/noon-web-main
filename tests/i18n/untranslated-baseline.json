@@ -67,7 +67,6 @@
   "components/maxwell/workspace-quick-access.tsx": 1,
   "components/maxwell/workspace-reentry-banner.tsx": 2,
   "components/maxwell/workspace-review-overlay.tsx": 16,
-  "components/maxwell/workspace-settings-dialog.tsx": 13,
   "components/maxwell/workspace-starter-checklist.tsx": 5,
   "components/maxwell/workspace-tabs.tsx": 1,
   "components/maxwell/workspace-version-menu.tsx": 3,

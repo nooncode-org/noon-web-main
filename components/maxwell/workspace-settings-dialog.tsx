@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, type ReactNode } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { submitRequestAction } from "@/app/[locale]/maxwell/workspace/[sessionId]/_actions/submit-request";
 import { setPortalLanguageAction } from "@/app/[locale]/maxwell/_actions/set-portal-language";
@@ -153,6 +153,7 @@ export function WorkspaceSettingsDialog({
   // those are the same thing once a choice has been made (the cookie decides
   // what gets served), and before that the served locale is the browser's own
   // — which is the honest default to show.
+  const t = useTranslations("workspace.settings");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -181,19 +182,19 @@ export function WorkspaceSettingsDialog({
   // Billing only exists for a client who has something to bill — otherwise the
   // sub-page would be an empty shell.
   const sections: { key: SectionKey; label: string; blurb: string }[] = [
-    { key: "general", label: "General", blurb: "Your profile, language, and what we email you." },
+    { key: "general", label: t("general"), blurb: t("generalBlurb") },
     // Both of these are PROJECT-scoped, so account mode drops them outright
     // rather than relying on the flags below (a future caller could pass an
     // invoiceUrl into account mode and resurrect an empty Billing tab).
     ...(!accountOnly && (invoiceUrl || isMembership)
-      ? [{ key: "billing" as const, label: "Billing", blurb: "Your plan, payments, and invoices." }]
+      ? [{ key: "billing" as const, label: t("billing"), blurb: t("billingBlurb") }]
       : []),
     // Project-data export is the team-mediated path for clients who don't hold
     // their code directly (membership). A one-time buyer OWNS their code outright
     // (the Overview's "Your code" card — download + repo), so a gated "ask the
     // team to enable export" would be redundant and contradictory. Hidden for them.
     ...(!accountOnly && isMembership
-      ? [{ key: "data" as const, label: "Project data", blurb: "Exports and other project-wide actions." }]
+      ? [{ key: "data" as const, label: t("data"), blurb: t("dataBlurb") }]
       : []),
   ];
   const active = sections.find((s) => s.key === section) ?? sections[0];
@@ -294,10 +295,10 @@ export function WorkspaceSettingsDialog({
           {/* Sub-navigation. Vertical rail on desktop; on mobile it collapses to
               a scrollable strip above the content. */}
           <nav
-            aria-label="Settings sections"
+            aria-label={t("sectionsLabel")}
             className="shrink-0 border-b border-border bg-secondary/20 p-2.5 sm:w-64 sm:border-b-0 sm:border-r sm:p-4"
           >
-            <p className="hidden px-2 pb-2.5 pt-1 text-[13px] font-semibold sm:block">Settings</p>
+            <p className="hidden px-2 pb-2.5 pt-1 text-[13px] font-semibold sm:block">{t("title")}</p>
             <div className="flex gap-1 overflow-x-auto sm:flex-col sm:overflow-visible">
               {sections.map((s) => (
                 <button
@@ -335,15 +336,13 @@ export function WorkspaceSettingsDialog({
                       opens with (Vercel: Avatar, then Display Name). */}
                   {profile && onEditProfile && (
                     <SettingsCard
-                      title="Profile"
-                      description="How you appear across your project — to Maxwell and your Noon team."
+                      title={t("profileTitle")}
+                      description={t("profileDescription")}
                       footer={
                         <>
-                          <p className={hintClass}>
-                            A photo is optional but makes the chat feel yours.
-                          </p>
+                          <p className={hintClass}>{t("profileHint")}</p>
                           <button type="button" onClick={editProfile} className={buttonClass}>
-                            Edit profile
+                            {t("editProfile")}
                           </button>
                         </>
                       }
@@ -377,15 +376,13 @@ export function WorkspaceSettingsDialog({
                       in-app notifications FEED, so two "Notifications" read as
                       redundant (owner 2026-07-20). */}
                   <SettingsCard
-                    title="Emails"
-                    description="Choose what we send to your inbox. Everything stays visible in the portal either way."
+                    title={t("emailsTitle")}
+                    description={t("emailsDescription")}
                     footer={
                       // Transactional carve-out (ref-backed): critical notices
                       // bypass the toggles, and saying so kills the "what if I
                       // turn it all off" worry.
-                      <p className={hintClass}>
-                        Critical notices — like payment issues — are always sent.
-                      </p>
+                      <p className={hintClass}>{t("emailsCritical")}</p>
                     }
                   >
                     <div className="space-y-2.5">
@@ -396,8 +393,8 @@ export function WorkspaceSettingsDialog({
                           // someone who has none yet.
                           [
                             {
-                              label: "Replies in Chat",
-                              hint: "When your Noon team or Maxwell answers you.",
+                              label: t("notifyChat"),
+                              hint: t("notifyChatHint"),
                               checked: notifyChat,
                               set: setNotifyChat,
                             },
@@ -405,14 +402,14 @@ export function WorkspaceSettingsDialog({
                         : isMembership
                         ? [
                             {
-                              label: "A new version is ready",
-                              hint: "So you can review it without checking back.",
+                              label: t("notifyVersions"),
+                              hint: t("notifyVersionsHint"),
                               checked: notifyVersions,
                               set: setNotifyVersions,
                             },
                             {
-                              label: "Replies in Chat",
-                              hint: "When your Noon team or Maxwell answers you.",
+                              label: t("notifyChat"),
+                              hint: t("notifyChatHint"),
                               checked: notifyChat,
                               set: setNotifyChat,
                             },
@@ -422,14 +419,14 @@ export function WorkspaceSettingsDialog({
                           // delivered, not iterated on.
                           [
                             {
-                              label: "Replies in Chat",
-                              hint: "When your Noon team or Maxwell answers you.",
+                              label: t("notifyChat"),
+                              hint: t("notifyChatHint"),
                               checked: notifyChat,
                               set: setNotifyChat,
                             },
                             {
-                              label: "Hosting & domain renewal reminders",
-                              hint: "A heads-up before your yearly renewal, so it's never a surprise.",
+                              label: t("notifyRenewal"),
+                              hint: t("notifyRenewalHint"),
                               checked: notifyRenewal,
                               set: setNotifyRenewal,
                             },
@@ -457,11 +454,12 @@ export function WorkspaceSettingsDialog({
                   </SettingsCard>
 
                   <SettingsCard
-                    title="Language"
-                    description="The language your portal is shown in."
-                    footer={
-                      <p className={hintClass}>We&apos;ll remember this for your next visit.</p>
-                    }
+                    title={t("languageTitle")}
+                    description={t("languageDescription")}
+                    // True since 2026-08-07 — the choice is now stored in the
+                    // cookie AND on the project. Before that this line was the
+                    // only part of the card that did anything, and it lied.
+                    footer={<p className={hintClass}>{t("languageHint")}</p>}
                   >
                     {/* Styled (Radix) select, same convention as request-box:
                         a native <select> paints its popup with OS chrome and
@@ -471,7 +469,7 @@ export function WorkspaceSettingsDialog({
                       disabled={isSwitchingLanguage}
                       onValueChange={(v) => changeLanguage(v as "en" | "es")}
                     >
-                      <SelectTrigger aria-label="Language" className={SELECT_TRIGGER}>
+                      <SelectTrigger aria-label={t("languageTitle")} className={SELECT_TRIGGER}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className={SELECT_CONTENT}>
@@ -529,14 +527,12 @@ export function WorkspaceSettingsDialog({
                   {isMembership && (
                     <SettingsCard
                       danger
-                      title="Cancel membership"
-                      description="Nothing stops right away — your Noon team will reach out to confirm the details and walk you through what happens with your site, domain, and data."
+                      title={t("cancelTitle")}
+                      description={t("cancelDescription")}
                       footer={
                         <>
                           {cancelRequested ? (
-                            <p className={hintClass}>
-                              Your Noon team has it and will reach out to confirm the details.
-                            </p>
+                            <p className={hintClass}>{t("cancelRequestedHint")}</p>
                           ) : (
                             <span />
                           )}
@@ -546,7 +542,7 @@ export function WorkspaceSettingsDialog({
                             disabled={cancelRequested}
                             className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-3 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-red-700 disabled:pointer-events-none disabled:opacity-45"
                           >
-                            {cancelRequested ? "Cancellation requested ✓" : "Cancel membership"}
+                            {cancelRequested ? t("cancelRequestedButton") : t("cancelTitle")}
                           </button>
                         </>
                       }
@@ -557,14 +553,12 @@ export function WorkspaceSettingsDialog({
 
               {section === "data" && (
                 <SettingsCard
-                  title="Export project data"
-                  description="A full export of your project — code, content, and assets — prepared by your Noon team and sent as a secure download link."
+                  title={t("exportTitle")}
+                  description={t("exportDescription")}
                   footer={
                     <>
                       <p className={hintClass}>
-                        {advancedUnlocked
-                          ? "Usually ready within one business day."
-                          : "Off by default — your Noon team enables it per project."}
+                        {advancedUnlocked ? t("exportHintReady") : t("exportHintOff")}
                       </p>
                       {advancedUnlocked ? (
                         <button
@@ -574,20 +568,20 @@ export function WorkspaceSettingsDialog({
                           className={`${buttonClass} gap-1.5 disabled:pointer-events-none disabled:opacity-45`}
                         >
                           <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          {exportRequested ? "Requested ✓" : "Request export"}
+                          {exportRequested ? t("exportRequested") : t("exportRequest")}
                         </button>
                       ) : (
                         <button
                           type="button"
                           onClick={() =>
-                            contactTeam(
-                              "Hi — I'd like to export my project data. Could you enable it for my project?",
-                            )
+                            // Prefilled into the chat composer — so it must be
+                            // in the client's language, not ours.
+                            contactTeam(t("exportAskMessage"))
                           }
                           className={`${buttonClass} gap-1.5`}
                         >
                           <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          Ask your Noon team
+                          {t("exportAskTeam")}
                         </button>
                       )}
                     </>
@@ -610,22 +604,19 @@ export function WorkspaceSettingsDialog({
       >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Export your project data?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your Noon team will prepare a full export — code, content, and assets — and send
-              you a secure download link by email. Usually within one business day.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("exportDialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("exportDialogBody")}</AlertDialogDescription>
           </AlertDialogHeader>
           {requestError && <RequestError message={requestError} />}
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-[6px]">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-[6px]">{t("close")}</AlertDialogCancel>
             <button
               type="button"
               onClick={requestExport}
               disabled={isSubmitting}
               className="inline-flex items-center justify-center rounded-[6px] bg-[#0056fd] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0047e0] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Sending…" : "Request export"}
+              {isSubmitting ? t("sending") : t("exportRequest")}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -643,22 +634,21 @@ export function WorkspaceSettingsDialog({
       >
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel your membership?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Nothing stops right away — your Noon team will reach out to confirm the details
-              and walk you through what happens with your site, domain, and data.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("cancelDialogTitle")}</AlertDialogTitle>
+            {/* Same sentence as the card above, on purpose: the confirm step is
+                where it actually gets read. */}
+            <AlertDialogDescription>{t("cancelDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           {requestError && <RequestError message={requestError} />}
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-[6px]">Keep membership</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-[6px]">{t("cancelKeep")}</AlertDialogCancel>
             <button
               type="button"
               onClick={requestCancel}
               disabled={isSubmitting}
               className="inline-flex items-center justify-center rounded-[6px] bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Sending…" : "Request cancellation"}
+              {isSubmitting ? t("sending") : t("cancelConfirm")}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
