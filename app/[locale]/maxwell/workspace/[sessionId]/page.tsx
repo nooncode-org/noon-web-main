@@ -437,11 +437,22 @@ export default async function WorkspacePage({ params }: Props) {
    * material request carrying the note, then attaches the bytes to it. Both
    * halves are the existing, validated actions; nothing new touches storage.
    */
+  // Resolved HERE, not inside the action below. A server action closes over
+  // whatever it references, and Next has to serialise that closure to hand the
+  // action to the browser — a translator is a function, and functions don't
+  // serialise. Calling t() here captures a plain string instead, which does.
+  //
+  // The symptom was invisible in the page: it rendered fine and threw
+  // "Functions cannot be passed directly to Client Components" into the server
+  // log on every load, while the file-share action was the thing actually
+  // broken. Found by the first browser test to ever load this page signed in.
+  const chooseFileError = t("errors.chooseFile");
+
   async function attachToChat(form: FormData) {
     "use server";
     const file = form.get("file");
     if (!(file instanceof File)) {
-      return { ok: false, error: t("errors.chooseFile") } as const;
+      return { ok: false, error: chooseFileError } as const;
     }
     const note = String(form.get("note") ?? "").trim();
     const created = await submitRequestAction({
