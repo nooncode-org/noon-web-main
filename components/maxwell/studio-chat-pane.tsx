@@ -15,7 +15,6 @@ import {
   Github,
   Globe,
   Loader2,
-  Mic,
   Plus,
   RefreshCw,
   Reply,

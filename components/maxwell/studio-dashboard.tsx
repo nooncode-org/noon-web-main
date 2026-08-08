@@ -9,7 +9,6 @@ import {
   FileText,
   Github,
   Globe,
-  Mic,
   PanelLeft,
   Plus,
   TriangleIcon,

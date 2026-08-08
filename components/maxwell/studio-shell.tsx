@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { StudioHeader } from "./studio-header";
@@ -258,6 +259,7 @@ export function StudioShell({
   locale,
   shareEnabled,
 }: StudioShellProps) {
+  const t = useTranslations("studio");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -1944,7 +1946,7 @@ export function StudioShell({
               />
             ))}
           </div>
-          <p className="text-sm">Restoring your session...</p>
+          <p className="text-sm">{t("restoring")}</p>
         </div>
       </div>
     );
@@ -2057,7 +2059,7 @@ export function StudioShell({
         role="status"
         className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 lg:hidden"
       >
-        <span className="font-medium">Studio works best on desktop.</span>{" "}
+        <span className="font-medium">{t("desktopOnly")}</span>{" "}
         Some controls collapse on small screens — open this URL on a laptop for the full layout.
       </div>
 
@@ -2074,10 +2076,10 @@ export function StudioShell({
         ref={workspaceRef}
         className={`flex min-h-0 flex-1 overflow-hidden ${isResizing ? "mxw-resizing" : ""}`}
         style={{ ["--mxw-chat-w" as string]: `${chatWidth}px` } as CSSProperties}
-        aria-label="Studio workspace"
+        aria-label={t("workspaceLabel")}
       >
         <aside
-          aria-label="Conversation with Maxwell"
+          aria-label={t("conversationLabel")}
           className={`
             flex min-h-0 flex-col
             ${shouldShowWorkspace ? "w-full shrink-0 bg-background lg:w-[var(--mxw-chat-w)]" : "w-full"}
@@ -2142,7 +2144,7 @@ export function StudioShell({
           <div
             role="separator"
             aria-orientation="vertical"
-            aria-label="Resize chat panel"
+            aria-label={t("resizeLabel")}
             aria-valuenow={chatWidth}
             tabIndex={0}
             onPointerDown={onDividerPointerDown}
@@ -2161,7 +2163,7 @@ export function StudioShell({
 
         {shouldShowWorkspace && (
           <section
-            aria-label="Prototype preview"
+            aria-label={t("previewLabel")}
             className={`
               min-h-0 flex-1 flex-col
               ${activeView === "preview" ? "flex" : "hidden lg:flex"}

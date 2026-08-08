@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowDown,
   ArrowUp,
-  Mic,
   Plus,
   Minus,
   X,

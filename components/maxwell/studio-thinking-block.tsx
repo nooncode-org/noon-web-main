@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Brain, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -8,6 +9,7 @@ type StudioThinkingBlockProps = {
 };
 
 export function StudioThinkingBlock({ content }: StudioThinkingBlockProps) {
+  const t = useTranslations("studio");
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -19,7 +21,7 @@ export function StudioThinkingBlock({ content }: StudioThinkingBlockProps) {
           className="flex items-center gap-2 transition-colors hover:text-foreground"
         >
           <Brain className="w-3 h-3 shrink-0" />
-          <span>Thinking</span>
+          <span>{t("thinking")}</span>
           {expanded ? (
             <ChevronUp className="w-3 h-3 shrink-0" />
           ) : (

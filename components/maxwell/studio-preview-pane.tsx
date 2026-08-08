@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -76,6 +77,7 @@ function PreviewPlaceholder({
   /** B28 — timestamp (ms) cuando arrancó el polling v0; null si no estamos polling. */
   pollingStartedAt: number | null;
 }) {
+  const t = useTranslations("studio");
   const isGenerating = phase === "generating_prototype";
 
   if (isGenerating) {
@@ -90,7 +92,7 @@ function PreviewPlaceholder({
         <div className="flex h-11 shrink-0 items-center justify-between border-b border-border/70 bg-background px-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-            <span>Building preview</span>
+            <span>{t("buildingPreview")}</span>
           </div>
           <span className="hidden rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground sm:inline-flex">
             live workspace
@@ -138,7 +140,7 @@ function PreviewPlaceholder({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Building prototype</p>
+                  <p className="text-sm font-medium text-foreground">{t("buildingPrototype")}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Maxwell is turning the conversation into a usable first version.
                   </p>
@@ -405,6 +407,7 @@ export function StudioPreviewPane({
   viewport,
   reloadSignal,
 }: StudioPreviewPaneProps) {
+  const t = useTranslations("studio");
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
 
   const currentVersion = prototypeVersions[prototypeVersions.length - 1] ?? null;
@@ -498,7 +501,7 @@ export function StudioPreviewPane({
       {correctionsExhausted && canApprove && (
         <div className="flex shrink-0 items-center gap-2.5 border-b border-border/70 bg-card px-4 py-2.5 text-xs text-muted-foreground">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>Adjustments complete — approve to move forward or request the formal proposal.</span>
+          <span>{t("adjustmentsComplete")}</span>
         </div>
       )}
 
@@ -508,7 +511,7 @@ export function StudioPreviewPane({
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-3 text-center">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Applying adjustment...</p>
+              <p className="text-sm text-muted-foreground">{t("applyingAdjustment")}</p>
             </div>
           </div>
         )}
@@ -522,7 +525,7 @@ export function StudioPreviewPane({
               {overlayState === "error" ? (
                 <>
                   <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">We couldn&apos;t load the preview.</p>
+                  <p className="text-sm text-muted-foreground">{t("previewFailed")}</p>
                 </>
               ) : (
                 <>

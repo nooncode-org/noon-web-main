@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import {
   ExternalLink,
@@ -220,6 +221,7 @@ export function StudioHeader({
   onViewportChange,
   onReloadPreview,
 }: StudioHeaderProps) {
+  const t = useTranslations("studio");
   const [menuOpen, setMenuOpen] = useState(false);
   const isProcessing = phaseIsActive(phase);
   const label = phaseLabels[phase];
@@ -249,7 +251,7 @@ export function StudioHeader({
             setMenuOpen(true);
             onRequestChats?.();
           }}
-          aria-label="Open menu"
+          aria-label={t("openMenu")}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:hidden"
         >
           <PanelLeft className="h-4 w-4" />
@@ -257,7 +259,7 @@ export function StudioHeader({
         <button
           type="button"
           onClick={() => onToggleSidebar?.()}
-          aria-label="Expand sidebar"
+          aria-label={t("expandSidebar")}
           aria-expanded={sidebarOpen}
           className={`hidden h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground ${
             sidebarOpen ? "lg:hidden" : "lg:flex"
@@ -353,8 +355,8 @@ export function StudioHeader({
                 <button
                   type="button"
                   onClick={() => onViewportChange?.("desktop")}
-                  title="Desktop preview"
-                  aria-label="Desktop preview"
+                  title={t("desktopPreview")}
+                  aria-label={t("desktopPreview")}
                   aria-pressed={viewport === "desktop"}
                   className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
                     viewport === "desktop" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -365,8 +367,8 @@ export function StudioHeader({
                 <button
                   type="button"
                   onClick={() => onViewportChange?.("mobile")}
-                  title="Mobile preview"
-                  aria-label="Mobile preview"
+                  title={t("mobilePreview")}
+                  aria-label={t("mobilePreview")}
                   aria-pressed={viewport === "mobile"}
                   className={`flex h-6 w-7 items-center justify-center rounded-full transition-colors ${
                     viewport === "mobile" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -379,8 +381,8 @@ export function StudioHeader({
               <button
                 type="button"
                 onClick={() => onReloadPreview?.()}
-                title="Reload the preview (use this if it looks blank)"
-                aria-label="Reload preview"
+                title={t("reloadPreviewHint")}
+                aria-label={t("reloadPreview")}
                 className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -391,8 +393,8 @@ export function StudioHeader({
                   href={previewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="Open full screen"
-                  aria-label="Open full screen"
+                  title={t("fullScreen")}
+                  aria-label={t("fullScreen")}
                   className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />

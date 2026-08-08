@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
@@ -126,6 +127,7 @@ export function StudioSidebar({
   footerExtra,
   clientPortal = false,
 }: StudioSidebarProps) {
+  const t = useTranslations("studio");
   const [chatQuery, setChatQuery] = useState("");
   // B31 — Track the row staged for deletion. Single-row state is enough: the
   // AlertDialog is modal so only one delete prompt can be open at a time. We
@@ -182,7 +184,7 @@ export function StudioSidebar({
               <button
                 type="button"
                 onClick={onEditProfile}
-                title="Edit profile"
+                title={t("editProfile")}
                 className="-mx-1.5 flex min-w-0 flex-1 items-center gap-2.5 rounded-[8px] px-1.5 py-1 transition-colors hover:bg-secondary/40"
               >
                 {avatar}
@@ -200,7 +202,7 @@ export function StudioSidebar({
               type="button"
               onClick={onClose}
               className="flex items-center justify-center w-8 h-8 shrink-0 rounded-md text-muted-foreground transition-colors hover:text-foreground"
-              aria-label="Collapse sidebar"
+              aria-label={t("collapseSidebar")}
             >
               <PanelLeft className="w-4 h-4" />
             </button>
@@ -305,8 +307,8 @@ export function StudioSidebar({
                   type="text"
                   value={chatQuery}
                   onChange={(e) => setChatQuery(e.target.value)}
-                  placeholder="Search chats"
-                  aria-label="Search chats"
+                  placeholder={t("searchChats")}
+                  aria-label={t("searchChats")}
                   className="w-full rounded-[8px] border border-border/60 bg-secondary/30 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none"
                 />
               </div>
@@ -345,8 +347,8 @@ export function StudioSidebar({
                       {row.proposalHref && (
                         <Link
                           href={row.proposalHref}
-                          aria-label="View proposal"
-                          title="View proposal"
+                          aria-label={t("viewProposal")}
+                          title={t("viewProposal")}
                           onClick={() => onNavigate?.()}
                           className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                         >
@@ -356,8 +358,8 @@ export function StudioSidebar({
                       {row.workspaceHref && (
                         <Link
                           href={row.workspaceHref}
-                          aria-label="Open workspace"
-                          title="Open workspace"
+                          aria-label={t("openWorkspace")}
+                          title={t("openWorkspace")}
                           onClick={() => onNavigate?.()}
                           className="flex w-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                         >
@@ -367,7 +369,7 @@ export function StudioSidebar({
                       {onDeleteDraftSession && (
                         <button
                           type="button"
-                          aria-label="Delete conversation"
+                          aria-label={t("deleteConversation")}
                           onClick={(e) => {
                             e.stopPropagation();
                             onNavigate?.();
@@ -432,7 +434,7 @@ export function StudioSidebar({
       >
         <AlertDialogContent className={GeistSans.className}>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete
                 ? `“${pendingDelete.title}” and its draft history will be removed. This cannot be undone.`

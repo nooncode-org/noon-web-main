@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -139,6 +140,7 @@ export function StudioProposalCta({
   shareUxState,
   onShare,
 }: StudioProposalCtaProps) {
+  const t = useTranslations("studio");
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -337,7 +339,7 @@ export function StudioProposalCta({
               type="text"
               value={shareUrl}
               readOnly
-              aria-label="Shareable prototype link"
+              aria-label={t("shareLinkLabel")}
               className="flex-1 min-w-0 rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground/85 outline-none focus:border-foreground/20"
               onFocus={(e) => e.currentTarget.select()}
             />
@@ -350,12 +352,12 @@ export function StudioProposalCta({
               {linkCopied ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  <span>Copied</span>
+                  <span>{t("copied")}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>Copy</span>
+                  <span>{t("copy")}</span>
                 </>
               )}
             </button>
