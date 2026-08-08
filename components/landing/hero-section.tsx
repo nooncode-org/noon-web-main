@@ -1,5 +1,6 @@
 "use client";
 
+import { VoiceInputMenuItem } from "@/components/maxwell/voice-input-menu-item";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -281,10 +282,12 @@ export function HeroSection() {
                           <div className="liquid-glass-card absolute bottom-10 left-0 z-50 w-52 rounded-[10px] overflow-hidden">
                             {!urlInputMode ? (
                               <div className="py-1">
-                                <button type="button" disabled title="Voice input is not available yet." className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#a3a3a3]/60 cursor-not-allowed">
-                                  <Mic className="h-4 w-4 text-[#a3a3a3]/60" />
-                                  Voice input
-                                </button>
+                                <VoiceInputMenuItem
+                                  value={inputValue}
+                                  onChange={setInputValue}
+                                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#a3a3a3] transition-colors hover:bg-secondary"
+                                  iconClassName="h-4 w-4 text-[#a3a3a3]"
+                                />
                                 <div className="my-1 h-px bg-border" />
                                 <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-secondary transition-colors">
                                   <Upload className="h-4 w-4 text-[#a3a3a3]" />

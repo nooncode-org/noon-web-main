@@ -780,6 +780,14 @@
       "sending": "Enviando…"
     }
   },
+  "voice": {
+    "label": "Dictar",
+    "listening": "Escuchando… toca para parar",
+    "unsupported": "Tu navegador no permite dictar.",
+    "denied": "Noon necesita permiso para usar tu micrófono.",
+    "noSpeech": "No he captado nada. Inténtalo otra vez.",
+    "failed": "El dictado se ha detenido. Inténtalo otra vez."
+  },
   "notFound": {
     "title": "Página no encontrada — Noon",
     "kicker": "404 — No encontrada",

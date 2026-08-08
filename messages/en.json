@@ -780,6 +780,14 @@
       "sending": "Sending…"
     }
   },
+  "voice": {
+    "label": "Voice input",
+    "listening": "Listening… tap to stop",
+    "unsupported": "Voice input isn’t available in this browser.",
+    "denied": "Noon needs permission to use your microphone.",
+    "noSpeech": "I didn’t catch anything — try again.",
+    "failed": "Dictation stopped. Try again."
+  },
   "notFound": {
     "title": "Page not found — Noon",
     "kicker": "404 — Not found",

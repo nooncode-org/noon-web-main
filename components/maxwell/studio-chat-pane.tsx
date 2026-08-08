@@ -1,5 +1,6 @@
 "use client";
 
+import { VoiceInputMenuItem } from "@/components/maxwell/voice-input-menu-item";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -1570,10 +1571,12 @@ export function StudioChatPane({
                     <div className="liquid-glass-card absolute bottom-10 left-0 z-50 w-52 overflow-hidden rounded-[10px]">
                       {!urlInputMode ? (
                         <div className="py-1">
-                          <button type="button" disabled title="Voice input is not available yet." className="flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground/60">
-                            <Mic className="h-4 w-4 text-muted-foreground/60" />
-                            Voice input
-                          </button>
+                          <VoiceInputMenuItem
+                            value={input}
+                            onChange={onInputChange}
+                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary"
+                            iconClassName="h-4 w-4 text-muted-foreground"
+                          />
                           <div className="my-1 h-px bg-border" />
                           <button type="button" onClick={() => { fileInputRef.current?.click(); setAttachMenuOpen(false); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-secondary">
                             <Upload className="h-4 w-4 text-muted-foreground" />
