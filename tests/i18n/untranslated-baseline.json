@@ -1,9 +1,7 @@
 {
-  "app/_components/site/legal-document-page.tsx": 4,
   "app/_components/site/site-footer-rd.tsx": 2,
   "app/[locale]/about/about-content-rd.tsx": 33,
   "app/[locale]/contact/page.tsx": 3,
-  "app/[locale]/legal/page.tsx": 4,
   "app/[locale]/maxwell/prototipo/[token]/_components/decision-panel.tsx": 1,
   "app/[locale]/maxwell/review/_components/review-login.tsx": 1,
   "app/[locale]/maxwell/review/[id]/_components/review-actions.tsx": 9,
@@ -13,7 +11,7 @@
   "app/[locale]/maxwell/review/workspace/[workspaceId]/page.tsx": 1,
   "app/[locale]/maxwell/workspace/[sessionId]/_components/request-box.tsx": 1,
   "app/[locale]/opportunities/opp-nav.tsx": 1,
-  "app/[locale]/services/custom-dev-chat.tsx": 4,
+  "app/[locale]/services/custom-dev-chat.tsx": 1,
   "app/[locale]/services/svc-nav.tsx": 1,
   "app/[locale]/services/upgrade-flow.tsx": 1,
   "app/[locale]/signin/email-signin-form.tsx": 1,

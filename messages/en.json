@@ -827,6 +827,25 @@
     "copied": "Copied",
     "copy": "Copy"
   },
+  "legalPage": {
+    "eyebrow": "Legal",
+    "title": "Legal documents",
+    "lead": "The policies and terms that govern how Noon works with you — and how we handle your data.",
+    "questions": "Questions about any of this?",
+    "documentDetails": "Document details",
+    "onThisPage": "On this page",
+    "overview": "Overview"
+  },
+  "contactPage": {
+    "startConversation": "Start a conversation.",
+    "transparent": "Transparent communication, at every step.",
+    "commonQuestions": "Common questions."
+  },
+  "customDevChat": {
+    "describeShort": "Describe what you need built…",
+    "describeLong": "Describe what you want to build…",
+    "maxwellTyping": "Maxwell is typing"
+  },
   "templatesPage": {
     "searchPlaceholder": "Search templates…",
     "heading": "Templates",

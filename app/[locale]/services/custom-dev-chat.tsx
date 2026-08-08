@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { ArrowUp, Plus } from "lucide-react";
@@ -107,6 +108,7 @@ type Phase = "idle" | "typing" | "sent" | "processing" | "generating" | "done";
 
 // ── InputPanel ────────────────────────────────────────────────────────────────
 function InputPanel({ phase, typed }: { phase: Phase; typed: number }) {
+  const t = useTranslations("customDevChat");
   const text = BRIEF.slice(0, typed);
   const isReady = typed >= BRIEF.length;
 
@@ -126,7 +128,7 @@ function InputPanel({ phase, typed }: { phase: Phase; typed: number }) {
                 )}
               </>
             ) : (
-              <span className="text-foreground/28">Describe what you need built…</span>
+              <span className="text-foreground/28">{t("describeShort")}</span>
             )}
           </div>
           <div className="flex items-center justify-between px-1 pb-1 pt-1.5">
@@ -265,6 +267,7 @@ export function CustomDevFlow() {
 
 // ── CustomDevChat — original looping chat (saved, not rendered in the panel) ──
 export function CustomDevChat() {
+  const t = useTranslations("customDevChat");
   const [typed, setTyped]     = useState("");
   const [sent, setSent]       = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -321,7 +324,7 @@ export function CustomDevChat() {
         <div className="cdc-msg cdc-bot">{PROMPT}</div>
         {sent && <div className="cdc-msg cdc-user cdc-in">{BRIEF}</div>}
         {thinking && (
-          <div className="cdc-msg cdc-bot cdc-dots cdc-in" aria-label="Maxwell is typing">
+          <div className="cdc-msg cdc-bot cdc-dots cdc-in" aria-label={t("maxwellTyping")}>
             <span /><span /><span />
           </div>
         )}
@@ -331,7 +334,7 @@ export function CustomDevChat() {
         <span className="cdc-field">
           <span className="cdc-typed">{typed}</span>
           <span className={`cdc-cursor ${cursor ? "on" : ""}`} />
-          {!typed && <span className="cdc-ph">Describe what you want to build…</span>}
+          {!typed && <span className="cdc-ph">{t("describeLong")}</span>}
         </span>
         <span className="cdc-send"><ArrowUp size={14} strokeWidth={2.25} /></span>
       </div>

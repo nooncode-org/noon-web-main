@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FileText, Shield, Cookie, Scale, ArrowRight } from "lucide-react";
 import { GeistSans } from "geist/font/sans";
@@ -52,6 +53,7 @@ type LegalPageProps = {
 
 export default async function LegalPage({ params }: LegalPageProps) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "legalPage" });
   const lp = (href: string) => `/${locale}${href}`;
 
   return (
@@ -64,10 +66,10 @@ export default async function LegalPage({ params }: LegalPageProps) {
         {/* hero */}
         <section className="lgl-hero">
           <div className="lgl-hero-inner">
-            <p className="lgl-kicker">Legal</p>
-            <h1 className="lgl-display">Legal documents</h1>
+            <p className="lgl-kicker">{t("eyebrow")}</p>
+            <h1 className="lgl-display">{t("title")}</h1>
             <div className="lgl-lead">
-              <p>The policies and terms that govern how Noon works with you — and how we handle your data.</p>
+              <p>{t("lead")}</p>
             </div>
           </div>
         </section>
@@ -95,7 +97,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
           {/* contact */}
           <div className="lgl-contact">
-            <h2 className="lgl-h3">Questions about any of this?</h2>
+            <h2 className="lgl-h3">{t("questions")}</h2>
             <p className="lgl-contact-copy">
               Write to us at{" "}
               <a href="mailto:noon.message@gmail.com">noon.message@gmail.com</a> — Wilmington,

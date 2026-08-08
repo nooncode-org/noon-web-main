@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { SiteNav } from "@/app/_components/site/site-nav";
@@ -46,7 +47,8 @@ function toSectionId(title: string) {
  * structured data. Chrome (nav, decorative frame, shared footer) mirrors the
  * other redesigned pages; only the data-driven body differs per document.
  */
-export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPageProps) {
+export async function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPageProps) {
+  const t = await getTranslations({ locale, namespace: "legalPage" });
   const lp = (href: string) => (href.startsWith("/") ? `/${locale}${href}` : href);
   const contactHref = lp(getContactHref("legal"));
 
@@ -60,7 +62,7 @@ export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPage
         {/* hero */}
         <section className="lgl-hero">
           <div className="lgl-hero-inner">
-            <p className="lgl-kicker">Legal</p>
+            <p className="lgl-kicker">{t("eyebrow")}</p>
             <h1 className="lgl-display">{document.title}</h1>
             <div className="lgl-lead">
               {document.subtitle ? <p>{document.subtitle}</p> : null}
@@ -79,7 +81,7 @@ export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPage
           <div className="lgl-doc-grid">
             <aside className="lgl-aside">
               <div className="lgl-card">
-                <p className="lgl-card-label">Document details</p>
+                <p className="lgl-card-label">{t("documentDetails")}</p>
                 <dl>
                   {document.details.map((detail) => (
                     <div className="lgl-detail" key={`${detail.label}-${detail.value}`}>
@@ -93,7 +95,7 @@ export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPage
               </div>
 
               <div className="lgl-card lgl-toc-card">
-                <p className="lgl-card-label">On this page</p>
+                <p className="lgl-card-label">{t("onThisPage")}</p>
                 <nav aria-label={`${document.title} sections`}>
                   <ul className="lgl-toc">
                     {document.sections.map((section) => (
@@ -109,7 +111,7 @@ export function LegalDocumentPage({ document, locale = "en" }: LegalDocumentPage
             <article>
               {document.overview?.length ? (
                 <div className="lgl-overview">
-                  <p className="lgl-card-label">Overview</p>
+                  <p className="lgl-card-label">{t("overview")}</p>
                   <div className="lgl-prose">
                     {document.overview.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>

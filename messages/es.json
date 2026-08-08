@@ -827,6 +827,25 @@
     "copied": "Copiado",
     "copy": "Copiar"
   },
+  "legalPage": {
+    "eyebrow": "Legal",
+    "title": "Documentos legales",
+    "lead": "Las políticas y condiciones que rigen cómo trabaja Noon contigo, y cómo tratamos tus datos.",
+    "questions": "¿Tienes dudas sobre algo de esto?",
+    "documentDetails": "Datos del documento",
+    "onThisPage": "En esta página",
+    "overview": "Resumen"
+  },
+  "contactPage": {
+    "startConversation": "Empecemos a hablar.",
+    "transparent": "Comunicación clara en cada paso.",
+    "commonQuestions": "Preguntas frecuentes."
+  },
+  "customDevChat": {
+    "describeShort": "Cuéntanos qué necesitas construir…",
+    "describeLong": "Cuéntanos qué quieres construir…",
+    "maxwellTyping": "Maxwell está escribiendo"
+  },
   "templatesPage": {
     "searchPlaceholder": "Buscar plantillas…",
     "heading": "Plantillas",
