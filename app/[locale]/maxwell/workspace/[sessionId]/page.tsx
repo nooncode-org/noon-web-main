@@ -14,6 +14,8 @@ import {
   getLatestStudioVersion,
   getAiMvpMilestonesByProjectId,
   isProposalAwaitingWorkspace,
+  recordMembershipEndedAt,
+  clearMembershipEndedAt,
 } from "@/lib/maxwell/repositories";
 import {
   AI_MVP_MILESTONE_COPY,
@@ -26,6 +28,7 @@ import {
   type WorkspaceStatus,
 } from "@/lib/maxwell/workspace-status";
 import { fetchNoonAppProjectStatus } from "@/lib/maxwell/project-status-fetch";
+import { log } from "@/lib/server/logger";
 import {
   formatProposalAmount,
   mapMembershipStatusToMeta,
@@ -362,6 +365,36 @@ export default async function WorkspacePage({ params }: Props) {
    */
   const membershipEnding = appMembership?.status === "cancelled";
   const membershipEndsOn = appMembership?.currentPeriodEnd ?? null;
+
+  /**
+   * Start (or stop) the retention clock.
+   *
+   * This render is the only moment the website ever learns the membership
+   * state — it is fetched from the App and otherwise thrown away, which is why
+   * the twelve-month promise in the notice below had nothing behind it. Writing
+   * it down here is what gives that sentence a mechanism.
+   *
+   * Best-effort and deliberately un-awaited-for-correctness: `recordMembership
+   * EndedAt` only writes when the column is still NULL, `clear` only when it is
+   * not, so both are no-ops on the overwhelming majority of renders. If the
+   * write fails the client still gets their portal — a bookkeeping row is never
+   * worth a broken page. The sweep that reads it is off by default
+   * (lib/maxwell/data-retention.ts).
+   */
+  if (appMembership) {
+    try {
+      if (membershipEnded) {
+        await recordMembershipEndedAt(workspace.id, new Date().toISOString());
+      } else {
+        await clearMembershipEndedAt(workspace.id);
+      }
+    } catch (error) {
+      log.warn("maxwell.retention", "Could not update the retention clock.", {
+        workspaceId: workspace.id,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
   /** What to call the lapsing thing in front of the client. */
   const planNoun = isMembershipPlan
     ? t("membership.planMembership")

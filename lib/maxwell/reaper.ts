@@ -63,6 +63,7 @@ import {
   type RefreshReport,
 } from "@/lib/maxwell/reference-study/refresh";
 import { sweepExpiredVerificationTokens } from "@/lib/auth/verification-adapter";
+import { runDataRetentionSweep, type RetentionReport } from "@/lib/maxwell/data-retention";
 import { log } from "@/lib/server/logger";
 
 /** Sesión in-flight sin actividad por más de esto = colgada. */
@@ -88,6 +89,12 @@ export type ReaperReport = {
       };
   rateLimitWindowsDeleted: number;
   verificationTokensDeleted: number;
+  /**
+   * The twelve-month promise in the portal, enforced. `enabled: false` — the
+   * shipped default — means DATA_RETENTION_MONTHS is unset and nothing was
+   * looked at, let alone removed.
+   */
+  retention: RetentionReport;
   /**
    * Fase A · E3.3 — expired reference fichas re-studied this run. `skipped`
    * while the generation brain is off: refreshing analyses nothing reads
@@ -285,6 +292,23 @@ export async function runReaper(): Promise<ReaperReport> {
     log.error("maxwell.reaper", error, { phase: "verification_token_sweep" });
   }
 
+  // The portal's twelve-month promise. Off unless DATA_RETENTION_MONTHS is set,
+  // and reporting-only until DATA_RETENTION_APPLY=1 — see data-retention.ts for
+  // why turning on the clock and starting to delete are two separate gestures.
+  let retention: RetentionReport = {
+    enabled: false,
+    applied: false,
+    months: null,
+    candidates: [],
+    deleted: 0,
+  };
+  try {
+    retention = await runDataRetentionSweep();
+  } catch (error) {
+    errors.push(`retention: ${error instanceof Error ? error.message : String(error)}`);
+    log.error("maxwell.reaper", error, { phase: "retention_sweep" });
+  }
+
   // Fase A · E3.3 — the periodic re-visit: fichas expire because reference
   // pages get redesigned, and an old ficha describes a page that no longer
   // exists. Housekeeping, capped per run, never blocking.
@@ -307,6 +331,7 @@ export async function runReaper(): Promise<ReaperReport> {
     outbox,
     rateLimitWindowsDeleted,
     verificationTokensDeleted,
+    retention,
     dossiers,
     errors,
   };

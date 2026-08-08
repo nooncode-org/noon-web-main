@@ -1920,6 +1920,46 @@ export async function updateClientWorkspaceStatus(
   return (await getClientWorkspace(id))!;
 }
 
+/**
+ * Note that this membership has ended, if we had not noticed already.
+ *
+ * FIRST observation wins — `WHERE membership_ended_at IS NULL` is the whole
+ * point. The App is asked for the membership on every render, so without that
+ * clause the retention clock would reset to "now" on every page view and never
+ * reach twelve months. A clock you can restart by refreshing is not a clock.
+ *
+ * Best-effort by design: the caller is a page render, and a client looking at
+ * their portal must never see it fail because a bookkeeping write did.
+ */
+export async function recordMembershipEndedAt(
+  workspaceId: string,
+  endedAt: string,
+): Promise<void> {
+  const sql = getDb();
+  await sql`
+    UPDATE client_workspace
+    SET membership_ended_at = ${endedAt}
+    WHERE id = ${workspaceId} AND membership_ended_at IS NULL
+  `;
+}
+
+/**
+ * They came back. Stop the clock.
+ *
+ * Reactivating has to clear this or a client who left, returned, and stayed for
+ * a year would have their live project deleted out from under them. That is the
+ * failure this function exists to prevent, so it runs on every render where the
+ * membership is NOT ended — cheap, idempotent, and impossible to forget.
+ */
+export async function clearMembershipEndedAt(workspaceId: string): Promise<void> {
+  const sql = getDb();
+  await sql`
+    UPDATE client_workspace
+    SET membership_ended_at = NULL
+    WHERE id = ${workspaceId} AND membership_ended_at IS NOT NULL
+  `;
+}
+
 // ============================================================================
 // workspace_update
 // ============================================================================
