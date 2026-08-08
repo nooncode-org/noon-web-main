@@ -464,7 +464,7 @@ export function PublicProposalPayment({
                 </span>
               </div>
 
-              <p className="mt-4 truncate text-[11px] text-muted-foreground/70">Ref: {publicToken}</p>
+              <p className="mt-4 truncate text-[11px] text-muted-foreground">Ref: {publicToken}</p>
             </div>
           </div>
         </div>

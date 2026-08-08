@@ -968,7 +968,7 @@ export default async function WorkspacePage({ params }: Props) {
                         {m.label}
                       </span>
                       {m.done && (
-                        <span className="ml-auto text-[11px] text-muted-foreground/70">{t("milestones.done")}</span>
+                        <span className="ml-auto text-[11px] text-muted-foreground">{t("milestones.done")}</span>
                       )}
                     </div>
                   ))}
