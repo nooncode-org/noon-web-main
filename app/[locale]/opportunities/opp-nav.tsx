@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -12,6 +13,7 @@ type OppNavProps = { locale: string; maxwellHref: string };
 // CTA; below 768 they collapse behind a hamburger that opens a top drawer with
 // the links and the primary CTA. Mirrors the -rd nav styling (opp-nav-*).
 export function OppNav({ locale, maxwellHref }: OppNavProps) {
+  const t = useTranslations("signin");
   const [open, setOpen] = useState(false);
   const lp = (href: string) => `/${locale}${href}`;
   const links = [
@@ -23,7 +25,7 @@ export function OppNav({ locale, maxwellHref }: OppNavProps) {
   return (
     <header className="opp-nav">
       <div className="opp-nav-inner">
-        <Link href={lp(siteRoutes.home)} className="opp-nav-logo" aria-label="Noon — home">
+        <Link href={lp(siteRoutes.home)} className="opp-nav-logo" aria-label={t("home")}>
           <span style={{ height: 20, display: "inline-flex" }}>
             <NoonWordmark />
           </span>

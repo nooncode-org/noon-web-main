@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
@@ -7,6 +8,7 @@ import { siteRoutes } from "@/lib/site-config";
 import { siteStatusTones, siteTones } from "@/lib/site-tones";
 
 export function MaxwellGlobal() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
 
   // Suppress inside the Maxwell flow (/maxwell = the chat surface) — the user
@@ -16,7 +18,7 @@ export function MaxwellGlobal() {
   return (
     <Link
       href={siteRoutes.maxwellStudio}
-      aria-label="Start with Maxwell"
+      aria-label={t("startWithMaxwell")}
       className="fixed bottom-6 right-6 z-[99] flex items-center gap-2.5 rounded-full border border-border py-3 pl-4 pr-5 shadow-xl transition-[background-color,border-color,box-shadow] duration-300 ease-out hover:border-primary/30"
       style={{
         backgroundColor: "var(--background)",

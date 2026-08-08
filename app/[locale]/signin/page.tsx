@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
@@ -44,6 +45,13 @@ export default async function SignInPage({ params, searchParams }: Props) {
   ]);
 
   const redirectTo = normalizeInternalRedirect(rawRedirectTo, `/${locale}`);
+  // Three namespaces: the modal is this page's own copy, while the dimmed
+  // backdrop reuses the real nav and hero wording so the two can never drift.
+  const [t, tNav, tHero] = await Promise.all([
+    getTranslations({ locale, namespace: "signin" }),
+    getTranslations({ locale, namespace: "nav" }),
+    getTranslations({ locale, namespace: "hero" }),
+  ]);
   const authQuery = rawRedirectTo ? `?redirectTo=${encodeURIComponent(rawRedirectTo)}` : "";
 
   if (session?.user?.email) {
@@ -59,21 +67,18 @@ export default async function SignInPage({ params, searchParams }: Props) {
             <NoonMark />
           </span>
           <span className="si-bg-navlinks">
-            <span>Services</span>
-            <span>About</span>
-            <span>Contact</span>
+            <span>{tNav("services")}</span>
+            <span>{tNav("about")}</span>
+            <span>{t("contact")}</span>
           </span>
-          <span className="si-bg-navcta">Start with Maxwell</span>
+          <span className="si-bg-navcta">{tNav("startWithMaxwell")}</span>
         </div>
 
         <div className="si-bg-center">
-          <p className="si-bg-heading">Tell us what you want to build.</p>
+          <p className="si-bg-heading">{tHero("headline")}</p>
           <div className="si-mock si-bg-mock">
             <div className="si-mock-body">
-              <p className="si-mock-ghost">
-                Build a client portal where my customers can log in, view their projects, upload
-                documents, and message my team…
-              </p>
+              <p className="si-mock-ghost">{t("backdropGhost")}</p>
             </div>
             <div className="si-mock-bar">
               <span className="si-mock-plus">
@@ -85,9 +90,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
             </div>
           </div>
           <div className="si-bg-chips">
-            <span>Reservation platform</span>
-            <span>Operations dashboard</span>
-            <span>AI customer support</span>
+            <span>{t("chipReservation")}</span>
+            <span>{t("chipOperations")}</span>
+            <span>{t("chipSupport")}</span>
           </div>
         </div>
       </div>
@@ -102,10 +107,8 @@ export default async function SignInPage({ params, searchParams }: Props) {
             <NoonMark />
           </div>
 
-          <h1 className="si-modal-title">Continue with Maxwell</h1>
-          <p className="si-modal-sub">
-            To start a Maxwell session, sign in to your account or create a new one.
-          </p>
+          <h1 className="si-modal-title">{t("modalTitle")}</h1>
+          <p className="si-modal-sub">{t("modalSub")}</p>
 
           {mapSignInError(error) ? (
             <div className="si-error">{mapSignInError(error)}</div>

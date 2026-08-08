@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -12,6 +13,7 @@ type SvcNavProps = { locale: string; maxwellHref: string };
 // below 768 they collapse behind a hamburger that opens a top drawer. Mirrors
 // the -rd nav styling (svc-nav-*). "Services" is the active link here.
 export function SvcNav({ locale, maxwellHref }: SvcNavProps) {
+  const t = useTranslations("signin");
   const [open, setOpen] = useState(false);
   const lp = (href: string) => `/${locale}${href}`;
   const links = [
@@ -23,7 +25,7 @@ export function SvcNav({ locale, maxwellHref }: SvcNavProps) {
   return (
     <header className="svc-nav">
       <div className="svc-nav-inner">
-        <Link href={lp(siteRoutes.home)} className="svc-nav-logo" aria-label="Noon — home">
+        <Link href={lp(siteRoutes.home)} className="svc-nav-logo" aria-label={t("home")}>
           <span style={{ height: 20, display: "inline-flex" }}>
             <NoonWordmark />
           </span>
