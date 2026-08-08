@@ -62,6 +62,7 @@ export function StudioDashboard({
   viewerEmail: string;
   locale: string;
 }) {
+  const tStudio = useTranslations("studio");
   const router = useRouter();
   // Same rotating-suggestion source as the marketing hero composer.
   const t = useTranslations("hero");
@@ -270,7 +271,7 @@ export function StudioDashboard({
           setMenuOpen(true);
           void refresh();
         }}
-        aria-label="Open menu"
+        aria-label={tStudio("openMenu")}
         className="absolute left-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:hidden"
       >
         <PanelLeft className="h-4 w-4" />
@@ -282,7 +283,7 @@ export function StudioDashboard({
             void refresh();
             setSidebarOpen(true);
           }}
-          aria-label="Expand sidebar"
+          aria-label={tStudio("expandSidebar")}
           className="absolute left-3 top-3 z-20 hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground lg:flex"
         >
           <PanelLeft className="h-4 w-4" />
@@ -376,7 +377,7 @@ export function StudioDashboard({
                     <span className="truncate">{attachedFile.name}</span>
                     <button
                       type="button"
-                      aria-label="Remove attachment"
+                      aria-label={tStudio("removeAttachment")}
                       onClick={() => setAttachedFile(null)}
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                     >
@@ -394,7 +395,7 @@ export function StudioDashboard({
                   <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
                   <button
                     type="button"
-                    aria-label="Add"
+                    aria-label={tStudio("add")}
                     onClick={() => {
                       setAttachMenuOpen((v) => !v);
                       setUrlInputMode(null);
@@ -471,7 +472,7 @@ export function StudioDashboard({
                 <button
                   type="submit"
                   disabled={!input.trim() && !attachedFile}
-                  aria-label="Start building"
+                  aria-label={tStudio("startBuilding")}
                   className="group flex h-8 w-8 items-center justify-center rounded-full bg-[#0056FD] text-white transition-colors hover:bg-[#0047e0] disabled:opacity-40"
                 >
                   <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />

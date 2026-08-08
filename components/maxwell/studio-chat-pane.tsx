@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { VoiceInputMenuItem } from "@/components/maxwell/voice-input-menu-item";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -74,10 +75,11 @@ const STARTER_PROMPTS = [
 ];
 
 function ThinkingDots() {
+  const t = useTranslations("studio");
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      <span>Thinking</span>
+      <span>{t("thinking")}</span>
     </div>
   );
 }
@@ -160,6 +162,7 @@ function AssistantActions({
   onReply: () => void;
   onRegenerate: () => void;
 }) {
+  const t = useTranslations("studio");
   const iconButtonClass =
     "flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-secondary/70 hover:text-foreground disabled:cursor-default disabled:opacity-45 disabled:hover:bg-transparent disabled:hover:text-muted-foreground";
 
@@ -176,8 +179,8 @@ function AssistantActions({
       </button>
       <button
         type="button"
-        aria-label="Good response"
-        title="Good response"
+        aria-label={t("goodResponse")}
+        title={t("goodResponse")}
         onClick={() => onFeedback("up")}
         className={`${iconButtonClass} ${feedback === "up" ? "bg-secondary/70 text-foreground" : ""}`}
       >
@@ -185,8 +188,8 @@ function AssistantActions({
       </button>
       <button
         type="button"
-        aria-label="Poor response"
-        title="Poor response"
+        aria-label={t("poorResponse")}
+        title={t("poorResponse")}
         onClick={() => onFeedback("down")}
         className={`${iconButtonClass} ${feedback === "down" ? "bg-secondary/70 text-foreground" : ""}`}
       >
@@ -194,8 +197,8 @@ function AssistantActions({
       </button>
       <button
         type="button"
-        aria-label="Reply to this response"
-        title="Reply"
+        aria-label={t("replyToResponse")}
+        title={t("reply")}
         onClick={onReply}
         className={iconButtonClass}
       >
@@ -204,8 +207,8 @@ function AssistantActions({
       {isLatest && (
         <button
           type="button"
-          aria-label="Regenerate response"
-          title="Regenerate"
+          aria-label={t("regenerateResponse")}
+          title={t("regenerate")}
           disabled={isThinking}
           onClick={onRegenerate}
           className={iconButtonClass}
@@ -244,6 +247,7 @@ function AssistantMessage({
   onReply: () => void;
   onRegenerate: () => void;
 }) {
+  const t = useTranslations("studio");
   const durationLabel = formatDuration(durationMs);
   const relativeTime = formatRelativeTime(createdAt, now);
 
@@ -252,7 +256,7 @@ function AssistantMessage({
       {durationLabel && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>Maxwell mapped this</span>
+          <span>{t("maxwellMapped")}</span>
         </div>
       )}
       <div className="whitespace-pre-wrap text-[13.5px] leading-7 text-foreground/90">
@@ -402,11 +406,12 @@ type StudioChatPaneProps = {
  * migration for no other gain.
  */
 function ReviewNoticeCard({ content }: { content: string }) {
+  const t = useTranslations("studio");
   return (
     <div className="max-w-[68ch] rounded-[8px] border border-amber-500/40 bg-amber-500/10 p-4 space-y-2">
       <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400">
         <BellRing className="h-3.5 w-3.5" />
-        <span>Update from the Noon team</span>
+        <span>{t("teamUpdate")}</span>
       </div>
       <p className="whitespace-pre-line text-sm leading-6 text-foreground">{content}</p>
     </div>
@@ -1052,6 +1057,7 @@ export function StudioChatPane({
   shareUxState,
   onShare,
 }: StudioChatPaneProps) {
+  const t = useTranslations("studio");
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   // Only the newest activity block is the run in flight; every earlier one is
@@ -1474,14 +1480,14 @@ export function StudioChatPane({
               {replyTarget && (
                 <div className="mb-3 flex items-start justify-between gap-3 rounded-xl bg-black/30 px-3 py-2.5 text-xs text-muted-foreground">
                   <div className="min-w-0">
-                    <p className="font-medium text-foreground/85">Replying to Maxwell</p>
+                    <p className="font-medium text-foreground/85">{t("replyingToMaxwell")}</p>
                     <p className="mt-1 max-h-10 overflow-hidden leading-relaxed text-muted-foreground">
                       {replyTarget.excerpt}
                     </p>
                   </div>
                   <button
                     type="button"
-                    aria-label="Cancel reply"
+                    aria-label={t("cancelReply")}
                     onClick={onClearReply}
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-secondary hover:text-foreground"
                   >
@@ -1536,7 +1542,7 @@ export function StudioChatPane({
                     <span className="truncate">{attachedFile.name}</span>
                     <button
                       type="button"
-                      aria-label="Remove attachment"
+                      aria-label={t("removeAttachment")}
                       onClick={() => onAttachChange(null)}
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                     >
@@ -1556,7 +1562,7 @@ export function StudioChatPane({
                   <input ref={pdfInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
                   <button
                     type="button"
-                    aria-label="Add"
+                    aria-label={t("add")}
                     onClick={() => {
                       setAttachMenuOpen((v) => !v);
                       setUrlInputMode(null);

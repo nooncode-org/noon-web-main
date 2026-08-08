@@ -442,7 +442,7 @@ export function StudioSidebar({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (pendingDelete && onDeleteDraftSession) {

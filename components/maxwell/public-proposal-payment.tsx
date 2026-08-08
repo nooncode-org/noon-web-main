@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -171,6 +172,7 @@ function PlanColumn({
   /** First column draws no divider; the rest carry it on their leading edge. */
   first: boolean;
 }) {
+  const tPay = useTranslations("payment");
   const { name, tagline, priceMain, priceSub, features, recommended, unavailable } = plan;
   // Compact, content-width, small radius (owner, a la the reference's "Get
   // started"): a full-width pill reads as a slab; a small button under the
@@ -258,7 +260,7 @@ function PlanColumn({
 
         <div className="mt-20 flex min-h-[28px] items-baseline gap-1.5">
           {unavailable ? (
-            <span className="text-lg font-medium text-muted-foreground">Not available</span>
+            <span className="text-lg font-medium text-muted-foreground">{tPay("notAvailable")}</span>
           ) : (
             <>
               <span className="text-[28px] font-semibold leading-none text-foreground">{priceMain}</span>
@@ -340,6 +342,7 @@ export function PublicProposalPayment({
   projectName = null,
   scope = null,
 }: PublicProposalPaymentProps) {
+  const tPay = useTranslations("payment");
   // Two-step flow: pick a plan (null), then pay for it. `null` = step 1.
   const [selectedPlan, setSelectedPlan] = useState<Modality | null>(null);
   const hasApprovedAmount = approvedAmountUsd != null;
@@ -398,7 +401,7 @@ export function PublicProposalPayment({
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15">
                 <CheckCircle2 className="h-8 w-8 text-emerald-500" strokeWidth={2.5} />
               </div>
-              <h2 className="mt-5 text-2xl font-semibold text-foreground">Payment successful</h2>
+              <h2 className="mt-5 text-2xl font-semibold text-foreground">{tPay("successful")}</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 Your project is confirmed — Noon is activating it now. We&apos;ll continue from the
                 approved proposal.
@@ -420,7 +423,7 @@ export function PublicProposalPayment({
             {/* RIGHT — receipt */}
             <div className="border-t border-border bg-foreground/[0.03] p-8 sm:p-10 md:border-l md:border-t-0">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-foreground">Receipt</p>
+                <p className="text-sm font-medium text-foreground">{tPay("receipt")}</p>
                 <span className="inline-flex items-center gap-1.5 text-xs text-emerald-500">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Paid
@@ -429,7 +432,7 @@ export function PublicProposalPayment({
 
               <div className="mt-5 space-y-2.5 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Plan</span>
+                  <span className="text-muted-foreground">{tPay("plan")}</span>
                   <span className="text-foreground">
                     {wasMembership ? "Membership" : "One-time project"}
                   </span>
@@ -446,7 +449,7 @@ export function PublicProposalPayment({
                 )}
                 {wasMembership && monthlyAmountUsd != null && (
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground">Membership</span>
+                    <span className="text-muted-foreground">{tPay("membership")}</span>
                     <span className="text-foreground">
                       {formatMoney(monthlyAmountUsd, currency)}/mo
                     </span>
@@ -455,7 +458,7 @@ export function PublicProposalPayment({
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
-                <span className="text-sm font-medium text-foreground">Total paid</span>
+                <span className="text-sm font-medium text-foreground">{tPay("totalPaid")}</span>
                 <span className="text-lg font-semibold text-foreground">
                   {formatMoney(paidTotal, currency)}
                 </span>
@@ -674,7 +677,7 @@ export function PublicProposalPayment({
           </button>
 
           <div className="mt-5">
-            <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Complete your payment</h2>
+            <h2 className="text-2xl font-medium text-foreground sm:text-3xl">{tPay("complete")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Your project starts once payment is confirmed.
             </p>
@@ -747,18 +750,18 @@ export function PublicProposalPayment({
                 </div>
                 {isMembership && monthlyLabel && (
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground">Membership</span>
+                    <span className="text-muted-foreground">{tPay("membership")}</span>
                     <span className="text-foreground">{monthlyLabel}/mo</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">VAT (0%)</span>
+                  <span className="text-muted-foreground">{tPay("vat")}</span>
                   <span className="text-foreground">{formatMoney(0, currency)}</span>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
-                <span className="text-base font-medium text-foreground">Total due today</span>
+                <span className="text-base font-medium text-foreground">{tPay("totalDue")}</span>
                 <span className="text-xl font-semibold text-foreground">
                   {formatMoney(totalTodayUsd, currency)}
                 </span>
@@ -830,7 +833,7 @@ export function PublicProposalPayment({
             Proposal for <span className="text-foreground">{projectName}</span>
           </p>
         )}
-        <h2 className="text-2xl font-medium text-foreground sm:text-3xl">Choose an option</h2>
+        <h2 className="text-2xl font-medium text-foreground sm:text-3xl">{tPay("chooseOption")}</h2>
         {/* The deadline sits WITH the decision (owner: the closing line was
             three unrelated things joined by a dot — a promise, a date and a
             link). A date only matters while you are choosing, so it belongs
