@@ -94,6 +94,60 @@ test.describe("signed in", () => {
   });
 
   /**
+   * The chat is the portal's centerpiece — where a client asks for a change and
+   * reads what the team answered. Everything about it had been checked in
+   * pieces: the thread builder has unit tests, the copy has key-parity tests.
+   * Neither proves a client opening the tab sees a conversation.
+   */
+  test("the chat tab shows the real conversation", async ({ page }) => {
+    await page.goto(`/en/maxwell/workspace/${DEMO_SESSION}`);
+    await page.getByRole("tab", { name: /chat/i }).click();
+
+    const log = page.getByRole("log", { name: /conversation with noon/i });
+    await expect(log).toBeVisible();
+
+    // Both sides of the seeded thread, and they come from two different tables
+    // — a team update and the client's own message. If either is missing, the
+    // merge that builds one conversation out of them dropped a side.
+    await expect(log.getByText(/Dashboards and role-based access shipped/i)).toBeVisible();
+    await expect(log.getByText(/can the header logo be a bit bigger/i)).toBeVisible();
+
+    // Attribution is what a client reads for, and it is carried by ABSENCE:
+    // only the other side gets a name, the way a messaging app does it. So the
+    // check is that the name appears exactly once across two messages — if the
+    // client's own words were ever attributed to Noon, this is what catches it.
+    await expect(log.getByText(/Your Noon team/i)).toHaveCount(1);
+
+    // And somewhere to write back.
+    await expect(page.getByRole("textbox", { name: /message noon/i })).toBeVisible();
+  });
+
+  /**
+   * The distinction that the whole language pass turns on: the frame around the
+   * conversation is ours and gets translated; the messages are the client's and
+   * the team's own words and must NOT be. A test that only checked "the page is
+   * in Spanish" would be satisfied by machine-translating someone's message.
+   */
+  test("the chat translates its frame but never the messages", async ({ page }) => {
+    await page.goto(`/es/maxwell/workspace/${DEMO_SESSION}`);
+    await page.getByRole("tab", { name: /chat/i }).click();
+
+    // Ours — translated. Every one of these is a different kind of string:
+    // an attribution, a button's accessible name, a placeholder. The accessible
+    // names matter most: they are read aloud and nobody ever sees them, so they
+    // are the first thing a translation pass forgets.
+    const log = page.getByRole("log", { name: /conversación con noon/i });
+    await expect(log).toBeVisible();
+    await expect(log.getByText(/Tu equipo de Noon/i)).toHaveCount(1);
+    await expect(page.getByRole("button", { name: /buscar en esta conversación/i })).toBeVisible();
+    await expect(page.getByPlaceholder(/Escribe a Noon/i)).toBeVisible();
+
+    // Theirs — untouched, still exactly what was written.
+    await expect(log.getByText(/can the header logo be a bit bigger/i)).toBeVisible();
+    await expect(log.getByText(/Dashboards and role-based access shipped/i)).toBeVisible();
+  });
+
+  /**
    * The proposal page has two faces, and only one of them was reachable.
    *
    * The seeded demo is already paid, so its token renders the receipt. Writing
