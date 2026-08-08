@@ -827,6 +827,22 @@
     "copied": "Copied",
     "copy": "Copy"
   },
+  "signin": {
+    "home": "Noon — home",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@work-email.com",
+    "continueEmail": "Continue with Email",
+    "continueGoogle": "Continue with Google",
+    "continueApple": "Continue with Apple",
+    "checkEmailTitle": "Check your email",
+    "checkEmailBody": "We sent you a sign-in link. Open it from your inbox to continue — it’s valid for 15 minutes and can be used once.",
+    "didntGetIt": "Didn’t get it? <retry>Try again</retry>",
+    "legal": "By proceeding, you agree to creating a Noon account subject to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "toggleMenu": "Toggle menu",
+    "closeMenu": "Close menu"
+  },
   "payment": {
     "notAvailable": "Not available",
     "successful": "Payment successful",

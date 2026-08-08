@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { NoonWordmark, NoonMark } from "@/components/brand/noon-logo";
@@ -52,7 +53,7 @@ function AppleGlyph() {
   );
 }
 
-export function AuthMethodsScreen({
+export async function AuthMethodsScreen({
   mode,
   locale,
   redirectTo,
@@ -67,6 +68,7 @@ export function AuthMethodsScreen({
 }) {
   const copy = COPY[mode];
   const lp = (href: string) => `/${locale}${href}`;
+  const t = await getTranslations({ locale, namespace: "signin" });
   // Preserve the intended post-auth destination as the user crosses between the
   // sign-up and sign-in screens.
   const rt = redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : "";
@@ -76,7 +78,7 @@ export function AuthMethodsScreen({
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd sic-rd`}>
       <header className="sic-top">
-        <Link href={lp("/")} className="sic-top-logo" aria-label="Noon — home">
+        <Link href={lp("/")} className="sic-top-logo" aria-label={t("home")}>
           <NoonWordmark />
         </Link>
         <Link href={`${lp(copy.altHref)}${rt}`} className="sic-top-alt">
@@ -102,13 +104,13 @@ export function AuthMethodsScreen({
               <input
                 type="email"
                 className="sic-input"
-                placeholder="name@work-email.com"
+                placeholder={t("emailPlaceholder")}
                 autoComplete="email"
-                aria-label="Email address"
+                aria-label={t("emailLabel")}
                 disabled
               />
               <button type="button" className="lgl-btn lgl-btn-primary sic-btn" disabled>
-                Continue with Email
+                {t("continueEmail")}
               </button>
             </form>
           )}
@@ -120,12 +122,12 @@ export function AuthMethodsScreen({
               <input type="hidden" name="redirectTo" value={resolvedRedirect} />
               <button type="submit" className="lgl-btn lgl-btn-secondary sic-btn">
                 <GoogleGlyph />
-                Continue with Google
+                {t("continueGoogle")}
               </button>
             </form>
             <button type="button" className="lgl-btn lgl-btn-secondary sic-btn" disabled>
               <AppleGlyph />
-              Continue with Apple
+              {t("continueApple")}
             </button>
           </div>
 
@@ -136,9 +138,10 @@ export function AuthMethodsScreen({
       </main>
 
       <footer className="sic-legal">
-        By proceeding, you agree to creating a Noon account subject to our{" "}
-        <Link href={lp("/legal/terms-and-conditions")}>Terms of Service</Link> and{" "}
-        <Link href={lp("/legal/privacy-policy")}>Privacy Policy</Link>.
+        {t.rich("legal", {
+          terms: (chunks) => <Link href={lp("/legal/terms-and-conditions")}>{chunks}</Link>,
+          privacy: (chunks) => <Link href={lp("/legal/privacy-policy")}>{chunks}</Link>,
+        })}
       </footer>
     </div>
   );

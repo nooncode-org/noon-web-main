@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -15,6 +16,7 @@ type SiteNavRdProps = {
 };
 
 export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
+  const t = useTranslations("signin");
   const [open, setOpen] = useState(false);
   const lp = (href: string) => `/${locale}${href}`;
   const maxwellHref = lp(getStartWithMaxwellHref());
@@ -31,7 +33,7 @@ export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
     return (
       <header className="rdnav">
         <div className="rdnav-inner">
-          <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label="Noon — home">
+          <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={t("home")}>
             <span style={{ height: 20, display: "inline-flex" }}>
               <NoonWordmark />
             </span>
@@ -47,7 +49,7 @@ export function SiteNavRd({ locale, active, signedIn }: SiteNavRdProps) {
   return (
     <header className="rdnav">
       <div className="rdnav-inner">
-        <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label="Noon — home">
+        <Link href={lp(siteRoutes.home)} className="rdnav-logo" aria-label={t("home")}>
           <span style={{ height: 20, display: "inline-flex" }}>
             <NoonWordmark />
           </span>

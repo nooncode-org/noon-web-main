@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { NoonWordmark, NoonMark } from "@/components/brand/noon-logo";
@@ -18,11 +19,12 @@ export default async function CheckEmailPage({
 }) {
   const { locale } = await params;
   const lp = (href: string) => `/${locale}${href}`;
+  const t = await getTranslations({ locale, namespace: "signin" });
 
   return (
     <div className={`${GeistSans.variable} ${GeistMono.variable} lgl-rd sic-rd`}>
       <header className="sic-top">
-        <Link href={lp("/")} className="sic-top-logo" aria-label="Noon — home">
+        <Link href={lp("/")} className="sic-top-logo" aria-label={t("home")}>
           <NoonWordmark />
         </Link>
         <Link href={lp("/signin/login")} className="sic-top-alt">
@@ -35,21 +37,23 @@ export default async function CheckEmailPage({
           <div className="sic-mark">
             <NoonMark />
           </div>
-          <h1 className="sic-title">Check your email</h1>
-          <p className="sic-sub">
-            We sent you a sign-in link. Open it from your inbox to continue —
-            it&apos;s valid for 15 minutes and can be used once.
-          </p>
+          <h1 className="sic-title">{t("checkEmailTitle")}</h1>
+          <p className="sic-sub">{t("checkEmailBody")}</p>
           <p className="sic-alt">
-            Didn&apos;t get it? <Link href={lp("/signin/login")}>Try again</Link>
+            {/* One sentence with a link inside it — the link's position in the
+                sentence differs per language, so it travels in the message. */}
+            {t.rich("didntGetIt", {
+              retry: (chunks) => <Link href={lp("/signin/login")}>{chunks}</Link>,
+            })}
           </p>
         </div>
       </main>
 
       <footer className="sic-legal">
-        By proceeding, you agree to creating a Noon account subject to our{" "}
-        <Link href={lp("/legal/terms-and-conditions")}>Terms of Service</Link> and{" "}
-        <Link href={lp("/legal/privacy-policy")}>Privacy Policy</Link>.
+        {t.rich("legal", {
+          terms: (chunks) => <Link href={lp("/legal/terms-and-conditions")}>{chunks}</Link>,
+          privacy: (chunks) => <Link href={lp("/legal/privacy-policy")}>{chunks}</Link>,
+        })}
       </footer>
     </div>
   );

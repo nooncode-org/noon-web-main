@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
@@ -33,6 +34,7 @@ export type NavigationProps = {
 };
 
 export function Navigation({ viewer = null }: NavigationProps = {}) {
+  const t = useTranslations("signin");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const params = useParams();
@@ -109,7 +111,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
                     className="px-5"
                     style={{ borderRadius: "8px" }}
                   >
-                    <Link href={localHref("/signin/login")}>Log in</Link>
+                    <Link href={localHref("/signin/login")}>{t("logIn")}</Link>
                   </Button>
                   <Button
                     asChild
@@ -117,7 +119,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
                     className="px-6"
                     style={{ borderRadius: "8px", boxShadow: `inset 0 0 0 1px ${navigationTone.border}` }}
                   >
-                    <Link href={localHref("/signin/signup")}>Sign up</Link>
+                    <Link href={localHref("/signin/signup")}>{t("signUp")}</Link>
                   </Button>
                 </>
               )}
@@ -126,7 +128,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden flex items-center justify-center w-8 h-8"
-              aria-label="Toggle menu"
+              aria-label={t("toggleMenu")}
             >
               <PanelRight className="w-5 h-5" style={{ width: "22px", height: "22px" }} />
             </button>
@@ -155,7 +157,7 @@ export function Navigation({ viewer = null }: NavigationProps = {}) {
             <button
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center justify-center w-7 h-7 rounded-[6px] border border-foreground/10 bg-secondary/50 text-muted-foreground"
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
             >
               <X className="w-3.5 h-3.5" />
             </button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { signInWithEmailAction, type EmailSignInState } from "./actions";
@@ -19,6 +20,7 @@ function SubmitButton() {
  * /signin/check-email page is only a safety net for direct /api/auth entries.
  */
 export function EmailSignInForm({ redirectTo }: { redirectTo?: string }) {
+  const t = useTranslations("signin");
   const [state, formAction] = useActionState<EmailSignInState, FormData>(
     signInWithEmailAction,
     { status: "idle" },
@@ -45,7 +47,7 @@ export function EmailSignInForm({ redirectTo }: { redirectTo?: string }) {
         className="sic-input"
         placeholder="name@work-email.com"
         autoComplete="email"
-        aria-label="Email address"
+        aria-label={t("emailLabel")}
       />
       <SubmitButton />
       {state.status === "error" ? (
