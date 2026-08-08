@@ -827,6 +827,26 @@
     "copied": "Copiado",
     "copy": "Copiar"
   },
+  "servicesPage": {
+    "heroTitle": "Cuatro formas en las que <accent>Noon</accent> mejora tus resultados <dim>con soluciones que crecen contigo.</dim>",
+    "sectionServices": "Servicios",
+    "sectionHowWeWork": "Cómo trabajamos",
+    "statement": "<dim>No construimos contra una lista de requisitos:</dim> construimos alrededor de cómo funciona tu negocio de verdad.",
+    "ctaTitle": "Empieza a construir tu idea con Maxwell.",
+    "ctaCopy": "Cuéntanos qué quieres construir. Maxwell lo define contigo y se entrega como software real, revisado por personas y tuyo.",
+    "ctaButton": "Empezar con Maxwell"
+  },
+  "opportunitiesPage": {
+    "heroTitle": "<dim>Cuatro formas de</dim> formar parte del ecosistema <accent>Noon</accent>.",
+    "heroLead": "Noon es más que una empresa de servicios. Inversores, vendedores, desarrolladores y socios tienen cada uno su propia puerta de entrada: ordenada, práctica y abierta a quien encaje.",
+    "lookAtOptions": "Ver las opciones",
+    "areasTitle": "Cuatro formas de trabajar con Noon",
+    "areasLead": "Todas las vías usan el mismo canal de contacto. La categoría solo le dice a Noon desde qué conversación empezar.",
+    "ctaTitle": "¿Listo para construir?",
+    "ctaCopy": "Empieza una conversación con Maxwell, o escríbenos directamente.",
+    "contactNoon": "Contactar Noon",
+    "startMaxwell": "Empezar con Maxwell"
+  },
   "contactForm": {
     "badge": "Consulta estructurada",
     "received": "Consulta recibida",

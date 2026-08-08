@@ -827,6 +827,26 @@
     "copied": "Copied",
     "copy": "Copy"
   },
+  "servicesPage": {
+    "heroTitle": "Four ways <accent>Noon</accent> drives better outcomes <dim>with solutions built to scale.</dim>",
+    "sectionServices": "Services",
+    "sectionHowWeWork": "How we work",
+    "statement": "<dim>We don’t build to a spec sheet —</dim> we build around how your business actually runs.",
+    "ctaTitle": "Start building your idea with Maxwell.",
+    "ctaCopy": "Describe what you want to build. Maxwell scopes it with you, and it ships as real, human-reviewed software you own.",
+    "ctaButton": "Start with Maxwell"
+  },
+  "opportunitiesPage": {
+    "heroTitle": "<dim>Four ways to</dim> be part of the <accent>Noon</accent> ecosystem.",
+    "heroLead": "Noon is building more than a services firm. Investors, sellers, developers and partners each have a distinct entry point — structured, practical, and open to the right people.",
+    "lookAtOptions": "Look at options",
+    "areasTitle": "Four ways to work with Noon",
+    "areasLead": "Each path uses the same contact route. The category just tells Noon which conversation to start from.",
+    "ctaTitle": "Ready to build?",
+    "ctaCopy": "Start a conversation with Maxwell, or reach out directly.",
+    "contactNoon": "Contact Noon",
+    "startMaxwell": "Start with Maxwell"
+  },
   "contactForm": {
     "badge": "Structured inquiry",
     "received": "Inquiry received",

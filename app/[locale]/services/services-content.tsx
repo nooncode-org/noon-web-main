@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -61,6 +62,7 @@ function UpgradePanel() {
 }
 
 export function ServicesContent() {
+  const t = useTranslations("servicesPage");
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
   const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
@@ -121,10 +123,14 @@ export function ServicesContent() {
         <div className="svc-wrap">
           <div className="svc-hero-inner">
             <h1 className="svc-display">
-              {/* Emphasis by meaning (#39): the concrete promise ("four ways")
-                  stays lit with the claim; only the trailing qualifier dims. */}
-              Four ways <span className="accent">Noon </span>drives better outcomes{" "}
-              <span className="dim">with solutions built to scale.</span>
+              {/* Emphasis by meaning (#39) travels INSIDE the message: which
+                  words carry the promise and which trail off is not the same in
+                  every language, so the highlight can't be hardcoded around a
+                  fixed English word order. */}
+              {t.rich("heroTitle", {
+                accent: (chunks) => <span className="accent">{chunks}</span>,
+                dim: (chunks) => <span className="dim">{chunks}</span>,
+              })}
             </h1>
           </div>
         </div>
@@ -140,7 +146,7 @@ export function ServicesContent() {
               are the title. A screen reader still needs one, or every card name
               below reads as an orphan h3 hanging off the hero's h1. Hidden
               visually, present in the outline. */}
-          <h2 className="sr-only">Services</h2>
+          <h2 className="sr-only">{t("sectionServices")}</h2>
           <div className="svc-cards">
             {/* 2 pin cells: real grid items whose border-right at 50% is the same
                 column border as the service cards — no separate overlay needed */}
@@ -209,10 +215,9 @@ export function ServicesContent() {
           {/* Same reasoning as the section above. The statement below reads as
               the title visually, but it's a claim, not a label — "How we work"
               is what someone navigating by headings actually needs to hear. */}
-          <h2 className="sr-only">How we work</h2>
+          <h2 className="sr-only">{t("sectionHowWeWork")}</h2>
           <p className="svc-statement">
-            <span className="dim">We don&apos;t build to a spec sheet —</span>{" "}
-            we build around how your business actually runs.
+            {t.rich("statement", { dim: (chunks) => <span className="dim">{chunks}</span> })}
           </p>
           <div className="svc-how-grid">
             {HOW_STEPS.map((step) => (
@@ -232,13 +237,10 @@ export function ServicesContent() {
       <section className="svc-section" style={{ paddingTop: 0 }}>
         <div className="svc-wrap">
           <div className="svc-cta">
-            <h2 className="svc-h2">Start building your idea with Maxwell.</h2>
-            <p className="svc-cta-copy">
-              Describe what you want to build. Maxwell scopes it with you, and it ships as real,
-              human-reviewed software you own.
-            </p>
+            <h2 className="svc-h2">{t("ctaTitle")}</h2>
+            <p className="svc-cta-copy">{t("ctaCopy")}</p>
             <Link href={maxwellHref} className="svc-btn svc-btn-primary">
-              Start with Maxwell
+              {t("ctaButton")}
               <ArrowRight className="ic" size={16} strokeWidth={2} />
             </Link>
           </div>

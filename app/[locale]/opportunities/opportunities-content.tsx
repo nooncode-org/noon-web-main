@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
@@ -47,6 +48,7 @@ const AREAS: EcosystemArea[] = [
 ];
 
 export function OpportunitiesContent() {
+  const t = useTranslations("opportunitiesPage");
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
   const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
@@ -64,18 +66,17 @@ export function OpportunitiesContent() {
           <div className="opp-hero-grid">
             <div className="opp-hero-text">
               <h1 id="opp-title" className="opp-display">
-                {/* Emphasis by meaning (#39): the invitation ("be part of")
-                    stays lit; only the count dims. */}
-                <span className="dim">Four ways to</span> be part of the{" "}
-                <span className="opp-accent">Noon</span> ecosystem.
+                {/* Same rule as Services: the highlighted words travel in the
+                    message, because Spanish doesn't stress the same span. */}
+                {t.rich("heroTitle", {
+                  dim: (chunks) => <span className="dim">{chunks}</span>,
+                  accent: (chunks) => <span className="opp-accent">{chunks}</span>,
+                })}
               </h1>
-              <p className="opp-lead opp-hero-lead">
-                Noon is building more than a services firm. Investors, sellers, developers and partners
-                each have a distinct entry point — structured, practical, and open to the right people.
-              </p>
+              <p className="opp-lead opp-hero-lead">{t("heroLead")}</p>
               <div className="opp-hero-actions">
                 <a href="#opp-tracks" className="opp-btn opp-btn-primary">
-                  Look at options
+                  {t("lookAtOptions")}
                 </a>
               </div>
             </div>
@@ -89,11 +90,8 @@ export function OpportunitiesContent() {
       {/* Areas — the four entry points, hairline cell grid */}
       <section className="opp-section" id="opp-tracks" ref={areasRef}>
         <div className={`opp-sechead opp-reveal ${areasVisible ? "in-view" : ""}`}>
-          <h2 className="opp-h2">Four ways to work with Noon</h2>
-          <p className="opp-lead">
-            Each path uses the same contact route. The category just tells Noon which conversation to
-            start from.
-          </p>
+          <h2 className="opp-h2">{t("areasTitle")}</h2>
+          <p className="opp-lead">{t("areasLead")}</p>
         </div>
 
         <div className={`opp-areas-grid opp-reveal ${areasVisible ? "in-view" : ""}`}>
@@ -126,15 +124,15 @@ export function OpportunitiesContent() {
       {/* CTA */}
       <section className="opp-section" style={{ paddingTop: 0 }}>
         <div className="opp-cta">
-          <h2 className="opp-h2">Ready to build?</h2>
-          <p className="opp-cta-copy">Start a conversation with Maxwell, or reach out directly.</p>
+          <h2 className="opp-h2">{t("ctaTitle")}</h2>
+          <p className="opp-cta-copy">{t("ctaCopy")}</p>
           <div className="opp-cta-actions">
             <Link href={contactHref} className="opp-btn opp-btn-primary">
-              Contact Noon
+              {t("contactNoon")}
               <ArrowRight className="ic" size={16} strokeWidth={2} />
             </Link>
             <Link href={maxwellHref} className="opp-btn opp-btn-secondary">
-              Start with Maxwell
+              {t("startMaxwell")}
             </Link>
           </div>
         </div>
