@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,6 +19,7 @@ const LOCALES = ["en", "es", "fr", "de"];
  * bought. Mirrors the signed-in home and /upgrade.
  */
 export function TemplatesContent({ tool = false }: { tool?: boolean }) {
+  const t = useTranslations("templatesPage");
   const params = useParams();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
   const locale = paramLocale && LOCALES.includes(paramLocale) ? paramLocale : "en";
@@ -80,7 +82,7 @@ export function TemplatesContent({ tool = false }: { tool?: boolean }) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search templates…"
+        placeholder={t("searchPlaceholder")}
       />
     </label>
   );
@@ -96,7 +98,7 @@ export function TemplatesContent({ tool = false }: { tool?: boolean }) {
         <section className="tpl-toolhead">
           <div className="tpl-wrap">
             <div className="tpl-hero-inner">
-              <h1 className="tpl-toolhead-title">Templates</h1>
+              <h1 className="tpl-toolhead-title">{t("heading")}</h1>
               {search}
             </div>
           </div>
@@ -123,7 +125,7 @@ export function TemplatesContent({ tool = false }: { tool?: boolean }) {
       <section className="tpl-section" style={{ paddingTop: 0, paddingBottom: 32 }}>
         <div className="tpl-wrap">
           <div className="tpl-sechead">
-            <h2 className="tpl-h2">Pick a starting point</h2>
+            <h2 className="tpl-h2">{t("pickStart")}</h2>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {activeFilter && (
                 <button
@@ -137,10 +139,10 @@ export function TemplatesContent({ tool = false }: { tool?: boolean }) {
               )}
               {!showAllCats && (
                 <div className="tpl-cats-nav">
-                  <button className="tpl-cats-arrow" onClick={() => scrollCats("left")} aria-label="Scroll left">
+                  <button className="tpl-cats-arrow" onClick={() => scrollCats("left")} aria-label={t("scrollLeft")}>
                     <ChevronLeft size={16} />
                   </button>
-                  <button className="tpl-cats-arrow" onClick={() => scrollCats("right")} aria-label="Scroll right">
+                  <button className="tpl-cats-arrow" onClick={() => scrollCats("right")} aria-label={t("scrollRight")}>
                     <ChevronRight size={16} />
                   </button>
                 </div>
@@ -224,7 +226,7 @@ export function TemplatesContent({ tool = false }: { tool?: boolean }) {
               </button>
               {showFilters && (
                 <div className="tpl-filter-drop">
-                  <button className={`tpl-filter-opt${!activeFilter ? " active" : ""}`} onClick={() => { setActiveFilter(null); setShowFilters(false); }}>All</button>
+                  <button className={`tpl-filter-opt${!activeFilter ? " active" : ""}`} onClick={() => { setActiveFilter(null); setShowFilters(false); }}>{t("all")}</button>
                   {templateCatalogCategories.map((cat) => (
                     <button key={cat} className={`tpl-filter-opt${activeFilter === cat ? " active" : ""}`} onClick={() => { setActiveFilter(cat); setShowFilters(false); }}>{cat}</button>
                   ))}

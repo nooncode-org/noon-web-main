@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { EASE } from "@/lib/motion";
@@ -104,6 +105,7 @@ function LaneChip({
 // proposal". Fixed-geometry elbows (static SVG) — deliberately NOT measured-DOM
 // connectors; this diagram never reflows internally.
 function ReviewGate() {
+  const t = useTranslations("homeSections");
   return (
     <div className="mt-4 rounded-[12px] border border-primary/25 bg-card/30 p-4 lg:p-5">
       <div className="flex flex-col items-stretch gap-3 md:grid md:grid-cols-[minmax(0,1.15fr)_auto_auto_auto_minmax(0,0.85fr)] md:items-center md:gap-0">
@@ -128,7 +130,7 @@ function ReviewGate() {
         {/* the gate */}
         <div className="flex flex-col items-center gap-1 rounded-[10px] border border-primary/30 bg-primary/[0.05] px-4 py-3 text-center">
           <ShieldCheck className="h-[18px] w-[18px] text-primary" strokeWidth={1.75} />
-          <span className="text-[12.5px] font-semibold text-foreground">Human sign-off</span>
+          <span className="text-[12.5px] font-semibold text-foreground">{t("humanSignOff")}</span>
           <span className="font-mono text-[9.5px] uppercase tracking-[0.08em] text-muted-foreground/70">
             every proposal · no exceptions
           </span>
@@ -140,7 +142,7 @@ function ReviewGate() {
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.75} />
         </span>
         <div className="rounded-[10px] border border-foreground/10 bg-background px-3.5 py-2.5">
-          <div className="text-[12.5px] font-medium text-foreground">Your proposal</div>
+          <div className="text-[12.5px] font-medium text-foreground">{t("yourProposal")}</div>
           <span
             className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[9.5px]"
             style={{ color: SUCCESS, backgroundColor: `${SUCCESS}14`, border: `1px solid ${SUCCESS}33` }}
@@ -154,6 +156,7 @@ function ReviewGate() {
 }
 
 export function MaxwellProcess() {
+  const t = useTranslations("homeSections");
   const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
@@ -161,8 +164,8 @@ export function MaxwellProcess() {
       <div className="site-shell">
         <div ref={ref} className="mx-auto max-w-3xl">
           <div className="max-w-2xl">
-            <Eyebrow>The process</Eyebrow>
-            <h2 className="site-section-title mt-4">What happens after you hit send.</h2>
+            <Eyebrow>{t("theProcess")}</Eyebrow>
+            <h2 className="site-section-title mt-4">{t("afterYouSend")}</h2>
             <p className="site-section-copy mt-3 text-muted-foreground">
               Maxwell turns your first message into a scoped, human-checked project — a working
               prototype to react to, a proposal a person signed off, and a clear line where the

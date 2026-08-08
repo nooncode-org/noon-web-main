@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
@@ -98,6 +99,9 @@ const FOOTER_T: Record<string, FooterT> = {
 };
 
 export function FooterSection() {
+  // Named apart from this file's own FOOTER_T dictionary, which predates the
+  // shared message files and still lives here — see the pending note.
+  const tSections = useTranslations("homeSections");
   const params = useParams();
   const pathname = usePathname();
   const paramLocale = typeof params?.locale === "string" ? params.locale : null;
@@ -169,7 +173,7 @@ export function FooterSection() {
             </div>
           </div>
 
-          <nav className="grid grid-cols-2 gap-10 sm:gap-16 lg:min-w-[420px]" aria-label="Footer">
+          <nav className="grid grid-cols-2 gap-10 sm:gap-16 lg:min-w-[420px]" aria-label={tSections("footer")}>
             <div>
               <h3 className="mb-4 text-sm font-medium text-foreground">{t.groups.main}</h3>
               <ul className="space-y-3">

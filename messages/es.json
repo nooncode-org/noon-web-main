@@ -827,6 +827,30 @@
     "copied": "Copiado",
     "copy": "Copiar"
   },
+  "templatesPage": {
+    "searchPlaceholder": "Buscar plantillas…",
+    "heading": "Plantillas",
+    "pickStart": "Elige un punto de partida",
+    "scrollLeft": "Desplazar a la izquierda",
+    "scrollRight": "Desplazar a la derecha",
+    "all": "Todas",
+    "prevTemplates": "Plantillas anteriores",
+    "nextTemplates": "Plantillas siguientes",
+    "includedBaseline": "Incluido de base",
+    "typicalExtensions": "Ampliaciones habituales",
+    "bestFit": "Encaja mejor con",
+    "whatBaselineDelivers": "Qué te da esta base"
+  },
+  "homeSections": {
+    "humanSignOff": "Visto bueno de una persona",
+    "yourProposal": "Tu propuesta",
+    "theProcess": "El proceso",
+    "afterYouSend": "Qué pasa después de darle a enviar.",
+    "theDifference": "La diferencia",
+    "nothingShips": "Nada sale sin que lo revise una persona.",
+    "seniorEngineer": "Ingeniero sénior",
+    "footer": "Pie de página"
+  },
   "servicesPage": {
     "heroTitle": "Cuatro formas en las que <accent>Noon</accent> mejora tus resultados <dim>con soluciones que crecen contigo.</dim>",
     "sectionServices": "Servicios",

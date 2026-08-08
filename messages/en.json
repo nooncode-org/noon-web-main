@@ -827,6 +827,30 @@
     "copied": "Copied",
     "copy": "Copy"
   },
+  "templatesPage": {
+    "searchPlaceholder": "Search templates…",
+    "heading": "Templates",
+    "pickStart": "Pick a starting point",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "all": "All",
+    "prevTemplates": "Previous templates",
+    "nextTemplates": "Next templates",
+    "includedBaseline": "Included in baseline",
+    "typicalExtensions": "Typical extensions",
+    "bestFit": "Best fit",
+    "whatBaselineDelivers": "What this baseline delivers"
+  },
+  "homeSections": {
+    "humanSignOff": "Human sign-off",
+    "yourProposal": "Your proposal",
+    "theProcess": "The process",
+    "afterYouSend": "What happens after you hit send.",
+    "theDifference": "The difference",
+    "nothingShips": "Nothing ships without a human.",
+    "seniorEngineer": "Senior engineer",
+    "footer": "Footer"
+  },
   "servicesPage": {
     "heroTitle": "Four ways <accent>Noon</accent> drives better outcomes <dim>with solutions built to scale.</dim>",
     "sectionServices": "Services",

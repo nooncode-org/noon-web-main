@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
@@ -21,6 +22,7 @@ export type HeroTemplatesPanelProps = {
  * "View All Templates" link and prev/next navigation.
  */
 export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
+  const t = useTranslations("templatesPage");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const [atEnd, setAtEnd] = useState(false);
@@ -140,7 +142,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              aria-label="Previous templates"
+              aria-label={t("prevTemplates")}
               onClick={() => scrollByCards(-1)}
               className="text-foreground transition-opacity hover:opacity-60"
             >
@@ -148,7 +150,7 @@ export function HeroTemplatesPanel({ open, locale }: HeroTemplatesPanelProps) {
             </button>
             <button
               type="button"
-              aria-label="Next templates"
+              aria-label={t("nextTemplates")}
               onClick={() => scrollByCards(1)}
               className="text-foreground transition-opacity hover:opacity-60"
             >

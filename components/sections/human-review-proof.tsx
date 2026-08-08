@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { EASE } from "@/lib/motion";
@@ -20,6 +21,7 @@ const SUCCESS = siteStatusTones.success.accent;
 const REMOVED = "#e5484d";
 
 export function HumanReviewProof() {
+  const t = useTranslations("homeSections");
   const { ref, show } = useRevealMotion({ margin: "-80px" });
 
   return (
@@ -28,8 +30,8 @@ export function HumanReviewProof() {
         <div ref={ref} className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* narrative */}
           <div>
-            <Eyebrow>The difference</Eyebrow>
-            <h2 className="site-section-title mt-4">Nothing ships without a human.</h2>
+            <Eyebrow>{t("theDifference")}</Eyebrow>
+            <h2 className="site-section-title mt-4">{t("nothingShips")}</h2>
             <p className="site-section-copy mt-3 max-w-md text-muted-foreground">
               AI drafts fast — then a senior engineer reads every change, checks the edge cases,
               and signs off before it reaches your users. It&apos;s the part a code generator
@@ -88,7 +90,7 @@ export function HumanReviewProof() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="text-[12px] font-semibold text-foreground">Senior engineer</span>
+                    <span className="text-[12px] font-semibold text-foreground">{t("seniorEngineer")}</span>
                     <span className="font-mono text-[11px] text-muted-foreground/60">· Noon</span>
                     <span
                       className="ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px]"
