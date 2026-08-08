@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Link as LocaleLink } from "@/lib/navigation";
 import { useMemo, useState } from "react";
@@ -54,6 +55,7 @@ export function ContactIntakeForm({
   layout = "split",
   showGuidance = true,
 }: ContactIntakeFormProps) {
+  const t = useTranslations("contactForm");
   const resolvedInitialInquiry: ContactInquiryKey | null = initialInquiry
     ? resolvePrimaryIntent(normalizeContactInquiry(initialInquiry) ?? "general")
     : null;
@@ -185,7 +187,7 @@ export function ContactIntakeForm({
       >
         <span className="mb-5 inline-flex items-center gap-2 rounded-[8px] border border-foreground/10 bg-secondary/50 px-3 py-1 text-xs font-mono text-muted-foreground">
           <Sparkles className="h-3 w-3" style={{ color: siteTones.brand.accent }} />
-          Structured inquiry
+          {t("badge")}
         </span>
 
         {submissionState === "success" && statusMessage ? (
@@ -197,11 +199,11 @@ export function ContactIntakeForm({
             }}
             aria-live="polite"
           >
-            <p className="text-sm font-medium text-foreground">Inquiry received</p>
+            <p className="text-sm font-medium text-foreground">{t("received")}</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{statusMessage}</p>
             {submittedLeadId ? (
               <p className="mt-3 text-xs font-mono uppercase tracking-[0.12em] text-muted-foreground">
-                Reference {submittedLeadId.slice(0, 8)}
+                {t("reference", { id: submittedLeadId.slice(0, 8) })}
               </p>
             ) : null}
           </div>
@@ -209,7 +211,7 @@ export function ContactIntakeForm({
 
         {submissionState === "error" && statusMessage ? (
           <div className="mb-6 rounded-[8px] border border-destructive/20 bg-destructive/5 p-4" aria-live="polite">
-            <p className="text-sm font-medium text-foreground">Something went wrong</p>
+            <p className="text-sm font-medium text-foreground">{t("wentWrong")}</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{statusMessage}</p>
           </div>
         ) : null}
@@ -225,7 +227,7 @@ export function ContactIntakeForm({
             overflow: "hidden",
           }}
         >
-          <Label htmlFor="contact-company-website">Company website</Label>
+          <Label htmlFor="contact-company-website">{t("companyWebsite")}</Label>
           <Input
             id="contact-company-website"
             name="companyWebsite"
@@ -233,7 +235,7 @@ export function ContactIntakeForm({
             tabIndex={-1}
             value={companyWebsite}
             onChange={(event) => setCompanyWebsite(event.target.value)}
-            placeholder="Leave this blank"
+            placeholder={t("companyWebsitePlaceholder")}
           />
         </div>
 
@@ -248,14 +250,14 @@ export function ContactIntakeForm({
               </span>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact-intent">What&apos;s this about?</Label>
+              <Label htmlFor="contact-intent">{t("aboutWhat")}</Label>
               <Select value={inquiry || undefined} onValueChange={(value) => updateIntent(value as ContactInquiryKey)}>
                 <SelectTrigger
                   id="contact-intent"
                   className="w-full rounded-[8px]"
                   aria-invalid={Boolean(fieldErrors.inquiry?.length)}
                 >
-                  <SelectValue placeholder="Choose one..." />
+                  <SelectValue placeholder={t("chooseOne")} />
                 </SelectTrigger>
                 <SelectContent>
                   {primaryContactIntents.map((option) => (
@@ -277,7 +279,7 @@ export function ContactIntakeForm({
             </span>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="contact-name">Full name</Label>
+                <Label htmlFor="contact-name">{t("fullName")}</Label>
                 <Input
                   id="contact-name"
                   name="fullName"
@@ -288,7 +290,7 @@ export function ContactIntakeForm({
                     clearFieldError("name");
                     clearSubmissionStatus();
                   }}
-                  placeholder="Your full name"
+                  placeholder={t("fullNamePlaceholder")}
                   className="h-11 rounded-[8px]"
                   aria-invalid={Boolean(fieldErrors.name?.length)}
                 />
@@ -298,7 +300,7 @@ export function ContactIntakeForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contact-email">Email</Label>
+                <Label htmlFor="contact-email">{t("email")}</Label>
                 <Input
                   id="contact-email"
                   name="email"
@@ -310,7 +312,7 @@ export function ContactIntakeForm({
                     clearFieldError("email");
                     clearSubmissionStatus();
                   }}
-                  placeholder="you@company.com"
+                  placeholder={t("emailPlaceholder")}
                   className="h-11 rounded-[8px]"
                   aria-invalid={Boolean(fieldErrors.email?.length)}
                 />
@@ -322,10 +324,10 @@ export function ContactIntakeForm({
           </section>
 
           <div className="space-y-2">
-            <Label htmlFor="contact-country">Country</Label>
+            <Label htmlFor="contact-country">{t("country")}</Label>
             <Select value={country || undefined} onValueChange={(value) => { setCountry(value); clearSubmissionStatus(); }}>
               <SelectTrigger id="contact-country" className="w-full rounded-[8px]">
-                <SelectValue placeholder="Select your country" />
+                <SelectValue placeholder={t("countryPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {countries.map((c) => (
@@ -345,7 +347,7 @@ export function ContactIntakeForm({
               </span>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact-brief">Tell us more</Label>
+              <Label htmlFor="contact-brief">{t("tellUsMore")}</Label>
               <Textarea
                 id="contact-brief"
                 name="brief"
@@ -356,7 +358,7 @@ export function ContactIntakeForm({
                   clearFieldError("brief");
                   clearSubmissionStatus();
                 }}
-                placeholder="What you're working on or exploring, the outcome you want, and anything that shapes it — timeline, budget, constraints."
+                placeholder={t("briefPlaceholder")}
                 className="min-h-[118px] rounded-[8px] px-4 py-3 leading-relaxed lg:min-h-[126px]"
                 aria-invalid={Boolean(fieldErrors.brief?.length)}
               />
@@ -385,7 +387,7 @@ export function ContactIntakeForm({
             className="mt-4 grid gap-4 rounded-[8px] border border-border bg-background/55 p-4 md:grid-cols-2"
           >
             <div className="space-y-2">
-              <Label htmlFor="contact-budget">Budget range</Label>
+              <Label htmlFor="contact-budget">{t("budget")}</Label>
               <Input
                 id="contact-budget"
                 name="budgetRange"
@@ -406,7 +408,7 @@ export function ContactIntakeForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact-timeline">Timeline</Label>
+              <Label htmlFor="contact-timeline">{t("timeline")}</Label>
               <Input
                 id="contact-timeline"
                 name="timeline"
@@ -438,19 +440,19 @@ export function ContactIntakeForm({
             {submissionState === "loading" ? (
               <>
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-                Sending inquiry
+                {t("sending")}
               </>
             ) : (
               <>
                 <Mail className="h-4 w-4" />
-                Send inquiry
+                {t("send")}
               </>
             )}
           </Button>
           {trimmedProjectBrief ? (
             <Button asChild size="lg" variant="outline" className="h-11 rounded-[8px] px-6 text-sm">
               <Link href={maxwellHref}>
-                Continue with Maxwell
+                {t("continueMaxwell")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -477,36 +479,36 @@ export function ContactIntakeForm({
       {showGuidance ? (
         <div className="min-w-0 grid gap-6">
           <PageCard
-            eyebrow="Routing"
+            eyebrow={t("routingEyebrow")}
             title={selectedInquiry.label}
-            description="This is the inquiry path Noon will review first before the next step is confirmed."
+            description={t("routingDescription")}
             tone={siteTones.brand}
           >
             <div className="space-y-3 text-sm text-muted-foreground" aria-live="polite">
               <p>
-                <span className="font-medium text-foreground">Contact type:</span>{" "}
+                <span className="font-medium text-foreground">{t("contactTypeLabel")}</span>{" "}
                 {contactTypeLabels[contactType]}
               </p>
               <p>
-                <span className="font-medium text-foreground">Subject:</span> {selectedInquiry.subject}
+                <span className="font-medium text-foreground">{t("subjectLabel")}</span> {selectedInquiry.subject}
               </p>
               {formattedSource ? (
                 <p>
-                  <span className="font-medium text-foreground">Source:</span> {formattedSource}
+                  <span className="font-medium text-foreground">{t("sourceLabel")}</span> {formattedSource}
                 </p>
               ) : null}
             </div>
           </PageCard>
 
           <PageCard
-            eyebrow="What Happens Next"
-            title="Noon reviews the inquiry first."
-            description="We usually respond within 1-2 business days after reviewing the route, message, and any context already captured."
+            eyebrow={t("nextEyebrow")}
+            title={t("nextTitle")}
+            description={t("nextDescription")}
             tone={siteStatusTones.success}
           >
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p>If the request fits an active build path, Noon can follow up with clarification, proposal, or next-step guidance.</p>
-              <p>Advanced fields such as budget range and timeline help route the inquiry sooner, but they are optional.</p>
+              <p>{t("nextFit")}</p>
+              <p>{t("nextOptional")}</p>
               {trimmedProjectBrief ? (
                 <p>
                   If you came from Maxwell, your current prompt can still travel back with you without losing context.
