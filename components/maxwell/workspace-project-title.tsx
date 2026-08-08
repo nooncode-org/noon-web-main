@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * Editable project title for the workspace header. Click to edit inline;
@@ -9,6 +10,7 @@ import { Pencil } from "lucide-react";
  * to a server action that persists the renamed title.
  */
 export function WorkspaceProjectTitle({ initialTitle }: { initialTitle: string }) {
+  const t = useTranslations("workspace.chrome");
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(initialTitle);
   const [draft, setDraft] = useState(initialTitle);
@@ -54,7 +56,7 @@ export function WorkspaceProjectTitle({ initialTitle }: { initialTitle: string }
     <button
       type="button"
       onClick={startEdit}
-      title="Click to rename"
+      title={t("renameHint")}
       className="group inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-[6px] px-1 py-0.5 -mx-1 text-left transition-colors hover:bg-secondary/60"
     >
       <span className="min-w-0 truncate text-base font-medium leading-tight">{title}</span>

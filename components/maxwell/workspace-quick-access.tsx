@@ -1,6 +1,7 @@
 "use client";
 
 import { Globe, KeyRound, MessageCircle, Receipt } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useWorkspaceTabs } from "@/components/maxwell/workspace-tabs";
 
 /**
@@ -18,6 +19,7 @@ export function QuickAccess({
   adminUrl?: string | null;
   invoiceUrl?: string | null;
 }) {
+  const t = useTranslations("workspace.chrome");
   const tabs = useWorkspaceTabs();
   const tile =
     "flex items-center gap-2.5 rounded-[6px] border border-border px-4 py-3 text-[13px] font-medium transition-all hover:border-foreground/20 hover:bg-secondary/30";
@@ -25,29 +27,29 @@ export function QuickAccess({
 
   return (
     <section className="rounded-[6px] border border-border bg-card p-5">
-      <p className="mb-3 text-sm font-medium">Quick access</p>
+      <p className="mb-3 text-sm font-medium">{t("quickAccess")}</p>
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
         {liveUrl && (
           <a href={liveUrl} target="_blank" rel="noopener noreferrer" className={tile}>
             <Globe className={icon} strokeWidth={1.75} />
-            Visit site
+            {t("visitSite")}
           </a>
         )}
         {adminUrl && (
           <a href={adminUrl} target="_blank" rel="noopener noreferrer" className={tile}>
             <KeyRound className={icon} strokeWidth={1.75} />
-            Admin login
+            {t("adminLogin")}
           </a>
         )}
         {invoiceUrl && (
           <a href={invoiceUrl} target="_blank" rel="noopener noreferrer" className={tile}>
             <Receipt className={icon} strokeWidth={1.75} />
-            Invoice
+            {t("invoice")}
           </a>
         )}
         <button type="button" onClick={() => tabs?.select("chat")} className={tile}>
           <MessageCircle className={icon} strokeWidth={1.75} />
-          Message the team
+          {t("messageTeam")}
         </button>
       </div>
     </section>
@@ -59,6 +61,7 @@ export function QuickAccess({
  * the Overview (it jumps to the Support tab where the request form lives).
  */
 export function RequestChangeChip() {
+  const t = useTranslations("workspace.chrome");
   const tabs = useWorkspaceTabs();
   return (
     <button
@@ -66,7 +69,7 @@ export function RequestChangeChip() {
       onClick={() => tabs?.select("chat")}
       className="inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-secondary/30 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
     >
-      Request a change {"->"}
+      {t("requestChange")} {"->"}
     </button>
   );
 }

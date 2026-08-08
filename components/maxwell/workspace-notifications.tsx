@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, MessageCircle, Layers, Globe, CreditCard, CheckCircle2, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -44,6 +45,7 @@ const KIND_ICON = {
 } as const;
 
 export function WorkspaceNotifications({ items }: { items: WorkspaceNotification[] }) {
+  const t = useTranslations("workspace.chrome");
   const [open, setOpen] = useState(false);
   // Read-state seeded from the items; opening one (or "Mark all read") clears it.
   const [readIds, setReadIds] = useState<Set<string>>(
@@ -79,8 +81,12 @@ export function WorkspaceNotifications({ items }: { items: WorkspaceNotification
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
-          title="Notifications"
+          aria-label={
+            unreadCount > 0
+              ? t("notificationsUnread", { count: unreadCount })
+              : t("notifications")
+          }
+          title={t("notifications")}
           className="relative shrink-0 rounded-[6px] p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=open]:bg-secondary data-[state=open]:text-foreground"
         >
           <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
@@ -94,7 +100,7 @@ export function WorkspaceNotifications({ items }: { items: WorkspaceNotification
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 rounded-[8px] p-0">
         <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-          <p className="text-sm font-medium">Notifications</p>
+          <p className="text-sm font-medium">{t("notifications")}</p>
           {unreadCount > 0 && (
             <button
               type="button"
@@ -102,14 +108,14 @@ export function WorkspaceNotifications({ items }: { items: WorkspaceNotification
               className="inline-flex items-center gap-1 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Mark all read
+              {t("markAllRead")}
             </button>
           )}
         </div>
         <div className="max-h-[min(66vh,440px)] overflow-y-auto py-1">
           {items.length === 0 ? (
             <p className="px-3 py-10 text-center text-[13px] text-muted-foreground">
-              You&apos;re all caught up.
+              {t("allCaughtUp")}
             </p>
           ) : (
             items.map((n) => {

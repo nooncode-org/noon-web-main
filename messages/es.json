@@ -607,6 +607,9 @@
     "domains": {
       "searchPlaceholder": "Busca cualquier dominio",
       "searchLabel": "Buscar dominios",
+      "disconnectTitle": "¿Desconectar este dominio?",
+      "disconnectBody": "dejará de servir tu producto en esa dirección. Tu equipo de Noon se encarga de la desconexión: tú no tienes que hacer nada.",
+      "cancel": "Cancelar",
       "copyDomain": "Copiar dominio",
       "default": "Predeterminado"
     },
@@ -631,6 +634,60 @@
       "yourProject": "Tu proyecto",
       "preparingWorkspace": "Preparando el espacio",
       "justNow": "justo ahora"
+    },
+    "preparing": {
+      "paymentConfirmed": "Pago confirmado",
+      "projectIsGo": "Tu proyecto está en marcha.",
+      "settingUp": "Preparando tu espacio",
+      "settingUpHint": "Suele tardar solo unos segundos.",
+      "settingUpSlow": "Está tardando un poco más de lo normal, pero sigue en camino."
+    },
+    "reentry": {
+      "ready": "Tu espacio de proyecto está listo.",
+      "openHint": "Ábrelo para ver novedades y mensajes.",
+      "cta": "Abrir el espacio"
+    },
+    "profile": {
+      "title": "Tu perfil",
+      "changePhoto": "Cambiar la foto",
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre"
+    },
+    "chrome": {
+      "openMenu": "Abrir el menú",
+      "expandSidebar": "Desplegar el panel lateral",
+      "help": "Ayuda",
+      "chooseDestination": "Elegir destino",
+      "sections": "Secciones del espacio",
+      "notifications": "Novedades",
+      "notificationsUnread": "Novedades, {count} sin leer",
+      "markAllRead": "Marcar todo como leído",
+      "allCaughtUp": "Estás al día.",
+      "quickAccess": "Acceso rápido",
+      "visitSite": "Ver el sitio",
+      "adminLogin": "Entrar como administrador",
+      "invoice": "Factura",
+      "messageTeam": "Escribir al equipo",
+      "requestChange": "Pedir un cambio",
+      "askRepoAccess": "Hola: ¿podéis darme acceso al repositorio de mi proyecto?",
+      "renameHint": "Haz clic para cambiar el nombre",
+      "yourCode": "Tu código"
+    },
+    "dns": {
+      "type": "Tipo",
+      "name": "Nombre",
+      "value": "Valor",
+      "copy": "Copiar"
+    },
+    "starter": {
+      "title": "Mientras esperas",
+      "subtitle": "Tres cosas rápidas que nos aceleran",
+      "brandTitle": "Comparte tu identidad de marca",
+      "brandHint": "Logo, colores y tipografías: déjalos en el chat.",
+      "domainTitle": "Dinos qué dominio quieres",
+      "domainHint": "¿tumarca.com? Dilo en el chat y nosotros nos encargamos del resto.",
+      "callTitle": "Reserva una llamada de arranque",
+      "callHint": "15 minutos con tu equipo, cuando mejor te venga."
     },
     "settings": {
       "sectionsLabel": "Secciones de ajustes",

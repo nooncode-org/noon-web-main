@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,6 +30,7 @@ import {
  * the alert portals outside `.mxw-rd` where that override never lands.
  */
 export function DomainRowMenu({ domain }: { domain: string }) {
+  const t = useTranslations("workspace.domains");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   function disconnect() {
@@ -58,15 +60,16 @@ export function DomainRowMenu({ domain }: { domain: string }) {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent className="rounded-[8px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Disconnect this domain?</AlertDialogTitle>
+            <AlertDialogTitle>{t("disconnectTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="font-mono text-foreground">{domain}</span> will stop serving your
-              product at that address. Your Noon team handles the disconnection — nothing to do
-              on your end.
+              {/* The domain keeps its own element (monospaced), so the message
+                  is the sentence AFTER it. Reads correctly in both languages —
+                  the subject leads in English and in Spanish alike. */}
+              <span className="font-mono text-foreground">{domain}</span> {t("disconnectBody")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-[6px]">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-[6px]">{t("cancel")}</AlertDialogCancel>
             {/* Plain red button, NOT AlertDialogAction: the latter's buttonVariants
                 default is `.site-primary-action` (blue, !important) which would
                 override any bg set here. disconnect() closes via state. */}

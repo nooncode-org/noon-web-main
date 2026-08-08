@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { AutoRefresh } from "@/components/maxwell/auto-refresh";
 
 /**
@@ -35,6 +36,7 @@ export function useEscalated(afterMs: number) {
  * (Clients who haven't paid are redirected to their proposal — never here.)
  */
 export function WorkspacePreparingBody({ contactHref }: { contactHref: string }) {
+  const t = useTranslations("workspace.preparing");
   const escalated = useEscalated(75_000);
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center px-6">
@@ -53,8 +55,8 @@ export function WorkspacePreparingBody({ contactHref }: { contactHref: string })
               <span aria-hidden className="mt-1 w-px flex-1 bg-emerald-500/40" />
             </div>
             <div className="pb-5">
-              <p className="text-sm font-medium">Payment confirmed</p>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">Your project is a go.</p>
+              <p className="text-sm font-medium">{t("paymentConfirmed")}</p>
+              <p className="mt-0.5 text-[13px] text-muted-foreground">{t("projectIsGo")}</p>
             </div>
           </li>
 
@@ -71,11 +73,9 @@ export function WorkspacePreparingBody({ contactHref }: { contactHref: string })
               <span aria-hidden className="mt-1 w-px flex-1 bg-border" />
             </div>
             <div className="pb-5">
-              <p className="text-sm font-medium">Setting up your workspace</p>
+              <p className="text-sm font-medium">{t("settingUp")}</p>
               <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
-                {escalated
-                  ? "Taking a little longer than usual — it's still on the way."
-                  : "This usually takes just a few seconds."}
+                {escalated ? t("settingUpSlow") : t("settingUpHint")}
               </p>
             </div>
           </li>

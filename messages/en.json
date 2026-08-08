@@ -607,6 +607,9 @@
     "domains": {
       "searchPlaceholder": "Search any domain",
       "searchLabel": "Search domains",
+      "disconnectTitle": "Disconnect this domain?",
+      "disconnectBody": "will stop serving your product at that address. Your Noon team handles the disconnection — nothing to do on your end.",
+      "cancel": "Cancel",
       "copyDomain": "Copy domain",
       "default": "Default"
     },
@@ -631,6 +634,60 @@
       "yourProject": "Your project",
       "preparingWorkspace": "Preparing workspace",
       "justNow": "just now"
+    },
+    "preparing": {
+      "paymentConfirmed": "Payment confirmed",
+      "projectIsGo": "Your project is a go.",
+      "settingUp": "Setting up your workspace",
+      "settingUpHint": "This usually takes just a few seconds.",
+      "settingUpSlow": "Taking a little longer than usual — it’s still on the way."
+    },
+    "reentry": {
+      "ready": "Your project workspace is ready.",
+      "openHint": "Open it to see updates and messages.",
+      "cta": "Open workspace"
+    },
+    "profile": {
+      "title": "Your profile",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "namePlaceholder": "Your name"
+    },
+    "chrome": {
+      "openMenu": "Open menu",
+      "expandSidebar": "Expand sidebar",
+      "help": "Help",
+      "chooseDestination": "Choose destination",
+      "sections": "Workspace sections",
+      "notifications": "Notifications",
+      "notificationsUnread": "Notifications, {count} unread",
+      "markAllRead": "Mark all read",
+      "allCaughtUp": "You’re all caught up.",
+      "quickAccess": "Quick access",
+      "visitSite": "Visit site",
+      "adminLogin": "Admin login",
+      "invoice": "Invoice",
+      "messageTeam": "Message the team",
+      "requestChange": "Request a change",
+      "askRepoAccess": "Hi — could you share access to my project’s repository?",
+      "renameHint": "Click to rename",
+      "yourCode": "Your code"
+    },
+    "dns": {
+      "type": "Type",
+      "name": "Name",
+      "value": "Value",
+      "copy": "Copy"
+    },
+    "starter": {
+      "title": "While you wait",
+      "subtitle": "Three quick things that speed us up",
+      "brandTitle": "Share your brand kit",
+      "brandHint": "Logo, colors, fonts — drop them in the chat.",
+      "domainTitle": "Tell us your domain wish",
+      "domainHint": "yourbrand.com? Say it in the chat — we handle the rest.",
+      "callTitle": "Book a kickoff call",
+      "callHint": "15 minutes with your team, whenever suits you."
     },
     "settings": {
       "sectionsLabel": "Settings sections",

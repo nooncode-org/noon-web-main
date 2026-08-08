@@ -13,8 +13,10 @@
 
 import Link from "next/link";
 import { ArrowRight, Monitor } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function WorkspaceReentryBanner({ href }: { href: string }) {
+  const t = useTranslations("workspace.reentry");
   return (
     <div className="shrink-0 border-b border-border/70 bg-secondary/30 px-3 py-2">
       <Link
@@ -23,11 +25,11 @@ export function WorkspaceReentryBanner({ href }: { href: string }) {
       >
         <Monitor className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate text-foreground/90">
-          <span className="font-medium">Your project workspace is ready.</span>{" "}
-          <span className="text-muted-foreground">Open it to see updates and messages.</span>
+          <span className="font-medium">{t("ready")}</span>{" "}
+          <span className="text-muted-foreground">{t("openHint")}</span>
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 font-medium text-foreground/80 transition-colors group-hover:text-foreground">
-          Open workspace
+          {t("cta")}
           <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </Link>

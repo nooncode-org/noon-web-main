@@ -18,6 +18,7 @@ import {
   useState,
 } from "react";
 import type { ReactElement, ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 // A tab's optional notification indicator:
 //  · "unread" → blue, clears once you open the section (a new message, a new build)
@@ -41,6 +42,7 @@ export function useWorkspaceTabs() {
 }
 
 export function WorkspaceTabs({ tabs, children }: { tabs: Tab[]; children: ReactNode }) {
+  const t = useTranslations("workspace.chrome");
   const [active, setActive] = useState(tabs[0]?.id ?? "");
   // Sections you've already opened this session — their "unread" dot is
   // cleared. The tab you land on counts as seen. (Front-only: real "pending"
@@ -106,7 +108,7 @@ export function WorkspaceTabs({ tabs, children }: { tabs: Tab[]; children: React
           matching the header's left edge on desktop). */}
       <nav
         ref={navRef}
-        aria-label="Workspace sections"
+        aria-label={t("sections")}
         // Two other components reach in here to drive a tab (the chat's
         // "talk to your team" bridge, and the notifications' jump-to-tab). They
         // used to find this nav by its aria-label — which breaks the moment

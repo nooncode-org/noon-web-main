@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Camera } from "lucide-react";
 import {
   Dialog,
@@ -42,6 +43,10 @@ export function WorkspaceProfileDialog({
   profile: ClientProfile;
   onSave: (next: ClientProfile) => void;
 }) {
+  const t = useTranslations("workspace.profile");
+  // The description is the same sentence the Settings panel uses for its
+  // Profile card — one wording for one idea, in both places.
+  const tSettings = useTranslations("workspace.settings");
   const [name, setName] = useState(profile.name);
   const [photoUrl, setPhotoUrl] = useState<string | null>(profile.photoUrl);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -70,10 +75,8 @@ export function WorkspaceProfileDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="rounded-[8px] sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Your profile</DialogTitle>
-          <DialogDescription>
-            How you appear across your project — to Maxwell and your Noon team.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{tSettings("profileDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center gap-4">
@@ -106,12 +109,12 @@ export function WorkspaceProfileDialog({
 
           <div className="min-w-0 flex-1 space-y-2">
             <label className="block">
-              <span className="mb-1 block text-[12px] text-muted-foreground">Name</span>
+              <span className="mb-1 block text-[12px] text-muted-foreground">{t("name")}</span>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t("namePlaceholder")}
                 className="w-full rounded-[6px] border border-border bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/50 focus-visible:border-foreground/30"
               />
             </label>

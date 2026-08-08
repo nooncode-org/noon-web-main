@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 
 /**
@@ -16,6 +17,7 @@ export function VisitButton({
   liveUrl: string;
   previewUrl?: string | null;
 }) {
+  const t = useTranslations("workspace.chrome");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,7 +48,7 @@ export function VisitButton({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          aria-label="Choose destination"
+          aria-label={t("chooseDestination")}
           aria-expanded={open}
           className="flex items-center px-1.5 transition-colors hover:bg-secondary"
         >
