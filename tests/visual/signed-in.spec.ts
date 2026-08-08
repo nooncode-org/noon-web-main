@@ -94,6 +94,37 @@ test.describe("signed in", () => {
   });
 
   /**
+   * The list of the client's own chats, straight from the endpoint that builds
+   * it. This is the sidebar's data, and it was throwing.
+   *
+   * Found 2026-08-08 the only way it could be: in a server log, while measuring
+   * something unrelated. The query used `= ANY(sql.array([...]))`, which the
+   * local database rejects outright — so anyone running the portal on their
+   * machine got an empty chat list and no visible reason. The page around it
+   * rendered perfectly.
+   *
+   * Asserting the response and not the sidebar is deliberate: the rail opens
+   * collapsed, so a UI check would pass on an empty list and prove nothing.
+   */
+  test("the client's chat list comes back with their sessions", async ({ page }) => {
+    const response = await page.request.get("/api/maxwell/studio/sessions");
+    expect(response.status()).toBe(200);
+
+    const body = (await response.json()) as {
+      sessions: { id: string; goal_summary: string | null; has_client_workspace: boolean }[];
+    };
+    const ids = body.sessions.map((s) => s.id);
+    expect(ids).toContain(DEMO_SESSION);
+
+    // The paid demo has a workspace and the unpaid one does not — the two
+    // fields the sidebar reads to decide what each row links to. A query that
+    // returned rows but lost these would still look fine from the outside.
+    const paid = body.sessions.find((s) => s.id === DEMO_SESSION);
+    expect(paid?.has_client_workspace).toBe(true);
+    expect(paid?.goal_summary).toBe("Ops dashboard for field teams");
+  });
+
+  /**
    * The chat is the portal's centerpiece — where a client asks for a change and
    * reads what the team answered. Everything about it had been checked in
    * pieces: the thread builder has unit tests, the copy has key-parity tests.

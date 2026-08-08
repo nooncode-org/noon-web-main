@@ -720,6 +720,23 @@ export async function listStudioSessionsForOwner(
   // row (see getClientWorkspaceBySession's `ORDER BY created_at DESC LIMIT 1`),
   // so a JOIN would fan the session row out into duplicates. EXISTS yields one
   // boolean per session.
+  //
+  // `IN ${sql([...])}` and NOT `= ANY(${sql.array([...])})`. The second reads
+  // better and is what was here, but it throws "op ANY/ALL (array) requires
+  // array on right side" against the local database (PGlite), which meant this
+  // whole function — the client's list of chats — failed every time anyone ran
+  // the portal locally. It surfaced on 2026-08-08 in a browser test's server
+  // log, silently, while the page around it rendered fine.
+  //
+  // Measured, seeded, with both forms side by side: `sql.array()` throws, and
+  // `${values}::text[]` throws too ("malformed array literal") — it only LOOKS
+  // like it works against an empty table, which is how a first pass nearly
+  // shipped the wrong fix. `IN ${sql([...])}` is the postgres.js-documented
+  // form, parameterises every value, and behaves identically on real Postgres.
+  //
+  // Caveat if this list ever stops being a constant: `IN ()` on an empty list is
+  // a syntax error. The other call site (listProposalsForReview) guards with
+  // `statuses.length > 0` for exactly that reason.
   const rows = await sql<ListRow[]>`
     SELECT id, initial_prompt, status, goal_summary, updated_at,
            EXISTS (
@@ -729,7 +746,7 @@ export async function listStudioSessionsForOwner(
            (
              SELECT pr.public_token FROM proposal_request pr
              WHERE pr.studio_session_id = studio_session.id
-               AND pr.status = ANY(${sql.array(Array.from(PUBLIC_PROPOSAL_STATUSES))})
+               AND pr.status IN ${sql(Array.from(PUBLIC_PROPOSAL_STATUSES))}
              ORDER BY pr.created_at DESC
              LIMIT 1
            ) AS proposal_public_token
@@ -1714,7 +1731,7 @@ export async function getProposalRequestsWithSession(opts?: {
                ss.initial_prompt AS session_initial_prompt, ss.status AS session_status
         FROM proposal_request pr
         JOIN studio_session ss ON ss.id = pr.studio_session_id
-        WHERE pr.status = ANY(${sql.array(statuses)})
+        WHERE pr.status IN ${sql([...statuses])}
         ORDER BY pr.created_at DESC
         LIMIT ${limit}
       `
